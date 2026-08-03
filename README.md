@@ -1,9 +1,9 @@
 # @curviate/sdk
 
-The official TypeScript SDK for the [Curviate API](https://docs.curviate.com) — agent-native
+The official TypeScript SDK for the [Curviate API](https://docs.curviate.com). Agent-native
 LinkedIn infrastructure for AI engineers and agent builders.
 
-> **Status:** `0.16.0` — pre-1.0. Full v2 API parity; the surface is public but not yet stability-promised.
+> **Status:** pre-1.0. Full v2 API parity; the surface is public but not yet stability-promised.
 
 ---
 
@@ -17,7 +17,7 @@ Requires Node 18+. Works in Cloudflare Workers and Vercel Edge.
 
 ---
 
-## Auth — construct the client
+## Auth: construct the client
 
 Get your API key from the Curviate dashboard. Store it as an environment variable.
 
@@ -37,7 +37,7 @@ const curviate = new Curviate({
 
 ## Account-scoped accessor
 
-Every LinkedIn operation (messages, member profiles, invites, posts) is tied to a **managed account** — a LinkedIn session you have connected via the connect flow (`curviate.auth.intent()`). The `curviate.account(id)` accessor fixes the `account_id` on every call so you do not have to thread it manually:
+Every LinkedIn operation (messages, member profiles, invites, posts) is tied to a **managed account**, a LinkedIn session you have connected via the connect flow (`curviate.auth.intent()`). The `curviate.account(id)` accessor fixes the `account_id` on every call so you do not have to thread it manually:
 
 ```ts
 // Root-level: tenant-wide operations (accounts, auth, webhooks)
@@ -56,7 +56,7 @@ const profile = await acc.users.get("some-user-id"); // someone else's
 
 ## First end-to-end call
 
-This snippet lists your connected accounts, picks the first one, and sends a message — something an agent might do to automate outreach:
+This snippet lists your connected accounts, picks the first one, and sends a message, something an agent might do to automate outreach:
 
 ```ts
 import { Curviate, isCurviateError } from "@curviate/sdk";
@@ -78,7 +78,7 @@ async function sendFirstMessage() {
   // 3. Send a message to the first chat
   const chat = chats[0]!;
   await acc.messaging.sendMessage(chat.id ?? "", {
-    text: "Hi — following up from our conversation.",
+    text: "Hi, following up from our conversation.",
   });
 
   console.log("Message sent.");
@@ -114,7 +114,7 @@ try {
       break;
     default:
       if (err.retryLikelyToSucceed) {
-        // Safe to retry — server-side transient error
+        // Safe to retry: server-side transient error
         await retry();
       }
   }
@@ -127,7 +127,7 @@ All 34 error codes are documented in the [API reference](https://docs.curviate.c
 
 ## Cursor pagination
 
-Resources that return lists support cursor pagination. `curviate.paginate()` is an async iterator that follows the `cursor` field automatically — pull items one at a time without managing cursors:
+Resources that return lists support cursor pagination. `curviate.paginate()` is an async iterator that follows the `cursor` field automatically, so you pull items one at a time without managing cursors:
 
 ```ts
 // Iterate over every chat across all pages
@@ -163,27 +163,28 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req, res)
     event = await constructEvent(req.body, sig, secret);
   } catch (err) {
     if (err instanceof WebhookSignatureError) {
-      console.warn("Bad webhook:", err.reason); // 'invalid_signature' | 'replay_detected' | 'malformed_header'
+      // 'invalid_signature' | 'replay_detected' | 'malformed_header' | 'malformed_payload'
+      console.warn("Bad webhook:", err.reason);
       return res.sendStatus(400);
     }
     throw err;
   }
 
-  switch (event.type) {
+  switch (event.event) {
     case "message.received":
-      // event.data is MessagePayload — account_id, message_id, etc.
+      // event.data is MessagePayload: account_id, message_id, and so on.
       handleNewMessage(event.data);
       break;
     case "account.connected":
       handleAccountConnected(event.data);
       break;
-    // 22 more event types — all in the CurviateEvent union
+    // 22 more event types, all in the CurviateEvent union.
   }
 
   res.sendStatus(200);
 });
 
-// Hono / Vercel Edge — always await (Web Crypto is async)
+// Hono / Vercel Edge. Always await; Web Crypto is async.
 app.post("/webhook", async (c) => {
   const rawBody = await c.req.text();
   const event = await constructEvent(rawBody, c.req.header("curviate-signature")!, secret);
@@ -191,9 +192,21 @@ app.post("/webhook", async (c) => {
 });
 ```
 
-`constructEvent` always returns a `Promise<CurviateEvent>` — always `await` it.
+`constructEvent` always returns a `Promise<CurviateEvent>`. Always `await` it.
 
-`WebhookSignatureError` is NOT a `CurviateError` — narrow with `instanceof WebhookSignatureError`.
+Each event also carries its delivery metadata: `event.id` (a `wdl_` delivery id you
+can de-duplicate retries on), `event.webhook_id`, and `event.delivered_at`.
+
+`WebhookSignatureError` is NOT a `CurviateError`. Narrow with `instanceof WebhookSignatureError`.
+Its `reason` tells you where to look: `malformed_header` means the signature header could not be
+read, `invalid_signature` means the HMAC did not match (check the secret, and check that you passed
+the raw request bytes), `replay_detected` means the event is outside the replay window, and
+`malformed_payload` means the signature was **valid** but the body was not a Curviate event, so
+your secret and header are both fine.
+
+> **Upgrading from 0.18.x or earlier?** The event discriminant is `event.event`, not `event.type`.
+> See the 0.19.0 entry in [CHANGELOG.md](./CHANGELOG.md); the change is a one-word edit and it
+> breaks no working code, because `constructEvent` never returned successfully before 0.19.0.
 
 ---
 

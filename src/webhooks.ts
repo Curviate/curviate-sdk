@@ -26,6 +26,20 @@
  * Extends `Error`, NOT `CurviateError` — callers can narrow with
  * `instanceof WebhookSignatureError` independently of CurviateError.
  *
+ * The `reason` codes split by where the problem actually is, so the code you
+ * read points at the thing you need to look at:
+ *
+ * - `malformed_header` - the `Curviate-Signature` header itself is unusable
+ *   (missing `t=` or `v1=`, non-numeric timestamp). Check how you are reading
+ *   the header.
+ * - `invalid_signature` - the header parsed, but the HMAC does not match.
+ *   Check the signing secret, and check that you passed the raw request bytes
+ *   rather than a re-serialized object.
+ * - `replay_detected` - signature valid, timestamp outside the replay window.
+ * - `malformed_payload` - **signature valid**, but the body is not a Curviate
+ *   event. Nothing is wrong with your secret or your header; look at what is
+ *   POSTing to the endpoint.
+ *
  * @example
  * try {
  *   const event = await constructEvent(rawBody, header, secret);
@@ -38,7 +52,11 @@
 export class WebhookSignatureError extends Error {
   override readonly name = "WebhookSignatureError";
   /** Structured reason code for the verification failure. */
-  readonly reason: "invalid_signature" | "replay_detected" | "malformed_header";
+  readonly reason:
+    | "invalid_signature"
+    | "replay_detected"
+    | "malformed_header"
+    | "malformed_payload";
 
   constructor(reason: WebhookSignatureError["reason"], message: string) {
     super(message);
@@ -75,8 +93,34 @@ export interface AccountPayload {
 }
 
 /**
+ * Delivery metadata that accompanies every Curviate webhook event.
+ *
+ * These fields are present on every delivery the platform sends, but
+ * `constructEvent` does **not** require them: the parser insists only on the
+ * discriminant. That is deliberate. Requiring an envelope field is exactly how
+ * verification broke before (the parser demanded a field the emitter did not
+ * send, and rejected every genuine delivery), so anything the union does not
+ * strictly need to narrow is optional here and cannot fail a verification.
+ */
+export interface CurviateEventEnvelope {
+  /** Unique id for this delivery attempt, e.g. `wdl_01J...`. Use it to de-duplicate retries. */
+  id?: string;
+  /** Id of the webhook registration this delivery belongs to, e.g. `wh_01J...`. */
+  webhook_id?: string;
+  /** ISO-8601 timestamp of the delivery attempt. */
+  delivered_at?: string;
+}
+
+/**
  * The complete discriminated union of all 24 canonical, create-subscribable
- * Curviate webhook events. The `type` field is the discriminant.
+ * Curviate webhook events. The **`event`** field is the discriminant, matching
+ * the field the platform actually sends on the wire.
+ *
+ * > Migrating from 0.18.x and earlier: the discriminant was `type`, a field no
+ * > Curviate delivery has ever contained, so `constructEvent` threw on every
+ * > real webhook and no `event.type` branch could ever run. Switch your checks
+ * > to `event.event === '...'`. `event.type` is now a compile error, which is
+ * > intentional: it points at every site that needs the one-word change.
  *
  * Re-keyed for the v2 catalogue (was 19). Renamed/removed vs. the prior set:
  * `account.stopped`, `account.sync_started`, `account.sync_complete`,
@@ -91,35 +135,37 @@ export interface AccountPayload {
  *
  * @example
  * const event = await constructEvent(rawBody, header, secret);
- * if (event.type === 'message.received') {
+ * if (event.event === 'message.received') {
  *   // event.data is MessagePayload
  * }
  */
-export type CurviateEvent =
-  | { type: "message.received"; data: MessagePayload }
-  | { type: "message.delivered"; data: MessagePayload }
-  | { type: "message.read"; data: MessagePayload }
-  | { type: "message.edited"; data: MessagePayload }
-  | { type: "message.deleted"; data: MessagePayload }
-  | { type: "message.reaction"; data: MessagePayload }
-  | { type: "chat.updated"; data: MessagePayload }
-  | { type: "chat.deleted"; data: MessagePayload }
-  | { type: "connection.accepted"; data: ConnectionPayload }
-  | { type: "connection.new"; data: ConnectionPayload }
-  | { type: "account.created"; data: AccountPayload }
-  | { type: "account.connected"; data: AccountPayload }
-  | { type: "account.synced"; data: AccountPayload }
-  | { type: "account.reconnected"; data: AccountPayload }
-  | { type: "account.reconnect_needed"; data: AccountPayload }
-  | { type: "account.creation_failed"; data: AccountPayload }
-  | { type: "account.disconnected"; data: AccountPayload }
-  | { type: "account.error"; data: AccountPayload }
-  | { type: "account.paused"; data: AccountPayload }
-  | { type: "account.connecting"; data: AccountPayload }
-  | { type: "account.permission_revoked"; data: AccountPayload }
-  | { type: "account.initial_sync.running"; data: AccountPayload }
-  | { type: "account.initial_sync.completed"; data: AccountPayload }
-  | { type: "account.initial_sync.failed"; data: AccountPayload };
+export type CurviateEvent = CurviateEventEnvelope &
+  (
+    | { event: "message.received"; data: MessagePayload }
+    | { event: "message.delivered"; data: MessagePayload }
+    | { event: "message.read"; data: MessagePayload }
+    | { event: "message.edited"; data: MessagePayload }
+    | { event: "message.deleted"; data: MessagePayload }
+    | { event: "message.reaction"; data: MessagePayload }
+    | { event: "chat.updated"; data: MessagePayload }
+    | { event: "chat.deleted"; data: MessagePayload }
+    | { event: "connection.accepted"; data: ConnectionPayload }
+    | { event: "connection.new"; data: ConnectionPayload }
+    | { event: "account.created"; data: AccountPayload }
+    | { event: "account.connected"; data: AccountPayload }
+    | { event: "account.synced"; data: AccountPayload }
+    | { event: "account.reconnected"; data: AccountPayload }
+    | { event: "account.reconnect_needed"; data: AccountPayload }
+    | { event: "account.creation_failed"; data: AccountPayload }
+    | { event: "account.disconnected"; data: AccountPayload }
+    | { event: "account.error"; data: AccountPayload }
+    | { event: "account.paused"; data: AccountPayload }
+    | { event: "account.connecting"; data: AccountPayload }
+    | { event: "account.permission_revoked"; data: AccountPayload }
+    | { event: "account.initial_sync.running"; data: AccountPayload }
+    | { event: "account.initial_sync.completed"; data: AccountPayload }
+    | { event: "account.initial_sync.failed"; data: AccountPayload }
+  );
 
 // ─── Header parsing ──────────────────────────────────────────────────────────
 
@@ -277,22 +323,56 @@ function verifyAndParse(
   }
 
   // Step 5 — parse the JSON body into a typed CurviateEvent.
+  //
+  // Everything below this line runs only AFTER the HMAC matched, so the header
+  // and the signing secret are both proven correct at this point. A failure
+  // here is therefore `malformed_payload`, never `malformed_header`: reporting
+  // a header problem for a body problem is what sends people to rotate a secret
+  // that was never wrong.
   let parsed: unknown;
   try {
     parsed = JSON.parse(bodyStr);
   } catch {
-    throw new WebhookSignatureError("malformed_header", "Webhook body is not valid JSON.");
+    throw new WebhookSignatureError(
+      "malformed_payload",
+      "Webhook body is not valid JSON. Verification already succeeded, so the problem is the request body, not your webhook configuration.",
+    );
   }
 
-  if (
-    typeof parsed !== "object" ||
-    parsed === null ||
-    typeof (parsed as Record<string, unknown>)["type"] !== "string"
-  ) {
-    throw new WebhookSignatureError("malformed_header", 'Webhook payload missing "type" field.');
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+    throw new WebhookSignatureError(
+      "malformed_payload",
+      "Webhook body is not a JSON object. Verification already succeeded, so the problem is the request body, not your webhook configuration.",
+    );
   }
 
-  return parsed as CurviateEvent;
+  const record = parsed as Record<string, unknown>;
+
+  // The discriminant. Curviate sends the event name in `event`; `type` is
+  // accepted as a fallback for forward-compatibility and normalized onto
+  // `event` so `CurviateEvent` always narrows on one field. Neither is
+  // required to be BOTH present, and `type` alone is never required.
+  const discriminant =
+    typeof record["event"] === "string"
+      ? record["event"]
+      : typeof record["type"] === "string"
+        ? record["type"]
+        : undefined;
+
+  if (discriminant === undefined) {
+    throw new WebhookSignatureError(
+      "malformed_payload",
+      'Webhook body has no "event" field, so it cannot be resolved to a Curviate event. Verification already succeeded, so the problem is the request body, not your webhook configuration.',
+    );
+  }
+
+  record["event"] = discriminant;
+
+  // `discriminant` is a runtime string; the union's literal members cannot be
+  // proven from it here, and narrowing to one arm would be a lie. Widening
+  // through `unknown` is the honest cast, and it is safe: the only invariant
+  // the union depends on is that `event` is a string, which is checked above.
+  return record as unknown as CurviateEvent;
 }
 
 // ─── constructEvent ───────────────────────────────────────────────────────────
@@ -326,7 +406,7 @@ function verifyAndParse(
  *     }
  *     throw err;
  *   }
- *   if (event.type === 'message.received') { ... }
+ *   if (event.event === 'message.received') { ... }
  *   res.sendStatus(200);
  * });
  *

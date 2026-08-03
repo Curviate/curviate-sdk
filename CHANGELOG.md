@@ -9,6 +9,68 @@ Versioning: semantic — minor for additive changes, patch for bug fixes; no sta
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-08-03
+
+### Fixed
+
+- **`constructEvent` now parses real webhook deliveries. It previously rejected
+  every single one.** The Curviate platform sends the event name in `event`;
+  the SDK required a `type` field that no delivery has ever contained, so
+  verification threw `WebhookSignatureError` on 100% of genuine webhooks. The
+  HMAC path was never at fault (a tampered body was correctly rejected as
+  `invalid_signature`); the parse step was. If webhook verification has never
+  worked for you, this is why, and this release fixes it.
+
+- **A body problem no longer reports a header problem.** A payload whose
+  signature verifies but whose body cannot be parsed used to fail with
+  `reason: "malformed_header"`, pointing at the two things that had just been
+  proven correct: the header and the signing secret. Integrators read that and
+  rotated a secret that was never wrong. Those cases now report the new
+  `reason: "malformed_payload"`, and the message no longer mentions the header,
+  the signature, or the secret.
+
+### Changed
+
+- **BREAKING (type-level), and it breaks no working code.** The `CurviateEvent`
+  discriminant is now `event`, not `type`:
+
+  ```diff
+  - if (event.type === "message.received") { ... }
+  + if (event.event === "message.received") { ... }
+  ```
+
+  Read the label carefully before deferring the upgrade: **there is no working
+  consumer of `event.type` to break.** `constructEvent` has never once returned
+  successfully for a real delivery, so no `event.type` branch has ever executed
+  in production. Any handler you have written behind it is unreachable code
+  today. `event.type` is now a compile error precisely so `tsc` points you at
+  every site that needs the one-word edit; nothing changes at runtime for code
+  that was previously working, because there was none.
+
+  `WebhookSignatureError["reason"]` gains the `"malformed_payload"` member. An
+  exhaustive `switch` over `reason` will need the new arm.
+
+### Added
+
+- **`CurviateEventEnvelope`**: the per-delivery metadata now carried on every
+  event. `event.id` is the `wdl_…` delivery id (de-duplicate retries on it),
+  `event.webhook_id` is the registration, `event.delivered_at` is the attempt
+  timestamp. These are typed optional and are **not** required by the parser:
+  requiring an envelope field is what caused this defect, so nothing beyond the
+  discriminant can fail a verification again.
+
+- Forward compatibility: a payload carrying `type` instead of `event` is
+  accepted and normalized onto `event`, so a future platform-side change to the
+  envelope cannot break verification a second time. `type` is never required.
+
+- `test/webhooks.dispatcherEnvelope.test.ts` and
+  `test/fixtures/webhook-delivery.capture.json`: the regression test replays
+  bytes and a signature header **captured off the wire from the real dispatch
+  worker**, rather than constructing its own payload. The pre-existing suite was
+  green throughout this defect because it built its own `{ type: … }` fixtures;
+  a suite that constructs its own input cannot detect an emitter/parser
+  divergence, and that is what let this ship.
+
 ## [0.18.1] — 2026-07-18
 
 ### Changed
