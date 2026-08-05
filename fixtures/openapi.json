@@ -64670,13 +64670,6 @@
                               "null"
                             ]
                           },
-                          "format": {
-                            "type": "string",
-                            "enum": [
-                              "json",
-                              "form"
-                            ]
-                          },
                           "account_ids": {
                             "type": "array",
                             "items": {
@@ -64757,7 +64750,6 @@
                           "source": "messaging",
                           "request_url": "https://hooks.example.com/messages",
                           "name": "Message handler",
-                          "format": "json",
                           "account_ids": [
                             "acc_01J8Z3K9P0Q1R2S3T4V5W6X7Y8"
                           ],
@@ -64917,14 +64909,6 @@
                       ],
                       "description": "Human-readable label."
                     },
-                    "format": {
-                      "type": "string",
-                      "enum": [
-                        "json",
-                        "form"
-                      ],
-                      "description": "Delivery body encoding."
-                    },
                     "account_ids": {
                       "type": "array",
                       "items": {
@@ -64988,7 +64972,6 @@
                       "source": "messaging",
                       "request_url": "https://hooks.example.com/messages",
                       "name": "Message handler",
-                      "format": "json",
                       "account_ids": [
                         "acc_01J8Z3K9P0Q1R2S3T4V5W6X7Y8"
                       ],
@@ -65154,15 +65137,6 @@
                         "type": "string",
                         "description": "Human-readable name for this webhook (1–100 chars)"
                       },
-                      "format": {
-                        "type": "string",
-                        "enum": [
-                          "json",
-                          "form"
-                        ],
-                        "description": "Delivery body encoding (default: json)",
-                        "default": "json"
-                      },
                       "account_ids": {
                         "type": "array",
                         "items": {
@@ -65242,15 +65216,6 @@
                       "name": {
                         "type": "string",
                         "description": "Human-readable name for this webhook (1–100 chars)"
-                      },
-                      "format": {
-                        "type": "string",
-                        "enum": [
-                          "json",
-                          "form"
-                        ],
-                        "description": "Delivery body encoding (default: json)",
-                        "default": "json"
                       },
                       "account_ids": {
                         "type": "array",
@@ -65332,15 +65297,6 @@
                       "name": {
                         "type": "string",
                         "description": "Human-readable name for this webhook (1–100 chars)"
-                      },
-                      "format": {
-                        "type": "string",
-                        "enum": [
-                          "json",
-                          "form"
-                        ],
-                        "description": "Delivery body encoding (default: json)",
-                        "default": "json"
                       },
                       "account_ids": {
                         "type": "array",
@@ -65851,14 +65807,6 @@
                       ],
                       "description": "Human-readable label."
                     },
-                    "format": {
-                      "type": "string",
-                      "enum": [
-                        "json",
-                        "form"
-                      ],
-                      "description": "Delivery body encoding."
-                    },
                     "account_ids": {
                       "type": "array",
                       "items": {
@@ -65918,7 +65866,6 @@
                       "source": "messaging",
                       "request_url": "https://hooks.example.com/messages",
                       "name": "Message handler",
-                      "format": "json",
                       "account_ids": [
                         "acc_01J8Z3K9P0Q1R2S3T4V5W6X7Y8"
                       ],
@@ -66264,14 +66211,6 @@
                       ],
                       "description": "Human-readable label."
                     },
-                    "format": {
-                      "type": "string",
-                      "enum": [
-                        "json",
-                        "form"
-                      ],
-                      "description": "Delivery body encoding."
-                    },
                     "account_ids": {
                       "type": "array",
                       "items": {
@@ -66331,7 +66270,6 @@
                       "source": "messaging",
                       "request_url": "https://hooks.example.com/messages",
                       "name": "Message handler",
-                      "format": "json",
                       "account_ids": [
                         "acc_01J8Z3K9P0Q1R2S3T4V5W6X7Y8"
                       ],
@@ -66354,7 +66292,6 @@
                       "source": "messaging",
                       "request_url": "https://hooks.example.com/messages",
                       "name": "Message handler",
-                      "format": "json",
                       "account_ids": [
                         "acc_01J8Z3K9P0Q1R2S3T4V5W6X7Y8",
                         "acc_01J8Z3K9P0Q1R2S3T4V5W6X7Z9"
@@ -66544,14 +66481,6 @@
                       ]
                     },
                     "description": "Replace the custom headers added to each delivery POST (whole-array)."
-                  },
-                  "format": {
-                    "type": "string",
-                    "enum": [
-                      "json",
-                      "form"
-                    ],
-                    "description": "Replace the delivery body encoding."
                   },
                   "data": {
                     "type": "array",
