@@ -26041,7 +26041,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The current state of the action-based (mobile-app-approval) challenge. object:"account" + status:"active" once approved (the account is now connected); object:"checkpoint" + status:"pending" while still waiting; status:"checkpoint_required" when the collect chained to a new challenge (e.g. approval → 2FA) — switch to submitting the new challenge_type; status:"expired"/"failed" on timeout/failure. */
+            /** @description The current state of the action-based (mobile-app-approval) challenge. object:"account" + status:"active" once approved (the account is now connected); object:"checkpoint" + status:"pending" while still waiting; status:"checkpoint_required" when the collect chained to a new challenge (e.g. approval → 2FA), switch to submitting the new challenge_type; status:"expired"/"failed" on timeout/failure. object:"account" + recovered:true means the approval resolved to a LinkedIn identity already present on the workspace, which was claimed into your account; its status is the identity's real observed state, so it may be reconnect_needed rather than active. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -26056,18 +26056,20 @@ export interface operations {
                          */
                         object?: "account" | "checkpoint";
                         /** @enum {string} */
-                        status?: "active" | "pending" | "checkpoint_required" | "expired" | "failed";
+                        status?: "active" | "reconnect_needed" | "restricted" | "disconnected" | "pending" | "checkpoint_required" | "expired" | "failed";
+                        /** @description Present and true only when this approval recovered an existing LinkedIn identity already present on the workspace (claiming it into your account) instead of connecting a brand-new one. Absent on a normal approval. The account's status reflects its real observed state, which may need a reconnect. */
+                        recovered?: boolean;
                         /** @description Present on status:"active" (the connected account) and status:"checkpoint_required" (the account whose next challenge is pending). */
                         account_id?: string;
                         /** @description Present on status:"active". */
                         full_name?: string | null;
                         /** @description Present on status:"active". */
                         headline?: string | null;
-                        /** @description The seat this account occupies (canonical — supersedes the deprecated attached_seat_id). Present on status:"active". */
+                        /** @description The seat this account occupies (canonical, supersedes the deprecated attached_seat_id). Present on status:"active". */
                         seat_id?: string | null;
                         /**
                          * @deprecated
-                         * @description Deprecated — use seat_id (same value). Removed at the GA /v1 cutover. Present on status:"active".
+                         * @description Deprecated, use seat_id (same value). Removed at the GA /v1 cutover. Present on status:"active".
                          */
                         attached_seat_id?: string | null;
                         /** @description ISO-8601 expiry. Present on status:"pending" and status:"checkpoint_required". */
@@ -26077,7 +26079,7 @@ export interface operations {
                          * @enum {string}
                          */
                         challenge_type?: "mobile_app_approval" | "otp" | "two_factor_sms" | "two_factor_app" | "two_factor_whatsapp" | "contract_selection";
-                        /** @description Contract picker options — present only on a chained status:"checkpoint_required" with challenge_type:"contract_selection". */
+                        /** @description Contract picker options, present only on a chained status:"checkpoint_required" with challenge_type:"contract_selection". */
                         contracts?: {
                             id?: string;
                             name?: string;
@@ -26096,7 +26098,16 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The pending checkpoint is code-based, not mobile_app_approval — use submit instead. */
+            /** @description The approved LinkedIn identity is already linked to another account. Reconnect or disconnect the existing account instead of linking it again. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description The pending checkpoint is code-based, not mobile_app_approval, use submit instead. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -26105,7 +26116,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Rate limited — slow down and retry after the hinted delay. */
+            /** @description Rate limited, slow down and retry after the hinted delay. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
