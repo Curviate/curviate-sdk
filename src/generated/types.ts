@@ -26301,8 +26301,6 @@ export interface operations {
                             /** @description The URL that receives delivery POST requests. */
                             request_url?: string;
                             name?: string | null;
-                            /** @enum {string} */
-                            format?: "json" | "form";
                             account_ids?: string[];
                             enabled?: boolean;
                             headers?: Record<string, never>[];
@@ -26373,12 +26371,6 @@ export interface operations {
                     request_url: string;
                     /** @description Human-readable name for this webhook (1–100 chars) */
                     name?: string;
-                    /**
-                     * @description Delivery body encoding (default: json)
-                     * @default json
-                     * @enum {string}
-                     */
-                    format?: "json" | "form";
                     /** @description Per-account targeting. Required and non-empty — each id must be an acc_-prefixed id owned by the tenant. */
                     account_ids: string[];
                     /**
@@ -26408,12 +26400,6 @@ export interface operations {
                     request_url: string;
                     /** @description Human-readable name for this webhook (1–100 chars) */
                     name?: string;
-                    /**
-                     * @description Delivery body encoding (default: json)
-                     * @default json
-                     * @enum {string}
-                     */
-                    format?: "json" | "form";
                     /** @description Per-account targeting. Required and non-empty — each id must be an acc_-prefixed id owned by the tenant. */
                     account_ids: string[];
                     /**
@@ -26443,12 +26429,6 @@ export interface operations {
                     request_url: string;
                     /** @description Human-readable name for this webhook (1–100 chars) */
                     name?: string;
-                    /**
-                     * @description Delivery body encoding (default: json)
-                     * @default json
-                     * @enum {string}
-                     */
-                    format?: "json" | "form";
                     /** @description Per-account targeting. Required and non-empty — each id must be an acc_-prefixed id owned by the tenant. */
                     account_ids: string[];
                     /**
@@ -26495,11 +26475,6 @@ export interface operations {
                         request_url?: string;
                         /** @description Human-readable label. */
                         name?: string | null;
-                        /**
-                         * @description Delivery body encoding.
-                         * @enum {string}
-                         */
-                        format?: "json" | "form";
                         /** @description Accounts targeted by this webhook. Required and non-empty — each id must be owned by the tenant. */
                         account_ids?: string[];
                         /** @description A disabled webhook is created but delivers nothing. */
@@ -26682,11 +26657,6 @@ export interface operations {
                         request_url?: string;
                         /** @description Human-readable label. */
                         name?: string | null;
-                        /**
-                         * @description Delivery body encoding.
-                         * @enum {string}
-                         */
-                        format?: "json" | "form";
                         /** @description Accounts targeted by this webhook. Non-empty — each id is owned by the tenant. */
                         account_ids?: string[];
                         /** @description A disabled webhook is kept but delivers nothing. */
@@ -26846,11 +26816,6 @@ export interface operations {
                         key: string;
                         value: string;
                     }[];
-                    /**
-                     * @description Replace the delivery body encoding.
-                     * @enum {string}
-                     */
-                    format?: "json" | "form";
                     /** @description Replace the field-remapping keys for the delivery payload (whole-array). */
                     data?: string[];
                     /** @description Replace the targeted accounts (whole-array). Must be non-empty — each id must be an acc_-prefixed id owned by the tenant. */
@@ -26884,11 +26849,6 @@ export interface operations {
                         request_url?: string;
                         /** @description Human-readable label. */
                         name?: string | null;
-                        /**
-                         * @description Delivery body encoding.
-                         * @enum {string}
-                         */
-                        format?: "json" | "form";
                         /** @description Accounts targeted by this webhook. Non-empty — each id is owned by the tenant. */
                         account_ids?: string[];
                         /** @description A disabled webhook is kept but delivers nothing. */
