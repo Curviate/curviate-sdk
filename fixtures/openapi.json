@@ -64002,7 +64002,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "The current state of the action-based (mobile-app-approval) challenge. object:\"account\" + status:\"active\" once approved (the account is now connected); object:\"checkpoint\" + status:\"pending\" while still waiting; status:\"checkpoint_required\" when the collect chained to a new challenge (e.g. approval → 2FA) — switch to submitting the new challenge_type; status:\"expired\"/\"failed\" on timeout/failure.",
+            "description": "The current state of the action-based (mobile-app-approval) challenge. object:\"account\" + status:\"active\" once approved (the account is now connected); object:\"checkpoint\" + status:\"pending\" while still waiting; status:\"checkpoint_required\" when the collect chained to a new challenge (e.g. approval → 2FA), switch to submitting the new challenge_type; status:\"expired\"/\"failed\" on timeout/failure. object:\"account\" + recovered:true means the approval resolved to a LinkedIn identity already present on the workspace, which was claimed into your account; its status is the identity's real observed state, so it may be reconnect_needed rather than active.",
             "content": {
               "application/json": {
                 "schema": {
@@ -64020,11 +64020,18 @@
                       "type": "string",
                       "enum": [
                         "active",
+                        "reconnect_needed",
+                        "restricted",
+                        "disconnected",
                         "pending",
                         "checkpoint_required",
                         "expired",
                         "failed"
                       ]
+                    },
+                    "recovered": {
+                      "type": "boolean",
+                      "description": "Present and true only when this approval recovered an existing LinkedIn identity already present on the workspace (claiming it into your account) instead of connecting a brand-new one. Absent on a normal approval. The account's status reflects its real observed state, which may need a reconnect."
                     },
                     "account_id": {
                       "type": "string",
@@ -64049,7 +64056,7 @@
                         "string",
                         "null"
                       ],
-                      "description": "The seat this account occupies (canonical — supersedes the deprecated attached_seat_id). Present on status:\"active\"."
+                      "description": "The seat this account occupies (canonical, supersedes the deprecated attached_seat_id). Present on status:\"active\"."
                     },
                     "attached_seat_id": {
                       "type": [
@@ -64057,7 +64064,7 @@
                         "null"
                       ],
                       "deprecated": true,
-                      "description": "Deprecated — use seat_id (same value). Removed at the GA /v1 cutover. Present on status:\"active\"."
+                      "description": "Deprecated, use seat_id (same value). Removed at the GA /v1 cutover. Present on status:\"active\"."
                     },
                     "expires_at": {
                       "type": "string",
@@ -64077,7 +64084,7 @@
                     },
                     "contracts": {
                       "type": "array",
-                      "description": "Contract picker options — present only on a chained status:\"checkpoint_required\" with challenge_type:\"contract_selection\".",
+                      "description": "Contract picker options, present only on a chained status:\"checkpoint_required\" with challenge_type:\"contract_selection\".",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -64106,7 +64113,7 @@
                     }
                   },
                   "active": {
-                    "summary": "Approved — account active",
+                    "summary": "Approved, account active",
                     "value": {
                       "object": "account",
                       "status": "active",
@@ -64128,12 +64135,21 @@
                     }
                   },
                   "expired": {
-                    "summary": "Timed out — approval not completed in time",
+                    "summary": "Timed out, approval not completed in time",
                     "value": {
                       "object": "checkpoint",
                       "status": "expired",
                       "challenge_type": "mobile_app_approval",
-                      "recovery_hint": "This sign-in wasn't completed in time. If you approved it in the LinkedIn app, this identity may already be connected — try Reconnect, sign in with the cookie method, or check your connected accounts."
+                      "recovery_hint": "This sign-in wasn't completed in time. If you approved it in the LinkedIn app, this identity may already be connected; try Reconnect, sign in with the cookie method, or check your connected accounts."
+                    }
+                  },
+                  "recovered": {
+                    "summary": "Recovered an existing connection (already present on the workspace)",
+                    "value": {
+                      "object": "account",
+                      "status": "active",
+                      "account_id": "acc_01J8Z3K9P0Q1R2S3T4V5W6X7Y8",
+                      "recovered": true
                     }
                   }
                 }
@@ -64169,8 +64185,29 @@
               }
             }
           },
+          "409": {
+            "description": "The approved LinkedIn identity is already linked to another account. Reconnect or disconnect the existing account instead of linking it again.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "409 error",
+                    "value": {
+                      "code": "CONFLICT",
+                      "message": "The request conflicts with the current state of the resource.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
           "422": {
-            "description": "The pending checkpoint is code-based, not mobile_app_approval — use submit instead.",
+            "description": "The pending checkpoint is code-based, not mobile_app_approval, use submit instead.",
             "content": {
               "application/json": {
                 "schema": {
@@ -64191,7 +64228,7 @@
             }
           },
           "429": {
-            "description": "Rate limited — slow down and retry after the hinted delay.",
+            "description": "Rate limited, slow down and retry after the hinted delay.",
             "content": {
               "application/json": {
                 "schema": {
