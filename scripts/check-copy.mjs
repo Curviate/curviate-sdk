@@ -8,18 +8,21 @@
 // TWO TIERS, and the split is deliberate.
 //
 //   BLOCKING — non-ASCII typographic characters (em/en dash, curly quotes, the
-//   ellipsis glyph, non-breaking and zero-width spaces, arrows, math symbols,
-//   emoji). Every one of them is mechanically decidable, has an exact ASCII
-//   equivalent, and is not something a human typing in an editor produces. A
-//   run over clean sources reports zero, so this tier cannot cry wolf.
+//   ellipsis glyph, non-breaking and zero-width spaces, arrows, math symbols).
+//   Every one is mechanically decidable, has an exact ASCII equivalent, and is
+//   not something a human typing in an editor produces. A run over clean
+//   sources reports zero, so this tier cannot cry wolf.
 //
 //   WARNING — the LLM vocabulary register ("leverage", "seamless", "robust",
-//   "comprehensive", "unlock", "streamline", ...). These words have legitimate
-//   technical uses: an account really can be unlocked, a parser really can be
-//   robust. Blocking on them would red a release that is fine, and a gate that
-//   reds on a fine release is a gate people learn to bypass — at which point
-//   the typographic tier stops being enforced too. So the register is reported
-//   and the run still exits 0. A human decides.
+//   "comprehensive", "unlock", "streamline", ...) and emoji. The register words
+//   have legitimate technical uses: an account really can be unlocked, a parser
+//   really can be robust. Emoji can be the subject matter rather than
+//   decoration; the sibling CLI documents its emoji-reaction argument with a
+//   literal emoji, which is the clearest possible help text for it. Blocking on
+//   either would red a release that is fine, and a gate that reds on a fine
+//   release is a gate people learn to bypass — at which point the typographic
+//   tier stops being enforced too. So these are reported and the run still
+//   exits 0. A human decides.
 //
 // Exclusions and why:
 //   src/generated/  — a machine-generated mirror of the served API contract.
@@ -61,26 +64,21 @@ const SCAN_EXTS = new Set([".ts", ".mjs", ".js", ".md", ".json"]);
  * call.
  * @type {Array<{ label: string; pattern: RegExp; fix: string }>}
  */
-const TYPOGRAPHIC = [
+export const TYPOGRAPHIC = [
   { label: "em dash (U+2014)", pattern: /—/g, fix: "a comma, semicolon, colon, or period" },
   { label: "en dash (U+2013)", pattern: /–/g, fix: "a hyphen in a range, otherwise a comma" },
   { label: "horizontal bar (U+2015)", pattern: /―/g, fix: "a comma or period" },
   { label: "curly single quote (U+2018/U+2019)", pattern: /[‘’]/g, fix: "'" },
   { label: "curly double quote (U+201C/U+201D)", pattern: /[“”]/g, fix: '"' },
   { label: "ellipsis glyph (U+2026)", pattern: /…/g, fix: "..." },
-  { label: "non-breaking or exotic space", pattern: /[    ]/g, fix: "a normal space" },
-  { label: "zero-width or invisible character", pattern: /[​-‍⁠﻿­]/g, fix: "delete it" },
+  { label: "non-breaking or exotic space", pattern: /[\u00A0\u2007\u2008\u2009\u202F\u205F\u3000]/g, fix: "a normal space" },
+  { label: "zero-width or invisible character", pattern: /[\u200B-\u200D\u2060\uFEFF\u00AD]/g, fix: "delete it" },
   { label: "arrow (U+2190-U+21FF)", pattern: /[←-⇿]/g, fix: "-> or <-" },
   { label: "minus sign (U+2212)", pattern: /−/g, fix: "-" },
   { label: "multiplication sign (U+00D7)", pattern: /×/g, fix: "x" },
   { label: "inequality glyph (U+2264/U+2265)", pattern: /[≤≥]/g, fix: "<= or >=" },
   { label: "prime (U+2032/U+2033)", pattern: /[′″]/g, fix: "' or \"" },
-  { label: "decorative bullet or check glyph", pattern: /[✓✗✅❌]/g, fix: "plain text" },
-  {
-    label: "emoji",
-    pattern: /[\u{1F300}-\u{1FAFF}\u{1F000}-\u{1F0FF}\u{2600}-\u{26FF}\u{FE0F}]/gu,
-    fix: "delete it",
-  },
+  { label: "decorative check or cross glyph", pattern: /[✓✗✅❌]/g, fix: "plain text" },
 ];
 
 /**
@@ -88,7 +86,9 @@ const TYPOGRAPHIC = [
  * blocking, because each of these has a legitimate technical use.
  * @type {Array<{ label: string; pattern: RegExp }>}
  */
-const REGISTER = [
+export const REGISTER = [
+  // (c), (R) and (TM) are legal marks, not decoration, so they are excluded.
+  { label: "emoji (decorative emoji reads as generated; an emoji-valued example does not)", pattern: /(?![\u00A9\u00AE\u2122])\p{Extended_Pictographic}/gu },
   { label: "delve", pattern: /\bdelv(e|es|ing|ed)\b/gi },
   { label: "leverage (as a verb)", pattern: /\bleverag(e|es|ing|ed)\b/gi },
   { label: "seamless", pattern: /\bseamless(ly)?\b/gi },
@@ -122,7 +122,7 @@ const REGISTER = [
  * @param {string} dir absolute path
  * @returns {Promise<string[]>} absolute file paths
  */
-async function collectFiles(dir) {
+export async function collectFiles(dir) {
   const results = [];
   let entries;
   try {
@@ -143,58 +143,85 @@ async function collectFiles(dir) {
   return results;
 }
 
-const files = await collectFiles(pkgRoot);
-let blocking = 0;
-const warnings = new Map();
-
-for (const file of files) {
-  const rel = relative(pkgRoot, file);
-  // Belt and braces: scripts/ is already skipped, but this file names the
-  // very characters it forbids, so never scan it even if that changes.
-  if (rel === "scripts/check-copy.mjs") continue;
-
-  let content;
-  try {
-    content = await readFile(file, "utf8");
-  } catch {
-    continue;
+/**
+ * Scan the package and report. Separated from the invocation below so the
+ * pattern sets can be unit-tested without the script running as a side effect
+ * of importing it. That separation is not theoretical: an editing pass over
+ * this file once overwrote the emoji pattern with a copy of the zero-width one,
+ * and the script still exited 0 over clean sources, which is exactly what a
+ * silently-disabled pattern looks like.
+ * @param {{ verbose?: boolean }} [opts]
+ * @returns {Promise<number>} process exit code
+ */
+export async function run(opts = {}) {
+  const files = await collectFiles(pkgRoot);
+  if (files.length < 10) {
+    console.error(
+      `check:copy FAIL — only ${files.length} file(s) collected; the scan is not reaching the package.`,
+    );
+    return 1;
   }
 
-  const lines = content.split("\n");
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    for (const { label, pattern, fix } of TYPOGRAPHIC) {
-      pattern.lastIndex = 0;
-      if (!pattern.test(line)) continue;
-      console.error(`TELL  ${rel}:${i + 1}  [${label}]  use ${fix}`);
-      console.error(`      ${line.trim()}`);
-      blocking++;
-      break;
+  let blocking = 0;
+  const warnings = new Map();
+
+  for (const file of files) {
+    const rel = relative(pkgRoot, file);
+    // Belt and braces: scripts/ is already skipped, but this file names the
+    // very characters it forbids, so never scan it even if that changes.
+    if (rel === "scripts/check-copy.mjs") continue;
+
+    let content;
+    try {
+      content = await readFile(file, "utf8");
+    } catch {
+      continue;
     }
-    for (const { label, pattern } of REGISTER) {
-      pattern.lastIndex = 0;
-      if (!pattern.test(line)) continue;
-      if (!warnings.has(label)) warnings.set(label, []);
-      warnings.get(label).push(`${rel}:${i + 1}  ${line.trim()}`);
+
+    const lines = content.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      for (const { label, pattern, fix } of TYPOGRAPHIC) {
+        pattern.lastIndex = 0;
+        if (!pattern.test(line)) continue;
+        console.error(`TELL  ${rel}:${i + 1}  [${label}]  use ${fix}`);
+        console.error(`      ${line.trim()}`);
+        blocking++;
+        break;
+      }
+      for (const { label, pattern } of REGISTER) {
+        pattern.lastIndex = 0;
+        if (!pattern.test(line)) continue;
+        if (!warnings.has(label)) warnings.set(label, []);
+        warnings.get(label).push(`${rel}:${i + 1}  ${line.trim()}`);
+      }
     }
   }
-}
 
-if (warnings.size > 0) {
-  console.error(`\ncheck:copy WARN — LLM-register wording worth a second look (not blocking):`);
-  for (const [label, hits] of warnings) {
-    console.error(`  ${label} (${hits.length})`);
-    for (const hit of verbose ? hits : hits.slice(0, 3)) console.error(`      ${hit}`);
-    if (!verbose && hits.length > 3) console.error(`      ... ${hits.length - 3} more (run with --verbose)`);
+  if (warnings.size > 0) {
+    console.error(`\ncheck:copy WARN — wording worth a second look (not blocking):`);
+    for (const [label, hits] of warnings) {
+      console.error(`  ${label} (${hits.length})`);
+      for (const hit of opts.verbose ? hits : hits.slice(0, 3)) console.error(`      ${hit}`);
+      if (!opts.verbose && hits.length > 3) {
+        console.error(`      ... ${hits.length - 3} more (run with --verbose)`);
+      }
+    }
+    console.error(`  These all have legitimate uses, so they never fail the run. Read them and decide.`);
   }
-  console.error(`  These have legitimate technical uses, so they never fail the run. Read them and decide.`);
+
+  if (blocking > 0) {
+    console.error(
+      `\ncheck:copy FAIL — ${blocking} typographic tell(s). Every one has a plain-ASCII equivalent; replace them before publishing.`,
+    );
+    return 1;
+  }
+
+  console.error(`check:copy OK — no typographic tells across ${files.length} files of published copy.`);
+  return 0;
 }
 
-if (blocking > 0) {
-  console.error(
-    `\ncheck:copy FAIL — ${blocking} typographic tell(s). Every one has a plain-ASCII equivalent; replace them before publishing.`,
-  );
-  process.exit(1);
+// Only act when invoked as a script; importing this module must have no effect.
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  process.exit(await run({ verbose }));
 }
-
-console.error("check:copy OK — no typographic tells in the published copy.");

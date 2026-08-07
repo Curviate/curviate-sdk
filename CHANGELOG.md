@@ -24,8 +24,10 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 - **`pnpm check:copy`**, a pre-publish copy-quality gate, chained into
   `prepack` alongside the existing internal-reference scan. It fails the pack
   on any non-ASCII typographic character in the published copy and reports
-  (without failing) wording from the generic-marketing register. See the
-  header of `scripts/check-copy.mjs` for why only the first tier blocks.
+  (without failing) emoji and wording from the generic-marketing register. See
+  the header of `scripts/check-copy.mjs` for why only the first tier blocks.
+  `test/check-copy.test.ts` exercises each pattern on its own, because a
+  pattern set that silently stops matching still reports zero.
 
 ## [0.19.0] - 2026-08-03
 
