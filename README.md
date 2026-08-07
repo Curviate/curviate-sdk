@@ -121,7 +121,9 @@ try {
 }
 ```
 
-All 34 error codes are documented in the [API reference](https://docs.curviate.com).
+Every error code is documented in the [API reference](https://docs.curviate.com). The
+exported `ErrorCode` type is the complete set, so `tsc` tells you when a `switch` over
+`err.code` has missed one.
 
 ---
 
@@ -178,7 +180,7 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req, res)
     case "account.connected":
       handleAccountConnected(event.data);
       break;
-    // 22 more event types, all in the CurviateEvent union.
+    // Every other event type is a case in the CurviateEvent union.
   }
 
   res.sendStatus(200);
@@ -194,8 +196,26 @@ app.post("/webhook", async (c) => {
 
 `constructEvent` always returns a `Promise<CurviateEvent>`. Always `await` it.
 
-Each event also carries its delivery metadata: `event.id` (a `wdl_` delivery id you
-can de-duplicate retries on), `event.webhook_id`, and `event.delivered_at`.
+Each event also carries its delivery metadata: `event.id`, `event.webhook_id`, and
+`event.delivered_at`.
+
+### De-duplicating retries
+
+Delivery is at-least-once, so your handler can see the same logical event more than
+once. The key that survives a retry is the payload composite `event.event` plus
+`event.data.account_id` plus `event.data.occurred_at`, which the platform re-sends
+byte-identical on every attempt:
+
+```ts
+const key = `${event.event}:${event.data.account_id}:${event.data.occurred_at}`;
+if (await alreadyProcessed(key)) return res.sendStatus(200);
+```
+
+**Do not key on `event.id`.** That is a `wdl_` id minted per delivery *attempt*, so a
+retry arrives with a different one and storing it would record the same event twice,
+missing exactly the duplicates you were guarding against. It is still worth logging:
+`event.id` is how you match one attempt to one line in your delivery logs, keyed
+alongside the stable `occurred_at` composite above.
 
 `WebhookSignatureError` is NOT a `CurviateError`. Narrow with `instanceof WebhookSignatureError`.
 Its `reason` tells you where to look: `malformed_header` means the signature header could not be

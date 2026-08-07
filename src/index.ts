@@ -37,6 +37,7 @@ export {
   WebhookSignatureError,
   type CurviateEvent,
   type CurviateEventEnvelope,
+  type EventPayloadBase,
   type MessagePayload,
   type ConnectionPayload,
   type AccountPayload,

@@ -9,7 +9,40 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+## [0.20.0] - 2026-08-07
+
+Generated types are rebuilt from the **served** OpenAPI document rather than a
+hand-refreshed snapshot, and the snapshot itself now records where it came from.
+Source of this release: `https://api.staging.curviate.com` at server commit
+`1015999221a2dafc505cc565369a40b8ceca1888`, recorded in
+`fixtures/PROVENANCE.json`.
+
 ### Changed
+
+- **BREAKING (type-level): `headers[].value` is gone from every webhook response,
+  replaced by `headers[].value_prefix`.** It affects `webhooks.create` (201),
+  `webhooks.get`, `webhooks.update`, and `webhooks.list`. The API stopped
+  returning the plaintext header value some time ago and returns a masked prefix
+  instead; the vendored snapshot had not caught up, so the SDK typed a field the
+  server no longer sends. `tsc` will point at every `h.value` read:
+
+  ```diff
+  - const configured = webhook.headers?.[0]?.value;
+  + const configured = webhook.headers?.[0]?.value_prefix; // masked, never the full value
+  ```
+
+  This is the only breaking change in the release. Read the label honestly: the
+  old type was already wrong at runtime, so any code relying on it was reading
+  `undefined`; the break is `tsc` finally saying so.
+
+- `POST /v1/auth/checkpoint/poll` reports three further `status` values
+  (`reconnect_needed`, `restricted`, `disconnected`) on top of the five it
+  already had. Purely additive, but an exhaustive `switch` over `status` with a
+  `never` fallthrough will need the new arms.
+
+- `GET /v1/{account_id}/search/jobs`, `POST /v1/{account_id}/search`, and the
+  company jobs listing now mark `id` required on a job item alongside
+  `job_urn` (same value, shorter name, chains into `get_job`).
 
 - **Punctuation swept out of the published copy.** The README, this changelog,
   and every JSDoc comment that ships inside `dist/index.d.ts` used typographic
@@ -21,6 +54,33 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ### Added
 
+- **`account.restricted` is now a member of the `CurviateEvent` union.** The
+  server publishes it and delivers it by default on the `account_status` source,
+  but the SDK union did not carry it, so an exhaustive `switch (event.event)`
+  could not compile a handler for the one event that means "stop sending on this
+  account". The union is pinned at compile time to the generated create-events
+  enum, so this addition was produced by the regeneration rather than typed by
+  hand.
+
+- **`EventPayloadBase`**, exported: the `account_id`, `event`, and `occurred_at`
+  every webhook payload carries. `occurred_at` was previously reachable only
+  through the payload index signature, typed `unknown`, which meant the
+  de-duplication key documented below could not be built without a cast.
+
+- Response fields surfaced by the regeneration: `notices[]` on every search and
+  company-employees listing, `visibility` on people / services / company-employee
+  results, `id` on job results, `recovered` on a checkpoint poll,
+  `trial_premium` on an auth intent, `next_action` / `notices` / `unresolved` on
+  the shared `Error` schema, a `409` on checkpoint poll and a `403` on the user
+  read.
+
+- `pnpm gen:fixture` (`scripts/refresh-fixture.mjs`): fetches the live document,
+  refuses to write it if it carries a forbidden name, canonicalizes the
+  environment-dependent `servers` order so a refresh from staging and one from
+  production produce identical bytes, and writes `fixtures/PROVENANCE.json`. The
+  snapshot previously had no writer at all, which is why nobody could tell how
+  old it was.
+
 - **`pnpm check:copy`**, a pre-publish copy-quality gate, chained into
   `prepack` alongside the existing internal-reference scan. It fails the pack
   on any non-ASCII typographic character in the published copy and reports
@@ -28,6 +88,30 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
   the header of `scripts/check-copy.mjs` for why only the first tier blocks.
   `test/check-copy.test.ts` exercises each pattern on its own, because a
   pattern set that silently stops matching still reports zero.
+
+### Fixed
+
+- **The documented webhook de-duplication key did not work.** The README said
+  the delivered `event.id` was something you "can de-duplicate retries on". Every
+  delivery attempt mints a fresh `wdl_` id, so a retry arrives with a different
+  one and a consumer following that advice stored the same logical event twice,
+  double-processing exactly the retries the guidance claimed to cover. The stable
+  key is the payload composite `event.event` plus `event.data.account_id` plus
+  `event.data.occurred_at`, which the platform re-sends identically on every
+  attempt. The README, the `CurviateEventEnvelope.id` JSDoc, and the 0.19.0
+  entry below all carried the wrong claim; all three are corrected, and the
+  0.19.0 entry was edited in place rather than left standing as advice someone
+  would still follow.
+
+- Doc comments no longer hardcode the size of a set that grows. "27 events" on
+  `webhooks.listEvents`, "24 canonical events" on the `CurviateEvent` union,
+  "22 more event types" and "34 error codes" in the README were each hand-typed
+  and each stale. The served catalogue description counts itself and the union is
+  pinned to the generated enum, so the numbers were redundant as well as wrong.
+
+- `test/docs-contract.test.ts`: the two claim families above now go red in the
+  suite. Prose was the one representation of the contract that nothing checked,
+  which is why both defects shipped.
 
 ## [0.19.0] - 2026-08-03
 
@@ -73,9 +157,9 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 ### Added
 
 - **`CurviateEventEnvelope`**: the per-delivery metadata now carried on every
-  event. `event.id` is the `wdl_...` delivery id (de-duplicate retries on it),
-  `event.webhook_id` is the registration, `event.delivered_at` is the attempt
-  timestamp. These are typed optional and are **not** required by the parser:
+  event. `event.id` is the `wdl_...` delivery id, `event.webhook_id` is the
+  registration, `event.delivered_at` is the attempt timestamp. These are typed
+  optional and are **not** required by the parser:
   requiring an envelope field is what caused this defect, so nothing beyond the
   discriminant can fail a verification again.
 
