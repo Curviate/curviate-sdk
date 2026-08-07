@@ -1,12 +1,12 @@
 /**
- * Auth resource — credential/cookie connect + checkpoint resolution.
+ * Auth resource: credential/cookie connect + checkpoint resolution.
  *
  * Split out of `accounts` into its own root-scoped namespace: these 5 ops
  * drive the multi-step "connect or re-authenticate a LinkedIn account" flow,
  * which is conceptually distinct from managing an already-connected account.
  * `intent` merges the old `accounts.link` (new account) and `accounts.reconnect`
  * (existing account) into one op, discriminated by an optional `account_id` in
- * the body — omit it to connect a new account, include it to re-authenticate
+ * the body: omit it to connect a new account, include it to re-authenticate
  * an existing one in place.
  *
  * None of these methods take an `account_id` path segment: the account is
@@ -22,21 +22,21 @@ import type { paths } from "../generated/types.js";
 export type AuthIntentBody =
   paths["/v1/auth/intent"]["post"]["requestBody"]["content"]["application/json"];
 
-/** `POST /v1/auth/intent` 200 response body — an existing account re-authenticated in place. */
+/** `POST /v1/auth/intent` 200 response body, an existing account re-authenticated in place. */
 export type AuthIntentReconnected =
   paths["/v1/auth/intent"]["post"]["responses"]["200"]["content"]["application/json"];
-/** `POST /v1/auth/intent` 201 response body — a new account connected. */
+/** `POST /v1/auth/intent` 201 response body, a new account connected. */
 export type AuthIntentCreated =
   paths["/v1/auth/intent"]["post"]["responses"]["201"]["content"]["application/json"];
-/** `POST /v1/auth/intent` 202 response body — a checkpoint challenge. */
+/** `POST /v1/auth/intent` 202 response body, a checkpoint challenge. */
 export type AuthIntentCheckpoint =
   paths["/v1/auth/intent"]["post"]["responses"]["202"]["content"]["application/json"];
 
-/** Union returned by `auth.intent()` — reconnected account, new account, or checkpoint. */
+/** Union returned by `auth.intent()`: reconnected account, new account, or checkpoint. */
 export type AuthIntentResult = AuthIntentReconnected | AuthIntentCreated | AuthIntentCheckpoint;
 
 /**
- * `solveCheckpoint`'s body minus `account_id` — the method takes the account
+ * `solveCheckpoint`'s body minus `account_id`; the method takes the account
  * id as its first argument (matching the pre-split call shape) and wire-encodes
  * it into the body alongside `code`.
  */
@@ -45,7 +45,7 @@ export type AuthSolveCheckpointBody = Omit<
   "account_id"
 >;
 
-/** `POST /v1/auth/checkpoint/solve` result — 201 (active) or 202 (chained challenge). */
+/** `POST /v1/auth/checkpoint/solve` result, 201 (active) or 202 (chained challenge). */
 export type AuthSolveCheckpointResult =
   | paths["/v1/auth/checkpoint/solve"]["post"]["responses"]["201"]["content"]["application/json"]
   | paths["/v1/auth/checkpoint/solve"]["post"]["responses"]["202"]["content"]["application/json"];
@@ -73,17 +73,17 @@ export class AuthResource {
    * Omit `account_id` to connect a NEW account into an empty seat; include it
    * to re-authenticate an EXISTING account in place. Returns the account on
    * success (200 re-authenticated in place / 201 new), or a checkpoint
-   * challenge (202) when LinkedIn requires verification — resolve it with
+   * challenge (202) when LinkedIn requires verification; resolve it with
    * {@link solveCheckpoint} (code) or {@link pollCheckpoint} (mobile-app
    * approval).
    *
-   * For `auth_method: "cookie"`, `user_agent` is **required** — connecting by
+   * For `auth_method: "cookie"`, `user_agent` is **required**; connecting by
    * session cookie without one is rejected with `INVALID_REQUEST`. It stays
    * optional for `auth_method: "credentials"`.
    *
    * On a 201 account, `recovered` is `true` only when the connect reclaimed a
    * LinkedIn identity already present on the workspace (claiming it into your
-   * account) rather than connecting a brand-new one — it is absent on a normal
+   * account) rather than connecting a brand-new one; it is absent on a normal
    * connect.
    *
    * Connection scope (which LinkedIn products are enabled: classic, company,
@@ -110,7 +110,7 @@ export class AuthResource {
    * special value `TRY_ANOTHER_WAY` to switch challenge method).
    *
    * Returns the connected account (201) or, when LinkedIn chains a second
-   * challenge, another checkpoint (202) — resolve that one with a further
+   * challenge (another checkpoint, 202); resolve that one with a further
    * `solveCheckpoint` call for the same `accountId`.
    *
    * @param accountId - the (provisional) `account_id` from the 202 response.
@@ -128,7 +128,7 @@ export class AuthResource {
    * Re-request the pending checkpoint notification (OTP / 2FA / mobile-app
    * push). `resent` is honest: `true` once the notification was actually
    * re-sent, `false` when there was nothing to re-send for that challenge
-   * type (e.g. an authenticator-app code) — this call never throws just
+   * type (e.g. an authenticator-app code); this call never throws just
    * because a re-send wasn't applicable. Does not reset the checkpoint's
    * expiry.
    *
@@ -160,12 +160,12 @@ export class AuthResource {
   }
 
   /**
-   * Poll a credential connect session by its account id — a pure status read
+   * Poll a credential connect session by its account id, a pure status read
    * that makes no external call and does not itself complete the connection.
    * `status` is `checkpoint_required` until resolved, then `done` (with
    * `account_id`), or `expired` / `failed`.
    *
-   * @param sessionId - the acc_… id returned by {@link intent} or a checkpoint response.
+   * @param sessionId - the acc_... id returned by {@link intent} or a checkpoint response.
    */
   getSession(sessionId: string): Promise<AuthGetSessionResult> {
     return this.ctx.request<AuthGetSessionResult>({

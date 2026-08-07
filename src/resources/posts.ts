@@ -1,28 +1,28 @@
 /**
- * Posts resource — 12 methods.
+ * Posts resource: 12 methods.
  *
  * Account-scoped: the bound context injects `account_id` as the leading
- * `/v1/` path segment on every request (account-first grammar) — never a
+ * `/v1/` path segment on every request (account-first grammar), never a
  * query param or body field.
  *
- * `create` is pure `application/json` — the served surface has ZERO
+ * `create` is pure `application/json`, the served surface has ZERO
  * multipart ops; media attachments travel as base64-encoded objects
  * (`{content,content_type,filename}`), not `FormData`.
  *
  * `listUserPosts` was `profiles.listPosts`; `listUserReactions` was
- * `profiles.listReactions` (relocated here, both realigns — not new).
+ * `profiles.listReactions` (relocated here, both realigns, not new).
  * `delete` and `unreact` are new. `unreact` is a **DELETE-with-body**:
  * `DELETE /v1/{account_id}/posts/{post_id}/reactions` carries `{reaction}`.
  *
  * The comment-write surface (`comment` + comment listing/editing) has
- * relocated to the dedicated `comments` namespace — `listComments` stays
+ * relocated to the dedicated `comments` namespace, `listComments` stays
  * here (it is a *read* of a post's comments, the served op the account
  * scope already owns), but creating/editing/replying to a comment is a
  * `comments.*` call now.
  *
  * `listSaved` / `save` / `unsave` manage the connected account's own
- * saved-posts bookmark list — a self resource, no `{user_id}`. `listSaved`
- * returns PREVIEWS only (`snippet` capped at ≤140 chars) — never the full
+ * saved-posts bookmark list, a self resource, no `{user_id}`. `listSaved`
+ * returns PREVIEWS only (`snippet` capped at <=140 chars), never the full
  * post body. `save` and `unsave` are two distinct product endpoints over
  * one underlying save-state toggle and are both idempotent: saving an
  * already-saved post re-asserts `saved:true`; unsaving a not-currently-saved
@@ -123,7 +123,7 @@ export class PostsResource {
   }
 
   /**
-   * Publish a new post. Always `application/json` — attachments (if any) are
+   * Publish a new post. Always `application/json`; attachments (if any) are
    * base64-encoded objects, never `FormData`/multipart.
    * `POST /v1/{account_id}/posts`
    */
@@ -166,7 +166,7 @@ export class PostsResource {
   }
 
   /**
-   * Remove this account's reaction from a post — a **DELETE-with-body**:
+   * Remove this account's reaction from a post, a **DELETE-with-body**:
    * the reaction value to remove travels in the JSON body, not the path.
    * `DELETE /v1/{account_id}/posts/{post_id}/reactions`
    */
@@ -191,10 +191,10 @@ export class PostsResource {
   }
 
   /**
-   * List the connected account's own saved posts (a private bookmark list)
-   * — newest-saved-first. A self resource: there is no other-member
+   * List the connected account's own saved posts (a private bookmark list),
+   * newest-saved-first. A self resource: there is no other-member
    * saved-posts view, so this takes no target param. Each item is a
-   * PREVIEW — `snippet` capped at ≤140 chars, never the full post body.
+   * PREVIEW, `snippet` capped at <=140 chars, never the full post body.
    * `GET /v1/{account_id}/saved-posts`
    *
    * @param params - optional `limit` (default 20, a page-aligned lower
@@ -210,14 +210,14 @@ export class PostsResource {
 
   /**
    * Save a post to the connected account's private bookmark list. Any post
-   * may be saved — it does not notify the author and is never visible to
+   * may be saved; it does not notify the author and is never visible to
    * third parties. Idempotent: saving an already-saved post re-asserts
    * `saved:true`.
    * `POST /v1/{account_id}/saved-posts`
    *
    * @param postId - the post to save. Accepts `urn:li:activity:<id>` or a
-   *   bare numeric `<id>` — both normalize to the same target. Any other
-   *   shape (`urn:li:ugcPost:…`, `urn:li:share:…`, a URL) is rejected with
+   *   bare numeric `<id>`, both normalize to the same target. Any other
+   *   shape (`urn:li:ugcPost:...`, `urn:li:share:...`, a URL) is rejected with
    *   `400 INVALID_REQUEST`.
    */
   save(postId: string): Promise<SavePostResult> {
@@ -230,7 +230,7 @@ export class PostsResource {
   }
 
   /**
-   * Unsave a post — the reverse of {@link save}, over the SAME underlying
+   * Unsave a post, the reverse of {@link save}, over the SAME underlying
    * save-state call (a distinct product endpoint, one substrate call).
    * Idempotent: unsaving a not-currently-saved post re-asserts
    * `saved:false`.

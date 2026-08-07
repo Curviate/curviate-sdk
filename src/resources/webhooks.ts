@@ -1,5 +1,5 @@
 /**
- * Webhooks resource — 6 methods (root-scoped).
+ * Webhooks resource: 6 methods (root-scoped).
  *
  * Root-scoped: webhooks are tenant-wide, not account-scoped. All methods are
  * mounted directly on the root client (like `accounts`). `getStateDiff` had
@@ -80,7 +80,7 @@ export class WebhooksResource {
   /**
    * Return a single webhook owned by the calling tenant.
    * `GET /v1/webhooks/{id}`
-   * The plaintext secret is never present on a read — only `secret_prefix`.
+   * The plaintext secret is never present on a read, only `secret_prefix`.
    */
   get(id: string): Promise<WebhookGetResult> {
     return this.ctx.request<WebhookGetResult>({

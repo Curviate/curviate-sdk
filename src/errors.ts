@@ -2,7 +2,7 @@
  * Typed error model for the Curviate SDK.
  *
  * `CurviateError` is the single thrown type for every API-layer failure. Its
- * `code` is one of the stable, flat `ErrorCode` values — agent builders can
+ * `code` is one of the stable, flat `ErrorCode` values; agent builders can
  * write an exhaustive `switch (error.code)` without fear of unknown codes.
  *
  * Credential safety: a `CurviateError` never holds a reference to the client
@@ -15,18 +15,18 @@
  */
 
 /**
- * The complete set of error codes observable by API callers — the single
+ * The complete set of error codes observable by API callers, the single
  * source of truth for the SDK's error taxonomy.
  *
  * Both the {@link ErrorCode} type (what a caller narrows on) and the runtime
  * {@link KNOWN_ERROR_CODES} membership set (what the transport recognizes on the
  * wire) are DERIVED from this one array. Adding a code here adds it to both, so
- * the type and the runtime decoder can never drift apart — a wire code present
+ * the type and the runtime decoder can never drift apart; a wire code present
  * in the type is guaranteed to be decoded to itself rather than downgraded to
  * `INTERNAL`.
  *
  * This mirrors the server's error taxonomy (the customer-observable subset).
- * The string literals are copied here intentionally — the SDK has no dependency
+ * The string literals are copied here intentionally; the SDK has no dependency
  * on any private package. Internal-only codes that never reach a caller (e.g.
  * `BANNED_ENV_PREFIX`, `ADMIN_BYPASS`, protected-account and substrate-internal
  * codes) are deliberately excluded.
@@ -43,7 +43,7 @@ export const ERROR_CODES = [
   // Account state
   "ACCOUNT_NOT_FOUND",
   "ACCOUNT_RESTRICTED",
-  // Duplicate connect — reconnect or adopt the existing account instead of
+  // Duplicate connect: reconnect or adopt the existing account instead of
   // linking again. Not retryable.
   "ACCOUNT_ALREADY_LINKED",
   "RESOURCE_NOT_FOUND",
@@ -58,13 +58,13 @@ export const ERROR_CODES = [
   // LinkedIn-platform-level throttling on the Recruiter / Sales Navigator read
   // surface (carries dedicated RateLimit-Policy / RateLimit / Retry-After
   // response headers). Distinct from the account/tenant/platform trio above.
-  // Always retry-safe (retry_likely_to_succeed: true) — see RETRYABLE_CODES.
+  // Always retry-safe (retry_likely_to_succeed: true); see RETRYABLE_CODES.
   "RATE_LIMITED",
   // Platform errors
   "PLATFORM_ERROR",
   "PLATFORM_NOT_IMPLEMENTED",
   // Permanent LinkedIn platform limitation for the attempted operation (e.g.
-  // listing a non-self user's following list). Not a transient failure —
+  // listing a non-self user's following list). Not a transient failure,
   // retrying will not help.
   "LINKEDIN_OPERATION_NOT_SUPPORTED",
   // Checkpoint (account connect flow)
@@ -75,15 +75,15 @@ export const ERROR_CODES = [
   "CHECKPOINT_ALREADY_RESOLVED",
   "CHECKPOINT_UNSUPPORTED",
   "CONNECTION_IN_PROGRESS",
-  // One-premium boundary rejection — LinkedIn permits only one individual
+  // One-premium boundary rejection: LinkedIn permits only one individual
   // Premium subscription per profile. Surfaces on connect/reconnect (a seat
   // resolving to both premiums) and on the billing seat/tier endpoints (a
   // "naked enable" of one premium while the seat already holds the other).
-  // user_fixable, never retryable — the remedy is two seats, or pairing
+  // user_fixable, never retryable; the remedy is two seats, or pairing
   // enable with disable of the current premium in one call.
   "PREMIUM_CONFLICT",
   // A reconnect whose seat-derived scope differs from the account's recorded
-  // scope was attempted with cookie auth — a cookie replay cannot change
+  // scope was attempted with cookie auth; a cookie replay cannot change
   // scope, so a full credentials re-authentication is required. user_fixable,
   // never retryable.
   "REAUTH_REQUIRED",
@@ -97,7 +97,7 @@ export const ERROR_CODES = [
   "RECIPIENT_UNREACHABLE",
   // Duplicate / already-connected connect-request conflict: a send to a
   // recipient who already has a pending request from this account, or is already
-  // a first-degree connection. user_fixable, never retryable — do not re-send.
+  // a first-degree connection. user_fixable, never retryable; do not re-send.
   "CONNECTION_REQUEST_CONFLICT",
   // Billing (surface: tenant-management)
   "PAYMENT_REQUIRED",
@@ -113,7 +113,7 @@ export const ERROR_CODES = [
 /**
  * The complete set of error codes observable by API callers.
  *
- * Derived from {@link ERROR_CODES} — an agent builder can write an exhaustive
+ * Derived from {@link ERROR_CODES}; an agent builder can write an exhaustive
  * `switch (error.code)` without fear of unknown codes.
  */
 export type ErrorCode = (typeof ERROR_CODES)[number];
@@ -226,7 +226,7 @@ export class CurviateError extends Error {
 
   /**
    * Explicit, credential-safe serialization. Only the documented structured
-   * fields are emitted — never a credential, auth header, or any reference to
+   * fields are emitted, never a credential, auth header, or any reference to
    * the client. `JSON.stringify(error)` calls this automatically.
    */
   toJSON(): CurviateErrorJSON {

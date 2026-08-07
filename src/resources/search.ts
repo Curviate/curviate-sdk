@@ -1,15 +1,15 @@
 /**
- * Search resource — 9 methods.
+ * Search resource: 9 methods.
  *
  * Account-scoped: the bound context injects `account_id` as the leading
  * `/v1/` path segment on every request (account-first grammar).
  *
  * Pagination (`offset`/`limit`/`cursor`) always stays a TOP-LEVEL query param
- * on every structured search op — never in the request body. Callers pass one
+ * on every structured search op, never in the request body. Callers pass one
  * merged argument (filter body + optional `cursor`/`limit`/`offset`); the
  * method splits it into the query and the body on the wire.
  *
- * `fromUrl` is the sole home of URL-mode search — the structured
+ * `fromUrl` is the sole home of URL-mode search, the structured
  * people/companies/posts/jobs endpoints no longer accept a `url` field.
  *
  * `groups()` and `services()` are additional structured searches (LinkedIn
@@ -187,7 +187,7 @@ export class SearchResource {
   /**
    * Run a pasted LinkedIn search/saved-search/lead-list URL directly.
    * `POST /v1/{account_id}/search`
-   * `url` is the ONLY accepted body field — the sole home of URL-mode search;
+   * `url` is the ONLY accepted body field, the sole home of URL-mode search;
    * the structured endpoints above no longer accept `url`. The response is
    * polymorphic, each item discriminated individually by its own `object`.
    */
@@ -227,7 +227,7 @@ export class SearchResource {
    * `POST /v1/{account_id}/search/services`
    * `limit`/`cursor` are top-level query params, never in the body. Resolve
    * `service_category`/`location` filter values with `getServiceParameters()`
-   * first — both take opaque ids, not free text.
+   * first, both take opaque ids, not free text.
    */
   services(body: SearchServicesBody & SearchServicesQuery): Promise<SearchServicesResult> {
     const split = splitPagination(body);

@@ -1,5 +1,5 @@
 /**
- * Job identifier resolution — shared by `jobs.get()` and
+ * Job identifier resolution, shared by `jobs.get()` and
  * `recruiter.getJob()`, both of which accept a bare numeric job id or a
  * full LinkedIn job URL. The wire request always carries the numeric id;
  * this is a client-side convenience, never a server param.
@@ -16,8 +16,8 @@ const JOB_URL_ID_PATTERN = /\/jobs\/view\/(\d+)/;
  *     with or without a trailing slash / query string), with the numeric id
  *     extracted.
  *
- * Throws `CurviateError({ code: "INVALID_REQUEST" })` synchronously — no
- * network call — when neither pattern matches, mirroring the client-side
+ * Throws `CurviateError({ code: "INVALID_REQUEST" })` synchronously (no
+ * network call) when neither pattern matches, mirroring the client-side
  * validation `Curviate#account()` already performs on an invalid input.
  */
 export function resolveJobId(idOrUrl: string): string {

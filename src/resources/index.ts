@@ -4,7 +4,7 @@
  * The surface is split cleanly in two, with no overlap:
  * - **Root-scoped** (`accounts`, `auth`, `webhooks`) hang off the root client
  *   only. Connected-account management, connect/reconnect, and webhook
- *   registration are tenant-wide concerns, not per-account ones — they carry no
+ *   registration are tenant-wide concerns, not per-account ones; they carry no
  *   `account_id` path segment.
  * - **Account-scoped** (everything else) hang off `curviate.account(id)` only.
  *   Every one of their paths leads with the fixed `account_id` segment, so they
@@ -99,7 +99,7 @@ export function buildNamespaces(ctx: RequestContext): ResourceNamespaces {
 }
 
 /**
- * The root-client surface — exactly the three tenant-wide namespaces. The root
+ * The root-client surface, exactly the three tenant-wide namespaces. The root
  * client mounts these and nothing else; account-scoped namespaces are reachable
  * only via `curviate.account(id)`.
  */
@@ -118,7 +118,7 @@ export function buildRootNamespaces(ctx: RequestContext): RootNamespaces {
 }
 
 /**
- * The account-scoped accessor surface — every namespace except the three
+ * The account-scoped accessor surface, every namespace except the three
  * root-only ones (`accounts`, `auth`, `webhooks`). The fixed `account_id` is
  * injected by the bound context as the leading path segment.
  */
@@ -129,7 +129,7 @@ export type AccountScopedNamespaces = Omit<
 
 /**
  * Build the account-scoped namespace bag (drops `accounts`, `auth`, and
- * `webhooks` — the root-only namespaces).
+ * `webhooks`, the root-only namespaces).
  */
 export function buildAccountScopedNamespaces(
   ctx: RequestContext,

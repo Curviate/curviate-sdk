@@ -1,11 +1,11 @@
 /**
- * Feed resource — 1 method (NEW namespace).
+ * Feed resource: 1 method (NEW namespace).
  *
  * Account-scoped: the bound context injects `account_id` as the leading
- * `/v1/` path segment on every request (account-first grammar) — never a
+ * `/v1/` path segment on every request (account-first grammar), never a
  * query param or body field.
  *
- * Reads the connected account's home feed — the raw material an agent works
+ * Reads the connected account's home feed, the raw material an agent works
  * from to decide what to engage with. The feed is an unbounded, reordering
  * stream, so the list carries no total count; walk it with the returned
  * `cursor`.
@@ -32,11 +32,11 @@ export class FeedResource {
    *
    * Pass `{ sort }` to choose the order: `recent` (reverse-chronological,
    * the default) or `relevant` (LinkedIn's ranked "top" feed). The feed is an
-   * unbounded, reordering stream with no total count — walk it with the
+   * unbounded, reordering stream with no total count; walk it with the
    * returned `cursor` until `cursor` is null. When a `cursor` is supplied its
    * carrier is authoritative and `sort` is ignored.
    *
-   * @param params - optional `{ sort }`, `limit` (1–100, default 20), and an
+   * @param params - optional `{ sort }`, `limit` (1-100, default 20), and an
    *   opaque `cursor` from a prior response.
    */
   home(params?: FeedHomeQuery): Promise<FeedPostListPage> {

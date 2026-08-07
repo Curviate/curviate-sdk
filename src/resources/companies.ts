@@ -1,33 +1,33 @@
 /**
- * Companies resource — 14 methods.
+ * Companies resource: 14 methods.
  *
  * Account-scoped: the bound context injects `account_id` as the leading
- * `/v1/` path segment on every request (account-first grammar) — the 0.14.1
+ * `/v1/` path segment on every request (account-first grammar), the 0.14.1
  * query-param `account_id` is dropped entirely.
  *
  * `get()` accepts a public handle or numeric id (the retrieve's own broader
  * contract). `employees()` / `posts()` / `jobs()` require the company's
- * numeric provider_id only — the same `id` field `get()` returns.
+ * numeric provider_id only, the same `id` field `get()` returns.
  *
  * `managed()` lists the pages the connected account administers.
- * `followers()` — re-added under a different item shape (`company_follower`,
+ * `followers()`, re-added under a different item shape (`company_follower`,
  * carrying `degree`/`followed_at`) than the pre-0.15.0 method of the same
  * name. `invitableFollowers()` lists connections the account can invite to
- * follow the page; `followInvite()` sends the invitation —
- * pass the `AC…` member ids `invitableFollowers()` returned. All four require
+ * follow the page; `followInvite()` sends the invitation,
+ * pass the `AC...` member ids `invitableFollowers()` returned. All four require
  * the account to administer the target page (`managed()` for the caller's
  * own set; `followers`/`invitableFollowers`/`followInvite` take the target
  * company's numeric provider_id, same as `employees`/`posts`/`jobs`).
  *
  * `chats()` / `chat()` / `messages()` / `message()` / `searchChats()` are the
- * company page's admin message inbox — a distinct conversation surface from
+ * company page's admin message inbox, a distinct conversation surface from
  * the account's own `messaging` namespace, scoped to one administered page.
  * **Beta:** single-page listing and termination are verified; deep pagination
  * (many pages / large cursor round-trips) is still being validated against a
  * busier inbox.
  *
  * `sendMessage()` is the inbox's one write: reply to an existing
- * conversation AS THE PAGE. It takes the same `2-…` chat id that
+ * conversation AS THE PAGE. It takes the same `2-...` chat id that
  * `chats()` / `searchChats()` return; the endpoint resolves the page
  * mailbox internally from `identifier`. Reply-only, same admin
  * requirement as the reads.
@@ -133,9 +133,9 @@ export class CompaniesResource {
    * List people who currently work at the company.
    * `GET /v1/{account_id}/companies/{identifier}/employees`
    *
-   * A facade over people search with the company filter applied — filter
+   * A facade over people search with the company filter applied, filter
    * further with `keywords` or `location`. `identifier` must be the
-   * company's numeric provider_id (the same `id` field `get()` returns) —
+   * company's numeric provider_id (the same `id` field `get()` returns),
    * a handle or URN is rejected before any upstream call.
    */
   employees(identifier: string, params?: CompanyEmployeeListQuery): Promise<CompanyEmployeeListPage> {
@@ -165,7 +165,7 @@ export class CompaniesResource {
    * List the company's open job postings.
    * `GET /v1/{account_id}/companies/{identifier}/jobs`
    *
-   * A facade over job search with the company filter applied — filter
+   * A facade over job search with the company filter applied, filter
    * further with `keywords`. An empty `items[]` is a valid result (the
    * company currently has no open postings). `identifier` must be the
    * company's numeric provider_id.
@@ -184,7 +184,7 @@ export class CompaniesResource {
    *
    * The `id` on each returned page is the numeric provider_id `followers()`,
    * `invitableFollowers()`, `employees()`, `posts()`, and `jobs()` consume.
-   * An empty `items[]` is valid — the account administers no pages.
+   * An empty `items[]` is valid; the account administers no pages.
    */
   managed(params?: ManagedCompanyListQuery): Promise<ManagedCompanyListPage> {
     return this.ctx.request<ManagedCompanyListPage>({
@@ -214,7 +214,7 @@ export class CompaniesResource {
    * company page. `GET /v1/{account_id}/companies/{identifier}/invitable-followers`
    *
    * The connected account must administer the page. `identifier` must be the
-   * company's numeric provider_id. An empty `items[]` is valid — nobody is
+   * company's numeric provider_id. An empty `items[]` is valid; nobody is
    * currently invitable.
    */
   invitableFollowers(
@@ -234,7 +234,7 @@ export class CompaniesResource {
    *
    * The account must administer the page with the invite-to-follow
    * entitlement (see `managed()`). `identifier` must be the company's numeric
-   * provider_id. Pass the `AC…` member ids from an `invitableFollowers()`
+   * provider_id. Pass the `AC...` member ids from an `invitableFollowers()`
    * read. All-or-nothing: for an all-valid request, resolves to one outcome
    * per requested invitee, in request order. If any invitee id is invalid,
    * the whole request rejects with a 404, not a partial result.
@@ -256,7 +256,7 @@ export class CompaniesResource {
    *
    * The connected account must administer the page. `identifier` must be the
    * company's numeric provider_id. Content passes through verbatim and is
-   * never stored. Beta — single-page listing and termination are verified;
+   * never stored. Beta: single-page listing and termination are verified;
    * deep pagination (many pages / large cursor round-trips) is provisional
    * until validated against a busier inbox.
    */
@@ -272,7 +272,7 @@ export class CompaniesResource {
    * Retrieve one conversation from a company page's admin inbox.
    * `GET /v1/{account_id}/companies/{identifier}/chats/{chat_id}`
    *
-   * The connected account must administer the page. Beta — see `chats()`.
+   * The connected account must administer the page. Beta: see `chats()`.
    */
   chat(identifier: string, chatId: string): Promise<CompanyChat> {
     return this.ctx.request<CompanyChat>({
@@ -286,7 +286,7 @@ export class CompaniesResource {
    * `GET /v1/{account_id}/companies/{identifier}/chats/{chat_id}/messages`
    *
    * The connected account must administer the page. Content passes through
-   * verbatim and is never stored. Beta — see `chats()`.
+   * verbatim and is never stored. Beta: see `chats()`.
    */
   messages(
     identifier: string,
@@ -304,7 +304,7 @@ export class CompaniesResource {
    * Retrieve one message from a company-inbox conversation.
    * `GET /v1/{account_id}/companies/{identifier}/chats/{chat_id}/messages/{message_id}`
    *
-   * The connected account must administer the page. Beta — see `chats()`.
+   * The connected account must administer the page. Beta: see `chats()`.
    */
   message(identifier: string, chatId: string, messageId: string): Promise<CompanyChatMessage> {
     return this.ctx.request<CompanyChatMessage>({
@@ -318,9 +318,9 @@ export class CompaniesResource {
    * `GET /v1/{account_id}/companies/{identifier}/chats/search`
    *
    * Exactly one mode per call: free-text `query` (matches participant names
-   * and message content), a `topic` card, or `unread`-only — the three are
+   * and message content), a `topic` card, or `unread`-only; the three are
    * mutually exclusive and enforced server-side. The connected account must
-   * administer the page. Beta — see `chats()`.
+   * administer the page. Beta: see `chats()`.
    */
   searchChats(identifier: string, params?: CompanyChatSearchQuery): Promise<CompanyChatSearchPage> {
     return this.ctx.request<CompanyChatSearchPage>({
@@ -334,7 +334,7 @@ export class CompaniesResource {
    * Reply to a company-inbox conversation, AS THE PAGE.
    * `POST /v1/{account_id}/companies/{identifier}/chats/{chat_id}/messages`
    *
-   * `chatId` is the `2-…` conversation id that `chats()` / `chat()` /
+   * `chatId` is the `2-...` conversation id that `chats()` / `chat()` /
    * `searchChats()` return for this page. The endpoint resolves the page
    * mailbox internally from `identifier`, so no special send-ready id is
    * needed: pass the id straight from the company chat reads.

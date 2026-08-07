@@ -2,7 +2,7 @@
  * Internal request context shared by every resource namespace.
  *
  * A `RequestContext` binds the resolved client config to a `request` function
- * and (optionally) a fixed `account_id` injected on every call — the mechanism
+ * and (optionally) a fixed `account_id` injected on every call, the mechanism
  * behind `curviate.account(id).<resource>`. Resources never touch the transport
  * directly; they call `ctx.request(...)`.
  *
@@ -10,7 +10,7 @@
  * template with a leading `{account_id}` placeholder (e.g.
  * `/v1/{account_id}/chats/${chatId}`); the bound context substitutes the fixed
  * account id into that placeholder. `account_id` is therefore always a path
- * segment — never a query param, never a body field. Root-scoped namespaces
+ * segment, never a query param, never a body field. Root-scoped namespaces
  * (`accounts`, `auth`, `webhooks`) are built with a context that carries no
  * account id, so their paths (which have no placeholder) are used verbatim.
  *
@@ -35,7 +35,7 @@ export interface RequestArgs {
   /**
    * Query params. Array values serialize as repeated params (e.g. `?k=a&k=b`)
    * to support multi-value fields like `linkedin_sections`. `account_id` is
-   * never a query param — it is the leading path segment.
+   * never a query param; it is the leading path segment.
    */
   query?: Record<string, string | number | boolean | string[] | undefined | null>;
   body?: unknown;

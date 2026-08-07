@@ -8,7 +8,7 @@
  *
  * Security properties:
  * - No third-party crypto dependency.
- * - Web Crypto (`globalThis.crypto.subtle`) is the universal primary path —
+ * - Web Crypto (`globalThis.crypto.subtle`) is the universal primary path,
  *   available in Node 18+, Cloudflare Workers, and Vercel Edge. The function
  *   is therefore always async: call it with `await`.
  * - HMAC comparison is constant-time: byte-by-byte XOR accumulation, no early
@@ -23,7 +23,7 @@
 /**
  * Thrown by {@link constructEvent} when signature verification fails.
  *
- * Extends `Error`, NOT `CurviateError` — callers can narrow with
+ * Extends `Error`, NOT `CurviateError`, callers can narrow with
  * `instanceof WebhookSignatureError` independently of CurviateError.
  *
  * The `reason` codes split by where the problem actually is, so the code you
@@ -125,13 +125,13 @@ export interface CurviateEventEnvelope {
  * Re-keyed for the v2 catalogue (was 19). Renamed/removed vs. the prior set:
  * `account.stopped`, `account.sync_started`, `account.sync_complete`,
  * `account.creation_success`, `account.sync_success`, `account.reconnect_required`,
- * and `account.checkpoint` are gone — the account-lifecycle names now split
+ * and `account.checkpoint` are gone, the account-lifecycle names now split
  * across `account.synced` / `account.reconnected` / `account.reconnect_needed` /
  * `account.paused` / `account.connecting` / `account.permission_revoked`. Net-new:
  * `chat.updated`, `chat.deleted`, `connection.new`, and the three
  * `account.initial_sync.*` events. This union is pinned at compile time against
- * the generated create-events enum (see `test/webhooks.constructEvent.test.ts`)
- * — it must never drift from the served catalogue again.
+ * the generated create-events enum (see `test/webhooks.constructEvent.test.ts`);
+ * it must never drift from the served catalogue again.
  *
  * @example
  * const event = await constructEvent(rawBody, header, secret);
@@ -228,7 +228,7 @@ function bytesToHex(bytes: Uint8Array): string {
 // ─── Constant-time comparison ────────────────────────────────────────────────
 
 /**
- * Compare two byte arrays in constant time — no early return on first mismatch.
+ * Compare two byte arrays in constant time, no early return on first mismatch.
  * The loop always runs over the full range of `Math.max(a.length, b.length)`.
  * Accumulated bitwise-OR `diff` encodes any difference; returns true only when
  * `diff === 0` (all bytes matched, lengths matched).
@@ -292,7 +292,7 @@ function verifyAndParse(
   bodyStr: string,
   replayWindowSecs: number,
 ): CurviateEvent {
-  // Step 3 — constant-time HMAC comparison.
+  // Step 3, constant-time HMAC comparison.
   let providedBytes: Uint8Array;
   try {
     providedBytes = hexToBytes(v1);
@@ -311,7 +311,7 @@ function verifyAndParse(
     );
   }
 
-  // Step 4 — replay guard (Unix seconds, both past and future).
+  // Step 4, replay guard (Unix seconds, both past and future).
   // timestamp is Unix seconds (integer); Date.now()/1000 is the current epoch in seconds.
   const nowSecs = Date.now() / 1000;
   const ageSecs = Math.abs(nowSecs - timestamp);
@@ -322,7 +322,7 @@ function verifyAndParse(
     );
   }
 
-  // Step 5 — parse the JSON body into a typed CurviateEvent.
+  // Step 5, parse the JSON body into a typed CurviateEvent.
   //
   // Everything below this line runs only AFTER the HMAC matched, so the header
   // and the signing secret are both proven correct at this point. A failure
@@ -380,16 +380,16 @@ function verifyAndParse(
 /**
  * Verify a Curviate webhook signature and parse the event payload.
  *
- * Uses Web Crypto (`globalThis.crypto.subtle`) universally — available in
+ * Uses Web Crypto (`globalThis.crypto.subtle`) universally, available in
  * Node 18+, Cloudflare Workers, and Vercel Edge. Always returns a Promise;
  * always `await` it.
  *
  * @param rawBody - The raw (un-parsed) request body as a string or Buffer.
- *   **Must be the exact bytes received** — do not JSON.parse then re-serialize.
+ *   **Must be the exact bytes received**, do not JSON.parse then re-serialize.
  * @param signatureHeader - Full value of the `Curviate-Signature` header.
  * @param secret - The webhook signing secret from your webhook registration.
  * @param opts - Optional verification settings.
- * @returns `Promise<CurviateEvent>` — a typed event once verified.
+ * @returns `Promise<CurviateEvent>`, a typed event once verified.
  * @throws {WebhookSignatureError} if the header is malformed, the HMAC is
  *   invalid, or the timestamp is outside the replay window.
  *
@@ -426,10 +426,10 @@ export async function constructEvent(
 ): Promise<CurviateEvent> {
   const replayWindowSecs = opts?.replayWindowSecs ?? 300;
 
-  // Step 1 — parse the header.
+  // Step 1, parse the header.
   const { timestamp, v1 } = parseHeader(signatureHeader);
 
-  // Step 2 — compute HMAC-SHA256(secret, "<timestamp>.<rawBody>").
+  // Step 2, compute HMAC-SHA256(secret, "<timestamp>.<rawBody>").
   // timestamp on the wire is Unix seconds.
   const bodyStr = typeof rawBody === "string" ? rawBody : rawBody.toString("utf8");
   const hmacPayload = `${timestamp}.${bodyStr}`;

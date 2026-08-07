@@ -106,7 +106,7 @@ export class InboxesResource {
    *
    * @param inboxId - the inbox id from `list()` (e.g. `"CLASSIC_PRIMARY"`
    *   or `"COMPANY_83734124_PRIMARY"`).
-   * @param params - optional `limit` (1–25, default 20) and an opaque
+   * @param params - optional `limit` (1-25, default 20) and an opaque
    *   `cursor` for pagination.
    */
   listChats(inboxId: string, params?: InboxChatListQuery): Promise<InboxChatListPage> {

@@ -1,22 +1,22 @@
 /**
- * Messaging resource — 13 methods.
+ * Messaging resource: 13 methods.
  *
  * Account-scoped: the bound context injects `account_id` as the leading
  * `/v1/` path segment on every request (account-first grammar).
  *
  * `startChat` / `sendMessage` accept optional `attachments[]` as JSON objects
- * carrying base64-encoded `content` — the served surface has NO multipart
+ * carrying base64-encoded `content`, the served surface has NO multipart
  * ops; every write here is `application/json`.
  *
  * `getMessage` / `editMessage` / `deleteMessage` / `addReaction` /
- * `getAttachment` are re-homed under `/chats/{chat_id}/messages/{message_id}`
- * — every one of them now takes `chatId` as well as `messageId`.
+ * `getAttachment` are re-homed under `/chats/{chat_id}/messages/{message_id}`;
+ * every one of them now takes `chatId` as well as `messageId`.
  *
  * `getInMailBalance` relocated to `users.getInMailCredits`; `syncChat` and
  * `syncMessages` have no served equivalent and are removed.
  *
  * `searchChats` free-text searches the account's own inbox (participant
- * names and message content) — distinct from `companies.searchChats`, which
+ * names and message content), distinct from `companies.searchChats`, which
  * searches a company page's admin inbox.
  */
 import type { RequestContext } from "../internal/context.js";
@@ -227,7 +227,7 @@ export class MessagingResource {
   /**
    * Download a message attachment. Returns raw binary.
    * `GET /v1/{account_id}/chats/{chat_id}/messages/{message_id}/attachments/{attachment_id}`
-   * Returns `ArrayBuffer` — binary response; the SDK does not cache or store it.
+   * Returns `ArrayBuffer`, binary response; the SDK does not cache or store it.
    */
   getAttachment(chatId: string, messageId: string, attachmentId: string): Promise<ArrayBuffer> {
     return this.ctx.request<ArrayBuffer>({
@@ -246,7 +246,7 @@ export class MessagingResource {
   }
 
   /**
-   * Free-text search the account's own inbox — matches participant names
+   * Free-text search the account's own inbox; matches participant names
    * and message content. `GET /v1/{account_id}/chats/search`
    *
    * @param params - `query` (required free-text term) plus `limit` and an

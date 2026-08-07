@@ -1,11 +1,11 @@
 /**
- * Invites resource — 6 methods.
+ * Invites resource: 6 methods.
  *
  * Account-scoped: the bound context injects `account_id` as the leading
  * `/v1/` path segment on every request (account-first grammar).
  *
  * The old combined `respond(invitationId, {action, ...})` splits into two
- * dedicated, bodyless POSTs — `accept` / `decline` — matching the served
+ * dedicated, bodyless POSTs, `accept` / `decline`, matching the served
  * surface. `respond` is removed.
  */
 import type { RequestContext } from "../internal/context.js";

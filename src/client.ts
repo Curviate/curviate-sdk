@@ -35,7 +35,7 @@ export class Curviate {
   readonly config: ResolvedConfig;
 
   // Root-scoped namespaces only. Account-scoped namespaces (users, messaging,
-  // posts, …) are reachable exclusively via `account(id)` — they cannot build a
+  // posts, ...) are reachable exclusively via `account(id)`; they cannot build a
   // valid path without a bound `account_id`.
   readonly accounts: AccountsResource;
   readonly auth: AuthResource;
@@ -54,7 +54,7 @@ export class Curviate {
    * Return an account-scoped accessor that fixes `account_id` on every call,
    * so callers need not repeat it per method.
    *
-   * @param accountId - a Curviate account id (`acc_…`). Empty throws
+   * @param accountId - a Curviate account id (`acc_...`). Empty throws
    *   `CurviateError({ code: 'INVALID_REQUEST' })` synchronously, no network call.
    *
    * @example

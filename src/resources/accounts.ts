@@ -1,5 +1,5 @@
 /**
- * Accounts resource — connected-account management (4 methods, root-scoped).
+ * Accounts resource: connected-account management (4 methods, root-scoped).
  *
  * Pattern followed by all resource namespaces:
  *   - take a {@link RequestContext} in the constructor,
@@ -9,7 +9,7 @@
  *
  * The 5 connect/checkpoint ops (`link`, `solveCheckpoint`, `requestCheckpoint`,
  * `pollCheckpoint`, `getConnectSession`) moved to the root-scoped `auth`
- * namespace ({@link ../auth.js}) — connecting/re-authenticating an account is
+ * namespace ({@link ../auth.js}), connecting/re-authenticating an account is
  * conceptually distinct from managing one already connected. The hosted-link
  * flow (`createConnectLink`, `createReconnectLink`) and in-place `reconnect`
  * have no served equivalent and are removed; a client authenticates via
@@ -19,7 +19,7 @@
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
 
-/** `GET /v1/accounts` 200 body — a page of connected accounts plus a cursor. */
+/** `GET /v1/accounts` 200 body, a page of connected accounts plus a cursor. */
 export type AccountListPage =
   paths["/v1/accounts"]["get"]["responses"]["200"]["content"]["application/json"];
 
@@ -52,10 +52,10 @@ export class AccountsResource {
    *
    * Each item also carries a small set of cached account-detail fields
    * (`username`, `premium_id`, `public_identifier`, `substrate_created_at`,
-   * `signatures`, `groups`) populated by an async background enrichment —
+   * `signatures`, `groups`) populated by an async background enrichment,
    * `null`/`[]` until the account's first enrichment pass completes.
    *
-   * @param params - optional `limit` (1–250) and `cursor` (from a prior page).
+   * @param params - optional `limit` (1-250) and `cursor` (from a prior page).
    * @returns a page of accounts and the next-page `cursor` (null when exhausted).
    *
    * @example
@@ -75,7 +75,7 @@ export class AccountsResource {
    * central `quotas[]` view for all tracked quota families and `seat_id` (the
    * seat this account occupies, `null` for an admin seatless account).
    *
-   * This is a stale-while-revalidate read — it always returns immediately
+   * This is a stale-while-revalidate read; it always returns immediately
    * from the cached row (never blocks on a live substrate call). The cached
    * enrichment fields `full_name` and `substrate_created_at` are populated by
    * a background enrichment pass; `username`, `premium_id`,
@@ -92,7 +92,7 @@ export class AccountsResource {
   /**
    * Update an account's configuration.
    *
-   * `metadata` is a flat string→string map that **replaces** the account's
+   * `metadata` is a flat string->string map that **replaces** the account's
    * custom-data store wholesale (keys not provided are removed). `proxy` sets a
    * custom egress proxy, or clears it (reverting to automatic proxy protection)
    * when passed as `null`. The `proxy.password`, if given, is stored securely
