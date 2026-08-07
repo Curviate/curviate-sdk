@@ -113,6 +113,15 @@ Source of this release: `https://api.staging.curviate.com` at server commit
   suite. Prose was the one representation of the contract that nothing checked,
   which is why both defects shipped.
 
+- The banner on `src/generated/types.ts` carried an em dash. The file ships (it
+  is in `files[]` and is inlined into `dist/index.d.ts`), so the banner is
+  published copy and the dash was the same tell the sweep removed everywhere
+  else. It is fixed where it is emitted rather than in the output, and the
+  string now has one home: `gen-types.mjs` wrote it and `check-types.mjs`
+  reconstructed it to diff against, so the two hand-written copies could
+  disagree and red the drift gate over a file nobody had touched. Both now
+  import `GENERATED_HEADER` from `scripts/openapi-sanitize.mjs`.
+
 ## [0.19.0] - 2026-08-03
 
 ### Fixed
