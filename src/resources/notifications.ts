@@ -1,28 +1,28 @@
 /**
- * Notifications resource — 3 methods (NEW namespace).
+ * Notifications resource: 3 methods (NEW namespace).
  *
  * Account-scoped: the bound context injects `account_id` as the leading
- * `/v1/` path segment on every request (account-first grammar) — never a
+ * `/v1/` path segment on every request (account-first grammar), never a
  * query param or body field.
  *
  * The connected account's own notification centre: list its cards, delete
- * one, or apply "show less like this" to one. Both writes are self-actions
- * — they act only on the account's OWN cards and never notify or touch a
+ * one, or apply "show less like this" to one. Both writes are self-actions;
+ * they act only on the account's OWN cards and never notify or touch a
  * third party. Both share a `card_urn` path param: the card's ENTITY urn
- * (`urn:li:fsd_notificationCard:(…)`, the `card_urn` field of a
- * {@link NotificationsResource.list} item) — not its secondary `object_urn`,
+ * (`urn:li:fsd_notificationCard:(...)`, the `card_urn` field of a
+ * {@link NotificationsResource.list} item), not its secondary `object_urn`,
  * which targets the wrong notification. A card urn embeds `(`, `)`, `:`,
- * `,`; pass it to `delete`/`showLess` raw — the SDK percent-encodes it into
+ * `,`; pass it to `delete`/`showLess` raw, the SDK percent-encodes it into
  * the path segment, and the server decodes it back.
  *
  * Both writes are **idempotent** and **effective within a few seconds**:
  * deleting (or show-lessing) a card that is already gone succeeds with 200,
- * not an error — only a `card_urn` that never existed on this account 404s.
+ * not an error, only a `card_urn` that never existed on this account 404s.
  * A `list()` read immediately after a write may still include the card for
- * a moment; that alone is not a failure signal — the 200 already confirms
+ * a moment; that alone is not a failure signal; the 200 already confirms
  * the card was resolved and the removal accepted. (An early, unverified
  * assumption of a ~30s eventual-consistency window did not hold up under
- * measurement — removal lands in ~2-6s in practice; re-read after a short
+ * measurement, removal lands in ~2-6s in practice; re-read after a short
  * delay, not instantly, if you need to confirm.)
  */
 import type { RequestContext } from "../internal/context.js";
@@ -48,8 +48,8 @@ export class NotificationsResource {
   constructor(protected readonly ctx: RequestContext) {}
 
   /**
-   * List the connected account's notification cards — newest first, plus
-   * the account-level `unread_count` (the unseen badge — NOT a count of
+   * List the connected account's notification cards, newest first, plus
+   * the account-level `unread_count` (the unseen badge, NOT a count of
    * `items`) and `latest_published_at` (a cheap poll watermark). Injected
    * promo/suggestion cards are included and flagged (`injected:true`),
    * never filtered.
@@ -69,24 +69,24 @@ export class NotificationsResource {
 
   /**
    * Delete one of the connected account's own notification cards by its
-   * card urn. A self-action — no third party is notified. This cannot be
+   * card urn. A self-action, no third party is notified. This cannot be
    * undone.
    *
    * **Safe to retry.** Idempotent: deleting a card you already deleted
-   * succeeds with `200`, not an error — a client that retries after a
+   * succeeds with `200`, not an error; a client that retries after a
    * timeout is never punished for it. Only a `card_urn` that never existed
    * on this account 404s.
    *
    * **Timing.** The removal takes effect within a few seconds; a
    * {@link list} read immediately after this call may still include the
-   * card for a moment. That is not a failure signal — the `200` is already
+   * card for a moment. That is not a failure signal; the `200` is already
    * confirmation the card was resolved and the removal accepted. Re-read
    * after a short delay, not instantly, if you need to visually confirm.
    *
    * `DELETE /v1/{account_id}/notifications/{card_urn}`
    *
    * @param cardUrn - the card's entity urn, raw/unencoded (the `card_urn`
-   *   field of a {@link list} item — `urn:li:fsd_notificationCard:(…)`,
+   *   field of a {@link list} item, `urn:li:fsd_notificationCard:(...)`,
    *   NOT `object_urn`, which targets the wrong notification). The SDK
    *   percent-encodes it into the path.
    */
@@ -99,16 +99,16 @@ export class NotificationsResource {
 
   /**
    * Apply "show less like this" to the source of one of the connected
-   * account's own notification cards — a self-action, same card handle and
+   * account's own notification cards, a self-action, same card handle and
    * timing/retry contract as {@link delete}. For network-activity cards (a
    * repost, comment, or reaction by your network) this **removes the
-   * card**, the same effect as `delete` — LinkedIn exposes no separate,
+   * card**, the same effect as `delete`; LinkedIn exposes no separate,
    * softer signal for these cards; this method exists so the calling
    * intent reads clearly, not because it behaves differently. This cannot
    * be undone.
    *
    * **Safe to retry**, same timing as {@link delete}: idempotent (a repeat
-   * is a `200`, not an error), effective within a few seconds — a
+   * is a `200`, not an error), effective within a few seconds, a
    * still-visible card on an immediate {@link list} re-read is not a
    * failure signal.
    *

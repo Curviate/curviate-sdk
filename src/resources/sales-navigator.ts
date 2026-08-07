@@ -1,15 +1,15 @@
 /**
- * Sales Navigator resource — 12 methods (tier: sn).
+ * Sales Navigator resource: 12 methods (tier: sn).
  *
  * Account-scoped: the bound context injects `account_id` as the leading
- * `/v1/` path segment on every request (account-first grammar) — never a
+ * `/v1/` path segment on every request (account-first grammar), never a
  * query param or body field. The v2 list surface (`accountLists`,
  * `leadLists`, `browseAccountList`, `browseLeadList`, `saveAccount`,
  * `saveLead`) already stopped carrying `account_id` in the body/query once
  * it moved into the path, so those bodies shrink to just their own fields
  * (`company_id` / `user_id` for the two saves).
  *
- * `startChat` is pure `application/json` — the served surface has ZERO
+ * `startChat` is pure `application/json`, the served surface has ZERO
  * multipart ops; file/voice/video attachments travel as base64-encoded
  * objects (`{content,content_type,filename,send_mode?,metadata?}`).
  *
@@ -86,14 +86,14 @@ export type SNSaveAccountBody =
   paths["/v1/{account_id}/sales-navigator/account-lists/{list_id}/save"]["post"]["requestBody"]["content"]["application/json"];
 export type SNSaveAccountResult =
   paths["/v1/{account_id}/sales-navigator/account-lists/{list_id}/save"]["post"]["responses"]["200"]["content"]["application/json"];
-/** Caller-facing input for `saveAccount()` — `list_id` addresses the path, `company_id` is the body. */
+/** Caller-facing input for `saveAccount()`, `list_id` addresses the path, `company_id` is the body. */
 export type SNSaveAccountInput = SNSaveAccountBody & { list_id: string };
 
 export type SNSaveLeadBody =
   paths["/v1/{account_id}/sales-navigator/lead-lists/{list_id}/save"]["post"]["requestBody"]["content"]["application/json"];
 export type SNSaveLeadResult =
   paths["/v1/{account_id}/sales-navigator/lead-lists/{list_id}/save"]["post"]["responses"]["200"]["content"]["application/json"];
-/** Caller-facing input for `saveLead()` — `list_id` addresses the path, `user_id` is the body. */
+/** Caller-facing input for `saveLead()`, `list_id` addresses the path, `user_id` is the body. */
 export type SNSaveLeadInput = SNSaveLeadBody & { list_id: string };
 
 export type SNSearchFromUrlBody =
@@ -153,7 +153,7 @@ export class SalesNavigatorResource {
 
   /**
    * Start a new Sales Navigator chat. `attachments[]`, when supplied, carry
-   * base64-encoded file bytes — always sent as JSON, never multipart.
+   * base64-encoded file bytes, always sent as JSON, never multipart.
    * `POST /v1/{account_id}/sales-navigator/chats`
    */
   startChat(body: SNStartChatBody): Promise<SNStartChatResult> {
@@ -238,11 +238,11 @@ export class SalesNavigatorResource {
   }
 
   /**
-   * Save a LinkedIn company into an account list. Body is just `{company_id}`
-   * — `account_id` lives in the path, not the body.
+   * Save a LinkedIn company into an account list. Body is just `{company_id}`;
+   * `account_id` lives in the path, not the body.
    * `POST /v1/{account_id}/sales-navigator/account-lists/{list_id}/save`
    *
-   * No `saved` boolean is invented — a `2xx` response body is the success
+   * No `saved` boolean is invented; a `2xx` response body is the success
    * signal (the substrate returns no success flag).
    */
   saveAccount(input: SNSaveAccountInput): Promise<SNSaveAccountResult> {
@@ -255,8 +255,8 @@ export class SalesNavigatorResource {
   }
 
   /**
-   * Save a Sales Navigator member into a lead list. Body is just `{user_id}`
-   * — `account_id` lives in the path, not the body.
+   * Save a Sales Navigator member into a lead list. Body is just `{user_id}`;
+   * `account_id` lives in the path, not the body.
    * `POST /v1/{account_id}/sales-navigator/lead-lists/{list_id}/save`
    */
   saveLead(input: SNSaveLeadInput): Promise<SNSaveLeadResult> {

@@ -1,24 +1,24 @@
 /**
- * Comments resource — 9 methods (NEW namespace).
+ * Comments resource: 9 methods (NEW namespace).
  *
  * Account-scoped: the bound context injects `account_id` as the leading
- * `/v1/` path segment on every request (account-first grammar) — never a
+ * `/v1/` path segment on every request (account-first grammar), never a
  * query param or body field.
  *
- * The comment-write surface relocated here from `posts` — `create` was
+ * The comment-write surface relocated here from `posts`; `create` was
  * `posts.comment`; `listUserComments` was `profiles.listComments`. Listing
  * the comments *on* a post (`GET /v1/{account_id}/posts/{post_id}/comments`)
- * stays on `posts.listComments` — it is a read the account scope already
+ * stays on `posts.listComments`; it is a read the account scope already
  * owns; this namespace owns the comment-thread write/reply/reaction surface
  * plus reading a user's own authored comments.
  *
- * `reply` shares its path with `edit` — `POST .../comments/{comment_id}`
+ * `reply` shares its path with `edit`, `POST .../comments/{comment_id}`
  * creates a reply under the target comment, `PATCH` edits the target
  * comment's own text.
  *
  * `removeReaction` is a **DELETE-with-body**:
  * `DELETE /v1/{account_id}/posts/{post_id}/comments/{comment_id}/reactions`
- * carries `{reaction}` — the same unified lowercase reaction enum as
+ * carries `{reaction}`, the same unified lowercase reaction enum as
  * `posts.react`/`posts.unreact`.
  */
 import type { RequestContext } from "../internal/context.js";
@@ -127,7 +127,7 @@ export class CommentsResource {
   }
 
   /**
-   * Reply to a comment. Shares its path with `edit` — POST creates a reply
+   * Reply to a comment. Shares its path with `edit`; POST creates a reply
    * under the target comment, PATCH edits the target comment's own text.
    * `POST /v1/{account_id}/posts/{post_id}/comments/{comment_id}`
    */
@@ -175,7 +175,7 @@ export class CommentsResource {
   }
 
   /**
-   * Remove this account's reaction from a comment — a **DELETE-with-body**:
+   * Remove this account's reaction from a comment, a **DELETE-with-body**:
    * the reaction value to remove travels in the JSON body, not the path.
    * `DELETE /v1/{account_id}/posts/{post_id}/comments/{comment_id}/reactions`
    */

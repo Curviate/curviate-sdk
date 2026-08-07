@@ -2,13 +2,13 @@
  * Client configuration.
  *
  * Only `apiKey` is required; every other field has a sensible default. The
- * resolved config is frozen — the client is immutable after construction.
+ * resolved config is frozen; the client is immutable after construction.
  */
 import { CurviateError } from "./errors.js";
 
 /** Public constructor input. */
 export interface CurviateConfig {
-  /** Required. The API key (`cvt_live_…`). */
+  /** Required. The API key (`cvt_live_...`). */
   apiKey: string;
   /** Default `https://api.curviate.com`. */
   baseUrl?: string;

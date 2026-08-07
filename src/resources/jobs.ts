@@ -1,21 +1,21 @@
 /**
- * Jobs resource — 10 methods (1 realign + 9 new — the whole Core Jobs write
+ * Jobs resource: 10 methods (1 realign + 9 new, the whole Core Jobs write
  * surface).
  *
  * Account-scoped: the bound context injects `account_id` as the leading
  * `/v1/` path segment on every request (account-first grammar).
  *
  * `get` keeps its pre-existing client-side convenience: a bare numeric job
- * id or a full LinkedIn job URL, resolved via {@link resolveJobId} — the
+ * id or a full LinkedIn job URL, resolved via {@link resolveJobId}, the
  * wire request always carries the numeric id. The 9 new methods take the
- * numeric id only, as already returned by `get`/`list`/`create` — they do
+ * numeric id only, as already returned by `get`/`list`/`create`; they do
  * not accept a job URL.
  *
  * `create`/`update`'s `job_title`/`company` are **objects** (`{id?,name?}`),
  * never scalars; `apply_method` is a `method`-discriminated oneOf
  * (`{method:'linkedin',notification_email}` | `{method:'external',website_url}`).
  * `publish`'s body is a `mode`-discriminated oneOf (`FREE` | `PROMOTED` |
- * `PROMOTED_PLUS`; `PROMOTED*` require `budget{currency,amount,scope}` — the
+ * `PROMOTED_PLUS`; `PROMOTED*` require `budget{currency,amount,scope}`, the
  * explicit opt-in to spend real money). `close` is bodyless.
  * `listApplicants` is POST-as-search (matches the `/search/*` convention):
  * the filter body is all-optional; `limit`/`cursor` stay TOP-LEVEL query
@@ -78,7 +78,7 @@ export class JobsResource {
   /**
    * List the connected account's own classic job postings.
    * `GET /v1/{account_id}/jobs`
-   * `state` is REQUIRED — filtering is LinkedIn-side and best-effort (see
+   * `state` is REQUIRED, filtering is LinkedIn-side and best-effort (see
    * the generated type's own field description).
    */
   list(params: JobListQuery): Promise<JobListPage> {
@@ -106,7 +106,7 @@ export class JobsResource {
    * `GET /v1/{account_id}/jobs/{job_id}`
    *
    * Accepts a bare numeric job id or a full job URL
-   * (`https://www.linkedin.com/jobs/view/{id}`) — the id is extracted
+   * (`https://www.linkedin.com/jobs/view/{id}`); the id is extracted
    * client-side; the wire request always carries the numeric id. Throws
    * `CurviateError({ code: 'INVALID_REQUEST' })` synchronously if neither
    * form can be recognized.
@@ -121,7 +121,7 @@ export class JobsResource {
   }
 
   /**
-   * Apply a partial update to a job posting this account owns — only
+   * Apply a partial update to a job posting this account owns, only
    * included fields change. Can affect real money on an already-published
    * (LISTED) posting. `PATCH /v1/{account_id}/jobs/{job_id}`
    */
@@ -134,7 +134,7 @@ export class JobsResource {
   }
 
   /**
-   * Get pricing to publish a job posting — price a publish before
+   * Get pricing to publish a job posting; price a publish before
    * committing any money. `GET /v1/{account_id}/jobs/{job_id}/budget`
    */
   getBudget(jobId: string): Promise<JobBudget> {
@@ -147,7 +147,7 @@ export class JobsResource {
   /**
    * Publish a classic job posting draft. `mode` is a discriminated oneOf:
    * `FREE` (requires free-posting eligibility, spends nothing) or
-   * `PROMOTED`/`PROMOTED_PLUS` (requires `budget` — THIS SPENDS REAL MONEY
+   * `PROMOTED`/`PROMOTED_PLUS` (requires `budget`; THIS SPENDS REAL MONEY
    * on the connected account's LinkedIn payment method; supplying `budget`
    * IS the explicit opt-in). `POST /v1/{account_id}/jobs/{job_id}/publish`
    */
@@ -172,7 +172,7 @@ export class JobsResource {
   }
 
   /**
-   * List applicants to a job posting this account owns — a read; POST
+   * List applicants to a job posting this account owns, a read; POST
    * carries the filter body, matching the `/search/*` convention. Omit
    * `ratings` to see the full applicant funnel. `limit`/`cursor` stay
    * TOP-LEVEL query params, never in the body.
@@ -213,7 +213,7 @@ export class JobsResource {
   /**
    * Download an applicant's résumé. Returns raw binary.
    * `GET /v1/{account_id}/jobs/{job_id}/applicants/{applicant_id}/resume`
-   * Returns `ArrayBuffer` — the SDK does not cache or store it.
+   * Returns `ArrayBuffer`; the SDK does not cache or store it.
    */
   downloadResume(jobId: string, applicantId: string): Promise<ArrayBuffer> {
     return this.ctx.request<ArrayBuffer>({

@@ -1,15 +1,15 @@
 /**
- * Groups resource — 3 methods (NEW namespace).
+ * Groups resource: 3 methods (NEW namespace).
  *
  * Account-scoped: the bound context injects `account_id` as the leading
- * `/v1/` path segment on every request (account-first grammar) — never a
+ * `/v1/` path segment on every request (account-first grammar), never a
  * query param or body field.
  *
  * Reads the LinkedIn groups a member belongs to, a single group's full
  * detail, and a group's member roster. `list()` reads the connected
  * account's own groups by default; pass `{ profile }` to read another
  * member's public group set. "Search group members" is not a separate
- * method — it is `members()` with a `{ name }` filter applied.
+ * method; it is `members()` with a `{ name }` filter applied.
  */
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
@@ -56,7 +56,7 @@ export class GroupsResource {
   }
 
   /**
-   * Retrieve a single LinkedIn group's full detail — its name, description,
+   * Retrieve a single LinkedIn group's full detail: its name, description,
    * member count, membership status, and admin contact.
    * `GET /v1/{account_id}/groups/{group}`
    *
@@ -73,7 +73,7 @@ export class GroupsResource {
    * List a group's members, cursor-paginated, each carrying its profile URL,
    * name, and headline. `GET /v1/{account_id}/groups/{group}/members`
    *
-   * Pass `{ name }` to search the roster by member name — the folded-in
+   * Pass `{ name }` to search the roster by member name, the folded-in
    * member search, not a separate endpoint.
    *
    * @param group - the group's id or LinkedIn group URL.

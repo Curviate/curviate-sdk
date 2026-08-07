@@ -1,19 +1,19 @@
 /**
- * Users resource — 9 methods (renamed from `profiles`).
+ * Users resource: 9 methods (renamed from `profiles`).
  *
  * Account-scoped: the bound context injects `account_id` as the leading
- * `/v1/` path segment on every request (account-first grammar) — never a
+ * `/v1/` path segment on every request (account-first grammar), never a
  * query param or body field.
  *
- * `user_id` accepts the sentinel `"me"` for the caller's own account — the old
+ * `user_id` accepts the sentinel `"me"` for the caller's own account, the old
  * standalone `getMe()` method is folded into `get()`; there is no separate
  * `getMe`.
  *
- * `listRelations` serves `GET /v1/{account_id}/profiles/relations` — the
+ * `listRelations` serves `GET /v1/{account_id}/profiles/relations`, the
  * served URL keeps the `profiles/` segment even though the namespace is
  * `users` (the URL is served truth, not "fixed").
  *
- * `getCompany` has no served equivalent — hard-moved to `companies.get()`
+ * `getCompany` has no served equivalent, hard-moved to `companies.get()`
  * (already removed pre-0.15.0; stays absent here).
  */
 import type { RequestContext } from "../internal/context.js";
@@ -88,11 +88,11 @@ export class UsersResource {
   /**
    * Update the caller's own profile. `PATCH /v1/{account_id}/users/{user_id}`
    * Only `first_name`, `last_name`, `bio`, `headline`, `skills`, `picture`,
-   * `background_picture` are accepted — there is no `description` key.
+   * `background_picture` are accepted; there is no `description` key.
    * `description` is not part of the update contract: TypeScript already
    * rejects it at the call site, but an untyped/JS caller (or an `as`-cast)
    * could still smuggle it onto the object, so it is also stripped
-   * defensively at runtime before the request goes out — the caller's
+   * defensively at runtime before the request goes out, the caller's
    * object is never mutated.
    */
   update(userId: string, body: UserUpdateBody): Promise<UserUpdateResult> {
@@ -149,7 +149,7 @@ export class UsersResource {
 
   /**
    * Unfollow a user (bodyless). `DELETE /v1/{account_id}/users/{user_id}/follow`
-   * Idempotent — unfollowing a user this account does not currently follow
+   * Idempotent: unfollowing a user this account does not currently follow
    * still returns 200.
    */
   unfollow(userId: string): Promise<UserUnfollowResult> {

@@ -1,19 +1,19 @@
 /**
- * Profile insights resource — 4 methods (NEW namespace).
+ * Profile insights resource: 4 methods (NEW namespace).
  *
  * Account-scoped: the bound context injects `account_id` as the leading
- * `/v1/` path segment on every request (account-first grammar) — never a
+ * `/v1/` path segment on every request (account-first grammar), never a
  * query param or body field.
  *
  * Every method is a self-read of the connected account's own insight
  * surface: its premium subscription, performance analytics, recent profile
  * viewers, and Social Selling Index. These reads target the authenticated
- * account only — never a third party — so they notify no one and affect no
+ * account only, never a third party, so they notify no one and affect no
  * reputation. Three return one typed scalar object; `visitors` is a
  * cursor-paginated list.
  *
  * The namespace name `profile` (singular) is distinct from the retired
- * `profiles` (plural, renamed to `users`) — it mirrors the `/profile/*`
+ * `profiles` (plural, renamed to `users`); it mirrors the `/profile/*`
  * path segment 1:1.
  */
 import type { RequestContext } from "../internal/context.js";
@@ -42,7 +42,7 @@ export class ProfileResource {
   constructor(protected readonly ctx: RequestContext) {}
 
   /**
-   * Read the connected account's premium subscription — its full entitlement
+   * Read the connected account's premium subscription: its full entitlement
    * inventory, primary plan title, and LinkedIn management links.
    * `GET /v1/{account_id}/profile/subscription`
    *
@@ -59,7 +59,7 @@ export class ProfileResource {
   }
 
   /**
-   * Read the connected account's performance headline metrics — profile
+   * Read the connected account's performance headline metrics, profile
    * viewers, followers, post impressions, and search appearances.
    * `GET /v1/{account_id}/profile/analytics`
    *
@@ -80,13 +80,13 @@ export class ProfileResource {
    * cursor-paginated and classified by disclosure fidelity.
    * `GET /v1/{account_id}/profile/visitors`
    *
-   * Each item's `kind` is `identified`, `semi-anonymous`, or `aggregate` —
+   * Each item's `kind` is `identified`, `semi-anonymous`, or `aggregate`,
    * a Premium account sees identified viewers, a free account is capped at a
    * lower fidelity (still a `200`, never a permission error). Page with the
    * returned `cursor`: a non-null `cursor` means more may exist, even if a
    * page held zero identified individuals; `cursor: null` means exhausted.
    *
-   * @param params - `limit` (1–100, default 20) and an opaque `cursor` from
+   * @param params - `limit` (1-100, default 20) and an opaque `cursor` from
    *   a prior response.
    */
   visitors(params?: ProfileVisitorListQuery): Promise<ProfileVisitorListPage> {
@@ -98,7 +98,7 @@ export class ProfileResource {
   }
 
   /**
-   * Read the connected account's Social Selling Index — the overall score,
+   * Read the connected account's Social Selling Index, the overall score,
    * its four pillar breakdowns, and industry/network percentile ranks.
    * `GET /v1/{account_id}/profile/ssi`
    *

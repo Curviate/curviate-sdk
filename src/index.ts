@@ -1,4 +1,4 @@
-// @curviate/sdk — the official TypeScript SDK for the Curviate API.
+// @curviate/sdk: the official TypeScript SDK for the Curviate API.
 //
 // Entry point. Re-exports the client, the typed error model, the generated
 // request/response types, and the webhook-receiving surface.

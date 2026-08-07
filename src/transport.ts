@@ -5,7 +5,7 @@
  * bodies, parses JSON and binary responses, maps HTTP errors to
  * {@link CurviateError}, and runs the client-side retry/backoff contract.
  *
- * Stateless: each {@link execute} call is independent — no request queue, no
+ * Stateless: each {@link execute} call is independent, no request queue, no
  * in-flight dedupe (clients own retry safety).
  *
  * The `_jitterFn` and `_sleepFn` options are internal seams for deterministic
@@ -61,7 +61,7 @@ interface WireErrorEnvelope {
 const BASE_DELAY_MS = 500;
 const MAX_DELAY_MS = 30_000;
 
-/** Codes that are safe to retry — and only for GET/HEAD. */
+/** Codes that are safe to retry, and only for GET/HEAD. */
 const RETRYABLE_CODES: ReadonlySet<string> = new Set([
   "INTERNAL",
   "PLATFORM_ERROR",
@@ -152,7 +152,7 @@ function buildInit(method: HttpMethod, opts: ExecuteOptions, signal: AbortSignal
     return init;
   }
   if (opts.body instanceof FormData) {
-    // Multipart: do NOT set Content-Type — the runtime sets it with the boundary.
+    // Multipart: do NOT set Content-Type; the runtime sets it with the boundary.
     init.body = opts.body;
     return init;
   }

@@ -1,18 +1,18 @@
 /**
- * Recruiter resource — 23 methods (tier: recruiter), project-centric rebuild.
+ * Recruiter resource: 23 methods (tier: recruiter), project-centric rebuild.
  *
  * Account-scoped: the bound context injects `account_id` as the leading
- * `/v1/` path segment on every request (account-first grammar) — never a
+ * `/v1/` path segment on every request (account-first grammar), never a
  * query param, never a body field. Recruiter methods are verb-first.
  *
- * `startChat` is JSON-only (`application/json`) — `signature` and `subject`
+ * `startChat` is JSON-only (`application/json`), `signature` and `subject`
  * are REQUIRED for the InMail-based Recruiter surface; optional file / voice /
  * video attachments ride the body as base64-encoded objects (no multipart).
  * `searchParameters` is a POST with a `source`-discriminated oneOf body.
  * `createJob` opens a brand-new project (`project_name` required); the
  * project-scoped `createProjectJob` omits `project_name` (the project is in
  * the path). `publishJob`'s body is a `mode`-discriminated oneOf
- * (`FREE` | `PROMOTED` | `PROMOTED_PLUS`; `PROMOTED*` require `budget` — the
+ * (`FREE` | `PROMOTED` | `PROMOTED_PLUS`; `PROMOTED*` require `budget`, the
  * explicit opt-in to spend real money). `closeJob` is bodyless.
  * `searchTalentPool` and `listApplicants` require `channel_id` in the body.
  * The POST-as-search reads keep `limit`/`cursor`/`offset` as TOP-LEVEL query
@@ -21,7 +21,7 @@
  * `getJob` keeps its client-side convenience: a bare numeric job id or a full
  * LinkedIn job URL, resolved via {@link resolveJobId}; the wire request always
  * carries the numeric id. Its response is the recruiter-specific
- * `recruiter_job_posting` shape (carries `project_id`) — derived here from the
+ * `recruiter_job_posting` shape (carries `project_id`), derived here from the
  * Recruiter op, not aliased from the classic-jobs surface.
  */
 import type { RequestContext } from "../internal/context.js";
@@ -173,7 +173,7 @@ export class RecruiterResource {
   }
 
   /**
-   * Start a Recruiter chat (InMail). JSON-only — `subject` and `signature`
+   * Start a Recruiter chat (InMail). JSON-only, `subject` and `signature`
    * are REQUIRED; optional attachments ride the body as base64-encoded
    * objects (no multipart). `POST /v1/{account_id}/recruiter/chats`
    */
@@ -200,7 +200,7 @@ export class RecruiterResource {
 
   /**
    * Resolve human-readable terms to opaque Recruiter filter ids. POST (was
-   * GET): the body is a `source`-discriminated oneOf — `APPLICANTS`/`PIPELINE`
+   * GET): the body is a `source`-discriminated oneOf, `APPLICANTS`/`PIPELINE`
    * require `project_id`. `POST /v1/{account_id}/recruiter/search/parameters`
    */
   searchParameters(body: RecruiterSearchParametersBody, params?: Partial<RecruiterSearchParametersQuery>): Promise<RecruiterSearchParametersResult> {
@@ -228,7 +228,7 @@ export class RecruiterResource {
   }
 
   /**
-   * Search from a pasted Recruiter search / talent-pool / applicant URL —
+   * Search from a pasted Recruiter search / talent-pool / applicant URL,
    * nothing else in the body. The response is a 3-way oneOf (people-search,
    * job-applicant list, or pipeline-candidate list) keyed by the URL kind.
    * `POST /v1/{account_id}/recruiter/search`
@@ -266,7 +266,7 @@ export class RecruiterResource {
   }
 
   /**
-   * Edit a Recruiter project's config — all fields optional; omitted fields
+   * Edit a Recruiter project's config: all fields optional; omitted fields
    * are left unchanged. Returns a thin acknowledgement only.
    * `PATCH /v1/{account_id}/recruiter/projects/{project_id}`
    */
@@ -295,7 +295,7 @@ export class RecruiterResource {
 
   /**
    * Get the single job posting attached to a Recruiter project (the surface
-   * returns one posting, not a list — a project with no attached job 404s).
+   * returns one posting, not a list; a project with no attached job 404s).
    * `GET /v1/{account_id}/recruiter/projects/{project_id}/jobs`
    */
   getProjectJob(projectId: string): Promise<RecruiterProjectJob> {
@@ -306,7 +306,7 @@ export class RecruiterResource {
   }
 
   /**
-   * Create a job-posting DRAFT attached to an EXISTING project — `project_name`
+   * Create a job-posting DRAFT attached to an EXISTING project, `project_name`
    * is not accepted (the project comes from the path). Never publishes, never
    * spends money. `POST /v1/{account_id}/recruiter/projects/{project_id}/jobs`
    */
@@ -319,7 +319,7 @@ export class RecruiterResource {
   }
 
   /**
-   * Get pricing to publish a project's job posting — price a publish before
+   * Get pricing to publish a project's job posting; price a publish before
    * committing any money.
    * `GET /v1/{account_id}/recruiter/projects/{project_id}/jobs/{job_id}/budget`
    */
@@ -331,8 +331,8 @@ export class RecruiterResource {
   }
 
   /**
-   * Create a job-posting DRAFT together with a brand-new hiring project —
-   * `project_name` is REQUIRED; `description` must be ≥ 200 characters. Never
+   * Create a job-posting DRAFT together with a brand-new hiring project,
+   * `project_name` is REQUIRED; `description` must be >= 200 characters. Never
    * publishes, never spends money. `POST /v1/{account_id}/recruiter/jobs`
    */
   createJob(body: RecruiterCreateJobBody): Promise<RecruiterCreateJobResult> {
@@ -361,7 +361,7 @@ export class RecruiterResource {
    * `GET /v1/{account_id}/recruiter/jobs/{job_id}`
    *
    * Accepts a bare numeric job id or a full LinkedIn job URL
-   * (`https://www.linkedin.com/jobs/view/{id}`) — the id is extracted
+   * (`https://www.linkedin.com/jobs/view/{id}`); the id is extracted
    * client-side; the wire request always carries the numeric id. Throws
    * `CurviateError({ code: 'INVALID_REQUEST' })` synchronously if neither
    * form can be recognized.
@@ -375,7 +375,7 @@ export class RecruiterResource {
   }
 
   /**
-   * Apply a partial update to a project's job posting — only included fields
+   * Apply a partial update to a project's job posting, only included fields
    * change. MONEY WARNING: editing an already-published (LISTED) posting
    * mutates a live, money-spending listing.
    * `PATCH /v1/{account_id}/recruiter/projects/{project_id}/jobs/{job_id}`
@@ -391,7 +391,7 @@ export class RecruiterResource {
   /**
    * Publish a project's job posting draft. `mode` is a discriminated oneOf:
    * `FREE` (requires free-posting eligibility, spends nothing) or
-   * `PROMOTED`/`PROMOTED_PLUS` (requires `budget` — THIS SPENDS REAL MONEY on
+   * `PROMOTED`/`PROMOTED_PLUS` (requires `budget`; THIS SPENDS REAL MONEY on
    * the connected account's LinkedIn payment method; supplying `budget` IS the
    * explicit opt-in).
    * `POST /v1/{account_id}/recruiter/projects/{project_id}/jobs/{job_id}/publish`
@@ -407,7 +407,7 @@ export class RecruiterResource {
   /**
    * Close a project's job posting so it stops accepting applications
    * (bodyless). Closing an already-published (LISTED) posting cannot be
-   * undone — there is no re-open operation.
+   * undone; there is no re-open operation.
    * `POST /v1/{account_id}/recruiter/projects/{project_id}/jobs/{job_id}/close`
    */
   closeJob(projectId: string, jobId: string): Promise<RecruiterCloseJobResult> {
@@ -419,7 +419,7 @@ export class RecruiterResource {
 
   /**
    * Save a candidate (or user profile) to a project's pipeline at the given
-   * stage — the sole surviving pipeline write.
+   * stage, the sole surviving pipeline write.
    * `POST /v1/{account_id}/recruiter/projects/{project_id}/pipeline/candidate/save`
    */
   saveCandidate(projectId: string, body: RecruiterSaveCandidateBody): Promise<RecruiterSaveCandidateResult> {
@@ -459,7 +459,7 @@ export class RecruiterResource {
   /**
    * Download a talent-pool applicant's résumé as raw binary.
    * `GET /v1/{account_id}/recruiter/projects/{project_id}/talent-pool/applicants/{applicant_id}/resume`
-   * Returns `ArrayBuffer` — the SDK does not cache or store it.
+   * Returns `ArrayBuffer`; the SDK does not cache or store it.
    */
   downloadResume(projectId: string, applicantId: string): Promise<ArrayBuffer> {
     return this.ctx.request<ArrayBuffer>({
