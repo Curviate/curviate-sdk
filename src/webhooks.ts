@@ -68,29 +68,40 @@ export class WebhookSignatureError extends Error {
 // ─── CurviateEvent discriminated union ──────────────────────────────────────
 
 /**
+ * The three fields every Curviate event payload carries, whatever its type.
+ *
+ * `occurred_at` matters beyond timestamping: together with `event` and
+ * `account_id` it is the only key that survives a retry, because the platform
+ * re-sends the identical payload while minting a fresh envelope `id` per
+ * attempt. Typing it here is what lets a consumer build that key without
+ * widening to `unknown`.
+ */
+export interface EventPayloadBase {
+  /** The account the event happened on. */
+  account_id: string;
+  /** The event name, repeated inside the payload by the platform. */
+  event: string;
+  /** ISO-8601 time the event occurred. Stable across every delivery attempt. */
+  occurred_at: string;
+  [key: string]: unknown;
+}
+
+/**
  * Payload carried by message-type events.
  */
-export interface MessagePayload {
+export interface MessagePayload extends EventPayloadBase {
   message_id?: string;
-  account_id: string;
-  [key: string]: unknown;
 }
 
 /**
  * Payload carried by connection-type events.
  */
-export interface ConnectionPayload {
-  account_id: string;
-  [key: string]: unknown;
-}
+export type ConnectionPayload = EventPayloadBase;
 
 /**
  * Payload carried by account-state events.
  */
-export interface AccountPayload {
-  account_id: string;
-  [key: string]: unknown;
-}
+export type AccountPayload = EventPayloadBase;
 
 /**
  * Delivery metadata that accompanies every Curviate webhook event.
@@ -103,7 +114,14 @@ export interface AccountPayload {
  * strictly need to narrow is optional here and cannot fail a verification.
  */
 export interface CurviateEventEnvelope {
-  /** Unique id for this delivery attempt, e.g. `wdl_01J...`. Use it to de-duplicate retries. */
+  /**
+   * Unique id for this delivery attempt, e.g. `wdl_01J...`. Every retry mints a
+   * new one, so it identifies an attempt rather than a logical event and is
+   * **not** a de-duplication key. To discard duplicate retries, key on `event`
+   * plus `data.account_id` plus `data.occurred_at`, which are identical across
+   * every attempt of the same event. Use `id` to correlate one attempt with
+   * your own delivery logs.
+   */
   id?: string;
   /** Id of the webhook registration this delivery belongs to, e.g. `wh_01J...`. */
   webhook_id?: string;
@@ -112,9 +130,13 @@ export interface CurviateEventEnvelope {
 }
 
 /**
- * The complete discriminated union of all 24 canonical, create-subscribable
+ * The complete discriminated union of the canonical, create-subscribable
  * Curviate webhook events. The **`event`** field is the discriminant, matching
  * the field the platform actually sends on the wire.
+ *
+ * The size of this union is not stated here on purpose: it is pinned at compile
+ * time to the generated create-events enum (below), so the union itself is the
+ * count and a number in this comment could only ever go stale.
  *
  * > Migrating from 0.18.x and earlier: the discriminant was `type`, a field no
  * > Curviate delivery has ever contained, so `constructEvent` threw on every
@@ -156,6 +178,7 @@ export type CurviateEvent = CurviateEventEnvelope &
     | { event: "account.synced"; data: AccountPayload }
     | { event: "account.reconnected"; data: AccountPayload }
     | { event: "account.reconnect_needed"; data: AccountPayload }
+    | { event: "account.restricted"; data: AccountPayload }
     | { event: "account.creation_failed"; data: AccountPayload }
     | { event: "account.disconnected"; data: AccountPayload }
     | { event: "account.error"; data: AccountPayload }

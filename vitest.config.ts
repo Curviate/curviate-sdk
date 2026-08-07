@@ -5,12 +5,11 @@ export default defineConfig({
     environment: "node",
     include: ["test/**/*.test.ts"],
     setupFiles: ["test/setup.ts"],
-    // RAM GUARDRAIL (issue #162 incident, 2026-06-06; this config capped 2026-08-04
-    // after a second host-crash incident traced to it): vitest defaults to one fork
-    // PER CPU CORE (12 on this host). Mirrors apps/server/vitest.config.ts's cap
-    // exactly. See that file for the full incident writeup and RAM sweep data.
-    // Override via VITEST_MAX_WORKERS. NEVER raise above a value re-measured safe
-    // on this host.
+    // RAM GUARDRAIL (capped 2026-06-06, tightened 2026-08-04 after a second
+    // host-crash traced to it): vitest defaults to one fork PER CPU CORE, which
+    // exhausted memory on the development host and took the machine down twice.
+    // Override via VITEST_MAX_WORKERS. NEVER raise above a value re-measured
+    // safe on the host you are running on.
     pool: "forks",
     maxWorkers: Number(process.env["VITEST_MAX_WORKERS"] ?? 2),
     minWorkers: 1,

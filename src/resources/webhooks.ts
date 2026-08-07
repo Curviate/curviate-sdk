@@ -67,7 +67,9 @@ export class WebhooksResource {
   }
 
   /**
-   * Return the complete canonical webhook event catalogue (27 events, grouped by source).
+   * Return the complete canonical webhook event catalogue, grouped by source.
+   * The response counts itself; no size is stated here, because a hand-typed
+   * one is wrong the next time the catalogue grows.
    * `GET /v1/webhooks/events`
    */
   listEvents(): Promise<WebhookListEventsResult> {

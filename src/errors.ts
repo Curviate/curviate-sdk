@@ -48,6 +48,12 @@ export const ERROR_CODES = [
   "ACCOUNT_ALREADY_LINKED",
   "RESOURCE_NOT_FOUND",
   "RESOURCE_ACCESS_RESTRICTED",
+  // Search filter resolution: a plain-string filter value matched several
+  // LinkedIn taxonomy options and one has to be picked (422). The body carries
+  // `unresolved[]` naming every offending field with its candidate ids, plus a
+  // `next_action` sentence. user_fixable, never retryable as sent; re-send
+  // with a chosen id.
+  "FILTER_CANDIDATES_REQUIRED",
   // Tier / subscription gating
   "TIER_NOT_ACTIVE",
   "LINKEDIN_FEATURE_NOT_SUBSCRIBED",
