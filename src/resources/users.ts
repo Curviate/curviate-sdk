@@ -18,6 +18,7 @@
  */
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
+import { apiPath } from "../internal/path.js";
 
 // ─── Type aliases from generated OpenAPI snapshot ──────────────────────────
 
@@ -80,7 +81,7 @@ export class UsersResource {
   get(userId: string, params?: UserGetQuery): Promise<UserProfile> {
     return this.ctx.request<UserProfile>({
       method: "GET",
-      path: `/v1/{account_id}/users/${userId}`,
+      path: apiPath`/v1/{account_id}/users/${userId}`,
       ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
   }
@@ -99,7 +100,7 @@ export class UsersResource {
     const { description: _description, ...safeBody } = body as Record<string, unknown>;
     return this.ctx.request<UserUpdateResult>({
       method: "PATCH",
-      path: `/v1/{account_id}/users/${userId}`,
+      path: apiPath`/v1/{account_id}/users/${userId}`,
       body: safeBody,
     });
   }
@@ -121,7 +122,7 @@ export class UsersResource {
   listFollowers(userId: string, params?: UserFollowerListQuery): Promise<UserFollowerListPage> {
     return this.ctx.request<UserFollowerListPage>({
       method: "GET",
-      path: `/v1/{account_id}/users/${userId}/followers`,
+      path: apiPath`/v1/{account_id}/users/${userId}/followers`,
       ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
   }
@@ -130,7 +131,7 @@ export class UsersResource {
   listFollowing(userId: string, params?: UserFollowingListQuery): Promise<UserFollowingListPage> {
     return this.ctx.request<UserFollowingListPage>({
       method: "GET",
-      path: `/v1/{account_id}/users/${userId}/following`,
+      path: apiPath`/v1/{account_id}/users/${userId}/following`,
       ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
   }
@@ -143,7 +144,7 @@ export class UsersResource {
   follow(userId: string): Promise<UserFollowResult> {
     return this.ctx.request<UserFollowResult>({
       method: "POST",
-      path: `/v1/{account_id}/users/${userId}/follow`,
+      path: apiPath`/v1/{account_id}/users/${userId}/follow`,
     });
   }
 
@@ -155,7 +156,7 @@ export class UsersResource {
   unfollow(userId: string): Promise<UserUnfollowResult> {
     return this.ctx.request<UserUnfollowResult>({
       method: "DELETE",
-      path: `/v1/{account_id}/users/${userId}/follow`,
+      path: apiPath`/v1/{account_id}/users/${userId}/follow`,
     });
   }
 
@@ -181,7 +182,7 @@ export class UsersResource {
   endorseSkill(userId: string, body: EndorseSkillBody): Promise<EndorseSkillResult> {
     return this.ctx.request<EndorseSkillResult>({
       method: "POST",
-      path: `/v1/{account_id}/users/${userId}/endorse-skill`,
+      path: apiPath`/v1/{account_id}/users/${userId}/endorse-skill`,
       body,
     });
   }

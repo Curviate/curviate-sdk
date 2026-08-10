@@ -7,6 +7,7 @@
  */
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
+import { apiPath } from "../internal/path.js";
 
 // ─── Type aliases from generated OpenAPI snapshot ──────────────────────────
 
@@ -87,7 +88,7 @@ export class WebhooksResource {
   get(id: string): Promise<WebhookGetResult> {
     return this.ctx.request<WebhookGetResult>({
       method: "GET",
-      path: `/v1/webhooks/${id}`,
+      path: apiPath`/v1/webhooks/${id}`,
     });
   }
 
@@ -98,7 +99,7 @@ export class WebhooksResource {
   update(id: string, body: WebhookUpdateBody): Promise<WebhookUpdateResult> {
     return this.ctx.request<WebhookUpdateResult>({
       method: "PATCH",
-      path: `/v1/webhooks/${id}`,
+      path: apiPath`/v1/webhooks/${id}`,
       body,
     });
   }
@@ -110,7 +111,7 @@ export class WebhooksResource {
   delete(id: string): Promise<WebhookDeleteResult> {
     return this.ctx.request<WebhookDeleteResult>({
       method: "DELETE",
-      path: `/v1/webhooks/${id}`,
+      path: apiPath`/v1/webhooks/${id}`,
     });
   }
 }

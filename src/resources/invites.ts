@@ -10,6 +10,7 @@
  */
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
+import { apiPath } from "../internal/path.js";
 
 // ─── Type aliases from generated OpenAPI snapshot ──────────────────────────
 
@@ -79,7 +80,7 @@ export class InvitesResource {
   accept(invitationId: string): Promise<AcceptInviteResult> {
     return this.ctx.request<AcceptInviteResult>({
       method: "POST",
-      path: `/v1/{account_id}/invites/received/${invitationId}/accept`,
+      path: apiPath`/v1/{account_id}/invites/received/${invitationId}/accept`,
     });
   }
 
@@ -91,7 +92,7 @@ export class InvitesResource {
   decline(invitationId: string): Promise<DeclineInviteResult> {
     return this.ctx.request<DeclineInviteResult>({
       method: "POST",
-      path: `/v1/{account_id}/invites/received/${invitationId}/decline`,
+      path: apiPath`/v1/{account_id}/invites/received/${invitationId}/decline`,
     });
   }
 
@@ -103,7 +104,7 @@ export class InvitesResource {
   cancel(invitationId: string): Promise<CancelInviteResult> {
     return this.ctx.request<CancelInviteResult>({
       method: "DELETE",
-      path: `/v1/{account_id}/invites/sent/${invitationId}`,
+      path: apiPath`/v1/{account_id}/invites/sent/${invitationId}`,
     });
   }
 }

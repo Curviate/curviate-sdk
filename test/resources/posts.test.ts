@@ -292,6 +292,11 @@ describe("posts.unsave", () => {
     // as a param marker, so this uses a `:postId` capture segment (not a
     // literal-colon template) purely to register the mock; it asserts the
     // exact raw path the client sent via `request.url`, unaffected by that.
+    //
+    // Those colons are percent-encoded on the wire: a path parameter is a
+    // value, not a path fragment, so the SDK encodes it at the call site. The
+    // assertion below is on the raw bytes AND on what a router decodes back
+    // out of them, which is the thing that has to stay unchanged.
     let seenMethod: string | undefined;
     let seenPath: string | undefined;
     let seenBody: string | null = null;
@@ -305,7 +310,10 @@ describe("posts.unsave", () => {
     );
     const res = await acc.posts.unsave("urn:li:activity:7459869580333576193");
     expect(seenMethod).toBe("DELETE");
-    expect(seenPath).toBe("/v1/acc_1/saved-posts/urn:li:activity:7459869580333576193");
+    expect(seenPath).toBe("/v1/acc_1/saved-posts/urn%3Ali%3Aactivity%3A7459869580333576193");
+    expect(decodeURIComponent(seenPath!.split("/").pop()!)).toBe(
+      "urn:li:activity:7459869580333576193",
+    );
     expect(seenBody).toBe("");
     expect(res).toEqual({ object: "save_result", saved: false, post_id: "7459869580333576193" });
   });

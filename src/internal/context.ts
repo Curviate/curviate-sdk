@@ -18,6 +18,7 @@
  * operation.
  */
 import { execute, type HttpMethod } from "../transport.js";
+import { assertPathIsSendable, encodePathParam } from "./path.js";
 import type { ResolvedConfig } from "../config.js";
 
 /** The placeholder a path template uses for the account-scoping segment. */
@@ -54,10 +55,24 @@ export interface RequestContext {
  * Substitute the fixed `account_id` into the `{account_id}` placeholder of a
  * path template. When the context carries no account id (root client), or the
  * template has no placeholder (root-scoped op), the path is returned unchanged.
+ *
+ * The account id is a path PARAMETER like any other, so it is percent-encoded
+ * on the way in. Substituted raw, an account selector shaped
+ * `x/../../../v1/accounts` retargets every call made through that scope at a
+ * different endpoint, because the URL parser resolves `..` before the request
+ * is sent. `split`/`join` (not `replace`) keeps the substitution literal, so a
+ * `$` in an account id cannot address the match either.
+ *
+ * SCOPE OF THAT CLAIM. Encoding alone stops a selector that CONTAINS `/` or
+ * `..`; it does not stop a selector that IS a dot segment, because
+ * `encodeURIComponent` leaves `.` unescaped and the URL parser decodes before
+ * it detects dot segments. That case is closed separately, by
+ * {@link assertPathIsSendable} on the assembled path in `createContext`. Both
+ * are needed; neither is sufficient alone.
  */
 function injectAccountIdIntoPath(path: string, accountId: string | undefined): string {
   if (accountId === undefined) return path;
-  return path.split(ACCOUNT_ID_PLACEHOLDER).join(accountId);
+  return path.split(ACCOUNT_ID_PLACEHOLDER).join(encodePathParam(accountId));
 }
 
 /**
@@ -71,7 +86,15 @@ export function createContext(
   accountId?: string,
 ): RequestContext {
   const request: RequestFn = <T>(args: RequestArgs) => {
-    const path = injectAccountIdIntoPath(args.path, accountId);
+    let path: string;
+    try {
+      path = injectAccountIdIntoPath(args.path, accountId);
+      assertPathIsSendable(path);
+    } catch (err) {
+      // Surface a malformed path the same way every other error surfaces: as a
+      // rejected promise, never a synchronous throw out of a `Promise<T>`.
+      return Promise.reject(err) as Promise<T>;
+    }
 
     return execute<T>(args.method, path, {
       apiKey: config.apiKey,

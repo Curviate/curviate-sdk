@@ -19,6 +19,7 @@
  */
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
+import { apiPath } from "../internal/path.js";
 
 // ─── Type aliases from generated OpenAPI snapshot ──────────────────────────
 
@@ -171,7 +172,7 @@ export class SalesNavigatorResource {
   getProfile(identifier: string, query?: Partial<SNGetProfileQuery>): Promise<SNGetProfileResult> {
     return this.ctx.request<SNGetProfileResult>({
       method: "GET",
-      path: `/v1/{account_id}/sales-navigator/profiles/${identifier}`,
+      path: apiPath`/v1/{account_id}/sales-navigator/profiles/${identifier}`,
       // cast needed: with_sections is string[] but transport encodes arrays as repeated params
       ...(query ? { query: query as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
@@ -213,7 +214,7 @@ export class SalesNavigatorResource {
   ): Promise<SNBrowseAccountListResult> {
     return this.ctx.request<SNBrowseAccountListResult>({
       method: "POST",
-      path: `/v1/{account_id}/sales-navigator/account-lists/${listId}`,
+      path: apiPath`/v1/{account_id}/sales-navigator/account-lists/${listId}`,
       body: body ?? {},
       ...(query ? { query: query as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
@@ -231,7 +232,7 @@ export class SalesNavigatorResource {
   ): Promise<SNBrowseLeadListResult> {
     return this.ctx.request<SNBrowseLeadListResult>({
       method: "POST",
-      path: `/v1/{account_id}/sales-navigator/lead-lists/${listId}`,
+      path: apiPath`/v1/{account_id}/sales-navigator/lead-lists/${listId}`,
       body: body ?? {},
       ...(query ? { query: query as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
@@ -249,7 +250,7 @@ export class SalesNavigatorResource {
     const { list_id, ...body } = input;
     return this.ctx.request<SNSaveAccountResult>({
       method: "POST",
-      path: `/v1/{account_id}/sales-navigator/account-lists/${list_id}/save`,
+      path: apiPath`/v1/{account_id}/sales-navigator/account-lists/${list_id}/save`,
       body,
     });
   }
@@ -263,7 +264,7 @@ export class SalesNavigatorResource {
     const { list_id, ...body } = input;
     return this.ctx.request<SNSaveLeadResult>({
       method: "POST",
-      path: `/v1/{account_id}/sales-navigator/lead-lists/${list_id}/save`,
+      path: apiPath`/v1/{account_id}/sales-navigator/lead-lists/${list_id}/save`,
       body,
     });
   }

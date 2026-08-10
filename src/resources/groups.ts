@@ -13,6 +13,7 @@
  */
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
+import { apiPath } from "../internal/path.js";
 
 // ─── Type aliases from generated OpenAPI snapshot ──────────────────────────
 
@@ -65,7 +66,7 @@ export class GroupsResource {
   get(group: string): Promise<Group> {
     return this.ctx.request<Group>({
       method: "GET",
-      path: `/v1/{account_id}/groups/${group}`,
+      path: apiPath`/v1/{account_id}/groups/${group}`,
     });
   }
 
@@ -83,7 +84,7 @@ export class GroupsResource {
   members(group: string, params?: GroupMemberListQuery): Promise<GroupMemberListPage> {
     return this.ctx.request<GroupMemberListPage>({
       method: "GET",
-      path: `/v1/{account_id}/groups/${group}/members`,
+      path: apiPath`/v1/{account_id}/groups/${group}/members`,
       ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
   }

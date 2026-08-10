@@ -34,6 +34,7 @@
  */
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
+import { apiPath } from "../internal/path.js";
 
 // ─── Type aliases from generated OpenAPI snapshot ──────────────────────────
 
@@ -125,7 +126,7 @@ export class CompaniesResource {
   get(identifier: string): Promise<CompanyProfile> {
     return this.ctx.request<CompanyProfile>({
       method: "GET",
-      path: `/v1/{account_id}/companies/${identifier}`,
+      path: apiPath`/v1/{account_id}/companies/${identifier}`,
     });
   }
 
@@ -141,7 +142,7 @@ export class CompaniesResource {
   employees(identifier: string, params?: CompanyEmployeeListQuery): Promise<CompanyEmployeeListPage> {
     return this.ctx.request<CompanyEmployeeListPage>({
       method: "GET",
-      path: `/v1/{account_id}/companies/${identifier}/employees`,
+      path: apiPath`/v1/{account_id}/companies/${identifier}/employees`,
       ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
   }
@@ -156,7 +157,7 @@ export class CompaniesResource {
   posts(identifier: string, params?: CompanyPostListQuery): Promise<CompanyPostListPage> {
     return this.ctx.request<CompanyPostListPage>({
       method: "GET",
-      path: `/v1/{account_id}/companies/${identifier}/posts`,
+      path: apiPath`/v1/{account_id}/companies/${identifier}/posts`,
       ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
   }
@@ -173,7 +174,7 @@ export class CompaniesResource {
   jobs(identifier: string, params?: CompanyJobListQuery): Promise<CompanyJobListPage> {
     return this.ctx.request<CompanyJobListPage>({
       method: "GET",
-      path: `/v1/{account_id}/companies/${identifier}/jobs`,
+      path: apiPath`/v1/{account_id}/companies/${identifier}/jobs`,
       ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
   }
@@ -204,7 +205,7 @@ export class CompaniesResource {
   followers(identifier: string, params?: CompanyFollowerListQuery): Promise<CompanyFollowerListPage> {
     return this.ctx.request<CompanyFollowerListPage>({
       method: "GET",
-      path: `/v1/{account_id}/companies/${identifier}/followers`,
+      path: apiPath`/v1/{account_id}/companies/${identifier}/followers`,
       ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
   }
@@ -223,7 +224,7 @@ export class CompaniesResource {
   ): Promise<CompanyInvitableFollowerListPage> {
     return this.ctx.request<CompanyInvitableFollowerListPage>({
       method: "GET",
-      path: `/v1/{account_id}/companies/${identifier}/invitable-followers`,
+      path: apiPath`/v1/{account_id}/companies/${identifier}/invitable-followers`,
       ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
   }
@@ -244,7 +245,7 @@ export class CompaniesResource {
   followInvite(identifier: string, body: CompanyFollowInviteBody): Promise<CompanyFollowInviteResult> {
     return this.ctx.request<CompanyFollowInviteResult>({
       method: "POST",
-      path: `/v1/{account_id}/companies/${identifier}/follow-invite`,
+      path: apiPath`/v1/{account_id}/companies/${identifier}/follow-invite`,
       body,
     });
   }
@@ -263,7 +264,7 @@ export class CompaniesResource {
   chats(identifier: string, params?: CompanyChatListQuery): Promise<CompanyChatListPage> {
     return this.ctx.request<CompanyChatListPage>({
       method: "GET",
-      path: `/v1/{account_id}/companies/${identifier}/chats`,
+      path: apiPath`/v1/{account_id}/companies/${identifier}/chats`,
       ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
   }
@@ -277,7 +278,7 @@ export class CompaniesResource {
   chat(identifier: string, chatId: string): Promise<CompanyChat> {
     return this.ctx.request<CompanyChat>({
       method: "GET",
-      path: `/v1/{account_id}/companies/${identifier}/chats/${chatId}`,
+      path: apiPath`/v1/{account_id}/companies/${identifier}/chats/${chatId}`,
     });
   }
 
@@ -295,7 +296,7 @@ export class CompaniesResource {
   ): Promise<CompanyChatMessageListPage> {
     return this.ctx.request<CompanyChatMessageListPage>({
       method: "GET",
-      path: `/v1/{account_id}/companies/${identifier}/chats/${chatId}/messages`,
+      path: apiPath`/v1/{account_id}/companies/${identifier}/chats/${chatId}/messages`,
       ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
   }
@@ -309,7 +310,7 @@ export class CompaniesResource {
   message(identifier: string, chatId: string, messageId: string): Promise<CompanyChatMessage> {
     return this.ctx.request<CompanyChatMessage>({
       method: "GET",
-      path: `/v1/{account_id}/companies/${identifier}/chats/${chatId}/messages/${messageId}`,
+      path: apiPath`/v1/{account_id}/companies/${identifier}/chats/${chatId}/messages/${messageId}`,
     });
   }
 
@@ -325,7 +326,7 @@ export class CompaniesResource {
   searchChats(identifier: string, params?: CompanyChatSearchQuery): Promise<CompanyChatSearchPage> {
     return this.ctx.request<CompanyChatSearchPage>({
       method: "GET",
-      path: `/v1/{account_id}/companies/${identifier}/chats/search`,
+      path: apiPath`/v1/{account_id}/companies/${identifier}/chats/search`,
       ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
   }
@@ -367,7 +368,7 @@ export class CompaniesResource {
   ): Promise<CompanySendMessageResult> {
     return this.ctx.request<CompanySendMessageResult>({
       method: "POST",
-      path: `/v1/{account_id}/companies/${identifier}/chats/${chatId}/messages`,
+      path: apiPath`/v1/{account_id}/companies/${identifier}/chats/${chatId}/messages`,
       body,
     });
   }
