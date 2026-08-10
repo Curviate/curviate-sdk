@@ -27,6 +27,7 @@
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
 import { resolveJobId } from "../internal/job-id.js";
+import { apiPath } from "../internal/path.js";
 
 /** Query params that carry array values need the transport's array-aware shape. */
 type QueryRecord = Record<string, string | number | boolean | string[] | undefined | null>;
@@ -167,7 +168,7 @@ export class RecruiterResource {
   getProfile(identifier: string, params?: Partial<RecruiterGetProfileQuery>): Promise<RecruiterGetProfileResult> {
     return this.ctx.request<RecruiterGetProfileResult>({
       method: "GET",
-      path: `/v1/{account_id}/recruiter/profiles/${identifier}`,
+      path: apiPath`/v1/{account_id}/recruiter/profiles/${identifier}`,
       ...(params ? { query: params as QueryRecord } : {}),
     });
   }
@@ -221,7 +222,7 @@ export class RecruiterResource {
   searchTalentPool(projectId: string, body: RecruiterSearchTalentPoolBody, params?: Partial<RecruiterSearchTalentPoolQuery>): Promise<RecruiterSearchTalentPoolResult> {
     return this.ctx.request<RecruiterSearchTalentPoolResult>({
       method: "POST",
-      path: `/v1/{account_id}/recruiter/projects/${projectId}/talent-pool/search`,
+      path: apiPath`/v1/{account_id}/recruiter/projects/${projectId}/talent-pool/search`,
       body,
       ...(params ? { query: params as QueryRecord } : {}),
     });
@@ -261,7 +262,7 @@ export class RecruiterResource {
   getProject(projectId: string): Promise<RecruiterGetProjectResult> {
     return this.ctx.request<RecruiterGetProjectResult>({
       method: "GET",
-      path: `/v1/{account_id}/recruiter/projects/${projectId}`,
+      path: apiPath`/v1/{account_id}/recruiter/projects/${projectId}`,
     });
   }
 
@@ -273,7 +274,7 @@ export class RecruiterResource {
   updateProject(projectId: string, body: RecruiterUpdateProjectBody): Promise<RecruiterUpdateProjectResult> {
     return this.ctx.request<RecruiterUpdateProjectResult>({
       method: "PATCH",
-      path: `/v1/{account_id}/recruiter/projects/${projectId}`,
+      path: apiPath`/v1/{account_id}/recruiter/projects/${projectId}`,
       body,
     });
   }
@@ -287,7 +288,7 @@ export class RecruiterResource {
   listPipeline(projectId: string, body: RecruiterListPipelineBody = {}, params?: Partial<RecruiterListPipelineQuery>): Promise<RecruiterListPipelineResult> {
     return this.ctx.request<RecruiterListPipelineResult>({
       method: "POST",
-      path: `/v1/{account_id}/recruiter/projects/${projectId}/pipeline`,
+      path: apiPath`/v1/{account_id}/recruiter/projects/${projectId}/pipeline`,
       body,
       ...(params ? { query: params as QueryRecord } : {}),
     });
@@ -301,7 +302,7 @@ export class RecruiterResource {
   getProjectJob(projectId: string): Promise<RecruiterProjectJob> {
     return this.ctx.request<RecruiterProjectJob>({
       method: "GET",
-      path: `/v1/{account_id}/recruiter/projects/${projectId}/jobs`,
+      path: apiPath`/v1/{account_id}/recruiter/projects/${projectId}/jobs`,
     });
   }
 
@@ -313,7 +314,7 @@ export class RecruiterResource {
   createProjectJob(projectId: string, body: RecruiterCreateProjectJobBody): Promise<RecruiterCreateProjectJobResult> {
     return this.ctx.request<RecruiterCreateProjectJobResult>({
       method: "POST",
-      path: `/v1/{account_id}/recruiter/projects/${projectId}/jobs`,
+      path: apiPath`/v1/{account_id}/recruiter/projects/${projectId}/jobs`,
       body,
     });
   }
@@ -326,7 +327,7 @@ export class RecruiterResource {
   getProjectJobBudget(projectId: string, jobId: string): Promise<RecruiterProjectJobBudget> {
     return this.ctx.request<RecruiterProjectJobBudget>({
       method: "GET",
-      path: `/v1/{account_id}/recruiter/projects/${projectId}/jobs/${jobId}/budget`,
+      path: apiPath`/v1/{account_id}/recruiter/projects/${projectId}/jobs/${jobId}/budget`,
     });
   }
 
@@ -370,7 +371,7 @@ export class RecruiterResource {
     const jobId = resolveJobId(jobIdOrUrl);
     return this.ctx.request<RecruiterJobDetail>({
       method: "GET",
-      path: `/v1/{account_id}/recruiter/jobs/${jobId}`,
+      path: apiPath`/v1/{account_id}/recruiter/jobs/${jobId}`,
     });
   }
 
@@ -383,7 +384,7 @@ export class RecruiterResource {
   updateProjectJob(projectId: string, jobId: string, body: RecruiterUpdateProjectJobBody): Promise<RecruiterUpdateProjectJobResult> {
     return this.ctx.request<RecruiterUpdateProjectJobResult>({
       method: "PATCH",
-      path: `/v1/{account_id}/recruiter/projects/${projectId}/jobs/${jobId}`,
+      path: apiPath`/v1/{account_id}/recruiter/projects/${projectId}/jobs/${jobId}`,
       body,
     });
   }
@@ -399,7 +400,7 @@ export class RecruiterResource {
   publishJob(projectId: string, jobId: string, body: RecruiterPublishJobBody): Promise<RecruiterPublishJobResult> {
     return this.ctx.request<RecruiterPublishJobResult>({
       method: "POST",
-      path: `/v1/{account_id}/recruiter/projects/${projectId}/jobs/${jobId}/publish`,
+      path: apiPath`/v1/{account_id}/recruiter/projects/${projectId}/jobs/${jobId}/publish`,
       body,
     });
   }
@@ -413,7 +414,7 @@ export class RecruiterResource {
   closeJob(projectId: string, jobId: string): Promise<RecruiterCloseJobResult> {
     return this.ctx.request<RecruiterCloseJobResult>({
       method: "POST",
-      path: `/v1/{account_id}/recruiter/projects/${projectId}/jobs/${jobId}/close`,
+      path: apiPath`/v1/{account_id}/recruiter/projects/${projectId}/jobs/${jobId}/close`,
     });
   }
 
@@ -425,7 +426,7 @@ export class RecruiterResource {
   saveCandidate(projectId: string, body: RecruiterSaveCandidateBody): Promise<RecruiterSaveCandidateResult> {
     return this.ctx.request<RecruiterSaveCandidateResult>({
       method: "POST",
-      path: `/v1/{account_id}/recruiter/projects/${projectId}/pipeline/candidate/save`,
+      path: apiPath`/v1/{account_id}/recruiter/projects/${projectId}/pipeline/candidate/save`,
       body,
     });
   }
@@ -439,7 +440,7 @@ export class RecruiterResource {
   listApplicants(projectId: string, body: RecruiterListApplicantsBody, params?: Partial<RecruiterListApplicantsQuery>): Promise<RecruiterListApplicantsResult> {
     return this.ctx.request<RecruiterListApplicantsResult>({
       method: "POST",
-      path: `/v1/{account_id}/recruiter/projects/${projectId}/talent-pool/applicants`,
+      path: apiPath`/v1/{account_id}/recruiter/projects/${projectId}/talent-pool/applicants`,
       body,
       ...(params ? { query: params as QueryRecord } : {}),
     });
@@ -452,7 +453,7 @@ export class RecruiterResource {
   getApplicant(projectId: string, applicantId: string): Promise<RecruiterGetApplicantResult> {
     return this.ctx.request<RecruiterGetApplicantResult>({
       method: "GET",
-      path: `/v1/{account_id}/recruiter/projects/${projectId}/talent-pool/applicants/${applicantId}`,
+      path: apiPath`/v1/{account_id}/recruiter/projects/${projectId}/talent-pool/applicants/${applicantId}`,
     });
   }
 
@@ -464,7 +465,7 @@ export class RecruiterResource {
   downloadResume(projectId: string, applicantId: string): Promise<ArrayBuffer> {
     return this.ctx.request<ArrayBuffer>({
       method: "GET",
-      path: `/v1/{account_id}/recruiter/projects/${projectId}/talent-pool/applicants/${applicantId}/resume`,
+      path: apiPath`/v1/{account_id}/recruiter/projects/${projectId}/talent-pool/applicants/${applicantId}/resume`,
     });
   }
 }

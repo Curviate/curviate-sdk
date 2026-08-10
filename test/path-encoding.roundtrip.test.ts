@@ -18,7 +18,7 @@
  */
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { createServer, type Server } from "node:http";
-import { AddressInfo } from "node:net";
+import type { AddressInfo } from "node:net";
 import { http, passthrough } from "msw";
 import { Curviate } from "../src/index.js";
 import { server as mswServer } from "./msw/server.js";
@@ -73,17 +73,15 @@ function lastRequest(): Captured {
 }
 
 /**
- * Re-derive a path parameter the way a router does: take the Nth segment of the
- * captured path (1-indexed, ignoring the leading empty segment) and decode it.
+ * Re-derive what a router sees: split the captured path on `/` and decode each
+ * segment, exactly as a path-parameter router does. Asserting on the WHOLE
+ * segment list rather than one index pins three things at once — the value, the
+ * position, and the segment count — so an id that silently adds a segment
+ * cannot pass by shifting everything one place along.
  */
-function serverView(rawUrl: string, segmentIndex: number): string {
+function serverSegments(rawUrl: string): string[] {
   const pathOnly = rawUrl.split("?")[0] ?? "";
-  const segments = pathOnly.split("/").slice(1);
-  const seg = segments[segmentIndex];
-  if (seg === undefined) {
-    throw new Error(`No segment ${segmentIndex} in ${pathOnly}`);
-  }
-  return decodeURIComponent(seg);
+  return pathOnly.split("/").slice(1).map(decodeURIComponent);
 }
 
 // ─── The id-shape matrix ─────────────────────────────────────────────────────
@@ -136,10 +134,12 @@ describe("round-trip: account-scoped single path parameter (posts.get)", () => {
       await client().account(ACCOUNT).posts.get(id);
       const req = lastRequest();
 
-      // Segment 0 = account id, 1 = "posts", 2 = the post id.
-      expect(serverView(req.rawUrl, 2), `raw wire target was ${req.rawUrl}`).toBe(id);
-      // And the id occupies exactly one segment: no id may add segments.
-      expect((req.rawUrl.split("?")[0] ?? "").split("/").length).toBe(4);
+      expect(serverSegments(req.rawUrl), `raw wire target was ${req.rawUrl}`).toEqual([
+        "v1",
+        ACCOUNT,
+        "posts",
+        id,
+      ]);
     });
   }
 });
@@ -150,10 +150,14 @@ describe("round-trip: two path parameters in one template (messaging.getMessage)
       await client().account(ACCOUNT).messaging.getMessage(id, id);
       const req = lastRequest();
 
-      // /v1/{account}/chats/{chatId}/messages/{messageId}
-      expect(serverView(req.rawUrl, 2), `raw wire target was ${req.rawUrl}`).toBe(id);
-      expect(serverView(req.rawUrl, 4), `raw wire target was ${req.rawUrl}`).toBe(id);
-      expect((req.rawUrl.split("?")[0] ?? "").split("/").length).toBe(6);
+      expect(serverSegments(req.rawUrl), `raw wire target was ${req.rawUrl}`).toEqual([
+        "v1",
+        ACCOUNT,
+        "chats",
+        id,
+        "messages",
+        id,
+      ]);
     });
   }
 });
@@ -164,9 +168,11 @@ describe("round-trip: root-scoped path parameter (accounts.get)", () => {
       await client().accounts.get(id);
       const req = lastRequest();
 
-      // /v1/accounts/{id}
-      expect(serverView(req.rawUrl, 2), `raw wire target was ${req.rawUrl}`).toBe(id);
-      expect((req.rawUrl.split("?")[0] ?? "").split("/").length).toBe(4);
+      expect(serverSegments(req.rawUrl), `raw wire target was ${req.rawUrl}`).toEqual([
+        "v1",
+        "accounts",
+        id,
+      ]);
     });
   }
 });
@@ -177,7 +183,12 @@ describe("round-trip: the bound account id itself", () => {
       await client().account(id).posts.get("urn:li:activity:1");
       const req = lastRequest();
 
-      expect(serverView(req.rawUrl, 1), `raw wire target was ${req.rawUrl}`).toBe(id);
+      expect(serverSegments(req.rawUrl), `raw wire target was ${req.rawUrl}`).toEqual([
+        "v1",
+        id,
+        "posts",
+        "urn:li:activity:1",
+      ]);
     });
   }
 });
@@ -190,11 +201,12 @@ describe("hostile path parameters stay inside their segment", () => {
       await client().account(ACCOUNT).posts.get(id);
       const req = lastRequest();
 
-      expect(serverView(req.rawUrl, 2), `raw wire target was ${req.rawUrl}`).toBe(id);
-      expect(
-        (req.rawUrl.split("?")[0] ?? "").split("/").length,
-        `id escaped its segment: ${req.rawUrl}`,
-      ).toBe(4);
+      expect(serverSegments(req.rawUrl), `raw wire target was ${req.rawUrl}`).toEqual([
+        "v1",
+        ACCOUNT,
+        "posts",
+        id,
+      ]);
       // Nothing the caller put in the id may become a query string.
       expect(req.rawUrl.includes("?"), `id leaked into the query: ${req.rawUrl}`).toBe(false);
     });
@@ -206,10 +218,13 @@ describe("hostile path parameters stay inside their segment", () => {
     await client().account("x/../../../v1/accounts").messaging.markChatRead("chat_1", {});
     const req = lastRequest();
 
-    expect(req.rawUrl).toBe(
-      "/v1/x%2F..%2F..%2F..%2Fv1%2Faccounts/chats/chat_1",
-    );
-    expect(serverView(req.rawUrl, 1)).toBe("x/../../../v1/accounts");
+    expect(req.rawUrl).toBe("/v1/x%2F..%2F..%2F..%2Fv1%2Faccounts/chats/chat_1");
+    expect(serverSegments(req.rawUrl)).toEqual([
+      "v1",
+      "x/../../../v1/accounts",
+      "chats",
+      "chat_1",
+    ]);
     expect(req.method).toBe("PATCH");
   });
 
@@ -255,7 +270,7 @@ describe("wire-format delta against the raw-interpolation behaviour", () => {
       const req = lastRequest();
       expect(req.rawUrl).toBe(expectedTemplate.replace("{acc}", ACCOUNT));
       expect(req.rawUrl).not.toBe(preFixWireTarget(ACCOUNT, id));
-      expect(serverView(req.rawUrl, 2)).toBe(id);
+      expect(serverSegments(req.rawUrl)).toEqual(["v1", ACCOUNT, "posts", id]);
     }
   });
 
@@ -268,9 +283,19 @@ describe("wire-format delta against the raw-interpolation behaviour", () => {
     const req = lastRequest();
 
     expect(req.rawUrl).toBe(`/v1/${ACCOUNT}/posts/urn%253Ali%253Aactivity%253A1`);
-    expect(serverView(req.rawUrl, 2)).toBe("urn%3Ali%3Aactivity%3A1");
+    expect(serverSegments(req.rawUrl)).toEqual([
+      "v1",
+      ACCOUNT,
+      "posts",
+      "urn%3Ali%3Aactivity%3A1",
+    ]);
     // The caller must now pass the decoded id; that is the documented migration.
     await client().account(ACCOUNT).posts.get("urn:li:activity:1");
-    expect(serverView(lastRequest().rawUrl, 2)).toBe("urn:li:activity:1");
+    expect(serverSegments(lastRequest().rawUrl)).toEqual([
+      "v1",
+      ACCOUNT,
+      "posts",
+      "urn:li:activity:1",
+    ]);
   });
 });

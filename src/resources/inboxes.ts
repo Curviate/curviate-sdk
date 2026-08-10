@@ -27,6 +27,7 @@
  */
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
+import { apiPath } from "../internal/path.js";
 
 // ─── Type aliases from generated OpenAPI snapshot ──────────────────────────
 
@@ -112,7 +113,7 @@ export class InboxesResource {
   listChats(inboxId: string, params?: InboxChatListQuery): Promise<InboxChatListPage> {
     return this.ctx.request<InboxChatListPage>({
       method: "GET",
-      path: `/v1/{account_id}/inboxes/${inboxId}/chats`,
+      path: apiPath`/v1/{account_id}/inboxes/${inboxId}/chats`,
       ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
   }

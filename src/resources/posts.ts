@@ -30,6 +30,7 @@
  */
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
+import { apiPath } from "../internal/path.js";
 
 // ─── Type aliases from generated OpenAPI snapshot ──────────────────────────
 
@@ -101,7 +102,7 @@ export class PostsResource {
   listComments(postId: string, params?: PostCommentListQuery): Promise<PostCommentListPage> {
     return this.ctx.request<PostCommentListPage>({
       method: "GET",
-      path: `/v1/{account_id}/posts/${postId}/comments`,
+      path: apiPath`/v1/{account_id}/posts/${postId}/comments`,
       ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
   }
@@ -110,7 +111,7 @@ export class PostsResource {
   get(postId: string): Promise<PostDetail> {
     return this.ctx.request<PostDetail>({
       method: "GET",
-      path: `/v1/{account_id}/posts/${postId}`,
+      path: apiPath`/v1/{account_id}/posts/${postId}`,
     });
   }
 
@@ -118,7 +119,7 @@ export class PostsResource {
   delete(postId: string): Promise<PostDeleteResult> {
     return this.ctx.request<PostDeleteResult>({
       method: "DELETE",
-      path: `/v1/{account_id}/posts/${postId}`,
+      path: apiPath`/v1/{account_id}/posts/${postId}`,
     });
   }
 
@@ -142,7 +143,7 @@ export class PostsResource {
   listUserPosts(userId: string, params?: UserPostListQuery): Promise<UserPostListPage> {
     return this.ctx.request<UserPostListPage>({
       method: "GET",
-      path: `/v1/{account_id}/users/${userId}/posts`,
+      path: apiPath`/v1/{account_id}/users/${userId}/posts`,
       ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
   }
@@ -151,7 +152,7 @@ export class PostsResource {
   listReactions(postId: string, params?: PostReactionListQuery): Promise<PostReactionListPage> {
     return this.ctx.request<PostReactionListPage>({
       method: "GET",
-      path: `/v1/{account_id}/posts/${postId}/reactions`,
+      path: apiPath`/v1/{account_id}/posts/${postId}/reactions`,
       ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
   }
@@ -160,7 +161,7 @@ export class PostsResource {
   react(postId: string, body: PostReactBody): Promise<PostReactResult> {
     return this.ctx.request<PostReactResult>({
       method: "POST",
-      path: `/v1/{account_id}/posts/${postId}/reactions`,
+      path: apiPath`/v1/{account_id}/posts/${postId}/reactions`,
       body,
     });
   }
@@ -173,7 +174,7 @@ export class PostsResource {
   unreact(postId: string, body: PostUnreactBody): Promise<PostUnreactResult> {
     return this.ctx.request<PostUnreactResult>({
       method: "DELETE",
-      path: `/v1/{account_id}/posts/${postId}/reactions`,
+      path: apiPath`/v1/{account_id}/posts/${postId}/reactions`,
       body,
     });
   }
@@ -185,7 +186,7 @@ export class PostsResource {
   listUserReactions(userId: string, params?: UserReactionListQuery): Promise<UserReactionListPage> {
     return this.ctx.request<UserReactionListPage>({
       method: "GET",
-      path: `/v1/{account_id}/users/${userId}/reactions`,
+      path: apiPath`/v1/{account_id}/users/${userId}/reactions`,
       ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
   }
@@ -241,7 +242,7 @@ export class PostsResource {
   unsave(postId: string): Promise<UnsavePostResult> {
     return this.ctx.request<UnsavePostResult>({
       method: "DELETE",
-      path: `/v1/{account_id}/saved-posts/${postId}`,
+      path: apiPath`/v1/{account_id}/saved-posts/${postId}`,
     });
   }
 }

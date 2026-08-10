@@ -15,6 +15,7 @@
  */
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
+import { apiPath } from "../internal/path.js";
 
 // ─── Type aliases from generated OpenAPI snapshot ──────────────────────────
 
@@ -170,7 +171,7 @@ export class AuthResource {
   getSession(sessionId: string): Promise<AuthGetSessionResult> {
     return this.ctx.request<AuthGetSessionResult>({
       method: "GET",
-      path: `/v1/auth/sessions/${sessionId}`,
+      path: apiPath`/v1/auth/sessions/${sessionId}`,
     });
   }
 }

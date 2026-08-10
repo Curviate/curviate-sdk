@@ -18,6 +18,7 @@
  * operation.
  */
 import { execute, type HttpMethod } from "../transport.js";
+import { encodePathParam } from "./path.js";
 import type { ResolvedConfig } from "../config.js";
 
 /** The placeholder a path template uses for the account-scoping segment. */
@@ -54,10 +55,17 @@ export interface RequestContext {
  * Substitute the fixed `account_id` into the `{account_id}` placeholder of a
  * path template. When the context carries no account id (root client), or the
  * template has no placeholder (root-scoped op), the path is returned unchanged.
+ *
+ * The account id is a path PARAMETER like any other, so it is percent-encoded
+ * on the way in. Substituted raw, an account selector shaped
+ * `x/../../../v1/accounts` retargets every call made through that scope at a
+ * different endpoint, because the URL parser resolves `..` before the request
+ * is sent. `split`/`join` (not `replace`) keeps the substitution literal, so a
+ * `$` in an account id cannot address the match either.
  */
 function injectAccountIdIntoPath(path: string, accountId: string | undefined): string {
   if (accountId === undefined) return path;
-  return path.split(ACCOUNT_ID_PLACEHOLDER).join(accountId);
+  return path.split(ACCOUNT_ID_PLACEHOLDER).join(encodePathParam(accountId));
 }
 
 /**

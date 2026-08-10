@@ -27,6 +27,7 @@
  */
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
+import { apiPath } from "../internal/path.js";
 
 // ─── Type aliases from generated OpenAPI snapshot ──────────────────────────
 
@@ -93,7 +94,7 @@ export class NotificationsResource {
   delete(cardUrn: string): Promise<NotificationDeleteResult> {
     return this.ctx.request<NotificationDeleteResult>({
       method: "DELETE",
-      path: `/v1/{account_id}/notifications/${encodeURIComponent(cardUrn)}`,
+      path: apiPath`/v1/{account_id}/notifications/${cardUrn}`,
     });
   }
 
@@ -120,7 +121,7 @@ export class NotificationsResource {
   showLess(cardUrn: string): Promise<NotificationShowLessResult> {
     return this.ctx.request<NotificationShowLessResult>({
       method: "POST",
-      path: `/v1/{account_id}/notifications/${encodeURIComponent(cardUrn)}/show-less`,
+      path: apiPath`/v1/{account_id}/notifications/${cardUrn}/show-less`,
     });
   }
 }

@@ -23,6 +23,7 @@
  */
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
+import { apiPath } from "../internal/path.js";
 
 // ─── Type aliases from generated OpenAPI snapshot ──────────────────────────
 
@@ -85,7 +86,7 @@ export class CommentsResource {
   listUserComments(userId: string, params?: UserCommentListQuery): Promise<UserCommentListPage> {
     return this.ctx.request<UserCommentListPage>({
       method: "GET",
-      path: `/v1/{account_id}/users/${userId}/comments`,
+      path: apiPath`/v1/{account_id}/users/${userId}/comments`,
       ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
   }
@@ -98,7 +99,7 @@ export class CommentsResource {
   create(postId: string, body: CreateCommentBody): Promise<CreateCommentResult> {
     return this.ctx.request<CreateCommentResult>({
       method: "POST",
-      path: `/v1/{account_id}/posts/${postId}/comments`,
+      path: apiPath`/v1/{account_id}/posts/${postId}/comments`,
       body,
     });
   }
@@ -110,7 +111,7 @@ export class CommentsResource {
   edit(postId: string, commentId: string, body: EditCommentBody): Promise<EditCommentResult> {
     return this.ctx.request<EditCommentResult>({
       method: "PATCH",
-      path: `/v1/{account_id}/posts/${postId}/comments/${commentId}`,
+      path: apiPath`/v1/{account_id}/posts/${postId}/comments/${commentId}`,
       body,
     });
   }
@@ -122,7 +123,7 @@ export class CommentsResource {
   delete(postId: string, commentId: string): Promise<DeleteCommentResult> {
     return this.ctx.request<DeleteCommentResult>({
       method: "DELETE",
-      path: `/v1/{account_id}/posts/${postId}/comments/${commentId}`,
+      path: apiPath`/v1/{account_id}/posts/${postId}/comments/${commentId}`,
     });
   }
 
@@ -134,7 +135,7 @@ export class CommentsResource {
   reply(postId: string, commentId: string, body: ReplyToCommentBody): Promise<ReplyToCommentResult> {
     return this.ctx.request<ReplyToCommentResult>({
       method: "POST",
-      path: `/v1/{account_id}/posts/${postId}/comments/${commentId}`,
+      path: apiPath`/v1/{account_id}/posts/${postId}/comments/${commentId}`,
       body,
     });
   }
@@ -146,7 +147,7 @@ export class CommentsResource {
   listReplies(postId: string, commentId: string, params?: CommentReplyListQuery): Promise<CommentReplyListPage> {
     return this.ctx.request<CommentReplyListPage>({
       method: "GET",
-      path: `/v1/{account_id}/posts/${postId}/comments/${commentId}/replies`,
+      path: apiPath`/v1/{account_id}/posts/${postId}/comments/${commentId}/replies`,
       ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
   }
@@ -158,7 +159,7 @@ export class CommentsResource {
   listReactions(postId: string, commentId: string, params?: CommentReactionListQuery): Promise<CommentReactionListPage> {
     return this.ctx.request<CommentReactionListPage>({
       method: "GET",
-      path: `/v1/{account_id}/posts/${postId}/comments/${commentId}/reactions`,
+      path: apiPath`/v1/{account_id}/posts/${postId}/comments/${commentId}/reactions`,
       ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
   }
@@ -169,7 +170,7 @@ export class CommentsResource {
   addReaction(postId: string, commentId: string, body: AddCommentReactionBody): Promise<AddCommentReactionResult> {
     return this.ctx.request<AddCommentReactionResult>({
       method: "POST",
-      path: `/v1/{account_id}/posts/${postId}/comments/${commentId}/reactions`,
+      path: apiPath`/v1/{account_id}/posts/${postId}/comments/${commentId}/reactions`,
       body,
     });
   }
@@ -182,7 +183,7 @@ export class CommentsResource {
   removeReaction(postId: string, commentId: string, body: RemoveCommentReactionBody): Promise<RemoveCommentReactionResult> {
     return this.ctx.request<RemoveCommentReactionResult>({
       method: "DELETE",
-      path: `/v1/{account_id}/posts/${postId}/comments/${commentId}/reactions`,
+      path: apiPath`/v1/{account_id}/posts/${postId}/comments/${commentId}/reactions`,
       body,
     });
   }

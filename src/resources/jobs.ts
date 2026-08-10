@@ -24,6 +24,7 @@
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
 import { resolveJobId } from "../internal/job-id.js";
+import { apiPath } from "../internal/path.js";
 
 // ─── Type aliases from generated OpenAPI snapshot ──────────────────────────
 
@@ -115,7 +116,7 @@ export class JobsResource {
     const jobId = resolveJobId(jobIdOrUrl);
     return this.ctx.request<JobDetail>({
       method: "GET",
-      path: `/v1/{account_id}/jobs/${jobId}`,
+      path: apiPath`/v1/{account_id}/jobs/${jobId}`,
       ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
   }
@@ -128,7 +129,7 @@ export class JobsResource {
   update(jobId: string, body: UpdateJobBody): Promise<UpdateJobResult> {
     return this.ctx.request<UpdateJobResult>({
       method: "PATCH",
-      path: `/v1/{account_id}/jobs/${jobId}`,
+      path: apiPath`/v1/{account_id}/jobs/${jobId}`,
       body,
     });
   }
@@ -140,7 +141,7 @@ export class JobsResource {
   getBudget(jobId: string): Promise<JobBudget> {
     return this.ctx.request<JobBudget>({
       method: "GET",
-      path: `/v1/{account_id}/jobs/${jobId}/budget`,
+      path: apiPath`/v1/{account_id}/jobs/${jobId}/budget`,
     });
   }
 
@@ -154,7 +155,7 @@ export class JobsResource {
   publish(jobId: string, body: PublishJobBody): Promise<PublishJobResult> {
     return this.ctx.request<PublishJobResult>({
       method: "POST",
-      path: `/v1/{account_id}/jobs/${jobId}/publish`,
+      path: apiPath`/v1/{account_id}/jobs/${jobId}/publish`,
       body,
     });
   }
@@ -167,7 +168,7 @@ export class JobsResource {
   close(jobId: string): Promise<CloseJobResult> {
     return this.ctx.request<CloseJobResult>({
       method: "POST",
-      path: `/v1/{account_id}/jobs/${jobId}/close`,
+      path: apiPath`/v1/{account_id}/jobs/${jobId}/close`,
     });
   }
 
@@ -186,7 +187,7 @@ export class JobsResource {
     const hasQuery = cursor !== undefined || limit !== undefined;
     return this.ctx.request<ListApplicantsResult>({
       method: "POST",
-      path: `/v1/{account_id}/jobs/${jobId}/applicants`,
+      path: apiPath`/v1/{account_id}/jobs/${jobId}/applicants`,
       body,
       ...(hasQuery
         ? {
@@ -206,7 +207,7 @@ export class JobsResource {
   getApplicant(jobId: string, applicantId: string): Promise<JobApplicant> {
     return this.ctx.request<JobApplicant>({
       method: "GET",
-      path: `/v1/{account_id}/jobs/${jobId}/applicants/${applicantId}`,
+      path: apiPath`/v1/{account_id}/jobs/${jobId}/applicants/${applicantId}`,
     });
   }
 
@@ -218,7 +219,7 @@ export class JobsResource {
   downloadResume(jobId: string, applicantId: string): Promise<ArrayBuffer> {
     return this.ctx.request<ArrayBuffer>({
       method: "GET",
-      path: `/v1/{account_id}/jobs/${jobId}/applicants/${applicantId}/resume`,
+      path: apiPath`/v1/{account_id}/jobs/${jobId}/applicants/${applicantId}/resume`,
     });
   }
 }

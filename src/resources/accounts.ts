@@ -18,6 +18,7 @@
  */
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
+import { apiPath } from "../internal/path.js";
 
 /** `GET /v1/accounts` 200 body, a page of connected accounts plus a cursor. */
 export type AccountListPage =
@@ -85,7 +86,7 @@ export class AccountsResource {
   get(accountId: string): Promise<AccountDetail> {
     return this.ctx.request<AccountDetail>({
       method: "GET",
-      path: `/v1/accounts/${accountId}`,
+      path: apiPath`/v1/accounts/${accountId}`,
     });
   }
 
@@ -101,7 +102,7 @@ export class AccountsResource {
   update(accountId: string, body: AccountUpdateBody): Promise<AccountUpdateResult> {
     return this.ctx.request<AccountUpdateResult>({
       method: "PATCH",
-      path: `/v1/accounts/${accountId}`,
+      path: apiPath`/v1/accounts/${accountId}`,
       body,
     });
   }
@@ -112,7 +113,7 @@ export class AccountsResource {
   disconnect(accountId: string): Promise<AccountDisconnectResult> {
     return this.ctx.request<AccountDisconnectResult>({
       method: "DELETE",
-      path: `/v1/accounts/${accountId}`,
+      path: apiPath`/v1/accounts/${accountId}`,
     });
   }
 }

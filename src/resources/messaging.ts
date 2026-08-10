@@ -21,6 +21,7 @@
  */
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
+import { apiPath } from "../internal/path.js";
 
 // ─── Type aliases from generated OpenAPI snapshot ──────────────────────────
 
@@ -114,7 +115,7 @@ export class MessagingResource {
   getChat(chatId: string): Promise<ChatDetail> {
     return this.ctx.request<ChatDetail>({
       method: "GET",
-      path: `/v1/{account_id}/chats/${chatId}`,
+      path: apiPath`/v1/{account_id}/chats/${chatId}`,
     });
   }
 
@@ -125,7 +126,7 @@ export class MessagingResource {
   markChatRead(chatId: string, body: MarkChatReadBody): Promise<MarkChatReadResult> {
     return this.ctx.request<MarkChatReadResult>({
       method: "PATCH",
-      path: `/v1/{account_id}/chats/${chatId}`,
+      path: apiPath`/v1/{account_id}/chats/${chatId}`,
       body,
     });
   }
@@ -137,7 +138,7 @@ export class MessagingResource {
   listMessages(chatId: string, params?: MessageListQuery): Promise<MessageListPage> {
     return this.ctx.request<MessageListPage>({
       method: "GET",
-      path: `/v1/{account_id}/chats/${chatId}/messages`,
+      path: apiPath`/v1/{account_id}/chats/${chatId}/messages`,
       ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
   }
@@ -173,7 +174,7 @@ export class MessagingResource {
   sendMessage(chatId: string, body: SendMessageBody): Promise<SendMessageResult> {
     return this.ctx.request<SendMessageResult>({
       method: "POST",
-      path: `/v1/{account_id}/chats/${chatId}/messages`,
+      path: apiPath`/v1/{account_id}/chats/${chatId}/messages`,
       body,
     });
   }
@@ -185,7 +186,7 @@ export class MessagingResource {
   getMessage(chatId: string, messageId: string): Promise<MessageDetail> {
     return this.ctx.request<MessageDetail>({
       method: "GET",
-      path: `/v1/{account_id}/chats/${chatId}/messages/${messageId}`,
+      path: apiPath`/v1/{account_id}/chats/${chatId}/messages/${messageId}`,
     });
   }
 
@@ -196,7 +197,7 @@ export class MessagingResource {
   editMessage(chatId: string, messageId: string, body: EditMessageBody): Promise<EditMessageResult> {
     return this.ctx.request<EditMessageResult>({
       method: "PATCH",
-      path: `/v1/{account_id}/chats/${chatId}/messages/${messageId}`,
+      path: apiPath`/v1/{account_id}/chats/${chatId}/messages/${messageId}`,
       body,
     });
   }
@@ -208,7 +209,7 @@ export class MessagingResource {
   deleteMessage(chatId: string, messageId: string): Promise<DeleteMessageResult> {
     return this.ctx.request<DeleteMessageResult>({
       method: "DELETE",
-      path: `/v1/{account_id}/chats/${chatId}/messages/${messageId}`,
+      path: apiPath`/v1/{account_id}/chats/${chatId}/messages/${messageId}`,
     });
   }
 
@@ -219,7 +220,7 @@ export class MessagingResource {
   addReaction(chatId: string, messageId: string, body: AddReactionBody): Promise<AddReactionResult> {
     return this.ctx.request<AddReactionResult>({
       method: "POST",
-      path: `/v1/{account_id}/chats/${chatId}/messages/${messageId}/reactions`,
+      path: apiPath`/v1/{account_id}/chats/${chatId}/messages/${messageId}/reactions`,
       body,
     });
   }
@@ -232,7 +233,7 @@ export class MessagingResource {
   getAttachment(chatId: string, messageId: string, attachmentId: string): Promise<ArrayBuffer> {
     return this.ctx.request<ArrayBuffer>({
       method: "GET",
-      path: `/v1/{account_id}/chats/${chatId}/messages/${messageId}/attachments/${attachmentId}`,
+      path: apiPath`/v1/{account_id}/chats/${chatId}/messages/${messageId}/attachments/${attachmentId}`,
     });
   }
 
