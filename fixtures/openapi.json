@@ -439,7 +439,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to use for the request."
+            "description": "The account ID (`acc_...`) to use for the request."
           },
           {
             "name": "user_id",
@@ -1049,7 +1049,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to use for the request."
+            "description": "The account ID (`acc_...`) to use for the request."
           },
           {
             "name": "user_id",
@@ -1392,7 +1392,8 @@
                       },
                       "required": [
                         "name"
-                      ]
+                      ],
+                      "additionalProperties": false
                     },
                     "description": "Skills to add to your profile. Add-only, this does not remove or reorder existing skills."
                   },
@@ -1417,6 +1418,7 @@
                       "content_type",
                       "filename"
                     ],
+                    "additionalProperties": false,
                     "description": "New profile photo (base64)."
                   },
                   "background_picture": {
@@ -1440,9 +1442,11 @@
                       "content_type",
                       "filename"
                     ],
+                    "additionalProperties": false,
                     "description": "New cover/banner photo (base64)."
                   }
-                }
+                },
+                "additionalProperties": false
               },
               "examples": {
                 "update_bio": {
@@ -1867,7 +1871,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to use for the request."
+            "description": "The account ID (`acc_...`) to use for the request."
           },
           {
             "name": "service",
@@ -2172,7 +2176,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) performing the endorsement."
+            "description": "The account ID (`acc_...`) performing the endorsement."
           },
           {
             "name": "user_id",
@@ -2181,7 +2185,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The LinkedIn member ID (`ACo…` format) whose skill is being endorsed, a public identifier does not resolve on this endpoint."
+            "description": "The LinkedIn member ID (`ACo...` format) whose skill is being endorsed, a public identifier does not resolve on this endpoint."
           }
         ],
         "responses": {
@@ -2453,7 +2457,7 @@
             "color": "#A1A1AA"
           }
         ],
-        "description": "Endorses one specific skill on a target member's profile. You can only endorse the skills of your 1st-degree connections. To obtain the endorsement_id: (1) GET /v1/{account_id}/users/{user_id}?linkedin_sections=linkedin_skills, (2) read the target skill's endorsement_id from the skills section, this field is present ONLY for connections you are eligible to endorse (it is omitted for users outside your network and on your own profile, so this workflow requires the target to be a 1st-degree connection), (3) call this endpoint with that value. user_id must be the LinkedIn member ID (ACo… format); a public identifier does not resolve on this endpoint.",
+        "description": "Endorses one specific skill on a target member's profile. You can only endorse the skills of your 1st-degree connections. To obtain the endorsement_id: (1) GET /v1/{account_id}/users/{user_id}?linkedin_sections=linkedin_skills, (2) read the target skill's endorsement_id from the skills section, this field is present ONLY for connections you are eligible to endorse (it is omitted for users outside your network and on your own profile, so this workflow requires the target to be a 1st-degree connection), (3) call this endpoint with that value. user_id must be the LinkedIn member ID (ACo... format); a public identifier does not resolve on this endpoint.",
         "requestBody": {
           "required": true,
           "content": {
@@ -2468,7 +2472,8 @@
                 },
                 "required": [
                   "endorsement_id"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "endorseSkill": {
@@ -2632,7 +2637,7 @@
                               "string",
                               "null"
                             ],
-                            "description": "Page-type enum: COMPANY | SHOWCASE | … ."
+                            "description": "Page-type enum: COMPANY | SHOWCASE | ... ."
                           },
                           "is_following": {
                             "type": [
@@ -2647,7 +2652,7 @@
                           },
                           "can_invite_to_follow": {
                             "type": "boolean",
-                            "description": "The follow-invite gate. true → the account may invite connections to follow this page."
+                            "description": "The follow-invite gate. true -> the account may invite connections to follow this page."
                           },
                           "url": {
                             "type": [
@@ -2661,7 +2666,7 @@
                             "items": {
                               "type": "string"
                             },
-                            "description": "Admin / paid-media roles: ADMINISTRATOR | DIRECT_SPONSORED_CONTENT_POSTER | … . Often empty."
+                            "description": "Admin / paid-media roles: ADMINISTRATOR | DIRECT_SPONSORED_CONTENT_POSTER | ... . Often empty."
                           },
                           "capabilities": {
                             "type": "array",
@@ -3140,7 +3145,7 @@
                             "additionalProperties": {
                               "type": "string"
                             },
-                            "description": "This plan's full action map (action key → external URL). Open-ended; observed keys: manage_subscription, cancel_subscription, switch_plans."
+                            "description": "This plan's full action map (action key -> external URL). Open-ended; observed keys: manage_subscription, cancel_subscription, switch_plans."
                           }
                         }
                       },
@@ -3151,7 +3156,7 @@
                       "additionalProperties": {
                         "type": "string"
                       },
-                      "description": "The primary plan's action map (action key → external URL); {} for a free account."
+                      "description": "The primary plan's action map (action key -> external URL); {} for a free account."
                     }
                   }
                 },
@@ -3834,7 +3839,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A page of the account's recent profile viewers, each classified by disclosure fidelity. A free account is capped at semi-anonymous fidelity (an in-band 200, never a 403). Empty account → items:[], cursor:null.",
+            "description": "A page of the account's recent profile viewers, each classified by disclosure fidelity. A free account is capped at semi-anonymous fidelity (an in-band 200, never a 403). Empty account -> items:[], cursor:null.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4561,7 +4566,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to use for the request."
+            "description": "The account ID (`acc_...`) to use for the request."
           },
           {
             "name": "user_id",
@@ -4945,7 +4950,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to use for the request."
+            "description": "The account ID (`acc_...`) to use for the request."
           },
           {
             "name": "user_id",
@@ -5341,7 +5346,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to follow from."
+            "description": "The account ID (`acc_...`) to follow from."
           },
           {
             "name": "user_id",
@@ -5350,7 +5355,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The LinkedIn member ID (`ACo…` format) to follow, a public identifier does not resolve on this endpoint."
+            "description": "The LinkedIn member ID (`ACo...` format) to follow, a public identifier does not resolve on this endpoint."
           }
         ],
         "responses": {
@@ -5735,7 +5740,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to unfollow from."
+            "description": "The account ID (`acc_...`) to unfollow from."
           },
           {
             "name": "user_id",
@@ -5744,7 +5749,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The LinkedIn member ID (`ACo…` format) to unfollow, a public identifier does not resolve on this endpoint."
+            "description": "The LinkedIn member ID (`ACo...` format) to unfollow, a public identifier does not resolve on this endpoint."
           }
         ],
         "responses": {
@@ -6635,7 +6640,7 @@
                         "properties": {
                           "id": {
                             "type": "string",
-                            "description": "Opaque LinkedIn member URN for this person (e.g. ACoAA…)."
+                            "description": "Opaque LinkedIn member URN for this person (e.g. ACoAA...)."
                           },
                           "member_id": {
                             "type": "string",
@@ -8354,7 +8359,7 @@
             "color": "#A1A1AA"
           }
         ],
-        "description": "Invites one or more of the connected account's 1st-degree connections to follow a company page it administers with the invite-to-follow entitlement. Pass the AC… member ids from an invitable-followers read. Returns one outcome per invitee, in request order, for an all-valid request. If any invitee id is invalid, the whole request is rejected (404), with no partial success. Re-inviting an already-invited member is a safe no-op (the same invitation id, never a duplicate). Only identifiers transit. Nothing is stored.",
+        "description": "Invites one or more of the connected account's 1st-degree connections to follow a company page it administers with the invite-to-follow entitlement. Pass the AC... member ids from an invitable-followers read. Returns one outcome per invitee, in request order, for an all-valid request. If any invitee id is invalid, the whole request is rejected (404), with no partial success. Re-inviting an already-invited member is a safe no-op (the same invitation id, never a duplicate). Only identifiers transit. Nothing is stored.",
         "requestBody": {
           "required": true,
           "content": {
@@ -8367,7 +8372,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "The AC… member ids to invite to follow the page. Each is the id field of an invitable-followers read. Required, 1 to 50 per request."
+                    "description": "The AC... member ids to invite to follow the page. Each is the id field of an invitable-followers read. Required, 1 to 50 per request."
                   }
                 },
                 "required": [
@@ -9298,7 +9303,7 @@
                           },
                           "id": {
                             "type": "string",
-                            "description": "The conversation id (2-… form): the key for retrieve-chat and get-messages."
+                            "description": "The conversation id (2-... form): the key for retrieve-chat and get-messages."
                           },
                           "is_group_chat": {
                             "type": "boolean",
@@ -9721,7 +9726,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The conversation id in the \"2-…\" form, the id field of a chats list or search result. Pass it verbatim."
+            "description": "The conversation id in the \"2-...\" form, the id field of a chats list or search result. Pass it verbatim."
           }
         ],
         "responses": {
@@ -9750,7 +9755,7 @@
                     },
                     "id": {
                       "type": "string",
-                      "description": "The conversation id (2-… form): the key for retrieve-chat and get-messages."
+                      "description": "The conversation id (2-... form): the key for retrieve-chat and get-messages."
                     },
                     "is_group_chat": {
                       "type": "boolean",
@@ -10151,7 +10156,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The conversation id in the \"2-…\" form, the id field of a chats list or search result. Pass it verbatim."
+            "description": "The conversation id in the \"2-...\" form, the id field of a chats list or search result. Pass it verbatim."
           },
           {
             "name": "limit",
@@ -10217,11 +10222,11 @@
                           },
                           "id": {
                             "type": "string",
-                            "description": "The message id (2-… form)."
+                            "description": "The message id (2-... form)."
                           },
                           "conversation_id": {
                             "type": "string",
-                            "description": "The parent conversation id (2-… form)."
+                            "description": "The parent conversation id (2-... form)."
                           },
                           "sender": {
                             "type": "object",
@@ -10569,7 +10574,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The conversation id in the \"2-…\" form, the id field of a chats list or search result. Pass it verbatim."
+            "description": "The conversation id in the \"2-...\" form, the id field of a chats list or search result. Pass it verbatim."
           }
         ],
         "responses": {
@@ -10647,7 +10652,7 @@
             }
           },
           "400": {
-            "description": "Empty body or neither text nor attachment supplied, a non-numeric identifier, or a malformed chat_id (not a conversation id in the 2-… form).",
+            "description": "Empty body or neither text nor attachment supplied, a non-numeric identifier, or a malformed chat_id (not a conversation id in the 2-... form).",
             "content": {
               "application/json": {
                 "schema": {
@@ -10918,7 +10923,7 @@
             "color": "#A1A1AA"
           }
         ],
-        "description": "Sends a message into an existing company-inbox conversation, as the page. chat_id is the conversation id from GET /v1/{account_id}/companies/{identifier}/chats, the same 2-… id this group's chat reads return, passed verbatim. The connected account must administer the page. Reply-only: a page can never start a new conversation, only answer an existing one. Send application/json with text, base64 attachments (max 5 MiB per file), or both; at least one of text or attachments is required. Message content passes through to the platform and is never stored. The response's sent_as field names the acting identity that was actually used.",
+        "description": "Sends a message into an existing company-inbox conversation, as the page. chat_id is the conversation id from GET /v1/{account_id}/companies/{identifier}/chats, the same 2-... id this group's chat reads return, passed verbatim. The connected account must administer the page. Reply-only: a page can never start a new conversation, only answer an existing one. Send application/json with text, base64 attachments (max 5 MiB per file), or both; at least one of text or attachments is required. Message content passes through to the platform and is never stored. The response's sent_as field names the acting identity that was actually used.",
         "requestBody": {
           "required": true,
           "content": {
@@ -10956,11 +10961,13 @@
                         "content",
                         "content_type",
                         "filename"
-                      ]
+                      ],
+                      "additionalProperties": false
                     },
                     "description": "Optional file attachments (base64-encoded)."
                   }
-                }
+                },
+                "additionalProperties": false
               },
               "examples": {
                 "textOnly": {
@@ -11027,7 +11034,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The conversation id in the \"2-…\" form, the id field of a chats list or search result. Pass it verbatim."
+            "description": "The conversation id in the \"2-...\" form, the id field of a chats list or search result. Pass it verbatim."
           },
           {
             "name": "message_id",
@@ -11036,7 +11043,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The message id in the \"2-…\" form, the id field of a messages list result. Always resolved scoped to its chat_id."
+            "description": "The message id in the \"2-...\" form, the id field of a messages list result. Always resolved scoped to its chat_id."
           }
         ],
         "responses": {
@@ -11063,11 +11070,11 @@
                     },
                     "id": {
                       "type": "string",
-                      "description": "The message id (2-… form)."
+                      "description": "The message id (2-... form)."
                     },
                     "conversation_id": {
                       "type": "string",
-                      "description": "The parent conversation id (2-… form)."
+                      "description": "The parent conversation id (2-... form)."
                     },
                     "sender": {
                       "type": "object",
@@ -11487,7 +11494,7 @@
                           },
                           "id": {
                             "type": "string",
-                            "description": "The conversation id (2-… form): the key for retrieve-chat and get-messages."
+                            "description": "The conversation id (2-... form): the key for retrieve-chat and get-messages."
                           },
                           "is_group_chat": {
                             "type": "boolean",
@@ -13816,7 +13823,7 @@
                         "properties": {
                           "id": {
                             "type": "string",
-                            "description": "Opaque LinkedIn member URN for this person (e.g. ACoAA…)."
+                            "description": "Opaque LinkedIn member URN for this person (e.g. ACoAA...)."
                           },
                           "member_id": {
                             "type": "string",
@@ -13893,7 +13900,7 @@
                             "number",
                             "null"
                           ],
-                          "description": "Total matching result count. Large counts (people/companies/from-url) are a ≥1000 ceiling, not an exact total."
+                          "description": "Total matching result count. Large counts (people/companies/from-url) are a >=1000 ceiling, not an exact total."
                         }
                       },
                       "required": [
@@ -14393,7 +14400,8 @@
                     "type": "boolean",
                     "description": "Filter to profiles open to volunteering opportunities."
                   }
-                }
+                },
+                "additionalProperties": false
               },
               "examples": {
                 "structured": {
@@ -14566,7 +14574,7 @@
                             "number",
                             "null"
                           ],
-                          "description": "Total matching result count. Large counts are a ≥1000 ceiling, not an exact total."
+                          "description": "Total matching result count. Large counts are a >=1000 ceiling, not an exact total."
                         }
                       },
                       "required": [
@@ -14964,7 +14972,8 @@
                     },
                     "description": "Filter by network distance: 1 = 1st degree, 2 = 2nd degree, 3 = 3rd degree."
                   }
-                }
+                },
+                "additionalProperties": false
               },
               "examples": {
                 "structured": {
@@ -15599,6 +15608,7 @@
                         "description": "Restrict to posts by people you follow."
                       }
                     },
+                    "additionalProperties": false,
                     "description": "Filter to posts by specific authors (members, companies, yourself, connections, or people you follow)."
                   },
                   "mentioning": {
@@ -15619,6 +15629,7 @@
                         "description": "Opaque company IDs from GET /v1/{account_id}/search/parameters?type=COMPANY."
                       }
                     },
+                    "additionalProperties": false,
                     "description": "Filter to posts mentioning specific members or companies."
                   },
                   "author": {
@@ -15643,9 +15654,11 @@
                         "description": "Free-text keyword match on the author."
                       }
                     },
+                    "additionalProperties": false,
                     "description": "Filter to posts by author attributes (industry, company, or keywords)."
                   }
-                }
+                },
+                "additionalProperties": false
               },
               "examples": {
                 "structured": {
@@ -16407,7 +16420,8 @@
                     "type": "boolean",
                     "description": "Filter to fair-chance employers."
                   }
-                }
+                },
+                "additionalProperties": false
               },
               "examples": {
                 "structured": {
@@ -16535,7 +16549,7 @@
                               },
                               "id": {
                                 "type": "string",
-                                "description": "Opaque LinkedIn member URN for this person (e.g. ACoAA…)."
+                                "description": "Opaque LinkedIn member URN for this person (e.g. ACoAA...)."
                               },
                               "member_id": {
                                 "type": "string",
@@ -16875,7 +16889,7 @@
                             "number",
                             "null"
                           ],
-                          "description": "Total matching result count. Large counts are a ≥1000 ceiling, not an exact total."
+                          "description": "Total matching result count. Large counts are a >=1000 ceiling, not an exact total."
                         }
                       },
                       "required": [
@@ -17182,7 +17196,8 @@
                 },
                 "required": [
                   "url"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "peopleUrl": {
@@ -17674,7 +17689,7 @@
                               "string",
                               "null"
                             ],
-                            "description": "The member id (ACoAAA…), the key for connect/message/enrich."
+                            "description": "The member id (ACoAAA...), the key for connect/message/enrich."
                           },
                           "name": {
                             "type": [
@@ -18141,7 +18156,8 @@
                     },
                     "description": "Profile-language ISO 639-1 codes (e.g. en, de, es, fr)."
                   }
-                }
+                },
+                "additionalProperties": false
               }
             }
           }
@@ -18560,7 +18576,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose chats to list."
+            "description": "The account ID (`acc_...`) whose chats to list."
           },
           {
             "name": "inbox",
@@ -19195,7 +19211,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to start the chat from."
+            "description": "The account ID (`acc_...`) to start the chat from."
           }
         ],
         "responses": {
@@ -19508,7 +19524,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "LinkedIn member provider IDs for the chat recipients (≥ 1, e.g. ACo…)."
+                    "description": "LinkedIn member provider IDs for the chat recipients (>= 1, e.g. ACo...)."
                   },
                   "text": {
                     "type": "string",
@@ -19516,7 +19532,7 @@
                   },
                   "subject": {
                     "type": "string",
-                    "description": "Optional conversation name / subject line (≤ 200 chars)."
+                    "description": "Optional conversation name / subject line (<= 200 chars)."
                   },
                   "attachments": {
                     "type": "array",
@@ -19540,7 +19556,8 @@
                         "content",
                         "content_type",
                         "filename"
-                      ]
+                      ],
+                      "additionalProperties": false
                     },
                     "description": "Optional file attachments (base64-encoded)."
                   },
@@ -19571,7 +19588,8 @@
                 "required": [
                   "attendees_ids",
                   "text"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "textOnly": {
@@ -19646,7 +19664,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) that owns the chat."
+            "description": "The account ID (`acc_...`) that owns the chat."
           },
           {
             "name": "chat_id",
@@ -20140,7 +20158,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) that owns the chat."
+            "description": "The account ID (`acc_...`) that owns the chat."
           },
           {
             "name": "chat_id",
@@ -20398,7 +20416,8 @@
                     "type": "boolean",
                     "description": "Mark the chat read (true) or unread (false)."
                   }
-                }
+                },
+                "additionalProperties": false
               },
               "examples": {
                 "markRead": {
@@ -20440,7 +20459,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) that owns the chat."
+            "description": "The account ID (`acc_...`) that owns the chat."
           },
           {
             "name": "chat_id",
@@ -20892,7 +20911,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) that owns the chat."
+            "description": "The account ID (`acc_...`) that owns the chat."
           },
           {
             "name": "chat_id",
@@ -20906,7 +20925,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Message sent. Returns the new message_id and sent_as, the acting identity. Reply as a company page simply by sending into one of its chat ids (from GET /v1/{account_id}/inboxes/{inbox_id}/chats): a COMPANY_ chat id (e.g. `COMPANY_83734124_2-…`) sends AS THE PAGE and echoes sent_as:{kind:'company',company_id,name} (company_id is null when the page could not be correlated to a managed page). Any other chat id sends as the connected member and echoes sent_as:{kind:'personal'}. Never infer the acting identity from the message's sender field, only from sent_as.",
+            "description": "Message sent. Returns the new message_id and sent_as, the acting identity. Reply as a company page simply by sending into one of its chat ids (from GET /v1/{account_id}/inboxes/{inbox_id}/chats): a COMPANY_ chat id (e.g. `COMPANY_83734124_2-...`) sends AS THE PAGE and echoes sent_as:{kind:'company',company_id,name} (company_id is null when the page could not be correlated to a managed page). Any other chat id sends as the connected member and echoes sent_as:{kind:'personal'}. Never infer the acting identity from the message's sender field, only from sent_as.",
             "content": {
               "application/json": {
                 "schema": {
@@ -21289,11 +21308,13 @@
                         "content",
                         "content_type",
                         "filename"
-                      ]
+                      ],
+                      "additionalProperties": false
                     },
                     "description": "Optional file attachments (base64-encoded)."
                   }
-                }
+                },
+                "additionalProperties": false
               },
               "examples": {
                 "textOnly": {
@@ -21348,7 +21369,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) that owns the chat."
+            "description": "The account ID (`acc_...`) that owns the chat."
           },
           {
             "name": "chat_id",
@@ -21712,7 +21733,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) that owns the chat."
+            "description": "The account ID (`acc_...`) that owns the chat."
           },
           {
             "name": "chat_id",
@@ -21998,7 +22019,8 @@
                 },
                 "required": [
                   "text"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "minimal": {
@@ -22032,7 +22054,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) that owns the chat."
+            "description": "The account ID (`acc_...`) that owns the chat."
           },
           {
             "name": "chat_id",
@@ -22306,7 +22328,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) that owns the chat."
+            "description": "The account ID (`acc_...`) that owns the chat."
           },
           {
             "name": "chat_id",
@@ -22571,12 +22593,13 @@
                 "properties": {
                   "reaction": {
                     "type": "string",
-                    "description": "Native emoji reaction value (e.g. 👍). Must be a valid LinkedIn reaction emoji."
+                    "description": "Native emoji reaction value (e.g. a thumbs-up emoji). Must be a valid LinkedIn reaction emoji."
                   }
                 },
                 "required": [
                   "reaction"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "thumbsUp": {
@@ -22612,7 +22635,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) that owns the chat."
+            "description": "The account ID (`acc_...`) that owns the chat."
           },
           {
             "name": "chat_id",
@@ -22881,7 +22904,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose inbox to search."
+            "description": "The account ID (`acc_...`) whose inbox to search."
           },
           {
             "name": "query",
@@ -23340,7 +23363,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to send the InMail from."
+            "description": "The account ID (`acc_...`) to send the InMail from."
           }
         ],
         "responses": {
@@ -23629,7 +23652,7 @@
                 "properties": {
                   "recipient_urn": {
                     "type": "string",
-                    "description": "LinkedIn member URN (`urn:li:member:<id>`) or member provider id (`ACo…`)."
+                    "description": "LinkedIn member URN (`urn:li:member:<id>`) or member provider id (`ACo...`)."
                   },
                   "subject": {
                     "type": "string",
@@ -23644,7 +23667,8 @@
                   "recipient_urn",
                   "subject",
                   "text"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "classic": {
@@ -23690,7 +23714,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose inboxes to list."
+            "description": "The account ID (`acc_...`) whose inboxes to list."
           },
           {
             "name": "kind",
@@ -24025,7 +24049,7 @@
           }
         ],
         "x-curviate-stability": "beta",
-        "description": "Returns the account's personal inbox plus, when the company product is attached, one entry per company page × folder (id like 'COMPANY_83734124_PRIMARY'). Company inboxes carry reply_only:true; company pages can only reply to existing conversations, never start one. company_id is resolved by correlating the page name against the account's managed pages; an uncorrelatable page returns company_id:null, never a fabricated id. When no company inbox exists, hint names the Company Pages reconnect requirement instead of returning silently empty.",
+        "description": "Returns the account's personal inbox plus, when the company product is attached, one entry per company page x folder (id like 'COMPANY_83734124_PRIMARY'). Company inboxes carry reply_only:true; company pages can only reply to existing conversations, never start one. company_id is resolved by correlating the page name against the account's managed pages; an uncorrelatable page returns company_id:null, never a fabricated id. When no company inbox exists, hint names the Company Pages reconnect requirement instead of returning silently empty.",
         "x-order": 13
       }
     },
@@ -24049,7 +24073,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose inbox to list."
+            "description": "The account ID (`acc_...`) whose inbox to list."
           },
           {
             "name": "inbox_id",
@@ -24605,7 +24629,7 @@
           }
         ],
         "x-curviate-stability": "beta",
-        "description": "Returns a paginated list of an inbox's conversations, newest-activity-first. Each chat's id is send-ready: pass it directly to the send-message endpoint to reply; a company inbox's chat id (e.g. 'COMPANY_83734124_2-…') replies AS THE PAGE, no separate parameter needed. Works identically for personal (CLASSIC_) inboxes. Company pages are reply-only (reply_only:true on the inbox, from GET /inboxes); they cannot start a new conversation. A malformed inbox_id returns 400 INVALID_REQUEST; a well-formed id for a mailbox this account does not administer returns 403 RESOURCE_ACCESS_RESTRICTED (no existence disclosure); there is no 404 for this endpoint.",
+        "description": "Returns a paginated list of an inbox's conversations, newest-activity-first. Each chat's id is send-ready: pass it directly to the send-message endpoint to reply; a company inbox's chat id (e.g. 'COMPANY_83734124_2-...') replies AS THE PAGE, no separate parameter needed. Works identically for personal (CLASSIC_) inboxes. Company pages are reply-only (reply_only:true on the inbox, from GET /inboxes); they cannot start a new conversation. A malformed inbox_id returns 400 INVALID_REQUEST; a well-formed id for a mailbox this account does not administer returns 403 RESOURCE_ACCESS_RESTRICTED (no existence disclosure); there is no 404 for this endpoint.",
         "x-order": 14
       }
     },
@@ -24737,7 +24761,7 @@
                                   "organization",
                                   "other"
                                 ],
-                                "description": "Person → individual; company/showcase/sponsored → organization; unresolved (every recent author) → other."
+                                "description": "Person -> individual; company/showcase/sponsored -> organization; unresolved (every recent author) -> other."
                               },
                               "name": {
                                 "type": "string",
@@ -24757,7 +24781,7 @@
                               "member_id": {
                                 "type": "string",
                                 "nullable": true,
-                                "description": "Obfuscated member id (ACoAA…), set for person authors (relevant)."
+                                "description": "Obfuscated member id (ACoAA...), set for person authors (relevant)."
                               },
                               "numeric_id": {
                                 "type": "string",
@@ -25689,7 +25713,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The card urn to delete, the `card_urn` field of a GET /v1/{account_id}/notifications item (urn:li:fsd_notificationCard:…). Pass the card urn, NOT object_urn (which targets the wrong notification). Percent-encode it into the path. This cannot be undone."
+            "description": "The card urn to delete, the `card_urn` field of a GET /v1/{account_id}/notifications item (urn:li:fsd_notificationCard:...). Pass the card urn, NOT object_urn (which targets the wrong notification). Percent-encode it into the path. This cannot be undone."
           }
         ],
         "responses": {
@@ -26218,7 +26242,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to use for the request."
+            "description": "The account ID (`acc_...`) to use for the request."
           },
           {
             "name": "user_id",
@@ -26397,11 +26421,25 @@
                           },
                           "parent_post": {
                             "type": "object",
-                            "description": "The post this comment was made on.",
+                            "description": "The post this comment was made on. Use `urn` to tell whether you have already commented on a given post; `id` varies with the surface that returned it, `urn` does not.",
                             "properties": {
                               "id": {
                                 "type": "string",
-                                "description": "The post's identifier."
+                                "description": "The post's identifier as returned on this surface. Use this value, not `urn`, on sub-resource operations such as commenting."
+                              },
+                              "urn": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "description": "Stable identifier for the parent post, in `urn:li:activity:ID` or `urn:li:ugcPost:ID` form. Compare it against a post's own `urn` to join a comment to its parent, including posts whose identity is a ugcPost. Also accepted as the post_id path param on get-post. null when the post carries no resolvable identity, and two nulls are not a match: treat null as unknown, never as equal."
+                              },
+                              "created_at": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "description": "ISO-8601 UTC datetime the parent post was created, or null if unavailable. This is the post's own creation time, not the time of the comment."
                               },
                               "object": {
                                 "type": "string",
@@ -26455,8 +26493,10 @@
                           "is_sender": true,
                           "attachments": [],
                           "parent_post": {
+                            "object": "post",
                             "id": "urn:li:ugcPost:7123456789012345678",
-                            "object": "post"
+                            "urn": "urn:li:ugcPost:7123456789012345678",
+                            "created_at": "2026-06-28T09:15:00.000Z"
                           }
                         }
                       ],
@@ -26687,7 +26727,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to comment as."
+            "description": "The account ID (`acc_...`) to comment as."
           },
           {
             "name": "post_id",
@@ -26696,7 +26736,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
+            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
           }
         ],
         "responses": {
@@ -27162,14 +27202,16 @@
                         "content",
                         "content_type",
                         "filename"
-                      ]
+                      ],
+                      "additionalProperties": false
                     },
                     "description": "At most one base64 image attachment (LinkedIn's one-image-per-comment limit). Platform rendering of comment attachments is not guaranteed."
                   }
                 },
                 "required": [
                   "text"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "minimal": {
@@ -27216,7 +27258,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to use for the request."
+            "description": "The account ID (`acc_...`) to use for the request."
           },
           {
             "name": "post_id",
@@ -27225,7 +27267,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
+            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
           },
           {
             "name": "limit",
@@ -27677,7 +27719,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) that authored the comment."
+            "description": "The account ID (`acc_...`) that authored the comment."
           },
           {
             "name": "post_id",
@@ -27686,7 +27728,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
+            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
           },
           {
             "name": "comment_id",
@@ -28096,7 +28138,8 @@
                 },
                 "required": [
                   "text"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "minimal": {
@@ -28130,7 +28173,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) that authored the comment."
+            "description": "The account ID (`acc_...`) that authored the comment."
           },
           {
             "name": "post_id",
@@ -28139,7 +28182,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
+            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
           },
           {
             "name": "comment_id",
@@ -28401,7 +28444,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to reply as."
+            "description": "The account ID (`acc_...`) to reply as."
           },
           {
             "name": "post_id",
@@ -28410,7 +28453,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
+            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
           },
           {
             "name": "comment_id",
@@ -28880,14 +28923,16 @@
                         "content",
                         "content_type",
                         "filename"
-                      ]
+                      ],
+                      "additionalProperties": false
                     },
                     "description": "At most one base64 image attachment (LinkedIn's one-image-per-comment limit). Platform rendering of comment attachments is not guaranteed."
                   }
                 },
                 "required": [
                   "text"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "minimal": {
@@ -28923,7 +28968,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to use for the request."
+            "description": "The account ID (`acc_...`) to use for the request."
           },
           {
             "name": "post_id",
@@ -28932,7 +28977,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
+            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
           },
           {
             "name": "comment_id",
@@ -29380,7 +29425,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to use for the request."
+            "description": "The account ID (`acc_...`) to use for the request."
           },
           {
             "name": "post_id",
@@ -29389,7 +29434,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
+            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
           },
           {
             "name": "comment_id",
@@ -29744,7 +29789,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to react from."
+            "description": "The account ID (`acc_...`) to react from."
           },
           {
             "name": "post_id",
@@ -29753,7 +29798,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
+            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
           },
           {
             "name": "comment_id",
@@ -30055,7 +30100,8 @@
                 },
                 "required": [
                   "reaction"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "minimal": {
@@ -30089,7 +30135,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose reaction to remove."
+            "description": "The account ID (`acc_...`) whose reaction to remove."
           },
           {
             "name": "post_id",
@@ -30098,7 +30144,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
+            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
           },
           {
             "name": "comment_id",
@@ -30396,7 +30442,8 @@
                 },
                 "required": [
                   "reaction"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "minimal": {
@@ -30432,7 +30479,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to act on behalf of."
+            "description": "The account ID (`acc_...`) to act on behalf of."
           }
         ],
         "responses": {
@@ -30452,7 +30499,7 @@
                     },
                     "id": {
                       "type": "string",
-                      "description": "Direction-prefixed connect-request id (SENT_…)."
+                      "description": "Direction-prefixed connect-request id (SENT_...)."
                     },
                     "status": {
                       "type": "string",
@@ -30787,7 +30834,8 @@
                 },
                 "required": [
                   "recipient_identifier"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "send": {
@@ -30830,7 +30878,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to list sent connect-requests for."
+            "description": "The account ID (`acc_...`) to list sent connect-requests for."
           },
           {
             "name": "cursor",
@@ -30885,7 +30933,7 @@
                           },
                           "id": {
                             "type": "string",
-                            "description": "Direction-prefixed connect-request id (SENT_…)."
+                            "description": "Direction-prefixed connect-request id (SENT_...)."
                           },
                           "created_at": {
                             "type": "string",
@@ -31218,7 +31266,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to list received connect-requests for."
+            "description": "The account ID (`acc_...`) to list received connect-requests for."
           },
           {
             "name": "cursor",
@@ -31273,7 +31321,7 @@
                           },
                           "id": {
                             "type": "string",
-                            "description": "Direction-prefixed connect-request id (RECEIVED_…)."
+                            "description": "Direction-prefixed connect-request id (RECEIVED_...)."
                           },
                           "created_at": {
                             "type": "string",
@@ -31616,7 +31664,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to act on behalf of."
+            "description": "The account ID (`acc_...`) to act on behalf of."
           },
           {
             "name": "invitation_id",
@@ -31898,7 +31946,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to act on behalf of."
+            "description": "The account ID (`acc_...`) to act on behalf of."
           },
           {
             "name": "invitation_id",
@@ -32180,7 +32228,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to act on behalf of."
+            "description": "The account ID (`acc_...`) to act on behalf of."
           },
           {
             "name": "invitation_id",
@@ -33459,7 +33507,8 @@
                   "employment_status",
                   "description",
                   "apply_method"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "jobPosting": {
@@ -34637,7 +34686,8 @@
                   "rejection_settings": {
                     "description": "Optional automatic-rejection configuration."
                   }
-                }
+                },
+                "additionalProperties": false
               },
               "examples": {
                 "titleChange": {
@@ -35397,6 +35447,7 @@
                     "required": [
                       "mode"
                     ],
+                    "additionalProperties": false,
                     "title": "FREE"
                   },
                   {
@@ -35433,6 +35484,7 @@
                           "amount",
                           "scope"
                         ],
+                        "additionalProperties": false,
                         "description": "Required. The paid-promotion budget; providing it is the explicit opt-in to spend real money."
                       }
                     },
@@ -35440,6 +35492,7 @@
                       "mode",
                       "budget"
                     ],
+                    "additionalProperties": false,
                     "title": "PROMOTED"
                   },
                   {
@@ -35476,6 +35529,7 @@
                           "amount",
                           "scope"
                         ],
+                        "additionalProperties": false,
                         "description": "Required. The paid-promotion budget; providing it is the explicit opt-in to spend real money."
                       }
                     },
@@ -35483,6 +35537,7 @@
                       "mode",
                       "budget"
                     ],
+                    "additionalProperties": false,
                     "title": "PROMOTED PLUS"
                   }
                 ],
@@ -36399,7 +36454,8 @@
                     },
                     "description": "Skill parameter ids from GET /v1/{account_id}/search/parameters."
                   }
-                }
+                },
+                "additionalProperties": false
               },
               "examples": {
                 "fullFunnel": {
@@ -37212,7 +37268,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to use for the request."
+            "description": "The account ID (`acc_...`) to use for the request."
           },
           {
             "name": "post_id",
@@ -37242,7 +37298,14 @@
                     },
                     "id": {
                       "type": "string",
-                      "description": "The post's own identifier, use this value as the post_id path param on sub-resource endpoints."
+                      "description": "The post's own identifier as returned on this surface, use this value as the post_id path param on sub-resource endpoints. Its exact value can differ between two responses about the same post, so compare `urn` rather than `id` when you need to tell whether two responses describe one post."
+                    },
+                    "urn": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "Stable identifier for the post itself, in `urn:li:activity:ID` or `urn:li:ugcPost:ID` form. Unlike `id`, this value is the same however you reached the post, so compare it to decide whether two responses describe the same post; a comment's `parent_post.urn` joins to it directly. For a repost it names the post being reshared, so reshares of one post share a `urn` while each keeps its own `created_at`. It is also accepted as the post_id path param on get-post; sub-resource operations still need the opaque `id`. null when the post carries no resolvable identity, and two nulls are not a match: treat null as unknown, never as equal."
                     },
                     "share_url": {
                       "type": [
@@ -37270,7 +37333,7 @@
                         "string",
                         "null"
                       ],
-                      "description": "ISO-8601 UTC datetime the post was created, or null if unavailable."
+                      "description": "ISO-8601 UTC datetime this post was created, or null if unavailable. Derived from the post's own identity, so it does not change with the route you used to reach it. For a repost this is when the repost was made, not when the post it reshares was, so it is safe to sort by recency."
                     },
                     "comment_count": {
                       "type": [
@@ -37445,6 +37508,7 @@
                     "value": {
                       "object": "post",
                       "id": "urn:li:ugcPost:7123456789012345678",
+                      "urn": "urn:li:ugcPost:7123456789012345678",
                       "share_url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7123456789012345678",
                       "title": null,
                       "text": "Excited to share our latest update with the community, three months in the making.",
@@ -37706,7 +37770,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) that owns the post."
+            "description": "The account ID (`acc_...`) that owns the post."
           },
           {
             "name": "post_id",
@@ -37970,7 +38034,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to post as."
+            "description": "The account ID (`acc_...`) to post as."
           }
         ],
         "responses": {
@@ -38303,7 +38367,8 @@
                         "content",
                         "content_type",
                         "filename"
-                      ]
+                      ],
+                      "additionalProperties": false
                     },
                     "description": "Media attachments (base64 JSON objects). Multiple entries produce a multi-image carousel; a document/PDF entry produces a document post."
                   },
@@ -38335,7 +38400,8 @@
                 },
                 "required": [
                   "text"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "minimal": {
@@ -38386,7 +38452,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to use for the request."
+            "description": "The account ID (`acc_...`) to use for the request."
           },
           {
             "name": "user_id",
@@ -38449,7 +38515,14 @@
                           },
                           "id": {
                             "type": "string",
-                            "description": "The post's own identifier, use this value as the post_id path param on sub-resource endpoints."
+                            "description": "The post's own identifier as returned on this surface, use this value as the post_id path param on sub-resource endpoints. Its exact value can differ between two responses about the same post, so compare `urn` rather than `id` when you need to tell whether two responses describe one post."
+                          },
+                          "urn": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "Stable identifier for the post itself, in `urn:li:activity:ID` or `urn:li:ugcPost:ID` form. Unlike `id`, this value is the same however you reached the post, so compare it to decide whether two responses describe the same post; a comment's `parent_post.urn` joins to it directly. For a repost it names the post being reshared, so reshares of one post share a `urn` while each keeps its own `created_at`. It is also accepted as the post_id path param on get-post; sub-resource operations still need the opaque `id`. null when the post carries no resolvable identity, and two nulls are not a match: treat null as unknown, never as equal."
                           },
                           "share_url": {
                             "type": [
@@ -38477,7 +38550,7 @@
                               "string",
                               "null"
                             ],
-                            "description": "ISO-8601 UTC datetime the post was created, or null if unavailable."
+                            "description": "ISO-8601 UTC datetime this post was created, or null if unavailable. Derived from the post's own identity, so it does not change with the route you used to reach it. For a repost this is when the repost was made, not when the post it reshares was, so it is safe to sort by recency."
                           },
                           "comment_count": {
                             "type": [
@@ -38666,6 +38739,7 @@
                         {
                           "object": "post",
                           "id": "urn:li:ugcPost:7123456789012345678",
+                          "urn": "urn:li:ugcPost:7123456789012345678",
                           "share_url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7123456789012345678",
                           "title": null,
                           "text": "Excited to share our latest update with the community, three months in the making.",
@@ -38932,7 +39006,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to use for the request."
+            "description": "The account ID (`acc_...`) to use for the request."
           },
           {
             "name": "post_id",
@@ -38941,7 +39015,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
+            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
           },
           {
             "name": "limit",
@@ -39313,7 +39387,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to react from."
+            "description": "The account ID (`acc_...`) to react from."
           },
           {
             "name": "post_id",
@@ -39322,7 +39396,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
+            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
           }
         ],
         "responses": {
@@ -39614,7 +39688,8 @@
                 },
                 "required": [
                   "reaction"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "minimal": {
@@ -39654,7 +39729,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose reaction to remove."
+            "description": "The account ID (`acc_...`) whose reaction to remove."
           },
           {
             "name": "post_id",
@@ -39663,7 +39738,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
+            "description": "The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim."
           }
         ],
         "responses": {
@@ -39951,7 +40026,8 @@
                 },
                 "required": [
                   "reaction"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "minimal": {
@@ -39987,7 +40063,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) to use for the request."
+            "description": "The account ID (`acc_...`) to use for the request."
           },
           {
             "name": "user_id",
@@ -40070,7 +40146,34 @@
                           },
                           "parent_post": {
                             "type": "object",
-                            "description": "The post this reaction was made on (full Post or a lighter preview)."
+                            "description": "The post this reaction was made on (full Post or a lighter preview). Its `urn` is the stable identifier for that post, so compare it against a post's own `urn` to tell whether you already reacted to it.",
+                            "properties": {
+                              "object": {
+                                "type": "string",
+                                "enum": [
+                                  "post"
+                                ],
+                                "description": "Response type discriminator."
+                              },
+                              "id": {
+                                "type": "string",
+                                "description": "The post's identifier as returned on this surface. Use this value, not `urn`, on sub-resource operations."
+                              },
+                              "urn": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "description": "Stable identifier for the parent post, in `urn:li:activity:ID` or `urn:li:ugcPost:ID` form. Also accepted as the post_id path param on get-post. null when the post carries no resolvable identity, and two nulls are not a match: treat null as unknown, never as equal."
+                              },
+                              "created_at": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "description": "ISO-8601 UTC datetime the parent post was created, or null if unavailable. This is the post's own creation time, not the time of the reaction."
+                              }
+                            }
                           }
                         }
                       },
@@ -40100,8 +40203,10 @@
                             "name": "Test Account"
                           },
                           "parent_post": {
+                            "object": "post",
                             "id": "urn:li:ugcPost:7123456789012345678",
-                            "object": "post"
+                            "urn": "urn:li:ugcPost:7123456789012345678",
+                            "created_at": "2026-07-01T10:00:00.000Z"
                           }
                         }
                       ],
@@ -40332,7 +40437,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose OWN saved posts to list."
+            "description": "The account ID (`acc_...`) whose OWN saved posts to list."
           },
           {
             "name": "limit",
@@ -40764,7 +40869,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) that performs the save."
+            "description": "The account ID (`acc_...`) that performs the save."
           }
         ],
         "responses": {
@@ -41043,7 +41148,8 @@
                 },
                 "required": [
                   "post_id"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "minimal": {
@@ -41085,7 +41191,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) that performs the unsave."
+            "description": "The account ID (`acc_...`) that performs the unsave."
           },
           {
             "name": "post_id",
@@ -41382,7 +41488,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Recruiter seat resolves the profile view."
+            "description": "The account ID (`acc_...`) whose Recruiter seat resolves the profile view."
           },
           {
             "name": "user_id",
@@ -42036,7 +42142,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Recruiter seat starts the chat."
+            "description": "The account ID (`acc_...`) whose Recruiter seat starts the chat."
           }
         ],
         "responses": {
@@ -42372,7 +42478,7 @@
             "color": "#F59E0B"
           }
         ],
-        "description": "Send an opening InMail-style message to one or more Recruiter member IDs (AE… format). subject and signature are REQUIRED for Recruiter (InMail-based messaging). Accepts optional base64-encoded file / voice / video attachments (application/json only; multipart is not supported). Recruiter PRO: optionally schedule a follow-up. Requires a Recruiter seat.",
+        "description": "Send an opening InMail-style message to one or more Recruiter member IDs (AE... format). subject and signature are REQUIRED for Recruiter (InMail-based messaging). Accepts optional base64-encoded file / voice / video attachments (application/json only; multipart is not supported). Recruiter PRO: optionally schedule a follow-up. Requires a Recruiter seat.",
         "requestBody": {
           "required": true,
           "content": {
@@ -42385,7 +42491,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "One or more Recruiter member IDs (AE… format) to include in the chat."
+                    "description": "One or more Recruiter member IDs (AE... format) to include in the chat."
                   },
                   "text": {
                     "type": "string",
@@ -42393,7 +42499,7 @@
                   },
                   "subject": {
                     "type": "string",
-                    "description": "Subject line; REQUIRED for Recruiter (InMail-based messaging), unlike the classic surface (≤ 200 chars)."
+                    "description": "Subject line; REQUIRED for Recruiter (InMail-based messaging), unlike the classic surface (<= 200 chars)."
                   },
                   "signature": {
                     "type": "string",
@@ -42474,6 +42580,7 @@
                                   "description": "Duration in milliseconds; required for native voice/video."
                                 }
                               },
+                              "additionalProperties": false,
                               "description": "Extra attachment metadata (duration for native voice/video)."
                             }
                           },
@@ -42481,7 +42588,8 @@
                             "content",
                             "content_type",
                             "filename"
-                          ]
+                          ],
+                          "additionalProperties": false
                         },
                         "description": "Optional follow-up attachments."
                       },
@@ -42503,7 +42611,8 @@
                             },
                             "required": [
                               "days"
-                            ]
+                            ],
+                            "additionalProperties": false
                           },
                           {
                             "type": "object",
@@ -42521,7 +42630,8 @@
                             },
                             "required": [
                               "weeks"
-                            ]
+                            ],
+                            "additionalProperties": false
                           }
                         ],
                         "description": "When to send the follow-up. Either { days: 3..28, timezone } or { weeks: 1..4, timezone }."
@@ -42532,6 +42642,7 @@
                       "text",
                       "scheduled_for"
                     ],
+                    "additionalProperties": false,
                     "description": "Recruiter PRO only: schedule a follow-up message. subject/text are not stored or logged."
                   },
                   "attachments": {
@@ -42569,6 +42680,7 @@
                               "description": "Duration in milliseconds; required for native voice/video."
                             }
                           },
+                          "additionalProperties": false,
                           "description": "Extra attachment metadata (duration for native voice/video)."
                         }
                       },
@@ -42576,7 +42688,8 @@
                         "content",
                         "content_type",
                         "filename"
-                      ]
+                      ],
+                      "additionalProperties": false
                     },
                     "description": "Optional file / voice / video attachments (base64-encoded)."
                   }
@@ -42586,7 +42699,8 @@
                   "text",
                   "subject",
                   "signature"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "basic": {
@@ -42666,7 +42780,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Recruiter seat performs the search."
+            "description": "The account ID (`acc_...`) whose Recruiter seat performs the search."
           },
           {
             "name": "cursor",
@@ -43281,7 +43395,8 @@
                           "type": "integer",
                           "minimum": 0
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "description": "One or more {min?,max?} years-of-experience ranges."
                   },
@@ -43298,7 +43413,8 @@
                           "type": "integer",
                           "minimum": 0
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "description": "One or more {min?,max?} years-in-current-position ranges."
                   },
@@ -43315,7 +43431,8 @@
                           "type": "integer",
                           "minimum": 0
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "description": "One or more {min?,max?} years-in-current-company ranges."
                   },
@@ -43431,7 +43548,8 @@
                               "type": "string"
                             }
                           }
-                        }
+                        },
+                        "additionalProperties": false
                       },
                       "exclude": {
                         "type": "object",
@@ -43445,9 +43563,11 @@
                               "type": "string"
                             }
                           }
-                        }
+                        },
+                        "additionalProperties": false
                       }
                     },
+                    "additionalProperties": false,
                     "description": "Include/exclude by recent recruiting activity."
                   },
                   "hide_previously_viewed": {
@@ -43476,7 +43596,8 @@
                     },
                     "description": "Resolved TAG parameter ids."
                   }
-                }
+                },
+                "additionalProperties": false
               },
               "examples": {
                 "basic": {
@@ -43515,7 +43636,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Recruiter seat resolves the parameters."
+            "description": "The account ID (`acc_...`) whose Recruiter seat resolves the parameters."
           },
           {
             "name": "offset",
@@ -43958,6 +44079,7 @@
                       "project_id",
                       "type"
                     ],
+                    "additionalProperties": false,
                     "title": "APPLICANTS"
                   },
                   {
@@ -43994,6 +44116,7 @@
                       "project_id",
                       "type"
                     ],
+                    "additionalProperties": false,
                     "title": "PIPELINE"
                   },
                   {
@@ -44035,6 +44158,7 @@
                       "source",
                       "type"
                     ],
+                    "additionalProperties": false,
                     "title": "SEARCH"
                   },
                   {
@@ -44060,6 +44184,7 @@
                       "source",
                       "type"
                     ],
+                    "additionalProperties": false,
                     "title": "JOBS"
                   }
                 ],
@@ -44133,7 +44258,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Recruiter seat lists the projects."
+            "description": "The account ID (`acc_...`) whose Recruiter seat lists the projects."
           },
           {
             "name": "status",
@@ -44802,7 +44927,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Recruiter seat resolves the project."
+            "description": "The account ID (`acc_...`) whose Recruiter seat resolves the project."
           },
           {
             "name": "project_id",
@@ -44811,7 +44936,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The project ID. Obtain it from data[].id of GET …/recruiter/projects."
+            "description": "The project ID. Obtain it from data[].id of GET .../recruiter/projects."
           }
         ],
         "responses": {
@@ -45380,7 +45505,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Recruiter seat edits the project."
+            "description": "The account ID (`acc_...`) whose Recruiter seat edits the project."
           },
           {
             "name": "project_id",
@@ -45389,7 +45514,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The project ID. Obtain it from data[].id of GET …/recruiter/projects."
+            "description": "The project ID. Obtain it from data[].id of GET .../recruiter/projects."
           }
         ],
         "responses": {
@@ -45723,6 +45848,7 @@
                         "type": "string"
                       }
                     },
+                    "additionalProperties": false,
                     "description": "Target company (by id or free-text name)."
                   },
                   "job_title": {
@@ -45739,6 +45865,7 @@
                       "id",
                       "name"
                     ],
+                    "additionalProperties": false,
                     "description": "Target job title (resolved id + display name)."
                   },
                   "location": {
@@ -45758,7 +45885,8 @@
                     ],
                     "description": "Target seniority level."
                   }
-                }
+                },
+                "additionalProperties": false
               },
               "examples": {
                 "rename": {
@@ -45804,7 +45932,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Recruiter seat lists the pipeline."
+            "description": "The account ID (`acc_...`) whose Recruiter seat lists the pipeline."
           },
           {
             "name": "project_id",
@@ -45813,7 +45941,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The project ID. Obtain it from data[].id of GET …/recruiter/projects."
+            "description": "The project ID. Obtain it from data[].id of GET .../recruiter/projects."
           },
           {
             "name": "limit",
@@ -46410,7 +46538,8 @@
                               "type": "string"
                             }
                           }
-                        }
+                        },
+                        "additionalProperties": false
                       },
                       "exclude": {
                         "type": "object",
@@ -46424,9 +46553,11 @@
                               "type": "string"
                             }
                           }
-                        }
+                        },
+                        "additionalProperties": false
                       }
                     },
+                    "additionalProperties": false,
                     "description": "Include/exclude by recent recruiting activity."
                   },
                   "added_by": {
@@ -46456,7 +46587,8 @@
                           "type": "integer",
                           "minimum": 0
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "description": "Filter by one or more {min?,max?} years-of-experience ranges."
                   },
@@ -46481,7 +46613,8 @@
                     },
                     "description": "Filter by resolved location parameter ids."
                   }
-                }
+                },
+                "additionalProperties": false
               },
               "examples": {
                 "allCandidates": {
@@ -46525,7 +46658,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Recruiter seat performs the search."
+            "description": "The account ID (`acc_...`) whose Recruiter seat performs the search."
           },
           {
             "name": "project_id",
@@ -46534,7 +46667,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The project ID. Obtain it from data[].id of GET …/recruiter/projects."
+            "description": "The project ID. Obtain it from data[].id of GET .../recruiter/projects."
           },
           {
             "name": "cursor",
@@ -47038,7 +47171,7 @@
             "color": "#F59E0B"
           }
         ],
-        "description": "Search a Recruiter project's talent pool. A POST body carries the required channel_id (the project's own RECRUITER_SEARCH talent-pool channel, read it off talent_pool.channels[] of GET …/recruiter/projects/{project_id}) plus the (all-optional) people-search filter set. Pagination is driven by the limit (1-100) and cursor query params. Requires a Recruiter seat.",
+        "description": "Search a Recruiter project's talent pool. A POST body carries the required channel_id (the project's own RECRUITER_SEARCH talent-pool channel, read it off talent_pool.channels[] of GET .../recruiter/projects/{project_id}) plus the (all-optional) people-search filter set. Pagination is driven by the limit (1-100) and cursor query params. Requires a Recruiter seat.",
         "requestBody": {
           "required": true,
           "content": {
@@ -47158,7 +47291,8 @@
                           "type": "integer",
                           "minimum": 0
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "description": "One or more {min?,max?} years-of-experience ranges."
                   },
@@ -47175,7 +47309,8 @@
                           "type": "integer",
                           "minimum": 0
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "description": "One or more {min?,max?} years-in-current-position ranges."
                   },
@@ -47192,7 +47327,8 @@
                           "type": "integer",
                           "minimum": 0
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "description": "One or more {min?,max?} years-in-current-company ranges."
                   },
@@ -47308,7 +47444,8 @@
                               "type": "string"
                             }
                           }
-                        }
+                        },
+                        "additionalProperties": false
                       },
                       "exclude": {
                         "type": "object",
@@ -47322,9 +47459,11 @@
                               "type": "string"
                             }
                           }
-                        }
+                        },
+                        "additionalProperties": false
                       }
                     },
+                    "additionalProperties": false,
                     "description": "Include/exclude by recent recruiting activity."
                   },
                   "hide_previously_viewed": {
@@ -47360,7 +47499,8 @@
                 },
                 "required": [
                   "channel_id"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "basic": {
@@ -47397,7 +47537,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Recruiter seat performs the search."
+            "description": "The account ID (`acc_...`) whose Recruiter seat performs the search."
           },
           {
             "name": "cursor",
@@ -48358,7 +48498,8 @@
                 },
                 "required": [
                   "url"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "search": {
@@ -48394,7 +48535,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Recruiter seat resolves the job posting."
+            "description": "The account ID (`acc_...`) whose Recruiter seat resolves the job posting."
           },
           {
             "name": "project_id",
@@ -48403,7 +48544,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The project ID. Obtain it from data[].id of GET …/recruiter/projects."
+            "description": "The project ID. Obtain it from data[].id of GET .../recruiter/projects."
           }
         ],
         "responses": {
@@ -48919,7 +49060,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Recruiter seat creates the draft."
+            "description": "The account ID (`acc_...`) whose Recruiter seat creates the draft."
           },
           {
             "name": "project_id",
@@ -48928,7 +49069,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The project ID. Obtain it from data[].id of GET …/recruiter/projects."
+            "description": "The project ID. Obtain it from data[].id of GET .../recruiter/projects."
           }
         ],
         "responses": {
@@ -49260,6 +49401,7 @@
                       "id",
                       "name"
                     ],
+                    "additionalProperties": false,
                     "description": "The resolved job-title parameter id + its display name."
                   },
                   "company": {
@@ -49273,7 +49415,8 @@
                         },
                         "required": [
                           "id"
-                        ]
+                        ],
+                        "additionalProperties": false
                       },
                       {
                         "type": "object",
@@ -49284,7 +49427,8 @@
                         },
                         "required": [
                           "name"
-                        ]
+                        ],
+                        "additionalProperties": false
                       }
                     ],
                     "description": "Target company: a resolved company id, or a free-text name."
@@ -49364,6 +49508,7 @@
                           "method",
                           "notification_email"
                         ],
+                        "additionalProperties": false,
                         "title": "Linkedin"
                       },
                       {
@@ -49382,6 +49527,7 @@
                           "method",
                           "website_url"
                         ],
+                        "additionalProperties": false,
                         "title": "External"
                       }
                     ],
@@ -49432,7 +49578,8 @@
                       "required": [
                         "question",
                         "answer_type"
-                      ]
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "salary": {
@@ -49464,7 +49611,8 @@
                       "pay_frequency",
                       "min",
                       "max"
-                    ]
+                    ],
+                    "additionalProperties": false
                   },
                   "additional_compensation": {
                     "type": "object",
@@ -49495,7 +49643,8 @@
                       "pay_frequency",
                       "min",
                       "max"
-                    ]
+                    ],
+                    "additionalProperties": false
                   },
                   "rejection_settings": {
                     "type": "object",
@@ -49515,7 +49664,8 @@
                     },
                     "required": [
                       "send_rejection_notification"
-                    ]
+                    ],
+                    "additionalProperties": false
                   }
                 },
                 "required": [
@@ -49529,7 +49679,8 @@
                   "industry",
                   "job_function",
                   "apply_method"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "externalApply": {
@@ -49586,7 +49737,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Recruiter seat resolves the budget."
+            "description": "The account ID (`acc_...`) whose Recruiter seat resolves the budget."
           },
           {
             "name": "project_id",
@@ -49595,7 +49746,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The project ID. Obtain it from data[].id of GET …/recruiter/projects."
+            "description": "The project ID. Obtain it from data[].id of GET .../recruiter/projects."
           },
           {
             "name": "job_id",
@@ -49604,7 +49755,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The job posting ID. Obtain it from GET …/recruiter/projects/{project_id}/jobs."
+            "description": "The job posting ID. Obtain it from GET .../recruiter/projects/{project_id}/jobs."
           }
         ],
         "responses": {
@@ -49994,7 +50145,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Recruiter seat creates the draft."
+            "description": "The account ID (`acc_...`) whose Recruiter seat creates the draft."
           }
         ],
         "responses": {
@@ -50317,6 +50468,7 @@
                       "id",
                       "name"
                     ],
+                    "additionalProperties": false,
                     "description": "The resolved job-title parameter id + its display name."
                   },
                   "company": {
@@ -50330,7 +50482,8 @@
                         },
                         "required": [
                           "id"
-                        ]
+                        ],
+                        "additionalProperties": false
                       },
                       {
                         "type": "object",
@@ -50341,7 +50494,8 @@
                         },
                         "required": [
                           "name"
-                        ]
+                        ],
+                        "additionalProperties": false
                       }
                     ],
                     "description": "Target company: a resolved company id, or a free-text name."
@@ -50421,6 +50575,7 @@
                           "method",
                           "notification_email"
                         ],
+                        "additionalProperties": false,
                         "title": "Linkedin"
                       },
                       {
@@ -50439,6 +50594,7 @@
                           "method",
                           "website_url"
                         ],
+                        "additionalProperties": false,
                         "title": "External"
                       }
                     ],
@@ -50489,7 +50645,8 @@
                       "required": [
                         "question",
                         "answer_type"
-                      ]
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "salary": {
@@ -50521,7 +50678,8 @@
                       "pay_frequency",
                       "min",
                       "max"
-                    ]
+                    ],
+                    "additionalProperties": false
                   },
                   "additional_compensation": {
                     "type": "object",
@@ -50552,7 +50710,8 @@
                       "pay_frequency",
                       "min",
                       "max"
-                    ]
+                    ],
+                    "additionalProperties": false
                   },
                   "rejection_settings": {
                     "type": "object",
@@ -50572,7 +50731,8 @@
                     },
                     "required": [
                       "send_rejection_notification"
-                    ]
+                    ],
+                    "additionalProperties": false
                   },
                   "project_name": {
                     "type": "string",
@@ -50591,7 +50751,8 @@
                   "job_function",
                   "apply_method",
                   "project_name"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "linkedinApply": {
@@ -50647,7 +50808,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Recruiter seat lists the job postings."
+            "description": "The account ID (`acc_...`) whose Recruiter seat lists the job postings."
           },
           {
             "name": "state",
@@ -51158,7 +51319,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Recruiter seat resolves the job posting."
+            "description": "The account ID (`acc_...`) whose Recruiter seat resolves the job posting."
           },
           {
             "name": "job_id",
@@ -51167,7 +51328,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The job posting ID. Obtain it from data[].id of GET …/recruiter/jobs."
+            "description": "The job posting ID. Obtain it from data[].id of GET .../recruiter/jobs."
           }
         ],
         "responses": {
@@ -51692,7 +51853,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Recruiter seat edits the posting."
+            "description": "The account ID (`acc_...`) whose Recruiter seat edits the posting."
           },
           {
             "name": "project_id",
@@ -51701,7 +51862,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The project ID. Obtain it from data[].id of GET …/recruiter/projects."
+            "description": "The project ID. Obtain it from data[].id of GET .../recruiter/projects."
           },
           {
             "name": "job_id",
@@ -51710,7 +51871,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The job posting ID. Obtain it from GET …/recruiter/projects/{project_id}/jobs."
+            "description": "The job posting ID. Obtain it from GET .../recruiter/projects/{project_id}/jobs."
           }
         ],
         "responses": {
@@ -52032,6 +52193,7 @@
                       "id",
                       "name"
                     ],
+                    "additionalProperties": false,
                     "description": "The resolved job-title parameter id + its display name."
                   },
                   "company": {
@@ -52045,7 +52207,8 @@
                         },
                         "required": [
                           "id"
-                        ]
+                        ],
+                        "additionalProperties": false
                       },
                       {
                         "type": "object",
@@ -52056,7 +52219,8 @@
                         },
                         "required": [
                           "name"
-                        ]
+                        ],
+                        "additionalProperties": false
                       }
                     ],
                     "description": "Target company: a resolved company id, or a free-text name."
@@ -52136,6 +52300,7 @@
                           "method",
                           "notification_email"
                         ],
+                        "additionalProperties": false,
                         "title": "Linkedin"
                       },
                       {
@@ -52154,6 +52319,7 @@
                           "method",
                           "website_url"
                         ],
+                        "additionalProperties": false,
                         "title": "External"
                       }
                     ],
@@ -52204,7 +52370,8 @@
                       "required": [
                         "question",
                         "answer_type"
-                      ]
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "salary": {
@@ -52236,7 +52403,8 @@
                       "pay_frequency",
                       "min",
                       "max"
-                    ]
+                    ],
+                    "additionalProperties": false
                   },
                   "additional_compensation": {
                     "type": "object",
@@ -52267,7 +52435,8 @@
                       "pay_frequency",
                       "min",
                       "max"
-                    ]
+                    ],
+                    "additionalProperties": false
                   },
                   "rejection_settings": {
                     "type": "object",
@@ -52287,9 +52456,11 @@
                     },
                     "required": [
                       "send_rejection_notification"
-                    ]
+                    ],
+                    "additionalProperties": false
                   }
-                }
+                },
+                "additionalProperties": false
               },
               "examples": {
                 "titleOnly": {
@@ -52328,7 +52499,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Recruiter seat publishes the posting."
+            "description": "The account ID (`acc_...`) whose Recruiter seat publishes the posting."
           },
           {
             "name": "project_id",
@@ -52337,7 +52508,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The project ID. Obtain it from data[].id of GET …/recruiter/projects."
+            "description": "The project ID. Obtain it from data[].id of GET .../recruiter/projects."
           },
           {
             "name": "job_id",
@@ -52346,7 +52517,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The job posting ID. Obtain it from GET …/recruiter/projects/{project_id}/jobs."
+            "description": "The job posting ID. Obtain it from GET .../recruiter/projects/{project_id}/jobs."
           }
         ],
         "responses": {
@@ -52659,7 +52830,7 @@
             "color": "#F59E0B"
           }
         ],
-        "description": "REAL MONEY: PROMOTED and PROMOTED_PLUS spend on the connected account's LinkedIn payment method. Providing budget IS the explicit opt-in to spend, there is no separate confirm flag. FREE requires free-posting eligibility (check GET …/budget's free.eligible first). bypass_email_verification skips the on-behalf-of-company posting eligibility check (replaces the retired publish-verification checkpoint, there is no separate checkpoint-solve step). Requires a Recruiter seat.",
+        "description": "REAL MONEY: PROMOTED and PROMOTED_PLUS spend on the connected account's LinkedIn payment method. Providing budget IS the explicit opt-in to spend, there is no separate confirm flag. FREE requires free-posting eligibility (check GET .../budget's free.eligible first). bypass_email_verification skips the on-behalf-of-company posting eligibility check (replaces the retired publish-verification checkpoint, there is no separate checkpoint-solve step). Requires a Recruiter seat.",
         "requestBody": {
           "required": true,
           "content": {
@@ -52682,6 +52853,7 @@
                     "required": [
                       "mode"
                     ],
+                    "additionalProperties": false,
                     "title": "FREE"
                   },
                   {
@@ -52718,6 +52890,7 @@
                           "amount",
                           "scope"
                         ],
+                        "additionalProperties": false,
                         "description": "Required. Providing it is the explicit opt-in to spend real money."
                       },
                       "bypass_email_verification": {
@@ -52729,6 +52902,7 @@
                       "mode",
                       "budget"
                     ],
+                    "additionalProperties": false,
                     "title": "PROMOTED"
                   },
                   {
@@ -52765,6 +52939,7 @@
                           "amount",
                           "scope"
                         ],
+                        "additionalProperties": false,
                         "description": "Required. Providing it is the explicit opt-in to spend real money."
                       },
                       "bypass_email_verification": {
@@ -52776,6 +52951,7 @@
                       "mode",
                       "budget"
                     ],
+                    "additionalProperties": false,
                     "title": "PROMOTED PLUS"
                   }
                 ],
@@ -52833,7 +53009,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Recruiter seat closes the posting."
+            "description": "The account ID (`acc_...`) whose Recruiter seat closes the posting."
           },
           {
             "name": "project_id",
@@ -52842,7 +53018,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The project ID. Obtain it from data[].id of GET …/recruiter/projects."
+            "description": "The project ID. Obtain it from data[].id of GET .../recruiter/projects."
           },
           {
             "name": "job_id",
@@ -52851,7 +53027,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The job posting ID. Obtain it from GET …/recruiter/projects/{project_id}/jobs."
+            "description": "The job posting ID. Obtain it from GET .../recruiter/projects/{project_id}/jobs."
           }
         ],
         "responses": {
@@ -53175,7 +53351,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Recruiter seat saves the candidate."
+            "description": "The account ID (`acc_...`) whose Recruiter seat saves the candidate."
           },
           {
             "name": "project_id",
@@ -53184,7 +53360,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The project ID. Obtain it from data[].id of GET …/recruiter/projects."
+            "description": "The project ID. Obtain it from data[].id of GET .../recruiter/projects."
           }
         ],
         "responses": {
@@ -53495,7 +53671,8 @@
                 "required": [
                   "stage_id",
                   "candidate_id"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "basic": {
@@ -53532,7 +53709,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Recruiter seat lists the applicants."
+            "description": "The account ID (`acc_...`) whose Recruiter seat lists the applicants."
           },
           {
             "name": "project_id",
@@ -53541,7 +53718,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The project ID. Obtain it from data[].id of GET …/recruiter/projects."
+            "description": "The project ID. Obtain it from data[].id of GET .../recruiter/projects."
           },
           {
             "name": "cursor",
@@ -53604,7 +53781,7 @@
                           },
                           "has_resume": {
                             "type": "boolean",
-                            "description": "Whether the applicant has a downloadable résumé. Gates GET …/resume."
+                            "description": "Whether the applicant has a downloadable résumé. Gates GET .../resume."
                           },
                           "screening_questions": {
                             "type": "array",
@@ -54135,7 +54312,7 @@
             "color": "#F59E0B"
           }
         ],
-        "description": "List applicants in a Recruiter project's talent pool (POST-as-list; the body carries filters, no state mutates). The channel_id (a JOB_POSTING talent-pool channel) is REQUIRED, read it off talent_pool.channels[] of GET …/recruiter/projects/{project_id}. Requires a Recruiter seat.",
+        "description": "List applicants in a Recruiter project's talent pool (POST-as-list; the body carries filters, no state mutates). The channel_id (a JOB_POSTING talent-pool channel) is REQUIRED, read it off talent_pool.channels[] of GET .../recruiter/projects/{project_id}. Requires a Recruiter seat.",
         "requestBody": {
           "required": true,
           "content": {
@@ -54194,6 +54371,7 @@
                         "description": "Resolved parameter ids to exclude."
                       }
                     },
+                    "additionalProperties": false,
                     "description": "Resolved COMPANY parameter ids to include/exclude."
                   },
                   "skills": {
@@ -54221,6 +54399,7 @@
                         "description": "Resolved parameter ids to exclude."
                       }
                     },
+                    "additionalProperties": false,
                     "description": "Resolved SCHOOL parameter ids to include/exclude."
                   },
                   "industry": {
@@ -54258,7 +54437,8 @@
                       },
                       "required": [
                         "id"
-                      ]
+                      ],
+                      "additionalProperties": false
                     },
                     "description": "Spoken-language filters."
                   },
@@ -54315,6 +54495,7 @@
                       "min",
                       "max"
                     ],
+                    "additionalProperties": false,
                     "description": "Years-of-experience range (0-30, both min and max required together)."
                   },
                   "years_in_current_position": {
@@ -54333,6 +54514,7 @@
                       "min",
                       "max"
                     ],
+                    "additionalProperties": false,
                     "description": "Years-in-current-position range."
                   },
                   "years_in_current_company": {
@@ -54351,6 +54533,7 @@
                       "min",
                       "max"
                     ],
+                    "additionalProperties": false,
                     "description": "Years-in-current-company range."
                   },
                   "degree": {
@@ -54371,6 +54554,7 @@
                         "description": "Resolved parameter ids to exclude."
                       }
                     },
+                    "additionalProperties": false,
                     "description": "Resolved DEGREE parameter ids to include/exclude."
                   },
                   "field_of_study": {
@@ -54391,6 +54575,7 @@
                         "description": "Resolved parameter ids to exclude."
                       }
                     },
+                    "additionalProperties": false,
                     "description": "Resolved FIELD_OF_STUDY parameter ids to include/exclude."
                   },
                   "seniority": {
@@ -54437,6 +54622,7 @@
                         "description": "Resolved parameter ids to exclude."
                       }
                     },
+                    "additionalProperties": false,
                     "description": "Resolved CURRENT_COMPANY parameter ids to include/exclude."
                   },
                   "company_size": {
@@ -54468,7 +54654,8 @@
                             10000
                           ]
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "description": "Company-size bucket ranges."
                   },
@@ -54490,12 +54677,14 @@
                         "description": "Resolved parameter ids to exclude."
                       }
                     },
+                    "additionalProperties": false,
                     "description": "Resolved TAG parameter ids to include/exclude."
                   }
                 },
                 "required": [
                   "channel_id"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "channelOnly": {
@@ -54539,7 +54728,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Recruiter seat resolves the applicant."
+            "description": "The account ID (`acc_...`) whose Recruiter seat resolves the applicant."
           },
           {
             "name": "project_id",
@@ -54548,7 +54737,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The project ID. Obtain it from data[].id of GET …/recruiter/projects."
+            "description": "The project ID. Obtain it from data[].id of GET .../recruiter/projects."
           },
           {
             "name": "applicant_id",
@@ -54586,7 +54775,7 @@
                     },
                     "has_resume": {
                       "type": "boolean",
-                      "description": "Whether the applicant has a downloadable résumé. Gates GET …/resume."
+                      "description": "Whether the applicant has a downloadable résumé. Gates GET .../resume."
                     },
                     "screening_questions": {
                       "type": "array",
@@ -55089,7 +55278,7 @@
             "color": "#F59E0B"
           }
         ],
-        "description": "Retrieve full detail for a single talent-pool applicant, the profile is GUARANTEED full (includes PII emails/phone_numbers). Unknown applicant_id or project_id → 404 RESOURCE_NOT_FOUND. Requires a Recruiter seat.",
+        "description": "Retrieve full detail for a single talent-pool applicant, the profile is GUARANTEED full (includes PII emails/phone_numbers). Unknown applicant_id or project_id -> 404 RESOURCE_NOT_FOUND. Requires a Recruiter seat.",
         "x-order": 22
       }
     },
@@ -55113,7 +55302,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Recruiter seat downloads the résumé."
+            "description": "The account ID (`acc_...`) whose Recruiter seat downloads the résumé."
           },
           {
             "name": "project_id",
@@ -55122,7 +55311,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The project ID. Obtain it from data[].id of GET …/recruiter/projects."
+            "description": "The project ID. Obtain it from data[].id of GET .../recruiter/projects."
           },
           {
             "name": "applicant_id",
@@ -55410,7 +55599,7 @@
             "color": "#F59E0B"
           }
         ],
-        "description": "Stream the résumé file for a talent-pool applicant as raw bytes. Curviate never caches, stores, or logs the résumé body. Gated by has_resume on the applicant detail. An applicant with no résumé on file → 404 RESOURCE_NOT_FOUND; a résumé still generating upstream → 503 (retry shortly). Requires a Recruiter seat.",
+        "description": "Stream the résumé file for a talent-pool applicant as raw bytes. Curviate never caches, stores, or logs the résumé body. Gated by has_resume on the applicant detail. An applicant with no résumé on file -> 404 RESOURCE_NOT_FOUND; a résumé still generating upstream -> 503 (retry shortly). Requires a Recruiter seat.",
         "x-order": 23
       }
     },
@@ -55434,7 +55623,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Sales Navigator seat starts the chat."
+            "description": "The account ID (`acc_...`) whose Sales Navigator seat starts the chat."
           }
         ],
         "responses": {
@@ -55787,7 +55976,7 @@
             "color": "#E8352F"
           }
         ],
-        "description": "Send an opening InMail-style message to one or more Sales Navigator members (ACw… IDs). subject is REQUIRED for Sales Navigator (InMail-based messaging). Accepts optional base64-encoded file / voice / video attachments (application/json only; multipart is not supported). Requires a Sales Navigator seat.",
+        "description": "Send an opening InMail-style message to one or more Sales Navigator members (ACw... IDs). subject is REQUIRED for Sales Navigator (InMail-based messaging). Accepts optional base64-encoded file / voice / video attachments (application/json only; multipart is not supported). Requires a Sales Navigator seat.",
         "requestBody": {
           "required": true,
           "content": {
@@ -55800,7 +55989,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "Sales Navigator member IDs for the chat recipients (≥ 1, e.g. ACw…)."
+                    "description": "Sales Navigator member IDs for the chat recipients (>= 1, e.g. ACw...)."
                   },
                   "text": {
                     "type": "string",
@@ -55808,7 +55997,7 @@
                   },
                   "subject": {
                     "type": "string",
-                    "description": "Subject line; REQUIRED for Sales Navigator (InMail-based messaging), unlike the classic surface where it is optional (≤ 200 chars). Maps into the SN-only specifics branch."
+                    "description": "Subject line; REQUIRED for Sales Navigator (InMail-based messaging), unlike the classic surface where it is optional (<= 200 chars). Maps into the SN-only specifics branch."
                   },
                   "attachments": {
                     "type": "array",
@@ -55845,6 +56034,7 @@
                               "description": "Duration in milliseconds; required for native voice/video."
                             }
                           },
+                          "additionalProperties": false,
                           "description": "Extra attachment metadata (duration for native voice/video)."
                         }
                       },
@@ -55852,7 +56042,8 @@
                         "content",
                         "content_type",
                         "filename"
-                      ]
+                      ],
+                      "additionalProperties": false
                     },
                     "description": "Optional file / voice / video attachments (base64-encoded)."
                   }
@@ -55861,7 +56052,8 @@
                   "attendees_ids",
                   "text",
                   "subject"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "basic": {
@@ -55919,7 +56111,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Sales Navigator seat resolves the profile view."
+            "description": "The account ID (`acc_...`) whose Sales Navigator seat resolves the profile view."
           },
           {
             "name": "identifier",
@@ -55984,7 +56176,7 @@
                     },
                     "id": {
                       "type": "string",
-                      "description": "Opaque Sales Navigator identifier (ACw… format)."
+                      "description": "Opaque Sales Navigator identifier (ACw... format)."
                     },
                     "type": {
                       "type": "string",
@@ -56424,7 +56616,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Sales Navigator seat owns the lists."
+            "description": "The account ID (`acc_...`) whose Sales Navigator seat owns the lists."
           },
           {
             "name": "limit",
@@ -56832,7 +57024,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Sales Navigator seat owns the lists."
+            "description": "The account ID (`acc_...`) whose Sales Navigator seat owns the lists."
           },
           {
             "name": "limit",
@@ -57240,7 +57432,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Sales Navigator seat owns the list."
+            "description": "The account ID (`acc_...`) whose Sales Navigator seat owns the list."
           },
           {
             "name": "list_id",
@@ -57647,7 +57839,8 @@
                     "description": "Sort direction: ASCENDING or DESCENDING. Defaults to ASCENDING.",
                     "default": "ASCENDING"
                   }
-                }
+                },
+                "additionalProperties": false
               },
               "examples": {
                 "basic": {
@@ -57685,7 +57878,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Sales Navigator seat owns the list."
+            "description": "The account ID (`acc_...`) whose Sales Navigator seat owns the list."
           },
           {
             "name": "list_id",
@@ -58092,7 +58285,8 @@
                     "description": "Sort direction: ASCENDING or DESCENDING. Defaults to DESCENDING.",
                     "default": "DESCENDING"
                   }
-                }
+                },
+                "additionalProperties": false
               },
               "examples": {
                 "basic": {
@@ -58130,7 +58324,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Sales Navigator seat saves the account."
+            "description": "The account ID (`acc_...`) whose Sales Navigator seat saves the account."
           },
           {
             "name": "list_id",
@@ -58438,7 +58632,8 @@
                 },
                 "required": [
                   "company_id"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "basic": {
@@ -58474,7 +58669,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Sales Navigator seat saves the lead."
+            "description": "The account ID (`acc_...`) whose Sales Navigator seat saves the lead."
           },
           {
             "name": "list_id",
@@ -58782,7 +58977,8 @@
                 },
                 "required": [
                   "user_id"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "basic": {
@@ -58818,7 +59014,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Sales Navigator seat resolves the parameters."
+            "description": "The account ID (`acc_...`) whose Sales Navigator seat resolves the parameters."
           },
           {
             "name": "type",
@@ -59256,7 +59452,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Sales Navigator seat performs the search."
+            "description": "The account ID (`acc_...`) whose Sales Navigator seat performs the search."
           },
           {
             "name": "limit",
@@ -59311,7 +59507,7 @@
                           },
                           "id": {
                             "type": "string",
-                            "description": "Opaque Sales Navigator member ID (ACw… format)."
+                            "description": "Opaque Sales Navigator member ID (ACw... format)."
                           },
                           "member_id": {
                             "type": "string",
@@ -60360,7 +60556,8 @@
                     "type": "boolean",
                     "description": "Filter to members who recently posted on LinkedIn."
                   }
-                }
+                },
+                "additionalProperties": false
               },
               "examples": {
                 "structured": {
@@ -60439,7 +60636,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Sales Navigator seat performs the search."
+            "description": "The account ID (`acc_...`) whose Sales Navigator seat performs the search."
           },
           {
             "name": "limit",
@@ -61138,7 +61335,8 @@
                     ],
                     "description": "Load and run a recent search by ID."
                   }
-                }
+                },
+                "additionalProperties": false
               },
               "examples": {
                 "structured": {
@@ -61199,7 +61397,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) whose Sales Navigator seat performs the search."
+            "description": "The account ID (`acc_...`) whose Sales Navigator seat performs the search."
           },
           {
             "name": "limit",
@@ -61256,7 +61454,7 @@
                               },
                               "id": {
                                 "type": "string",
-                                "description": "Opaque Sales Navigator member ID (ACw… format)."
+                                "description": "Opaque Sales Navigator member ID (ACw... format)."
                               },
                               "member_id": {
                                 "type": "string",
@@ -61925,7 +62123,8 @@
                 },
                 "required": [
                   "url"
-                ]
+                ],
+                "additionalProperties": false
               },
               "examples": {
                 "pastedSearchUrl": {
@@ -61997,7 +62196,7 @@
                         "properties": {
                           "account_id": {
                             "type": "string",
-                            "description": "Curviate account id (acc_…)."
+                            "description": "Curviate account id (acc_...)."
                           },
                           "status": {
                             "type": "string",
@@ -62273,7 +62472,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) of the account to retrieve."
+            "description": "The account ID (`acc_...`) of the account to retrieve."
           }
         ],
         "responses": {
@@ -62642,7 +62841,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) of the account to update."
+            "description": "The account ID (`acc_...`) of the account to update."
           }
         ],
         "responses": {
@@ -62882,7 +63081,7 @@
                 "type": "object",
                 "properties": {
                   "metadata": {
-                    "description": "Flat string→string map that replaces this account's custom-data store wholesale (unprovided keys are removed)."
+                    "description": "Flat string->string map that replaces this account's custom-data store wholesale (unprovided keys are removed)."
                   },
                   "proxy": {
                     "type": "object",
@@ -62923,7 +63122,8 @@
                     "description": "Custom-proxy egress config, or null to clear it (revert to automatic proxy protection). Omit to leave it unchanged.",
                     "nullable": true
                   }
-                }
+                },
+                "additionalProperties": false
               },
               "examples": {
                 "metadata": {
@@ -62976,7 +63176,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "The account ID (`acc_…`) of the account to disconnect."
+            "description": "The account ID (`acc_...`) of the account to disconnect."
           }
         ],
         "responses": {
@@ -63311,7 +63511,7 @@
                     },
                     "recovered": {
                       "type": "boolean",
-                      "description": "Present and true only when this connect recovered an existing LinkedIn identity already present on the workspace (claiming it into your account) instead of connecting a brand-new one. Absent on a normal connect. The account's status reflects its real observed state, which may need a reconnect."
+                      "description": "Present and true only when this connect reactivated an account you had previously disconnected, instead of opening a brand-new one. Absent on a normal connect. The account keeps its original id, and its status reflects its real observed state, which may need a reconnect."
                     }
                   }
                 },
@@ -63330,7 +63530,7 @@
                     }
                   },
                   "recovered": {
-                    "summary": "Recovered an existing connection (already present on the workspace)",
+                    "summary": "Reactivated an account you had previously disconnected",
                     "value": {
                       "object": "account",
                       "account_id": "acc_01J8Z3K9P0Q1R2S3T4V5W6X7Y8",
@@ -63895,7 +64095,7 @@
                     },
                     "recovered": {
                       "type": "boolean",
-                      "description": "Present and true only when this connect recovered an existing LinkedIn identity already present on the workspace (claiming it into your account) instead of connecting a brand-new one. Absent on a normal connect. The account's status reflects its real observed state, which may need a reconnect."
+                      "description": "Present and true only when this connect reactivated an account you had previously disconnected, instead of opening a brand-new one. Absent on a normal connect. The account keeps its original id, and its status reflects its real observed state, which may need a reconnect."
                     }
                   }
                 },
@@ -63911,7 +64111,7 @@
                     }
                   },
                   "recovered": {
-                    "summary": "Recovered an existing connection (already present on the workspace)",
+                    "summary": "Reactivated an account you had previously disconnected",
                     "value": {
                       "object": "account",
                       "account_id": "acc_01J8Z3K9P0Q1R2S3T4V5W6X7Y8",
@@ -64206,7 +64406,7 @@
                   },
                   "code": {
                     "type": "string",
-                    "description": "The OTP / 2FA verification code. Special value TRY_ANOTHER_WAY switches the challenge type (e.g. in-app → 2FA)."
+                    "description": "The OTP / 2FA verification code. Special value TRY_ANOTHER_WAY switches the challenge type (e.g. in-app -> 2FA)."
                   }
                 },
                 "required": [
@@ -64223,7 +64423,7 @@
                   }
                 },
                 "switchMethod": {
-                  "summary": "Switch the challenge method (e.g. in-app → 2FA)",
+                  "summary": "Switch the challenge method (e.g. in-app -> 2FA)",
                   "value": {
                     "account_id": "acc_01J8Z3K9P0Q1R2S3T4V5W6X7Y8",
                     "code": "TRY_ANOTHER_WAY"
@@ -64527,7 +64727,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "The current state of the action-based (mobile-app-approval) challenge. object:\"account\" + status:\"active\" once approved (the account is now connected); object:\"checkpoint\" + status:\"pending\" while still waiting; status:\"checkpoint_required\" when the collect chained to a new challenge (e.g. approval → 2FA), switch to submitting the new challenge_type; status:\"expired\"/\"failed\" on timeout/failure. object:\"account\" + recovered:true means the approval resolved to a LinkedIn identity already present on the workspace, which was claimed into your account; its status is the identity's real observed state, so it may be reconnect_needed rather than active.",
+            "description": "The current state of the action-based (mobile-app-approval) challenge. object:\"account\" + status:\"active\" once approved (the account is now connected); object:\"checkpoint\" + status:\"pending\" while still waiting; status:\"checkpoint_required\" when the collect chained to a new challenge (e.g. approval -> 2FA), switch to submitting the new challenge_type; status:\"expired\"/\"failed\" on timeout/failure. object:\"account\" + recovered:true means the approval reactivated an account you had previously disconnected, which keeps its original id; its status is that account's real observed state, so it may be reconnect_needed rather than active.",
             "content": {
               "application/json": {
                 "schema": {
@@ -64556,7 +64756,7 @@
                     },
                     "recovered": {
                       "type": "boolean",
-                      "description": "Present and true only when this approval recovered an existing LinkedIn identity already present on the workspace (claiming it into your account) instead of connecting a brand-new one. Absent on a normal approval. The account's status reflects its real observed state, which may need a reconnect."
+                      "description": "Present and true only when this approval reactivated an account you had previously disconnected, instead of opening a brand-new one. Absent on a normal approval. The account keeps its original id, and its status reflects its real observed state, which may need a reconnect."
                     },
                     "account_id": {
                       "type": "string",
@@ -64669,7 +64869,7 @@
                     }
                   },
                   "recovered": {
-                    "summary": "Recovered an existing connection (already present on the workspace)",
+                    "summary": "Reactivated an account you had previously disconnected",
                     "value": {
                       "object": "account",
                       "status": "active",
@@ -64869,7 +65069,7 @@
             }
           }
         },
-        "description": "Poll the pending mobile-app-approval challenge for an account and advance it. This is the completion driver for mobile_app_approval (and the in-app arm of otp_or_mobile_app_approval): call it repeatedly until the account is active. Returns object:\"account\" + status:\"active\" once approved; object:\"checkpoint\" + status:\"pending\" while still waiting; status:\"checkpoint_required\" (with challenge_type) when the approval chained to a new challenge (e.g. approval → 2FA), switch to POST /v1/auth/checkpoint/solve for the new type; status:\"expired\"/\"failed\" on timeout/failure. A code-based checkpoint polled here returns 422 directing you to POST /v1/auth/checkpoint/solve instead. `account_id` (in the body) identifies the mid-flight connect.",
+        "description": "Poll the pending mobile-app-approval challenge for an account and advance it. This is the completion driver for mobile_app_approval (and the in-app arm of otp_or_mobile_app_approval): call it repeatedly until the account is active. Returns object:\"account\" + status:\"active\" once approved; object:\"checkpoint\" + status:\"pending\" while still waiting; status:\"checkpoint_required\" (with challenge_type) when the approval chained to a new challenge (e.g. approval -> 2FA), switch to POST /v1/auth/checkpoint/solve for the new type; status:\"expired\"/\"failed\" on timeout/failure. A code-based checkpoint polled here returns 422 directing you to POST /v1/auth/checkpoint/solve instead. `account_id` (in the body) identifies the mid-flight connect.",
         "requestBody": {
           "required": true,
           "content": {
@@ -64920,12 +65120,12 @@
             "schema": {
               "type": "string"
             },
-            "description": "The credential account id (acc_…) returned by auth/intent or a checkpoint response, the handle for the in-progress connect."
+            "description": "The credential account id (acc_...) returned by auth/intent or a checkpoint response, the handle for the in-progress connect."
           }
         ],
         "responses": {
           "200": {
-            "description": "The current status of a credential connect session (acc_… id from auth/intent or a checkpoint response). Poll until status leaves checkpoint_required. account_id is present only once status is done. checkpoint_required carries challenge_type, the challenge still pending. failed carries no reason payload.",
+            "description": "The current status of a credential connect session (acc_... id from auth/intent or a checkpoint response). Poll until status leaves checkpoint_required. account_id is present only once status is done. checkpoint_required carries challenge_type, the challenge still pending. failed carries no reason payload.",
             "content": {
               "application/json": {
                 "schema": {
@@ -64940,7 +65140,7 @@
                     },
                     "session_id": {
                       "type": "string",
-                      "description": "The account id polled (acc_…)."
+                      "description": "The account id polled (acc_...)."
                     },
                     "status": {
                       "type": "string",
@@ -64957,7 +65157,7 @@
                         "string",
                         "null"
                       ],
-                      "description": "The connected account (acc_…); null until status is done."
+                      "description": "The connected account (acc_...); null until status is done."
                     },
                     "challenge_type": {
                       "type": "string",
@@ -65144,7 +65344,7 @@
             }
           }
         },
-        "description": "Return the current status of a credential connect session, keyed by its account id (acc_…, from auth/intent or a checkpoint response). status is one of checkpoint_required / done / expired / failed; checkpoint_required carries challenge_type. account_id is present once status is done. Poll until status leaves checkpoint_required.",
+        "description": "Return the current status of a credential connect session, keyed by its account id (acc_..., from auth/intent or a checkpoint response). status is one of checkpoint_required / done / expired / failed; checkpoint_required carries challenge_type. account_id is present once status is done. Poll until status leaves checkpoint_required.",
         "x-order": 5
       }
     },

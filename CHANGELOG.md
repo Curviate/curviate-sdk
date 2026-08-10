@@ -9,6 +9,46 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+## [0.20.2] - 2026-08-10
+
+Published as a patch, not a minor, for the same reason 0.20.1 was: it satisfies
+the `^0.20.1` range already declared by installed consumers, including
+`@curviate/cli`, so it reaches them on the next install with no consumer-side
+version bump. A `0.21.0` would have reached nobody, because a caret on a `0.x`
+version never resolves the next minor.
+
+The generated types are a mirror of the served OpenAPI document. This release
+is a regeneration against that document at server commit `686b70f4`; nothing
+was hand-edited.
+
+### Fixed
+
+- **Typographic characters no longer ship in the published types.** The API
+  document was swept clean of ellipsis, arrow, comparison and multiplication
+  glyphs, but the SDK's generated mirror of it was not regenerated afterwards,
+  so `src/generated/types.ts` and `dist/index.d.ts` each still carried 195 of
+  them. They ship directly to consumers, where they surface in editor tooltips
+  and IntelliSense on every documented field. Both files are now free of them.
+
+### Added
+
+- **`urn` on posts.** A post's `id` is the identifier for the surface that
+  returned it and can differ between two responses describing the same post,
+  which made "have I already seen this one?" unanswerable from the types.
+  `urn` is stable however you reached the post, so two responses can be
+  compared directly. It is `null` when the post carries no resolvable
+  identity, and two nulls are never a match.
+
+- **`urn` and `created_at` on a comment's `parent_post`**, so a comment can be
+  joined to the post it was made on without a second request.
+
+- **A reaction's `parent_post` is now a described shape** rather than an opaque
+  empty object. It carries `object`, `id`, `urn` and `created_at`, which makes
+  "have I already reacted to this post?" answerable from the response.
+
+  All four are optional and nothing was removed, narrowed, or renamed, so a
+  consumer that compiled against 0.20.1 still compiles.
+
 ## [0.20.1] - 2026-08-10
 
 Published as a patch, not a minor: it satisfies the `^0.20.0` range already

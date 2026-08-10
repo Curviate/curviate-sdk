@@ -77,7 +77,7 @@ export interface paths {
         put?: never;
         /**
          * Endorse a member's skill
-         * @description Endorses one specific skill on a target member's profile. You can only endorse the skills of your 1st-degree connections. To obtain the endorsement_id: (1) GET /v1/{account_id}/users/{user_id}?linkedin_sections=linkedin_skills, (2) read the target skill's endorsement_id from the skills section, this field is present ONLY for connections you are eligible to endorse (it is omitted for users outside your network and on your own profile, so this workflow requires the target to be a 1st-degree connection), (3) call this endpoint with that value. user_id must be the LinkedIn member ID (ACo… format); a public identifier does not resolve on this endpoint.
+         * @description Endorses one specific skill on a target member's profile. You can only endorse the skills of your 1st-degree connections. To obtain the endorsement_id: (1) GET /v1/{account_id}/users/{user_id}?linkedin_sections=linkedin_skills, (2) read the target skill's endorsement_id from the skills section, this field is present ONLY for connections you are eligible to endorse (it is omitted for users outside your network and on your own profile, so this workflow requires the target to be a 1st-degree connection), (3) call this endpoint with that value. user_id must be the LinkedIn member ID (ACo... format); a public identifier does not resolve on this endpoint.
          */
         post: operations["postV1AccountIdUsersUserIdEndorseSkill"];
         delete?: never;
@@ -341,7 +341,7 @@ export interface paths {
         put?: never;
         /**
          * Invite connections to follow a company page
-         * @description Invites one or more of the connected account's 1st-degree connections to follow a company page it administers with the invite-to-follow entitlement. Pass the AC… member ids from an invitable-followers read. Returns one outcome per invitee, in request order, for an all-valid request. If any invitee id is invalid, the whole request is rejected (404), with no partial success. Re-inviting an already-invited member is a safe no-op (the same invitation id, never a duplicate). Only identifiers transit. Nothing is stored.
+         * @description Invites one or more of the connected account's 1st-degree connections to follow a company page it administers with the invite-to-follow entitlement. Pass the AC... member ids from an invitable-followers read. Returns one outcome per invitee, in request order, for an all-valid request. If any invitee id is invalid, the whole request is rejected (404), with no partial success. Re-inviting an already-invited member is a safe no-op (the same invitation id, never a duplicate). Only identifiers transit. Nothing is stored.
          */
         post: operations["postV1AccountIdCompaniesIdentifierFollowInvite"];
         delete?: never;
@@ -445,7 +445,7 @@ export interface paths {
         put?: never;
         /**
          * Reply as the company page
-         * @description Sends a message into an existing company-inbox conversation, as the page. chat_id is the conversation id from GET /v1/{account_id}/companies/{identifier}/chats, the same 2-… id this group's chat reads return, passed verbatim. The connected account must administer the page. Reply-only: a page can never start a new conversation, only answer an existing one. Send application/json with text, base64 attachments (max 5 MiB per file), or both; at least one of text or attachments is required. Message content passes through to the platform and is never stored. The response's sent_as field names the acting identity that was actually used.
+         * @description Sends a message into an existing company-inbox conversation, as the page. chat_id is the conversation id from GET /v1/{account_id}/companies/{identifier}/chats, the same 2-... id this group's chat reads return, passed verbatim. The connected account must administer the page. Reply-only: a page can never start a new conversation, only answer an existing one. Send application/json with text, base64 attachments (max 5 MiB per file), or both; at least one of text or attachments is required. Message content passes through to the platform and is never stored. The response's sent_as field names the acting identity that was actually used.
          */
         post: operations["postV1AccountIdCompaniesIdentifierChatsChatIdMessages"];
         delete?: never;
@@ -923,7 +923,7 @@ export interface paths {
         };
         /**
          * List inboxes
-         * @description Returns the account's personal inbox plus, when the company product is attached, one entry per company page × folder (id like 'COMPANY_83734124_PRIMARY'). Company inboxes carry reply_only:true; company pages can only reply to existing conversations, never start one. company_id is resolved by correlating the page name against the account's managed pages; an uncorrelatable page returns company_id:null, never a fabricated id. When no company inbox exists, hint names the Company Pages reconnect requirement instead of returning silently empty.
+         * @description Returns the account's personal inbox plus, when the company product is attached, one entry per company page x folder (id like 'COMPANY_83734124_PRIMARY'). Company inboxes carry reply_only:true; company pages can only reply to existing conversations, never start one. company_id is resolved by correlating the page name against the account's managed pages; an uncorrelatable page returns company_id:null, never a fabricated id. When no company inbox exists, hint names the Company Pages reconnect requirement instead of returning silently empty.
          */
         get: operations["getV1AccountIdInboxes"];
         put?: never;
@@ -943,7 +943,7 @@ export interface paths {
         };
         /**
          * List an inbox's conversations
-         * @description Returns a paginated list of an inbox's conversations, newest-activity-first. Each chat's id is send-ready: pass it directly to the send-message endpoint to reply; a company inbox's chat id (e.g. 'COMPANY_83734124_2-…') replies AS THE PAGE, no separate parameter needed. Works identically for personal (CLASSIC_) inboxes. Company pages are reply-only (reply_only:true on the inbox, from GET /inboxes); they cannot start a new conversation. A malformed inbox_id returns 400 INVALID_REQUEST; a well-formed id for a mailbox this account does not administer returns 403 RESOURCE_ACCESS_RESTRICTED (no existence disclosure); there is no 404 for this endpoint.
+         * @description Returns a paginated list of an inbox's conversations, newest-activity-first. Each chat's id is send-ready: pass it directly to the send-message endpoint to reply; a company inbox's chat id (e.g. 'COMPANY_83734124_2-...') replies AS THE PAGE, no separate parameter needed. Works identically for personal (CLASSIC_) inboxes. Company pages are reply-only (reply_only:true on the inbox, from GET /inboxes); they cannot start a new conversation. A malformed inbox_id returns 400 INVALID_REQUEST; a well-formed id for a mailbox this account does not administer returns 403 RESOURCE_ACCESS_RESTRICTED (no existence disclosure); there is no 404 for this endpoint.
          */
         get: operations["getV1AccountIdInboxesInboxIdChats"];
         put?: never;
@@ -1629,7 +1629,7 @@ export interface paths {
         put?: never;
         /**
          * Start a chat (Recruiter)
-         * @description Send an opening InMail-style message to one or more Recruiter member IDs (AE… format). subject and signature are REQUIRED for Recruiter (InMail-based messaging). Accepts optional base64-encoded file / voice / video attachments (application/json only; multipart is not supported). Recruiter PRO: optionally schedule a follow-up. Requires a Recruiter seat.
+         * @description Send an opening InMail-style message to one or more Recruiter member IDs (AE... format). subject and signature are REQUIRED for Recruiter (InMail-based messaging). Accepts optional base64-encoded file / voice / video attachments (application/json only; multipart is not supported). Recruiter PRO: optionally schedule a follow-up. Requires a Recruiter seat.
          */
         post: operations["postV1AccountIdRecruiterChats"];
         delete?: never;
@@ -1753,7 +1753,7 @@ export interface paths {
         put?: never;
         /**
          * Search a project's talent pool
-         * @description Search a Recruiter project's talent pool. A POST body carries the required channel_id (the project's own RECRUITER_SEARCH talent-pool channel, read it off talent_pool.channels[] of GET …/recruiter/projects/{project_id}) plus the (all-optional) people-search filter set. Pagination is driven by the limit (1-100) and cursor query params. Requires a Recruiter seat.
+         * @description Search a Recruiter project's talent pool. A POST body carries the required channel_id (the project's own RECRUITER_SEARCH talent-pool channel, read it off talent_pool.channels[] of GET .../recruiter/projects/{project_id}) plus the (all-optional) people-search filter set. Pagination is driven by the limit (1-100) and cursor query params. Requires a Recruiter seat.
          */
         post: operations["postV1AccountIdRecruiterProjectsProjectIdTalentPoolSearch"];
         delete?: never;
@@ -1901,7 +1901,7 @@ export interface paths {
         put?: never;
         /**
          * Publish a job posting
-         * @description REAL MONEY: PROMOTED and PROMOTED_PLUS spend on the connected account's LinkedIn payment method. Providing budget IS the explicit opt-in to spend, there is no separate confirm flag. FREE requires free-posting eligibility (check GET …/budget's free.eligible first). bypass_email_verification skips the on-behalf-of-company posting eligibility check (replaces the retired publish-verification checkpoint, there is no separate checkpoint-solve step). Requires a Recruiter seat.
+         * @description REAL MONEY: PROMOTED and PROMOTED_PLUS spend on the connected account's LinkedIn payment method. Providing budget IS the explicit opt-in to spend, there is no separate confirm flag. FREE requires free-posting eligibility (check GET .../budget's free.eligible first). bypass_email_verification skips the on-behalf-of-company posting eligibility check (replaces the retired publish-verification checkpoint, there is no separate checkpoint-solve step). Requires a Recruiter seat.
          */
         post: operations["postV1AccountIdRecruiterProjectsProjectIdJobsJobIdPublish"];
         delete?: never;
@@ -1961,7 +1961,7 @@ export interface paths {
         put?: never;
         /**
          * List applicants in a project's talent pool
-         * @description List applicants in a Recruiter project's talent pool (POST-as-list; the body carries filters, no state mutates). The channel_id (a JOB_POSTING talent-pool channel) is REQUIRED, read it off talent_pool.channels[] of GET …/recruiter/projects/{project_id}. Requires a Recruiter seat.
+         * @description List applicants in a Recruiter project's talent pool (POST-as-list; the body carries filters, no state mutates). The channel_id (a JOB_POSTING talent-pool channel) is REQUIRED, read it off talent_pool.channels[] of GET .../recruiter/projects/{project_id}. Requires a Recruiter seat.
          */
         post: operations["postV1AccountIdRecruiterProjectsProjectIdTalentPoolApplicants"];
         delete?: never;
@@ -1979,7 +1979,7 @@ export interface paths {
         };
         /**
          * Get one talent-pool applicant
-         * @description Retrieve full detail for a single talent-pool applicant, the profile is GUARANTEED full (includes PII emails/phone_numbers). Unknown applicant_id or project_id → 404 RESOURCE_NOT_FOUND. Requires a Recruiter seat.
+         * @description Retrieve full detail for a single talent-pool applicant, the profile is GUARANTEED full (includes PII emails/phone_numbers). Unknown applicant_id or project_id -> 404 RESOURCE_NOT_FOUND. Requires a Recruiter seat.
          */
         get: operations["getV1AccountIdRecruiterProjectsProjectIdTalentPoolApplicantsApplicantId"];
         put?: never;
@@ -1999,7 +1999,7 @@ export interface paths {
         };
         /**
          * Download an applicant's résumé
-         * @description Stream the résumé file for a talent-pool applicant as raw bytes. Curviate never caches, stores, or logs the résumé body. Gated by has_resume on the applicant detail. An applicant with no résumé on file → 404 RESOURCE_NOT_FOUND; a résumé still generating upstream → 503 (retry shortly). Requires a Recruiter seat.
+         * @description Stream the résumé file for a talent-pool applicant as raw bytes. Curviate never caches, stores, or logs the résumé body. Gated by has_resume on the applicant detail. An applicant with no résumé on file -> 404 RESOURCE_NOT_FOUND; a résumé still generating upstream -> 503 (retry shortly). Requires a Recruiter seat.
          */
         get: operations["getV1AccountIdRecruiterProjectsProjectIdTalentPoolApplicantsApplicantIdResume"];
         put?: never;
@@ -2021,7 +2021,7 @@ export interface paths {
         put?: never;
         /**
          * Start a chat (Sales Navigator)
-         * @description Send an opening InMail-style message to one or more Sales Navigator members (ACw… IDs). subject is REQUIRED for Sales Navigator (InMail-based messaging). Accepts optional base64-encoded file / voice / video attachments (application/json only; multipart is not supported). Requires a Sales Navigator seat.
+         * @description Send an opening InMail-style message to one or more Sales Navigator members (ACw... IDs). subject is REQUIRED for Sales Navigator (InMail-based messaging). Accepts optional base64-encoded file / voice / video attachments (application/json only; multipart is not supported). Requires a Sales Navigator seat.
          */
         post: operations["postV1AccountIdSalesNavigatorChats"];
         delete?: never;
@@ -2369,7 +2369,7 @@ export interface paths {
         put?: never;
         /**
          * Poll a mobile-app-approval checkpoint
-         * @description Poll the pending mobile-app-approval challenge for an account and advance it. This is the completion driver for mobile_app_approval (and the in-app arm of otp_or_mobile_app_approval): call it repeatedly until the account is active. Returns object:"account" + status:"active" once approved; object:"checkpoint" + status:"pending" while still waiting; status:"checkpoint_required" (with challenge_type) when the approval chained to a new challenge (e.g. approval → 2FA), switch to POST /v1/auth/checkpoint/solve for the new type; status:"expired"/"failed" on timeout/failure. A code-based checkpoint polled here returns 422 directing you to POST /v1/auth/checkpoint/solve instead. `account_id` (in the body) identifies the mid-flight connect.
+         * @description Poll the pending mobile-app-approval challenge for an account and advance it. This is the completion driver for mobile_app_approval (and the in-app arm of otp_or_mobile_app_approval): call it repeatedly until the account is active. Returns object:"account" + status:"active" once approved; object:"checkpoint" + status:"pending" while still waiting; status:"checkpoint_required" (with challenge_type) when the approval chained to a new challenge (e.g. approval -> 2FA), switch to POST /v1/auth/checkpoint/solve for the new type; status:"expired"/"failed" on timeout/failure. A code-based checkpoint polled here returns 422 directing you to POST /v1/auth/checkpoint/solve instead. `account_id` (in the body) identifies the mid-flight connect.
          */
         post: operations["postV1AuthCheckpointPoll"];
         delete?: never;
@@ -2387,7 +2387,7 @@ export interface paths {
         };
         /**
          * Get a connect session's status
-         * @description Return the current status of a credential connect session, keyed by its account id (acc_…, from auth/intent or a checkpoint response). status is one of checkpoint_required / done / expired / failed; checkpoint_required carries challenge_type. account_id is present once status is done. Poll until status leaves checkpoint_required.
+         * @description Return the current status of a credential connect session, keyed by its account id (acc_..., from auth/intent or a checkpoint response). status is one of checkpoint_required / done / expired / failed; checkpoint_required carries challenge_type. account_id is present once status is done. Poll until status leaves checkpoint_required.
          */
         get: operations["getV1AuthSessionsSessionId"];
         put?: never;
@@ -2559,7 +2559,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to use for the request. */
+                /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
                 /** @description "me" for the caller's own account, or another LinkedIn user's public identifier, member ID, or profile URL. Note on the skills section: a skill's `endorsement_id` (the value needed to endorse that skill) is returned only for users you are eligible to endorse; i.e. your 1st-degree connections. For users outside your network, and on your own profile, the skills section still lists each skill (name, endorsement_count, endorsed, insights) but omits `endorsement_id`. This depends on the connection, not on the identifier form used to look the user up. */
                 user_id: string;
@@ -2807,7 +2807,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to use for the request. */
+                /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
                 /** @description Use "me" for the caller's own account, this is the only supported target. */
                 user_id: string;
@@ -3136,7 +3136,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to use for the request. */
+                /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
             };
             cookie?: never;
@@ -3250,9 +3250,9 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) performing the endorsement. */
+                /** @description The account ID (`acc_...`) performing the endorsement. */
                 account_id: string;
-                /** @description The LinkedIn member ID (`ACo…` format) whose skill is being endorsed, a public identifier does not resolve on this endpoint. */
+                /** @description The LinkedIn member ID (`ACo...` format) whose skill is being endorsed, a public identifier does not resolve on this endpoint. */
                 user_id: string;
             };
             cookie?: never;
@@ -3435,17 +3435,17 @@ export interface operations {
                             follower_count?: number | null;
                             /** @description Visitors in the past month. 0 is a real value. */
                             visitor_count?: number | null;
-                            /** @description Page-type enum: COMPANY | SHOWCASE | … . */
+                            /** @description Page-type enum: COMPANY | SHOWCASE | ... . */
                             page_type?: string | null;
                             /** @description null for own admin pages (follow-state not meaningful). */
                             is_following?: boolean | null;
                             /** @description Always true; this is the administered set. */
                             is_admin: boolean;
-                            /** @description The follow-invite gate. true → the account may invite connections to follow this page. */
+                            /** @description The follow-invite gate. true -> the account may invite connections to follow this page. */
                             can_invite_to_follow: boolean;
                             /** @description Canonical page URL (falls back to `/company/<id>/` when absent but id parsed). */
                             url?: string | null;
-                            /** @description Admin / paid-media roles: ADMINISTRATOR | DIRECT_SPONSORED_CONTENT_POSTER | … . Often empty. */
+                            /** @description Admin / paid-media roles: ADMINISTRATOR | DIRECT_SPONSORED_CONTENT_POSTER | ... . Often empty. */
                             roles?: string[];
                             /** @description The full set of granted permission keys: the machine-readable action matrix for routing. */
                             capabilities: string[];
@@ -3620,12 +3620,12 @@ export interface operations {
                             cancel_url: string | null;
                             /** @description External LinkedIn-owned URL to switch/upgrade this plan. */
                             switch_url: string | null;
-                            /** @description This plan's full action map (action key → external URL). Open-ended; observed keys: manage_subscription, cancel_subscription, switch_plans. */
+                            /** @description This plan's full action map (action key -> external URL). Open-ended; observed keys: manage_subscription, cancel_subscription, switch_plans. */
                             actions: {
                                 [key: string]: string;
                             };
                         }[];
-                        /** @description The primary plan's action map (action key → external URL); {} for a free account. */
+                        /** @description The primary plan's action map (action key -> external URL); {} for a free account. */
                         actions: {
                             [key: string]: string;
                         };
@@ -3868,7 +3868,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description A page of the account's recent profile viewers, each classified by disclosure fidelity. A free account is capped at semi-anonymous fidelity (an in-band 200, never a 403). Empty account → items:[], cursor:null. */
+            /** @description A page of the account's recent profile viewers, each classified by disclosure fidelity. A free account is capped at semi-anonymous fidelity (an in-band 200, never a 403). Empty account -> items:[], cursor:null. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -4141,7 +4141,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to use for the request. */
+                /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
                 /** @description "me" for the caller's own account, or another LinkedIn user's identifier. */
                 user_id: string;
@@ -4294,7 +4294,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to use for the request. */
+                /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
                 /** @description Must be "me". LinkedIn does not allow listing who another user follows. */
                 user_id: string;
@@ -4442,9 +4442,9 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to follow from. */
+                /** @description The account ID (`acc_...`) to follow from. */
                 account_id: string;
-                /** @description The LinkedIn member ID (`ACo…` format) to follow, a public identifier does not resolve on this endpoint. */
+                /** @description The LinkedIn member ID (`ACo...` format) to follow, a public identifier does not resolve on this endpoint. */
                 user_id: string;
             };
             cookie?: never;
@@ -4599,9 +4599,9 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to unfollow from. */
+                /** @description The account ID (`acc_...`) to unfollow from. */
                 account_id: string;
-                /** @description The LinkedIn member ID (`ACo…` format) to unfollow, a public identifier does not resolve on this endpoint. */
+                /** @description The LinkedIn member ID (`ACo...` format) to unfollow, a public identifier does not resolve on this endpoint. */
                 user_id: string;
             };
             cookie?: never;
@@ -4953,7 +4953,7 @@ export interface operations {
                         object: "company_employee_list";
                         /** @description People who currently work at the company. */
                         items: {
-                            /** @description Opaque LinkedIn member URN for this person (e.g. ACoAA…). */
+                            /** @description Opaque LinkedIn member URN for this person (e.g. ACoAA...). */
                             id: string;
                             /** @description Numeric LinkedIn member id, distinct from id. Present when available. */
                             member_id?: string;
@@ -5477,7 +5477,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description The AC… member ids to invite to follow the page. Each is the id field of an invitable-followers read. Required, 1 to 50 per request. */
+                    /** @description The AC... member ids to invite to follow the page. Each is the id field of an invitable-followers read. Required, 1 to 50 per request. */
                     invitee_ids: string[];
                 };
             };
@@ -5963,7 +5963,7 @@ export interface operations {
                              * @enum {string}
                              */
                             object: "company_chat";
-                            /** @description The conversation id (2-… form): the key for retrieve-chat and get-messages. */
+                            /** @description The conversation id (2-... form): the key for retrieve-chat and get-messages. */
                             id: string;
                             /** @description Group vs 1:1 conversation. */
                             is_group_chat: boolean;
@@ -6108,7 +6108,7 @@ export interface operations {
                 account_id: string;
                 /** @description The company's numeric id (e.g. 112013061), the id field of GET /v1/{account_id}/companies/{identifier} or a POST /v1/{account_id}/search/companies result. A public handle or URN is not accepted here; pass the numeric id. */
                 identifier: string;
-                /** @description The conversation id in the "2-…" form, the id field of a chats list or search result. Pass it verbatim. */
+                /** @description The conversation id in the "2-..." form, the id field of a chats list or search result. Pass it verbatim. */
                 chat_id: string;
             };
             cookie?: never;
@@ -6129,7 +6129,7 @@ export interface operations {
                          * @enum {string}
                          */
                         object: "company_chat";
-                        /** @description The conversation id (2-… form): the key for retrieve-chat and get-messages. */
+                        /** @description The conversation id (2-... form): the key for retrieve-chat and get-messages. */
                         id: string;
                         /** @description Group vs 1:1 conversation. */
                         is_group_chat: boolean;
@@ -6276,7 +6276,7 @@ export interface operations {
                 account_id: string;
                 /** @description The company's numeric id (e.g. 112013061), the id field of GET /v1/{account_id}/companies/{identifier} or a POST /v1/{account_id}/search/companies result. A public handle or URN is not accepted here; pass the numeric id. */
                 identifier: string;
-                /** @description The conversation id in the "2-…" form, the id field of a chats list or search result. Pass it verbatim. */
+                /** @description The conversation id in the "2-..." form, the id field of a chats list or search result. Pass it verbatim. */
                 chat_id: string;
             };
             cookie?: never;
@@ -6304,9 +6304,9 @@ export interface operations {
                              * @enum {string}
                              */
                             object: "company_chat_message";
-                            /** @description The message id (2-… form). */
+                            /** @description The message id (2-... form). */
                             id: string;
-                            /** @description The parent conversation id (2-… form). */
+                            /** @description The parent conversation id (2-... form). */
                             conversation_id: string;
                             sender: {
                                 /** @description Sender's member id. */
@@ -6428,7 +6428,7 @@ export interface operations {
                 account_id: string;
                 /** @description The company's numeric id (e.g. 112013061), the id field of GET /v1/{account_id}/companies/{identifier} or a POST /v1/{account_id}/search/companies result. A public handle or URN is not accepted here; pass the numeric id. */
                 identifier: string;
-                /** @description The conversation id in the "2-…" form, the id field of a chats list or search result. Pass it verbatim. */
+                /** @description The conversation id in the "2-..." form, the id field of a chats list or search result. Pass it verbatim. */
                 chat_id: string;
             };
             cookie?: never;
@@ -6484,7 +6484,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Empty body or neither text nor attachment supplied, a non-numeric identifier, or a malformed chat_id (not a conversation id in the 2-… form). */
+            /** @description Empty body or neither text nor attachment supplied, a non-numeric identifier, or a malformed chat_id (not a conversation id in the 2-... form). */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -6606,9 +6606,9 @@ export interface operations {
                 account_id: string;
                 /** @description The company's numeric id (e.g. 112013061), the id field of GET /v1/{account_id}/companies/{identifier} or a POST /v1/{account_id}/search/companies result. A public handle or URN is not accepted here; pass the numeric id. */
                 identifier: string;
-                /** @description The conversation id in the "2-…" form, the id field of a chats list or search result. Pass it verbatim. */
+                /** @description The conversation id in the "2-..." form, the id field of a chats list or search result. Pass it verbatim. */
                 chat_id: string;
-                /** @description The message id in the "2-…" form, the id field of a messages list result. Always resolved scoped to its chat_id. */
+                /** @description The message id in the "2-..." form, the id field of a messages list result. Always resolved scoped to its chat_id. */
                 message_id: string;
             };
             cookie?: never;
@@ -6629,9 +6629,9 @@ export interface operations {
                          * @enum {string}
                          */
                         object: "company_chat_message";
-                        /** @description The message id (2-… form). */
+                        /** @description The message id (2-... form). */
                         id: string;
-                        /** @description The parent conversation id (2-… form). */
+                        /** @description The parent conversation id (2-... form). */
                         conversation_id: string;
                         sender: {
                             /** @description Sender's member id. */
@@ -6787,7 +6787,7 @@ export interface operations {
                              * @enum {string}
                              */
                             object: "company_chat";
-                            /** @description The conversation id (2-… form): the key for retrieve-chat and get-messages. */
+                            /** @description The conversation id (2-... form): the key for retrieve-chat and get-messages. */
                             id: string;
                             /** @description Group vs 1:1 conversation. */
                             is_group_chat: boolean;
@@ -7647,7 +7647,7 @@ export interface operations {
                         object: "people_search_result";
                         /** @description People search result items. */
                         items: {
-                            /** @description Opaque LinkedIn member URN for this person (e.g. ACoAA…). */
+                            /** @description Opaque LinkedIn member URN for this person (e.g. ACoAA...). */
                             id: string;
                             /** @description Numeric LinkedIn member id, distinct from id. Present when available. */
                             member_id?: string;
@@ -7682,7 +7682,7 @@ export interface operations {
                         }[];
                         /** @description Paging metadata. */
                         paging: {
-                            /** @description Total matching result count. Large counts (people/companies/from-url) are a ≥1000 ceiling, not an exact total. */
+                            /** @description Total matching result count. Large counts (people/companies/from-url) are a >=1000 ceiling, not an exact total. */
                             total_count: number | null;
                         };
                         /** @description Opaque next-page cursor; null on the last page. */
@@ -7872,7 +7872,7 @@ export interface operations {
                         }[];
                         /** @description Paging metadata. */
                         paging: {
-                            /** @description Total matching result count. Large counts are a ≥1000 ceiling, not an exact total. */
+                            /** @description Total matching result count. Large counts are a >=1000 ceiling, not an exact total. */
                             total_count: number | null;
                         };
                         /** @description Opaque next-page cursor; null on the last page. */
@@ -8515,7 +8515,7 @@ export interface operations {
                         items: ({
                             /** @enum {string} */
                             object: "people_search_result";
-                            /** @description Opaque LinkedIn member URN for this person (e.g. ACoAA…). */
+                            /** @description Opaque LinkedIn member URN for this person (e.g. ACoAA...). */
                             id: string;
                             /** @description Numeric LinkedIn member id, distinct from id. Present when available. */
                             member_id?: string;
@@ -8657,7 +8657,7 @@ export interface operations {
                         })[];
                         /** @description Paging metadata. */
                         paging: {
-                            /** @description Total matching result count. Large counts are a ≥1000 ceiling, not an exact total. */
+                            /** @description Total matching result count. Large counts are a >=1000 ceiling, not an exact total. */
                             total_count: number | null;
                         };
                         /** @description Opaque next-page cursor; null on the last page. */
@@ -8949,7 +8949,7 @@ export interface operations {
                              * @enum {string}
                              */
                             object: "service_provider";
-                            /** @description The member id (ACoAAA…), the key for connect/message/enrich. */
+                            /** @description The member id (ACoAAA...), the key for connect/message/enrich. */
                             id: string | null;
                             /** @description Display name. */
                             name: string | null;
@@ -9243,7 +9243,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose chats to list. */
+                /** @description The account ID (`acc_...`) whose chats to list. */
                 account_id: string;
             };
             cookie?: never;
@@ -9460,7 +9460,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to start the chat from. */
+                /** @description The account ID (`acc_...`) to start the chat from. */
                 account_id: string;
             };
             cookie?: never;
@@ -9468,11 +9468,11 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description LinkedIn member provider IDs for the chat recipients (≥ 1, e.g. ACo…). */
+                    /** @description LinkedIn member provider IDs for the chat recipients (>= 1, e.g. ACo...). */
                     attendees_ids: string[];
                     /** @description Opening message text (1-8000 chars). */
                     text: string;
-                    /** @description Optional conversation name / subject line (≤ 200 chars). */
+                    /** @description Optional conversation name / subject line (<= 200 chars). */
                     subject?: string;
                     /** @description Optional file attachments (base64-encoded). */
                     attachments?: {
@@ -9628,7 +9628,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) that owns the chat. */
+                /** @description The account ID (`acc_...`) that owns the chat. */
                 account_id: string;
                 /** @description The unique identifier of the chat to retrieve. */
                 chat_id: string;
@@ -9820,7 +9820,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) that owns the chat. */
+                /** @description The account ID (`acc_...`) that owns the chat. */
                 account_id: string;
                 /** @description The unique identifier of the chat to update. */
                 chat_id: string;
@@ -9950,7 +9950,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) that owns the chat. */
+                /** @description The account ID (`acc_...`) that owns the chat. */
                 account_id: string;
                 /** @description The unique identifier of the chat to list messages from. */
                 chat_id: string;
@@ -10110,7 +10110,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) that owns the chat. */
+                /** @description The account ID (`acc_...`) that owns the chat. */
                 account_id: string;
                 /** @description The unique identifier of the chat to send the message to. A COMPANY_ chat id (e.g. 'COMPANY_83734124_2-YTQ3ODU3Njgt', from the inboxes endpoints) sends this message as that company page instead of the connected member. */
                 chat_id: string;
@@ -10137,7 +10137,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Message sent. Returns the new message_id and sent_as, the acting identity. Reply as a company page simply by sending into one of its chat ids (from GET /v1/{account_id}/inboxes/{inbox_id}/chats): a COMPANY_ chat id (e.g. `COMPANY_83734124_2-…`) sends AS THE PAGE and echoes sent_as:{kind:'company',company_id,name} (company_id is null when the page could not be correlated to a managed page). Any other chat id sends as the connected member and echoes sent_as:{kind:'personal'}. Never infer the acting identity from the message's sender field, only from sent_as. */
+            /** @description Message sent. Returns the new message_id and sent_as, the acting identity. Reply as a company page simply by sending into one of its chat ids (from GET /v1/{account_id}/inboxes/{inbox_id}/chats): a COMPANY_ chat id (e.g. `COMPANY_83734124_2-...`) sends AS THE PAGE and echoes sent_as:{kind:'company',company_id,name} (company_id is null when the page could not be correlated to a managed page). Any other chat id sends as the connected member and echoes sent_as:{kind:'personal'}. Never infer the acting identity from the message's sender field, only from sent_as. */
             201: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -10277,7 +10277,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) that owns the chat. */
+                /** @description The account ID (`acc_...`) that owns the chat. */
                 account_id: string;
                 /** @description The unique identifier of the chat that contains the message. */
                 chat_id: string;
@@ -10421,7 +10421,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) that owns the chat. */
+                /** @description The account ID (`acc_...`) that owns the chat. */
                 account_id: string;
                 /** @description The unique identifier of the chat that contains the message. */
                 chat_id: string;
@@ -10533,7 +10533,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) that owns the chat. */
+                /** @description The account ID (`acc_...`) that owns the chat. */
                 account_id: string;
                 /** @description The unique identifier of the chat that contains the message. */
                 chat_id: string;
@@ -10661,7 +10661,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) that owns the chat. */
+                /** @description The account ID (`acc_...`) that owns the chat. */
                 account_id: string;
                 /** @description The unique identifier of the chat that contains the message. */
                 chat_id: string;
@@ -10673,7 +10673,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description Native emoji reaction value (e.g. 👍). Must be a valid LinkedIn reaction emoji. */
+                    /** @description Native emoji reaction value (e.g. a thumbs-up emoji). Must be a valid LinkedIn reaction emoji. */
                     reaction: string;
                 };
             };
@@ -10782,7 +10782,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) that owns the chat. */
+                /** @description The account ID (`acc_...`) that owns the chat. */
                 account_id: string;
                 /** @description The unique identifier of the chat that contains the message. */
                 chat_id: string;
@@ -10895,7 +10895,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose inbox to search. */
+                /** @description The account ID (`acc_...`) whose inbox to search. */
                 account_id: string;
             };
             cookie?: never;
@@ -11067,7 +11067,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to send the InMail from. */
+                /** @description The account ID (`acc_...`) to send the InMail from. */
                 account_id: string;
             };
             cookie?: never;
@@ -11075,7 +11075,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description LinkedIn member URN (`urn:li:member:<id>`) or member provider id (`ACo…`). */
+                    /** @description LinkedIn member URN (`urn:li:member:<id>`) or member provider id (`ACo...`). */
                     recipient_urn: string;
                     /** @description InMail subject line (1-200 chars). */
                     subject: string;
@@ -11211,7 +11211,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose inboxes to list. */
+                /** @description The account ID (`acc_...`) whose inboxes to list. */
                 account_id: string;
             };
             cookie?: never;
@@ -11339,7 +11339,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose inbox to list. */
+                /** @description The account ID (`acc_...`) whose inbox to list. */
                 account_id: string;
                 /** @description The inbox ID (e.g. 'CLASSIC_PRIMARY' or 'COMPANY_83734124_PRIMARY') from GET /inboxes. */
                 inbox_id: string;
@@ -11589,7 +11589,7 @@ export interface operations {
                             /** @description The post's author. On `sort=recent` only `name` resolves (`type` is `other`, the rest null). */
                             author: {
                                 /**
-                                 * @description Person → individual; company/showcase/sponsored → organization; unresolved (every recent author) → other.
+                                 * @description Person -> individual; company/showcase/sponsored -> organization; unresolved (every recent author) -> other.
                                  * @enum {string}
                                  */
                                 type: "individual" | "organization" | "other";
@@ -11599,7 +11599,7 @@ export interface operations {
                                 headline: string | null;
                                 /** @description Relative time label as rendered ("6d", "1w") or "Promoted" for sponsored posts. Locale-dependent. null on recent. */
                                 posted_ago: string | null;
-                                /** @description Obfuscated member id (ACoAA…), set for person authors (relevant). */
+                                /** @description Obfuscated member id (ACoAA...), set for person authors (relevant). */
                                 member_id: string | null;
                                 /** @description Numeric member id, the strongest durable cross-action join key. Person authors (relevant). */
                                 numeric_id: string | null;
@@ -11897,7 +11897,7 @@ export interface operations {
             path: {
                 /** @description The connected LinkedIn account whose notifications to read or act on. */
                 account_id: string;
-                /** @description The card urn to delete, the `card_urn` field of a GET /v1/{account_id}/notifications item (urn:li:fsd_notificationCard:…). Pass the card urn, NOT object_urn (which targets the wrong notification). Percent-encode it into the path. This cannot be undone. */
+                /** @description The card urn to delete, the `card_urn` field of a GET /v1/{account_id}/notifications item (urn:li:fsd_notificationCard:...). Pass the card urn, NOT object_urn (which targets the wrong notification). Percent-encode it into the path. This cannot be undone. */
                 card_urn: string;
             };
             cookie?: never;
@@ -12128,7 +12128,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to use for the request. */
+                /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
                 /** @description "me" for the caller's own account, or another LinkedIn user's public identifier, member ID, or profile URL. */
                 user_id: string;
@@ -12208,10 +12208,14 @@ export interface operations {
                                 /** @description File size in bytes, when known. */
                                 file_size?: number;
                             }[];
-                            /** @description The post this comment was made on. */
+                            /** @description The post this comment was made on. Use `urn` to tell whether you have already commented on a given post; `id` varies with the surface that returned it, `urn` does not. */
                             parent_post?: {
-                                /** @description The post's identifier. */
+                                /** @description The post's identifier as returned on this surface. Use this value, not `urn`, on sub-resource operations such as commenting. */
                                 id?: string;
+                                /** @description Stable identifier for the parent post, in `urn:li:activity:ID` or `urn:li:ugcPost:ID` form. Compare it against a post's own `urn` to join a comment to its parent, including posts whose identity is a ugcPost. Also accepted as the post_id path param on get-post. null when the post carries no resolvable identity, and two nulls are not a match: treat null as unknown, never as equal. */
+                                urn?: string | null;
+                                /** @description ISO-8601 UTC datetime the parent post was created, or null if unavailable. This is the post's own creation time, not the time of the comment. */
+                                created_at?: string | null;
                                 /**
                                  * @description Response type discriminator.
                                  * @enum {string}
@@ -12313,9 +12317,9 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to use for the request. */
+                /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
                 post_id: string;
             };
             cookie?: never;
@@ -12481,9 +12485,9 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to comment as. */
+                /** @description The account ID (`acc_...`) to comment as. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
                 post_id: string;
             };
             cookie?: never;
@@ -12684,9 +12688,9 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to reply as. */
+                /** @description The account ID (`acc_...`) to reply as. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
                 post_id: string;
                 /** @description The parent comment's `id` (a bare numeric string), as returned by comment_on_post / list_comment_replies. */
                 comment_id: string;
@@ -12889,9 +12893,9 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) that authored the comment. */
+                /** @description The account ID (`acc_...`) that authored the comment. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
                 post_id: string;
                 /** @description The comment's `id` (a bare numeric string), as returned by comment_on_post / list_comment_replies. */
                 comment_id: string;
@@ -13002,9 +13006,9 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) that authored the comment. */
+                /** @description The account ID (`acc_...`) that authored the comment. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
                 post_id: string;
                 /** @description The comment's `id` (a bare numeric string), as returned by comment_on_post / list_comment_replies. */
                 comment_id: string;
@@ -13183,9 +13187,9 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to use for the request. */
+                /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
                 post_id: string;
                 /** @description The parent comment's `id` (a bare numeric string), as returned by comment_on_post / list_comment_replies. */
                 comment_id: string;
@@ -13360,9 +13364,9 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to use for the request. */
+                /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
                 post_id: string;
                 /** @description The comment's `id` (a bare numeric string), as returned by comment_on_post / list_comment_replies. */
                 comment_id: string;
@@ -13498,9 +13502,9 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to react from. */
+                /** @description The account ID (`acc_...`) to react from. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
                 post_id: string;
                 /** @description The comment's `id` (a bare numeric string), as returned by comment_on_post / list_comment_replies. */
                 comment_id: string;
@@ -13636,9 +13640,9 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose reaction to remove. */
+                /** @description The account ID (`acc_...`) whose reaction to remove. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
                 post_id: string;
                 /** @description The comment's `id` (a bare numeric string), as returned by comment_on_post / list_comment_replies. */
                 comment_id: string;
@@ -13772,7 +13776,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to act on behalf of. */
+                /** @description The account ID (`acc_...`) to act on behalf of. */
                 account_id: string;
             };
             cookie?: never;
@@ -13802,7 +13806,7 @@ export interface operations {
                          * @enum {string}
                          */
                         object: "invitation_sent";
-                        /** @description Direction-prefixed connect-request id (SENT_…). */
+                        /** @description Direction-prefixed connect-request id (SENT_...). */
                         id: string;
                         /**
                          * @description Outcome status.
@@ -13939,7 +13943,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to list sent connect-requests for. */
+                /** @description The account ID (`acc_...`) to list sent connect-requests for. */
                 account_id: string;
             };
             cookie?: never;
@@ -13967,7 +13971,7 @@ export interface operations {
                              * @enum {string}
                              */
                             object: "invitation_sent";
-                            /** @description Direction-prefixed connect-request id (SENT_…). */
+                            /** @description Direction-prefixed connect-request id (SENT_...). */
                             id: string;
                             /** @description ISO-8601 UTC datetime the connect-request was created. Optional, omitted when the platform does not return it. */
                             created_at?: string;
@@ -14093,7 +14097,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to list received connect-requests for. */
+                /** @description The account ID (`acc_...`) to list received connect-requests for. */
                 account_id: string;
             };
             cookie?: never;
@@ -14121,7 +14125,7 @@ export interface operations {
                              * @enum {string}
                              */
                             object: "invitation_received";
-                            /** @description Direction-prefixed connect-request id (RECEIVED_…). */
+                            /** @description Direction-prefixed connect-request id (RECEIVED_...). */
                             id: string;
                             /** @description ISO-8601 UTC datetime the connect-request was created. Optional, omitted when the platform does not return it. */
                             created_at?: string;
@@ -14246,7 +14250,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to act on behalf of. */
+                /** @description The account ID (`acc_...`) to act on behalf of. */
                 account_id: string;
                 /** @description The received connect-request's id (from GET .../invites/received items[].id). */
                 invitation_id: string;
@@ -14361,7 +14365,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to act on behalf of. */
+                /** @description The account ID (`acc_...`) to act on behalf of. */
                 account_id: string;
                 /** @description The received connect-request's id (from GET .../invites/received items[].id). */
                 invitation_id: string;
@@ -14476,7 +14480,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to act on behalf of. */
+                /** @description The account ID (`acc_...`) to act on behalf of. */
                 account_id: string;
                 /** @description The sent connect-request's id to withdraw. */
                 invitation_id: string;
@@ -16435,7 +16439,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to use for the request. */
+                /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
                 /** @description The post's `id`, as returned by get-post / list-posts. Full LinkedIn share URLs are also accepted (e.g. `https://www.linkedin.com/posts/someone_title-activity-7332661864792854528-Qh99/` or `https://www.linkedin.com/feed/update/urn:li:activity:7332661864792854528-slug`). Bare numeric ids and URN forms are also accepted: `7332661864792854528`, `urn:li:activity:N`, `urn:li:ugcPost:N`, `urn:li:share:N`. */
                 post_id: string;
@@ -16458,15 +16462,17 @@ export interface operations {
                          * @enum {string}
                          */
                         object?: "post";
-                        /** @description The post's own identifier, use this value as the post_id path param on sub-resource endpoints. */
+                        /** @description The post's own identifier as returned on this surface, use this value as the post_id path param on sub-resource endpoints. Its exact value can differ between two responses about the same post, so compare `urn` rather than `id` when you need to tell whether two responses describe one post. */
                         id?: string;
+                        /** @description Stable identifier for the post itself, in `urn:li:activity:ID` or `urn:li:ugcPost:ID` form. Unlike `id`, this value is the same however you reached the post, so compare it to decide whether two responses describe the same post; a comment's `parent_post.urn` joins to it directly. For a repost it names the post being reshared, so reshares of one post share a `urn` while each keeps its own `created_at`. It is also accepted as the post_id path param on get-post; sub-resource operations still need the opaque `id`. null when the post carries no resolvable identity, and two nulls are not a match: treat null as unknown, never as equal. */
+                        urn?: string | null;
                         /** @description Shareable URL for the post. */
                         share_url?: string | null;
                         /** @description Post title, or null if not set. */
                         title?: string | null;
                         /** @description Full post text (content pass-through, never stored). */
                         text?: string | null;
-                        /** @description ISO-8601 UTC datetime the post was created, or null if unavailable. */
+                        /** @description ISO-8601 UTC datetime this post was created, or null if unavailable. Derived from the post's own identity, so it does not change with the route you used to reach it. For a repost this is when the repost was made, not when the post it reshares was, so it is safe to sort by recency. */
                         created_at?: string | null;
                         /** @description Total comment count, or null when the platform hides it. */
                         comment_count?: number | null;
@@ -16610,7 +16616,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) that owns the post. */
+                /** @description The account ID (`acc_...`) that owns the post. */
                 account_id: string;
                 /** @description The post's `id`, as returned by get-post / list-posts. Full LinkedIn share URLs are also accepted (e.g. `https://www.linkedin.com/posts/someone_title-activity-7332661864792854528-Qh99/` or `https://www.linkedin.com/feed/update/urn:li:activity:7332661864792854528-slug`). Bare numeric ids and URN forms are also accepted: `7332661864792854528`, `urn:li:activity:N`, `urn:li:ugcPost:N`, `urn:li:share:N`. */
                 post_id: string;
@@ -16721,7 +16727,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to post as. */
+                /** @description The account ID (`acc_...`) to post as. */
                 account_id: string;
             };
             cookie?: never;
@@ -16891,7 +16897,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to use for the request. */
+                /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
                 /** @description "me" for the caller's own account, or another LinkedIn user's public identifier, member ID, or profile URL. */
                 user_id: string;
@@ -16921,15 +16927,17 @@ export interface operations {
                              * @enum {string}
                              */
                             object?: "post";
-                            /** @description The post's own identifier, use this value as the post_id path param on sub-resource endpoints. */
+                            /** @description The post's own identifier as returned on this surface, use this value as the post_id path param on sub-resource endpoints. Its exact value can differ between two responses about the same post, so compare `urn` rather than `id` when you need to tell whether two responses describe one post. */
                             id?: string;
+                            /** @description Stable identifier for the post itself, in `urn:li:activity:ID` or `urn:li:ugcPost:ID` form. Unlike `id`, this value is the same however you reached the post, so compare it to decide whether two responses describe the same post; a comment's `parent_post.urn` joins to it directly. For a repost it names the post being reshared, so reshares of one post share a `urn` while each keeps its own `created_at`. It is also accepted as the post_id path param on get-post; sub-resource operations still need the opaque `id`. null when the post carries no resolvable identity, and two nulls are not a match: treat null as unknown, never as equal. */
+                            urn?: string | null;
                             /** @description Shareable URL for the post. */
                             share_url?: string | null;
                             /** @description Post title, or null if not set. */
                             title?: string | null;
                             /** @description Full post text (content pass-through, never stored). */
                             text?: string | null;
-                            /** @description ISO-8601 UTC datetime the post was created, or null if unavailable. */
+                            /** @description ISO-8601 UTC datetime this post was created, or null if unavailable. Derived from the post's own identity, so it does not change with the route you used to reach it. For a repost this is when the repost was made, not when the post it reshares was, so it is safe to sort by recency. */
                             created_at?: string | null;
                             /** @description Total comment count, or null when the platform hides it. */
                             comment_count?: number | null;
@@ -17081,9 +17089,9 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to use for the request. */
+                /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
                 post_id: string;
             };
             cookie?: never;
@@ -17224,9 +17232,9 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to react from. */
+                /** @description The account ID (`acc_...`) to react from. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
                 post_id: string;
             };
             cookie?: never;
@@ -17358,9 +17366,9 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose reaction to remove. */
+                /** @description The account ID (`acc_...`) whose reaction to remove. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:…`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
                 post_id: string;
             };
             cookie?: never;
@@ -17495,7 +17503,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) to use for the request. */
+                /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
                 /** @description "me" for the caller's own account, or another LinkedIn user's public identifier, member ID, or profile URL. */
                 user_id: string;
@@ -17534,8 +17542,20 @@ export interface operations {
                             is_sender?: boolean;
                             /** @description The user who made the reaction. */
                             sender?: Record<string, never>;
-                            /** @description The post this reaction was made on (full Post or a lighter preview). */
-                            parent_post?: Record<string, never>;
+                            /** @description The post this reaction was made on (full Post or a lighter preview). Its `urn` is the stable identifier for that post, so compare it against a post's own `urn` to tell whether you already reacted to it. */
+                            parent_post?: {
+                                /**
+                                 * @description Response type discriminator.
+                                 * @enum {string}
+                                 */
+                                object?: "post";
+                                /** @description The post's identifier as returned on this surface. Use this value, not `urn`, on sub-resource operations. */
+                                id?: string;
+                                /** @description Stable identifier for the parent post, in `urn:li:activity:ID` or `urn:li:ugcPost:ID` form. Also accepted as the post_id path param on get-post. null when the post carries no resolvable identity, and two nulls are not a match: treat null as unknown, never as equal. */
+                                urn?: string | null;
+                                /** @description ISO-8601 UTC datetime the parent post was created, or null if unavailable. This is the post's own creation time, not the time of the reaction. */
+                                created_at?: string | null;
+                            };
                         }[];
                         /** @description Next-page cursor; null on the last page. */
                         cursor?: string | null;
@@ -17629,7 +17649,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose OWN saved posts to list. */
+                /** @description The account ID (`acc_...`) whose OWN saved posts to list. */
                 account_id: string;
             };
             cookie?: never;
@@ -17789,7 +17809,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) that performs the save. */
+                /** @description The account ID (`acc_...`) that performs the save. */
                 account_id: string;
             };
             cookie?: never;
@@ -17915,7 +17935,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) that performs the unsave. */
+                /** @description The account ID (`acc_...`) that performs the unsave. */
                 account_id: string;
                 /** @description The post to unsave. Accepts `urn:li:activity:<id>` or a bare numeric `<id>`. */
                 post_id: string;
@@ -18039,7 +18059,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Recruiter seat resolves the profile view. */
+                /** @description The account ID (`acc_...`) whose Recruiter seat resolves the profile view. */
                 account_id: string;
                 /** @description The target profile: 'me', a public identifier, or a member ID. */
                 user_id: string;
@@ -18269,7 +18289,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Recruiter seat starts the chat. */
+                /** @description The account ID (`acc_...`) whose Recruiter seat starts the chat. */
                 account_id: string;
             };
             cookie?: never;
@@ -18277,11 +18297,11 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description One or more Recruiter member IDs (AE… format) to include in the chat. */
+                    /** @description One or more Recruiter member IDs (AE... format) to include in the chat. */
                     attendees_ids: string[];
                     /** @description Opening message text (1-8000 chars). Passed to the platform and discarded; never stored or logged. */
                     text: string;
-                    /** @description Subject line; REQUIRED for Recruiter (InMail-based messaging), unlike the classic surface (≤ 200 chars). */
+                    /** @description Subject line; REQUIRED for Recruiter (InMail-based messaging), unlike the classic surface (<= 200 chars). */
                     subject: string;
                     /** @description Sender signature; REQUIRED for Recruiter. Not stored or logged. */
                     signature: string;
@@ -18509,7 +18529,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Recruiter seat performs the search. */
+                /** @description The account ID (`acc_...`) whose Recruiter seat performs the search. */
                 account_id: string;
             };
             cookie?: never;
@@ -18803,7 +18823,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Recruiter seat resolves the parameters. */
+                /** @description The account ID (`acc_...`) whose Recruiter seat resolves the parameters. */
                 account_id: string;
             };
             cookie?: never;
@@ -18992,7 +19012,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Recruiter seat lists the projects. */
+                /** @description The account ID (`acc_...`) whose Recruiter seat lists the projects. */
                 account_id: string;
             };
             cookie?: never;
@@ -19205,9 +19225,9 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Recruiter seat resolves the project. */
+                /** @description The account ID (`acc_...`) whose Recruiter seat resolves the project. */
                 account_id: string;
-                /** @description The project ID. Obtain it from data[].id of GET …/recruiter/projects. */
+                /** @description The project ID. Obtain it from data[].id of GET .../recruiter/projects. */
                 project_id: string;
             };
             cookie?: never;
@@ -19408,9 +19428,9 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Recruiter seat edits the project. */
+                /** @description The account ID (`acc_...`) whose Recruiter seat edits the project. */
                 account_id: string;
-                /** @description The project ID. Obtain it from data[].id of GET …/recruiter/projects. */
+                /** @description The project ID. Obtain it from data[].id of GET .../recruiter/projects. */
                 project_id: string;
             };
             cookie?: never;
@@ -19570,9 +19590,9 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Recruiter seat lists the pipeline. */
+                /** @description The account ID (`acc_...`) whose Recruiter seat lists the pipeline. */
                 account_id: string;
-                /** @description The project ID. Obtain it from data[].id of GET …/recruiter/projects. */
+                /** @description The project ID. Obtain it from data[].id of GET .../recruiter/projects. */
                 project_id: string;
             };
             cookie?: never;
@@ -19814,9 +19834,9 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Recruiter seat performs the search. */
+                /** @description The account ID (`acc_...`) whose Recruiter seat performs the search. */
                 account_id: string;
-                /** @description The project ID. Obtain it from data[].id of GET …/recruiter/projects. */
+                /** @description The project ID. Obtain it from data[].id of GET .../recruiter/projects. */
                 project_id: string;
             };
             cookie?: never;
@@ -20112,7 +20132,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Recruiter seat performs the search. */
+                /** @description The account ID (`acc_...`) whose Recruiter seat performs the search. */
                 account_id: string;
             };
             cookie?: never;
@@ -20439,9 +20459,9 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Recruiter seat resolves the job posting. */
+                /** @description The account ID (`acc_...`) whose Recruiter seat resolves the job posting. */
                 account_id: string;
-                /** @description The project ID. Obtain it from data[].id of GET …/recruiter/projects. */
+                /** @description The project ID. Obtain it from data[].id of GET .../recruiter/projects. */
                 project_id: string;
             };
             cookie?: never;
@@ -20609,9 +20629,9 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Recruiter seat creates the draft. */
+                /** @description The account ID (`acc_...`) whose Recruiter seat creates the draft. */
                 account_id: string;
-                /** @description The project ID. Obtain it from data[].id of GET …/recruiter/projects. */
+                /** @description The project ID. Obtain it from data[].id of GET .../recruiter/projects. */
                 project_id: string;
             };
             cookie?: never;
@@ -20816,11 +20836,11 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Recruiter seat resolves the budget. */
+                /** @description The account ID (`acc_...`) whose Recruiter seat resolves the budget. */
                 account_id: string;
-                /** @description The project ID. Obtain it from data[].id of GET …/recruiter/projects. */
+                /** @description The project ID. Obtain it from data[].id of GET .../recruiter/projects. */
                 project_id: string;
-                /** @description The job posting ID. Obtain it from GET …/recruiter/projects/{project_id}/jobs. */
+                /** @description The job posting ID. Obtain it from GET .../recruiter/projects/{project_id}/jobs. */
                 job_id: string;
             };
             cookie?: never;
@@ -20978,7 +20998,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Recruiter seat lists the job postings. */
+                /** @description The account ID (`acc_...`) whose Recruiter seat lists the job postings. */
                 account_id: string;
             };
             cookie?: never;
@@ -21125,7 +21145,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Recruiter seat creates the draft. */
+                /** @description The account ID (`acc_...`) whose Recruiter seat creates the draft. */
                 account_id: string;
             };
             cookie?: never;
@@ -21332,9 +21352,9 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Recruiter seat resolves the job posting. */
+                /** @description The account ID (`acc_...`) whose Recruiter seat resolves the job posting. */
                 account_id: string;
-                /** @description The job posting ID. Obtain it from data[].id of GET …/recruiter/jobs. */
+                /** @description The job posting ID. Obtain it from data[].id of GET .../recruiter/jobs. */
                 job_id: string;
             };
             cookie?: never;
@@ -21502,11 +21522,11 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Recruiter seat edits the posting. */
+                /** @description The account ID (`acc_...`) whose Recruiter seat edits the posting. */
                 account_id: string;
-                /** @description The project ID. Obtain it from data[].id of GET …/recruiter/projects. */
+                /** @description The project ID. Obtain it from data[].id of GET .../recruiter/projects. */
                 project_id: string;
-                /** @description The job posting ID. Obtain it from GET …/recruiter/projects/{project_id}/jobs. */
+                /** @description The job posting ID. Obtain it from GET .../recruiter/projects/{project_id}/jobs. */
                 job_id: string;
             };
             cookie?: never;
@@ -21709,11 +21729,11 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Recruiter seat publishes the posting. */
+                /** @description The account ID (`acc_...`) whose Recruiter seat publishes the posting. */
                 account_id: string;
-                /** @description The project ID. Obtain it from data[].id of GET …/recruiter/projects. */
+                /** @description The project ID. Obtain it from data[].id of GET .../recruiter/projects. */
                 project_id: string;
-                /** @description The job posting ID. Obtain it from GET …/recruiter/projects/{project_id}/jobs. */
+                /** @description The job posting ID. Obtain it from GET .../recruiter/projects/{project_id}/jobs. */
                 job_id: string;
             };
             cookie?: never;
@@ -21894,11 +21914,11 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Recruiter seat closes the posting. */
+                /** @description The account ID (`acc_...`) whose Recruiter seat closes the posting. */
                 account_id: string;
-                /** @description The project ID. Obtain it from data[].id of GET …/recruiter/projects. */
+                /** @description The project ID. Obtain it from data[].id of GET .../recruiter/projects. */
                 project_id: string;
-                /** @description The job posting ID. Obtain it from GET …/recruiter/projects/{project_id}/jobs. */
+                /** @description The job posting ID. Obtain it from GET .../recruiter/projects/{project_id}/jobs. */
                 job_id: string;
             };
             cookie?: never;
@@ -22022,9 +22042,9 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Recruiter seat saves the candidate. */
+                /** @description The account ID (`acc_...`) whose Recruiter seat saves the candidate. */
                 account_id: string;
-                /** @description The project ID. Obtain it from data[].id of GET …/recruiter/projects. */
+                /** @description The project ID. Obtain it from data[].id of GET .../recruiter/projects. */
                 project_id: string;
             };
             cookie?: never;
@@ -22162,9 +22182,9 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Recruiter seat lists the applicants. */
+                /** @description The account ID (`acc_...`) whose Recruiter seat lists the applicants. */
                 account_id: string;
-                /** @description The project ID. Obtain it from data[].id of GET …/recruiter/projects. */
+                /** @description The project ID. Obtain it from data[].id of GET .../recruiter/projects. */
                 project_id: string;
             };
             cookie?: never;
@@ -22305,7 +22325,7 @@ export interface operations {
                             id: string;
                             /** @description ISO-8601 timestamp when the application was submitted. */
                             applied_at: string;
-                            /** @description Whether the applicant has a downloadable résumé. Gates GET …/resume. */
+                            /** @description Whether the applicant has a downloadable résumé. Gates GET .../resume. */
                             has_resume?: boolean;
                             /** @description Screening-question responses. */
                             screening_questions?: {
@@ -22479,9 +22499,9 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Recruiter seat resolves the applicant. */
+                /** @description The account ID (`acc_...`) whose Recruiter seat resolves the applicant. */
                 account_id: string;
-                /** @description The project ID. Obtain it from data[].id of GET …/recruiter/projects. */
+                /** @description The project ID. Obtain it from data[].id of GET .../recruiter/projects. */
                 project_id: string;
                 /** @description The applicant ID, obtained from the list applicants endpoint's data[].id. */
                 applicant_id: string;
@@ -22508,7 +22528,7 @@ export interface operations {
                         id: string;
                         /** @description ISO-8601 timestamp when the application was submitted. */
                         applied_at: string;
-                        /** @description Whether the applicant has a downloadable résumé. Gates GET …/resume. */
+                        /** @description Whether the applicant has a downloadable résumé. Gates GET .../resume. */
                         has_resume?: boolean;
                         /** @description Screening-question responses. */
                         screening_questions?: {
@@ -22677,9 +22697,9 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Recruiter seat downloads the résumé. */
+                /** @description The account ID (`acc_...`) whose Recruiter seat downloads the résumé. */
                 account_id: string;
-                /** @description The project ID. Obtain it from data[].id of GET …/recruiter/projects. */
+                /** @description The project ID. Obtain it from data[].id of GET .../recruiter/projects. */
                 project_id: string;
                 /** @description The applicant ID, obtained from the list applicants endpoint's data[].id. */
                 applicant_id: string;
@@ -22799,7 +22819,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Sales Navigator seat starts the chat. */
+                /** @description The account ID (`acc_...`) whose Sales Navigator seat starts the chat. */
                 account_id: string;
             };
             cookie?: never;
@@ -22807,11 +22827,11 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description Sales Navigator member IDs for the chat recipients (≥ 1, e.g. ACw…). */
+                    /** @description Sales Navigator member IDs for the chat recipients (>= 1, e.g. ACw...). */
                     attendees_ids: string[];
                     /** @description Opening message text (1-8000 chars). Not stored or logged. */
                     text: string;
-                    /** @description Subject line; REQUIRED for Sales Navigator (InMail-based messaging), unlike the classic surface where it is optional (≤ 200 chars). Maps into the SN-only specifics branch. */
+                    /** @description Subject line; REQUIRED for Sales Navigator (InMail-based messaging), unlike the classic surface where it is optional (<= 200 chars). Maps into the SN-only specifics branch. */
                     subject: string;
                     /** @description Optional file / voice / video attachments (base64-encoded). */
                     attachments?: {
@@ -22979,7 +22999,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Sales Navigator seat resolves the profile view. */
+                /** @description The account ID (`acc_...`) whose Sales Navigator seat resolves the profile view. */
                 account_id: string;
                 /** @description The target profile's public LinkedIn identifier, 'me', or member ID. */
                 identifier: string;
@@ -23002,7 +23022,7 @@ export interface operations {
                          * @enum {string}
                          */
                         object: "profile";
-                        /** @description Opaque Sales Navigator identifier (ACw… format). */
+                        /** @description Opaque Sales Navigator identifier (ACw... format). */
                         id: string;
                         /**
                          * @description Entity kind.
@@ -23181,7 +23201,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Sales Navigator seat owns the lists. */
+                /** @description The account ID (`acc_...`) whose Sales Navigator seat owns the lists. */
                 account_id: string;
             };
             cookie?: never;
@@ -23337,7 +23357,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Sales Navigator seat owns the lists. */
+                /** @description The account ID (`acc_...`) whose Sales Navigator seat owns the lists. */
                 account_id: string;
             };
             cookie?: never;
@@ -23493,7 +23513,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Sales Navigator seat owns the list. */
+                /** @description The account ID (`acc_...`) whose Sales Navigator seat owns the list. */
                 account_id: string;
                 /** @description The account-list id (from GET .../sales-navigator/account-lists). */
                 list_id: string;
@@ -23666,7 +23686,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Sales Navigator seat owns the list. */
+                /** @description The account ID (`acc_...`) whose Sales Navigator seat owns the list. */
                 account_id: string;
                 /** @description The lead-list id (from GET .../sales-navigator/lead-lists). */
                 list_id: string;
@@ -23832,7 +23852,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Sales Navigator seat saves the account. */
+                /** @description The account ID (`acc_...`) whose Sales Navigator seat saves the account. */
                 account_id: string;
                 /** @description The target account-list id to save the company into. */
                 list_id: string;
@@ -23969,7 +23989,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Sales Navigator seat saves the lead. */
+                /** @description The account ID (`acc_...`) whose Sales Navigator seat saves the lead. */
                 account_id: string;
                 /** @description The target lead-list id to save the member into. */
                 list_id: string;
@@ -24115,7 +24135,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Sales Navigator seat resolves the parameters. */
+                /** @description The account ID (`acc_...`) whose Sales Navigator seat resolves the parameters. */
                 account_id: string;
             };
             cookie?: never;
@@ -24262,7 +24282,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Sales Navigator seat performs the search. */
+                /** @description The account ID (`acc_...`) whose Sales Navigator seat performs the search. */
                 account_id: string;
             };
             cookie?: never;
@@ -24441,7 +24461,7 @@ export interface operations {
                              * @enum {string}
                              */
                             object: "sn_people_search_result";
-                            /** @description Opaque Sales Navigator member ID (ACw… format). */
+                            /** @description Opaque Sales Navigator member ID (ACw... format). */
                             id: string;
                             /** @description Numeric member ID, distinct from id. Present when available. */
                             member_id?: string;
@@ -24646,7 +24666,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Sales Navigator seat performs the search. */
+                /** @description The account ID (`acc_...`) whose Sales Navigator seat performs the search. */
                 account_id: string;
             };
             cookie?: never;
@@ -24908,7 +24928,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) whose Sales Navigator seat performs the search. */
+                /** @description The account ID (`acc_...`) whose Sales Navigator seat performs the search. */
                 account_id: string;
             };
             cookie?: never;
@@ -24943,7 +24963,7 @@ export interface operations {
                              * @enum {string}
                              */
                             object: "sn_people_search_result";
-                            /** @description Opaque Sales Navigator member ID (ACw… format). */
+                            /** @description Opaque Sales Navigator member ID (ACw... format). */
                             id: string;
                             /** @description Numeric member ID, distinct from id. Present when available. */
                             member_id?: string;
@@ -25222,7 +25242,7 @@ export interface operations {
                          */
                         object?: "account_list";
                         items?: {
-                            /** @description Curviate account id (acc_…). */
+                            /** @description Curviate account id (acc_...). */
                             account_id?: string;
                             /**
                              * @description Stable status whitelist.
@@ -25311,7 +25331,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) of the account to retrieve. */
+                /** @description The account ID (`acc_...`) of the account to retrieve. */
                 account_id: string;
             };
             cookie?: never;
@@ -25431,7 +25451,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) of the account to disconnect. */
+                /** @description The account ID (`acc_...`) of the account to disconnect. */
                 account_id: string;
             };
             cookie?: never;
@@ -25531,7 +25551,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The account ID (`acc_…`) of the account to update. */
+                /** @description The account ID (`acc_...`) of the account to update. */
                 account_id: string;
             };
             cookie?: never;
@@ -25539,7 +25559,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description Flat string→string map that replaces this account's custom-data store wholesale (unprovided keys are removed). */
+                    /** @description Flat string->string map that replaces this account's custom-data store wholesale (unprovided keys are removed). */
                     metadata?: unknown;
                     /** @description Custom-proxy egress config, or null to clear it (revert to automatic proxy protection). Omit to leave it unchanged. */
                     proxy?: {
@@ -25777,7 +25797,7 @@ export interface operations {
                          * @description Deprecated, use seat_id (same value). Removed at the GA /v1 cutover.
                          */
                         attached_seat_id?: string | null;
-                        /** @description Present and true only when this connect recovered an existing LinkedIn identity already present on the workspace (claiming it into your account) instead of connecting a brand-new one. Absent on a normal connect. The account's status reflects its real observed state, which may need a reconnect. */
+                        /** @description Present and true only when this connect reactivated an account you had previously disconnected, instead of opening a brand-new one. Absent on a normal connect. The account keeps its original id, and its status reflects its real observed state, which may need a reconnect. */
                         recovered?: boolean;
                     };
                 };
@@ -25922,7 +25942,7 @@ export interface operations {
                 "application/json": {
                     /** @description The account whose connect/reconnect is mid-flight (returned with the 202 checkpoint_required response). */
                     account_id: string;
-                    /** @description The OTP / 2FA verification code. Special value TRY_ANOTHER_WAY switches the challenge type (e.g. in-app → 2FA). */
+                    /** @description The OTP / 2FA verification code. Special value TRY_ANOTHER_WAY switches the challenge type (e.g. in-app -> 2FA). */
                     code: string;
                 };
             };
@@ -25952,7 +25972,7 @@ export interface operations {
                          * @description Deprecated, use seat_id (same value). Removed at the GA /v1 cutover.
                          */
                         attached_seat_id?: string | null;
-                        /** @description Present and true only when this connect recovered an existing LinkedIn identity already present on the workspace (claiming it into your account) instead of connecting a brand-new one. Absent on a normal connect. The account's status reflects its real observed state, which may need a reconnect. */
+                        /** @description Present and true only when this connect reactivated an account you had previously disconnected, instead of opening a brand-new one. Absent on a normal connect. The account keeps its original id, and its status reflects its real observed state, which may need a reconnect. */
                         recovered?: boolean;
                     };
                 };
@@ -26195,7 +26215,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The current state of the action-based (mobile-app-approval) challenge. object:"account" + status:"active" once approved (the account is now connected); object:"checkpoint" + status:"pending" while still waiting; status:"checkpoint_required" when the collect chained to a new challenge (e.g. approval → 2FA), switch to submitting the new challenge_type; status:"expired"/"failed" on timeout/failure. object:"account" + recovered:true means the approval resolved to a LinkedIn identity already present on the workspace, which was claimed into your account; its status is the identity's real observed state, so it may be reconnect_needed rather than active. */
+            /** @description The current state of the action-based (mobile-app-approval) challenge. object:"account" + status:"active" once approved (the account is now connected); object:"checkpoint" + status:"pending" while still waiting; status:"checkpoint_required" when the collect chained to a new challenge (e.g. approval -> 2FA), switch to submitting the new challenge_type; status:"expired"/"failed" on timeout/failure. object:"account" + recovered:true means the approval reactivated an account you had previously disconnected, which keeps its original id; its status is that account's real observed state, so it may be reconnect_needed rather than active. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -26211,7 +26231,7 @@ export interface operations {
                         object?: "account" | "checkpoint";
                         /** @enum {string} */
                         status?: "active" | "reconnect_needed" | "restricted" | "disconnected" | "pending" | "checkpoint_required" | "expired" | "failed";
-                        /** @description Present and true only when this approval recovered an existing LinkedIn identity already present on the workspace (claiming it into your account) instead of connecting a brand-new one. Absent on a normal approval. The account's status reflects its real observed state, which may need a reconnect. */
+                        /** @description Present and true only when this approval reactivated an account you had previously disconnected, instead of opening a brand-new one. Absent on a normal approval. The account keeps its original id, and its status reflects its real observed state, which may need a reconnect. */
                         recovered?: boolean;
                         /** @description Present on status:"active" (the connected account) and status:"checkpoint_required" (the account whose next challenge is pending). */
                         account_id?: string;
@@ -26325,14 +26345,14 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description The credential account id (acc_…) returned by auth/intent or a checkpoint response, the handle for the in-progress connect. */
+                /** @description The credential account id (acc_...) returned by auth/intent or a checkpoint response, the handle for the in-progress connect. */
                 session_id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description The current status of a credential connect session (acc_… id from auth/intent or a checkpoint response). Poll until status leaves checkpoint_required. account_id is present only once status is done. checkpoint_required carries challenge_type, the challenge still pending. failed carries no reason payload. */
+            /** @description The current status of a credential connect session (acc_... id from auth/intent or a checkpoint response). Poll until status leaves checkpoint_required. account_id is present only once status is done. checkpoint_required carries challenge_type, the challenge still pending. failed carries no reason payload. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -26346,14 +26366,14 @@ export interface operations {
                          * @enum {string}
                          */
                         object?: "auth_session";
-                        /** @description The account id polled (acc_…). */
+                        /** @description The account id polled (acc_...). */
                         session_id?: string;
                         /**
                          * @description Lifecycle status. checkpoint_required (a challenge is pending, carries challenge_type) / done (connected) / expired (timed out) / failed (terminal failure).
                          * @enum {string}
                          */
                         status?: "checkpoint_required" | "done" | "expired" | "failed";
-                        /** @description The connected account (acc_…); null until status is done. */
+                        /** @description The connected account (acc_...); null until status is done. */
                         account_id?: string | null;
                         /** @description The pending challenge type. Present in checkpoint_required. */
                         challenge_type?: string;
