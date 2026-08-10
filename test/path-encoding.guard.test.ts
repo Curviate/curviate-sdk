@@ -97,6 +97,92 @@ describe("path-encoding guard: every interpolated value is encoded", () => {
   });
 });
 
+describe("path-encoding guard: the scanner can still report a raw site", () => {
+  // POSITIVE CONTROL. Everything above is a negative result: it asserts the
+  // scanner found no raw sites. A negative result is only worth the instrument
+  // behind it, and an instrument that has stopped classifying returns exactly
+  // the same answer as a clean codebase.
+  //
+  // The earlier mutation record for this guard measured whether the input set
+  // could silently EMPTY. It can't, and those refusals hold. But it never
+  // measured whether the classifier still classifies, and five mutations that
+  // keep the input set full while making `raw` unreachable survived a green
+  // suite. These arms are what kill them.
+  const fixture = join(PKG_ROOT, "test/support/classifier-fixture.ts");
+  const scan = scanAst([fixture]);
+
+  /** The sites belonging to one fixture construct, selected by its marker. */
+  function sitesFor(marker: string): Array<{ status: string; expression: string; representation: string }> {
+    return scan.sites.filter((s) => s.template.includes(marker));
+  }
+
+  it("classifies a raw interpolation as raw", () => {
+    // The single assertion the whole negative result rests on.
+    const raw = scan.sites.filter((s) => s.status === "raw");
+    expect(raw.length, "the scanner reported no raw site in a fixture full of them").toBeGreaterThan(
+      0,
+    );
+    expect(sitesFor("ctl-raw-single").map((s) => s.status)).toEqual(["raw"]);
+  });
+
+  it("counts every parameter of a multi-parameter raw template", () => {
+    const sites = sitesFor("ctl-raw-double");
+    expect(sites.map((s) => s.expression)).toEqual(["chatId", "postId"]);
+    expect(sites.map((s) => s.status)).toEqual(["raw", "raw"]);
+  });
+
+  it("distinguishes encoded-by-tag, encoded-by-call and raw from one another", () => {
+    expect(sitesFor("ctl-tagged").map((s) => s.status)).toEqual(["encoded-by-tag"]);
+    expect(sitesFor("ctl-call-encoded").map((s) => s.status)).toEqual(["encoded-by-call"]);
+    expect(sitesFor("ctl-raw-single").map((s) => s.status)).toEqual(["raw"]);
+  });
+
+  it("does not accept a non-encoder call as encoding", () => {
+    // `isEncoderCall` returning true for everything is a live mutation.
+    expect(sitesFor("ctl-fake-encoder").map((s) => s.status)).toEqual(["raw"]);
+  });
+
+  it("does not accept an arbitrary tag as an encoding tag", () => {
+    // A tagged template whose tag encodes nothing is caught twice: the tagged
+    // expression is unresolvable to representation A, and representation B
+    // still reads the inner template and calls its substitution raw.
+    expect(sitesFor("ctl-wrong-tag").map((s) => s.status)).toEqual(["raw"]);
+    expect(scan.unclassified.some((u) => u.text.includes("ctl-wrong-tag"))).toBe(true);
+  });
+
+  it("sees a `/v1/` template that is not under a `path:` property", () => {
+    // `looksLikePath` returning false is a live mutation.
+    const loose = sitesFor("ctl-loose-template");
+    expect(loose.map((s) => s.representation)).toEqual(["v1-template"]);
+    expect(loose.map((s) => s.status)).toEqual(["raw"]);
+  });
+
+  it("sees a `/v1/` path built by `+` concatenation", () => {
+    // Dropping representation C is a live mutation.
+    const concat = sitesFor("ctl-concatenated");
+    expect(concat.map((s) => s.representation)).toEqual(["concatenation"]);
+    expect(concat.map((s) => s.status)).toEqual(["raw"]);
+  });
+
+  it("records a static path as static, with no interpolation site", () => {
+    expect(scan.staticPaths.map((p) => p.template)).toEqual(
+      expect.arrayContaining(['"/v1/ctl-static-string"', "`/v1/ctl-static-template`"]),
+    );
+    expect(sitesFor("ctl-static-string")).toEqual([]);
+    expect(sitesFor("ctl-static-template")).toEqual([]);
+  });
+
+  it("reports an unresolvable `path:` initializer rather than passing it", () => {
+    expect(scan.unclassified.map((u) => u.text)).toEqual(
+      expect.arrayContaining(["buildPath(postId)"]),
+    );
+  });
+
+  it("sees a URL construction site", () => {
+    expect(scan.urlConstructions.length).toBe(1);
+  });
+});
+
 describe("path-encoding guard: the account-id placeholder substitution", () => {
   // This substitution is one call site in one helper rather than a repeatable
   // family, so it gets a targeted assertion here plus a behavioural test in
