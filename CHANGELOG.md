@@ -9,6 +9,12 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+## [0.20.1] - 2026-08-10
+
+Published as a patch, not a minor: it satisfies the `^0.20.0` range already
+declared by installed consumers, including `@curviate/cli`, so it reaches them
+on the next install with no consumer-side version bump.
+
 ### Fixed
 
 - **Path parameters are percent-encoded, and a few unusable values are now
