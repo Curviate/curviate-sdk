@@ -57,6 +57,11 @@ const SKIP_DIRS = new Set([
   "src/generated",
 ]);
 const SCAN_EXTS = new Set([".ts", ".mjs", ".js", ".md", ".json"]);
+// Extensionless published files SCAN_EXTS cannot see: extname("LICENSE") ===
+// "", so without this allowlist a published file sits outside the scanned
+// set with no warning. Mirrors check-clean.mjs's SCAN_DOTFILES fix for the
+// identical class of gap.
+const SCAN_BASENAMES = new Set(["LICENSE"]);
 
 /**
  * Blocking tier. Each entry names a non-ASCII typographic character with a
@@ -120,9 +125,14 @@ export const REGISTER = [
 /**
  * Recursively collect scannable files under `dir`, skipping SKIP_DIRS.
  * @param {string} dir absolute path
+ * @param {string} [root] path SKIP_DIRS relative-matching is computed against.
+ *   Defaults to the package root. Test-only knob: pointing this at an
+ *   isolated scratch directory lets the mutation-proof tests drive the real
+ *   walker against a small known fixture set without ever writing into the
+ *   package's actual source tree.
  * @returns {Promise<string[]>} absolute file paths
  */
-export async function collectFiles(dir) {
+export async function collectFiles(dir, root = pkgRoot) {
   const results = [];
   let entries;
   try {
@@ -132,11 +142,14 @@ export async function collectFiles(dir) {
   }
   for (const entry of entries) {
     const abs = join(dir, entry.name);
-    const rel = relative(pkgRoot, abs);
+    const rel = relative(root, abs);
     if (entry.isDirectory()) {
       if (SKIP_DIRS.has(entry.name) || SKIP_DIRS.has(rel)) continue;
-      results.push(...(await collectFiles(abs)));
-    } else if (entry.isFile() && SCAN_EXTS.has(extname(entry.name))) {
+      results.push(...(await collectFiles(abs, root)));
+    } else if (
+      entry.isFile() &&
+      (SCAN_EXTS.has(extname(entry.name)) || SCAN_BASENAMES.has(entry.name))
+    ) {
       results.push(abs);
     }
   }
@@ -150,14 +163,19 @@ export async function collectFiles(dir) {
  * this file once overwrote the emoji pattern with a copy of the zero-width one,
  * and the script still exited 0 over clean sources, which is exactly what a
  * silently-disabled pattern looks like.
- * @param {{ verbose?: boolean }} [opts]
+ * @param {{ verbose?: boolean; root?: string; minFiles?: number }} [opts]
+ *   `root` and `minFiles` are test-only knobs (default: package root, 10):
+ *   they let the mutation-proof tests point this at a small isolated scratch
+ *   directory instead of lowering the real floor for the production scan.
  * @returns {Promise<number>} process exit code
  */
 export async function run(opts = {}) {
-  const files = await collectFiles(pkgRoot);
-  if (files.length < 10) {
+  const root = opts.root ?? pkgRoot;
+  const minFiles = opts.minFiles ?? 10;
+  const files = await collectFiles(root, root);
+  if (files.length < minFiles) {
     console.error(
-      `check:copy FAIL — only ${files.length} file(s) collected; the scan is not reaching the package.`,
+      `check:copy FAIL — only ${files.length} file(s) collected under ${root}; the scan is not reaching the expected surface (need >= ${minFiles}).`,
     );
     return 1;
   }
@@ -166,7 +184,7 @@ export async function run(opts = {}) {
   const warnings = new Map();
 
   for (const file of files) {
-    const rel = relative(pkgRoot, file);
+    const rel = relative(root, file);
     // Belt and braces: scripts/ is already skipped, but this file names the
     // very characters it forbids, so never scan it even if that changes.
     if (rel === "scripts/check-copy.mjs") continue;
