@@ -29,6 +29,8 @@ interface Captured {
   method: string;
   /** Raw request target exactly as it arrived on the socket. */
   rawUrl: string;
+  /** Raw request body exactly as it arrived on the socket. */
+  rawBody: string;
 }
 
 let sink: Server;
@@ -37,9 +39,17 @@ const captured: Captured[] = [];
 
 beforeAll(async () => {
   sink = createServer((req, res) => {
-    captured.push({ method: req.method ?? "", rawUrl: req.url ?? "" });
-    res.writeHead(200, { "content-type": "application/json" });
-    res.end("{}");
+    const chunks: Buffer[] = [];
+    req.on("data", (c: Buffer) => chunks.push(c));
+    req.on("end", () => {
+      captured.push({
+        method: req.method ?? "",
+        rawUrl: req.url ?? "",
+        rawBody: Buffer.concat(chunks).toString("utf8"),
+      });
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end("{}");
+    });
   });
   await new Promise<void>((resolve) => sink.listen(0, "127.0.0.1", resolve));
   const addr = sink.address() as AddressInfo;
@@ -236,6 +246,172 @@ describe("hostile path parameters stay inside their segment", () => {
       `/v1/${ACCOUNT}/posts/..%2F..%2F..%2Fv1%2Faccounts%2Facc_victim`,
     );
     expect(req.method).toBe("DELETE");
+  });
+});
+
+// ─── Path parameters that arrive DESTRUCTURED out of an object argument ──────
+
+describe("path parameters carried in an object argument, not a leading positional", () => {
+  // salesNavigator.saveAccount/saveLead take a single object and destructure
+  // `list_id` out of it into the path. Any guard keyed on ARGUMENT POSITION is
+  // blind to these two: a caller-supplied selector reached the URL through a
+  // shape the guard never inspected, and the fixed `/save` suffix could be
+  // truncated with a `#` to make it an arbitrary POST target. The encoding here
+  // is keyed on the path TEMPLATE, so where the value came from is irrelevant,
+  // and these tests are what says so out loud.
+  const EXPLOITS: ReadonlyArray<{ label: string; listId: string; mustNotHit: string }> = [
+    {
+      label: "traversal + fragment truncation into a message send",
+      listId: "../../chats/chat_ABC/messages#",
+      mustNotHit: "/chats/chat_ABC/messages",
+    },
+    {
+      label: "traversal + fragment truncation into the webhooks collection",
+      listId: "../../../webhooks#",
+      mustNotHit: "/v1/webhooks",
+    },
+    { label: "query injection", listId: "x?evil=1", mustNotHit: "evil=1" },
+  ];
+
+  for (const { label, listId, mustNotHit } of EXPLOITS) {
+    it(`saveAccount: ${label} stays inside the list_id segment`, async () => {
+      await client().account(ACCOUNT).salesNavigator.saveAccount({
+        list_id: listId,
+        company_id: "urn:li:organization:1",
+      } as never);
+      const req = lastRequest();
+
+      expect(serverSegments(req.rawUrl), `raw wire target was ${req.rawUrl}`).toEqual([
+        "v1",
+        ACCOUNT,
+        "sales-navigator",
+        "account-lists",
+        listId,
+        "save",
+      ]);
+      // The fixed suffix survives: nothing the caller supplied may truncate it.
+      expect(req.rawUrl.endsWith("/save"), `suffix truncated: ${req.rawUrl}`).toBe(true);
+      expect(req.rawUrl.includes(mustNotHit), `reached ${mustNotHit}: ${req.rawUrl}`).toBe(false);
+      expect(req.rawUrl.includes("?"), `query injected: ${req.rawUrl}`).toBe(false);
+      expect(req.rawUrl.includes("#"), `fragment injected: ${req.rawUrl}`).toBe(false);
+    });
+
+    it(`saveLead: ${label} stays inside the list_id segment`, async () => {
+      await client().account(ACCOUNT).salesNavigator.saveLead({
+        list_id: listId,
+        user_id: "urn:li:member:1",
+      } as never);
+      const req = lastRequest();
+
+      expect(serverSegments(req.rawUrl), `raw wire target was ${req.rawUrl}`).toEqual([
+        "v1",
+        ACCOUNT,
+        "sales-navigator",
+        "lead-lists",
+        listId,
+        "save",
+      ]);
+      expect(req.rawUrl.endsWith("/save"), `suffix truncated: ${req.rawUrl}`).toBe(true);
+      expect(req.rawUrl.includes(mustNotHit), `reached ${mustNotHit}: ${req.rawUrl}`).toBe(false);
+      expect(req.method).toBe("POST");
+    });
+  }
+
+  it("keeps the rest of the object as the request body", async () => {
+    // The destructure must not lose the body while the path is being fixed.
+    await client().account(ACCOUNT).salesNavigator.saveAccount({
+      list_id: "list_1",
+      company_id: "urn:li:organization:42",
+    } as never);
+    const req = lastRequest();
+
+    expect(JSON.parse(req.rawBody)).toEqual({ company_id: "urn:li:organization:42" });
+    expect(req.rawBody).not.toContain("list_id");
+  });
+});
+
+// ─── Leading strings that are NOT path parameters ────────────────────────────
+
+describe("a leading string argument that is a BODY field is never encoded", () => {
+  // Encoding belongs where a value BECOMES A PATH SEGMENT, never at an argument
+  // position. These four methods take a leading string that travels in the JSON
+  // body; percent-encoding them by position would corrupt a working call, and
+  // posts.save specifically accepts a share URL the API normalises itself.
+  it("posts.save sends a share URL verbatim in the body, on a static path", async () => {
+    const shareUrl =
+      "https://www.linkedin.com/posts/niki-mueller-1a2b3c-activity-7467457289336262656-q_vQ?utm_source=share";
+    await client().account(ACCOUNT).posts.save(shareUrl);
+    const req = lastRequest();
+
+    expect(serverSegments(req.rawUrl)).toEqual(["v1", ACCOUNT, "saved-posts"]);
+    expect(JSON.parse(req.rawBody)).toEqual({ post_id: shareUrl });
+  });
+
+  it("posts.save sends a URN verbatim, with no percent-encoding applied", async () => {
+    await client().account(ACCOUNT).posts.save("urn:li:activity:7467457289336262656");
+    const req = lastRequest();
+
+    expect(req.rawBody).toContain("urn:li:activity:7467457289336262656");
+    expect(req.rawBody).not.toContain("%3A");
+  });
+
+  for (const method of ["solveCheckpoint", "requestCheckpoint", "pollCheckpoint"] as const) {
+    it(`auth.${method} sends the account id verbatim in the body, on a static path`, async () => {
+      const accountId = "acc_01JQ8Z9/with:reserved,chars";
+      const auth = client().auth;
+      if (method === "solveCheckpoint") {
+        await auth.solveCheckpoint(accountId, { code: "123456" } as never);
+      } else {
+        await auth[method](accountId);
+      }
+      const req = lastRequest();
+
+      expect(req.rawUrl).toBe(
+        `/v1/auth/checkpoint/${method === "solveCheckpoint" ? "solve" : method === "requestCheckpoint" ? "request" : "poll"}`,
+      );
+      expect(JSON.parse(req.rawBody).account_id).toBe(accountId);
+      expect(req.rawBody).not.toContain("%2F");
+    });
+  }
+});
+
+// ─── card_urn: encoded exactly once, byte-identical to the previous form ─────
+
+describe("notification card urns are encoded exactly once", () => {
+  // These two sites were already hand-wrapped in encodeURIComponent before the
+  // sweep. The tag now encodes every substitution, so the wrapper was removed:
+  // leaving it would double-encode a value that legitimately carries `/`, `:`
+  // and parentheses, breaking a call that works today.
+  const CARD_URN = "urn:li:fsd_notificationCard:(ACoAAB1c2d/3e4f,NOTIFICATIONS,urn:li:activity:123)";
+
+  it("delete produces the same bytes the pre-sweep encodeURIComponent produced", async () => {
+    await client().account(ACCOUNT).notifications.delete(CARD_URN);
+    const req = lastRequest();
+
+    // The exact pre-sweep expression, evaluated here as an independent oracle.
+    expect(req.rawUrl).toBe(
+      `/v1/${ACCOUNT}/notifications/${encodeURIComponent(CARD_URN)}`,
+    );
+    expect(serverSegments(req.rawUrl)).toEqual(["v1", ACCOUNT, "notifications", CARD_URN]);
+    // Double-encoding would show as %25 (an encoded percent sign).
+    expect(req.rawUrl.includes("%25"), `double-encoded: ${req.rawUrl}`).toBe(false);
+  });
+
+  it("showLess produces the same bytes, with its suffix intact", async () => {
+    await client().account(ACCOUNT).notifications.showLess(CARD_URN);
+    const req = lastRequest();
+
+    expect(req.rawUrl).toBe(
+      `/v1/${ACCOUNT}/notifications/${encodeURIComponent(CARD_URN)}/show-less`,
+    );
+    expect(serverSegments(req.rawUrl)).toEqual([
+      "v1",
+      ACCOUNT,
+      "notifications",
+      CARD_URN,
+      "show-less",
+    ]);
+    expect(req.rawUrl.includes("%25"), `double-encoded: ${req.rawUrl}`).toBe(false);
   });
 });
 
