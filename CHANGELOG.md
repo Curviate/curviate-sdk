@@ -9,6 +9,38 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+### Fixed
+
+- **Path parameters are percent-encoded.** Every id you pass to a method was
+  interpolated into the request path verbatim, so any character that means
+  something to a URL parser changed which endpoint the call reached. A share
+  URL passed as a post id turned one path segment into eight (and `https://`
+  collapsed to `https:/` on the way), producing a 404 on a value the API
+  accepts; a `?` moved the rest of the id into the query string; and a value
+  containing `../` was resolved away by the URL parser before the request was
+  sent, retargeting the call at a different endpoint entirely. That last one is
+  a security defect: if any part of an id reaches your code from model output,
+  end-user input, or a scraped page, it could redirect the request. All 117
+  path parameters across every namespace are now encoded at the point they
+  enter the path, including the account id bound by `account(id)`.
+
+  What changes for you, concretely:
+
+  - Ids made only of letters, digits, `-`, `_`, `.`, and `~` produce a
+    byte-identical request. Numeric post ids, `acc_...` ids, and public slugs
+    are in this group, so most calls are unaffected.
+  - Ids containing reserved characters (URN colons and commas, base64 `+` and
+    `/`, chat-id `=`) now travel percent-encoded. The API decodes them back to
+    the same value, so the call behaves as before; only the bytes on the wire
+    differ. Snapshot tests that assert on a literal request path will need
+    updating.
+  - Ids that never worked start working: a share URL, or any id containing `/`,
+    `?`, or `#`, now reaches the API intact.
+  - **One breaking case.** If you were working around this by percent-encoding
+    an id yourself before passing it in, stop: pass the decoded value. The SDK
+    owns the encoding now, so a pre-encoded id is treated as a literal value
+    containing percent signs and is encoded again.
+
 ## [0.20.0] - 2026-08-07
 
 Generated types are rebuilt from the **served** OpenAPI document rather than a
