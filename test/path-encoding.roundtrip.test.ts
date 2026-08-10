@@ -20,7 +20,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { http, passthrough } from "msw";
-import { Curviate } from "../src/index.js";
+import { Curviate, CurviateError } from "../src/index.js";
 import { server as mswServer } from "./msw/server.js";
 
 // ─── The request sink ────────────────────────────────────────────────────────
@@ -246,6 +246,112 @@ describe("hostile path parameters stay inside their segment", () => {
       `/v1/${ACCOUNT}/posts/..%2F..%2F..%2Fv1%2Faccounts%2Facc_victim`,
     );
     expect(req.method).toBe("DELETE");
+  });
+});
+
+// ─── Dot segments: the one class percent-encoding cannot close ───────────────
+
+describe("a path parameter that is entirely dot segments is rejected", () => {
+  // encodeURIComponent leaves `.` unescaped, and `.` / `..` are a complete
+  // dot-segment grammar that `new URL(path, baseUrl)` resolves BEFORE the
+  // request is sent. So encoding alone does not stop them:
+  //   posts.get("..")             -> GET  /v1/{acct}/
+  //   createProjectJob("..", ...) -> POST /v1/{acct}/recruiter/jobs   (a WRITE)
+  //   account("..")               -> escapes /v1 entirely
+  // `%2E` is not a fix either: the URL parser decodes before it detects dot
+  // segments. Rejection is the only close, and it costs nothing because no
+  // LinkedIn id, URN or slug is ever "." or "..".
+  //
+  // The empty string is in the same family and is included deliberately: it
+  // produces a BYTE-IDENTICAL request target to "." (`/v1/{acct}/posts/`), so
+  // rejecting "." while admitting "" would leave a one-character bypass.
+  const REJECTED = [".", "..", ""];
+
+  async function expectRejected(label: string, run: () => Promise<unknown>): Promise<void> {
+    const before = captured.length;
+    await expect(run(), label).rejects.toThrowError(CurviateError);
+    await run().catch((err: unknown) => {
+      const e = err as CurviateError;
+      expect(e.code, label).toBe("INVALID_REQUEST");
+      expect(e.userFixable, label).toBe(true);
+      expect(e.retryLikelyToSucceed, label).toBe(false);
+    });
+    // The decisive assertion: nothing was sent. A rejected promise over a
+    // request that still went out would be worse than no guard at all.
+    expect(captured.length, `${label}: a request was sent anyway`).toBe(before);
+  }
+
+  for (const value of REJECTED) {
+    it(`rejects ${JSON.stringify(value)} as a single path parameter`, async () => {
+      await expectRejected(`posts.get(${JSON.stringify(value)})`, () =>
+        client().account(ACCOUNT).posts.get(value),
+      );
+    });
+
+    it(`rejects ${JSON.stringify(value)} in a write with a fixed suffix`, async () => {
+      await expectRejected(`jobs.publish(${JSON.stringify(value)})`, () =>
+        client().account(ACCOUNT).jobs.publish(value, {} as never),
+      );
+    });
+
+    it(`rejects ${JSON.stringify(value)} in either slot of a two-parameter template`, async () => {
+      await expectRejected("getMessage(bad, ok)", () =>
+        client().account(ACCOUNT).messaging.getMessage(value, "msg_1"),
+      );
+      await expectRejected("getMessage(ok, bad)", () =>
+        client().account(ACCOUNT).messaging.getMessage("chat_1", value),
+      );
+    });
+
+    it(`rejects ${JSON.stringify(value)} as the bound account selector`, async () => {
+      if (value === "") {
+        // Pre-existing, documented behaviour: `account("")` throws
+        // synchronously from the factory, before any namespace is built. Left
+        // as it is, and asserted here so the empty-account path is covered by
+        // this suite rather than assumed.
+        expect(() => client().account("")).toThrowError(CurviateError);
+        expect(captured.length).toBe(0);
+        return;
+      }
+      await expectRejected(`account(${JSON.stringify(value)})`, () =>
+        client().account(value).posts.get("p1"),
+      );
+    });
+
+    it(`rejects ${JSON.stringify(value)} carried in an object argument`, async () => {
+      await expectRejected("saveAccount({list_id})", () =>
+        client()
+          .account(ACCOUNT)
+          .salesNavigator.saveAccount({ list_id: value, company_id: "c" } as never),
+      );
+    });
+  }
+
+  it("does not reject the near misses, which are ordinary values", async () => {
+    // Only `.` and `..` are dot segments. Everything below is a normal segment
+    // that the URL parser leaves alone, so rejecting it would break a caller.
+    const ALLOWED = ["...", "....", ".a", "a.", "a..b", "1.2.3", ".hidden", "..a", " "];
+    for (const value of ALLOWED) {
+      await client().account(ACCOUNT).posts.get(value);
+      expect(serverSegments(lastRequest().rawUrl), `rejected a valid id: ${value}`).toEqual([
+        "v1",
+        ACCOUNT,
+        "posts",
+        value,
+      ]);
+    }
+  });
+
+  it("does not reject a caller-supplied literal %2e, which is already safe", async () => {
+    // `%2e` IS a dot segment to the URL parser, but only when it arrives raw.
+    // Encoding turns it into `%252e`, so it is inert; rejecting it would refuse
+    // a value that works.
+    for (const value of ["%2e", "%2E", "%2e%2e", ".%2e"]) {
+      await client().account(ACCOUNT).posts.get(value);
+      const req = lastRequest();
+      expect(req.rawUrl).toBe(`/v1/${ACCOUNT}/posts/${encodeURIComponent(value)}`);
+      expect(serverSegments(req.rawUrl)).toEqual(["v1", ACCOUNT, "posts", value]);
+    }
   });
 });
 

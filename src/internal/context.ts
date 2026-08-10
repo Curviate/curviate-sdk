@@ -18,7 +18,7 @@
  * operation.
  */
 import { execute, type HttpMethod } from "../transport.js";
-import { encodePathParam } from "./path.js";
+import { assertPathIsSendable, encodePathParam } from "./path.js";
 import type { ResolvedConfig } from "../config.js";
 
 /** The placeholder a path template uses for the account-scoping segment. */
@@ -79,7 +79,15 @@ export function createContext(
   accountId?: string,
 ): RequestContext {
   const request: RequestFn = <T>(args: RequestArgs) => {
-    const path = injectAccountIdIntoPath(args.path, accountId);
+    let path: string;
+    try {
+      path = injectAccountIdIntoPath(args.path, accountId);
+      assertPathIsSendable(path);
+    } catch (err) {
+      // Surface a malformed path the same way every other error surfaces: as a
+      // rejected promise, never a synchronous throw out of a `Promise<T>`.
+      return Promise.reject(err) as Promise<T>;
+    }
 
     return execute<T>(args.method, path, {
       apiKey: config.apiKey,
