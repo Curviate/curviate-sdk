@@ -23,13 +23,18 @@
  *   apiPath`/v1/{account_id}/posts/${postId}/comments`
  *
  * WHAT THIS DOES AND DOES NOT GUARANTEE. Using the tag is a convention, not a
- * constraint the compiler enforces: `RequestArgs.path` is a `string`, so a raw
- * `path: `...${id}`` template compiles and `tsc --noEmit` exits 0. The defence
- * is DETECTION, not prevention. What actually holds the line is the guard in
- * `test/path-encoding.guard.test.ts`, which derives every interpolation from
- * the AST at run time and reds on any that is not encoded. If you are adding a
- * request path, the tag is how you pass that guard; it is not a type error to
- * skip it.
+ * constraint the compiler enforces: `RequestArgs.path` is a `string`, so an
+ * UNTAGGED template assigned to that property compiles and `tsc --noEmit`
+ * exits 0. The defence is DETECTION, not prevention. What actually holds the
+ * line is the guard in `test/path-encoding.guard.test.ts`, which derives every
+ * interpolation from the AST at run time and reds on any that is not encoded.
+ * If you are adding a request path, the tag is how you pass that guard; it is
+ * not a type error to skip it.
+ *
+ * (Written without a literal example of the untagged form on purpose. The
+ * guard's second, deliberately naive derivation scans raw text and cannot tell
+ * prose from code, so a path-shaped example in a comment counts as a real site
+ * and makes the two derivations disagree.)
  *
  * Encoding is `encodeURIComponent`, so the result decodes back to the exact
  * input on any router that decodes path parameters. The unreserved sub-delims

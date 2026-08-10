@@ -303,6 +303,15 @@ export interface TextualScan {
  * Independent re-derivation of the site count by regex over raw file text.
  * Different mechanism, different assumptions, on purpose: the guard compares
  * this against the AST count so a broken AST walk cannot masquerade as clean.
+ *
+ * Deliberately naive, and it does NOT skip comments. That is the cost of
+ * keeping it genuinely independent of the parser it is checking: teaching it
+ * about comments would mean re-implementing (or importing) the very thing it
+ * exists to second-guess. The practical consequence is that a path-shaped
+ * EXAMPLE written in a doc comment counts as a real site and makes the two
+ * derivations disagree. That has happened once already. If this test reds with
+ * the textual count one higher than the AST count, look for prose before you
+ * look for a scanner bug, and write the example without the property prefix.
  */
 export function scanTextual(files: string[] = collectSourceFiles()): TextualScan {
   // `path:` optionally preceded by a tag identifier, then a backtick-delimited
