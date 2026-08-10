@@ -107,7 +107,20 @@ export class PostsResource {
     });
   }
 
-  /** Get a single post. `GET /v1/{account_id}/posts/{post_id}` */
+  /**
+   * Get a single post. `GET /v1/{account_id}/posts/{post_id}`
+   *
+   * @param postId - the post's `id` as returned by {@link listUserPosts} or
+   *   {@link create}. A bare numeric id (`7332661864792854528`), a URN
+   *   (`urn:li:activity:N`, `urn:li:ugcPost:N`, `urn:li:share:N`), and a full
+   *   share URL (`https://www.linkedin.com/posts/...` or
+   *   `https://www.linkedin.com/feed/update/urn:li:activity:N`) all resolve to
+   *   the same post. Pass the value as-is; it is percent-encoded into the path
+   *   for you, so do not encode it yourself.
+   *
+   *   {@link listComments} and the reaction operations are stricter: they take
+   *   the opaque `id` form only.
+   */
   get(postId: string): Promise<PostDetail> {
     return this.ctx.request<PostDetail>({
       method: "GET",
