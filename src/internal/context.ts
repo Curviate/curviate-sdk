@@ -62,6 +62,13 @@ export interface RequestContext {
  * different endpoint, because the URL parser resolves `..` before the request
  * is sent. `split`/`join` (not `replace`) keeps the substitution literal, so a
  * `$` in an account id cannot address the match either.
+ *
+ * SCOPE OF THAT CLAIM. Encoding alone stops a selector that CONTAINS `/` or
+ * `..`; it does not stop a selector that IS a dot segment, because
+ * `encodeURIComponent` leaves `.` unescaped and the URL parser decodes before
+ * it detects dot segments. That case is closed separately, by
+ * {@link assertPathIsSendable} on the assembled path in `createContext`. Both
+ * are needed; neither is sufficient alone.
  */
 function injectAccountIdIntoPath(path: string, accountId: string | undefined): string {
   if (accountId === undefined) return path;

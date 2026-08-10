@@ -18,10 +18,18 @@
  * path. {@link apiPath} is the shape to reach for: as a tagged template it
  * encodes each substitution and leaves the literal parts (including the
  * `{account_id}` placeholder, which is structure rather than a value)
- * untouched, which makes a raw interpolation impossible to write rather than
- * merely detectable after the fact.
+ * untouched.
  *
  *   apiPath`/v1/{account_id}/posts/${postId}/comments`
+ *
+ * WHAT THIS DOES AND DOES NOT GUARANTEE. Using the tag is a convention, not a
+ * constraint the compiler enforces: `RequestArgs.path` is a `string`, so a raw
+ * `path: `...${id}`` template compiles and `tsc --noEmit` exits 0. The defence
+ * is DETECTION, not prevention. What actually holds the line is the guard in
+ * `test/path-encoding.guard.test.ts`, which derives every interpolation from
+ * the AST at run time and reds on any that is not encoded. If you are adding a
+ * request path, the tag is how you pass that guard; it is not a type error to
+ * skip it.
  *
  * Encoding is `encodeURIComponent`, so the result decodes back to the exact
  * input on any router that decodes path parameters. The unreserved sub-delims

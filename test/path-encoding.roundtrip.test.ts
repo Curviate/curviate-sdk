@@ -556,6 +556,61 @@ describe("wire-format delta against the raw-interpolation behaviour", () => {
     }
   });
 
+  it("no longer lets the URL parser silently delete a control character", async () => {
+    // Tab, CR and LF were STRIPPED by the URL parser, so an id carrying a
+    // stray one accidentally matched the intended resource. It is now encoded
+    // and will simply miss. Documented as a delta because the old behaviour
+    // was an accidental cleanup some caller may be leaning on.
+    for (const [id, encoded] of [
+      ["a\tb", "a%09b"],
+      ["a\rb", "a%0Db"],
+      ["a\nb", "a%0Ab"],
+    ] as const) {
+      await client().account(ACCOUNT).posts.get(id);
+      const req = lastRequest();
+      expect(req.rawUrl).toBe(`/v1/${ACCOUNT}/posts/${encoded}`);
+      expect(req.rawUrl).not.toBe(preFixWireTarget(ACCOUNT, id));
+      expect(serverSegments(req.rawUrl)).toEqual(["v1", ACCOUNT, "posts", id]);
+    }
+  });
+
+  it("no longer substitutes a caller value that contains the literal {account_id}", async () => {
+    // `{account_id}` is how an account-scoped path template is built, and the
+    // substitution used to rewrite a raw id that happened to contain it.
+    const id = "p{account_id}x";
+    await client().account(ACCOUNT).posts.get(id);
+    const req = lastRequest();
+
+    expect(req.rawUrl).toBe(`/v1/${ACCOUNT}/posts/p%7Baccount_id%7Dx`);
+    expect(serverSegments(req.rawUrl)).toEqual(["v1", ACCOUNT, "posts", id]);
+    // The pre-fix path would have injected the account id into the caller value.
+    expect(req.rawUrl).not.toContain(`p${ACCOUNT}x`);
+  });
+
+  it("changes the wire for EVERY call through an account scope, not one method", async () => {
+    // The bound selector is encoded once per request, so a reserved character
+    // in it moves the bytes of every method reached through that scope.
+    const acc = client().account("acc:with:colons");
+    await acc.posts.get("p1");
+    expect(lastRequest().rawUrl).toBe("/v1/acc%3Awith%3Acolons/posts/p1");
+    await acc.messaging.listChats();
+    expect(lastRequest().rawUrl).toBe("/v1/acc%3Awith%3Acolons/chats");
+    await acc.profile.ssi();
+    expect(lastRequest().rawUrl).toBe("/v1/acc%3Awith%3Acolons/profile/ssi");
+  });
+
+  it("stringifies a non-string runtime value before encoding it", async () => {
+    // The signature says string, but a JS consumer can pass anything. An array
+    // stringifies to "a,b", and the comma is now encoded.
+    await client()
+      .account(ACCOUNT)
+      .posts.get(["a", "b"] as unknown as string);
+    const req = lastRequest();
+
+    expect(req.rawUrl).toBe(`/v1/${ACCOUNT}/posts/a%2Cb`);
+    expect(serverSegments(req.rawUrl)).toEqual(["v1", ACCOUNT, "posts", "a,b"]);
+  });
+
   it("double-encodes an id the caller pre-encoded, the one breaking change", async () => {
     // Documented, not accidental. Before the fix, a caller who worked around
     // the bug by pre-encoding got `urn:li:activity:1` at the server. Now the

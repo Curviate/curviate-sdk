@@ -11,18 +11,29 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ### Fixed
 
-- **Path parameters are percent-encoded.** Every id you pass to a method was
-  interpolated into the request path verbatim, so any character that means
-  something to a URL parser changed which endpoint the call reached. A share
-  URL passed as a post id turned one path segment into eight (and `https://`
-  collapsed to `https:/` on the way), producing a 404 on a value the API
-  accepts; a `?` moved the rest of the id into the query string; and a value
-  containing `../` was resolved away by the URL parser before the request was
-  sent, retargeting the call at a different endpoint entirely. That last one is
-  a security defect: if any part of an id reaches your code from model output,
-  end-user input, or a scraped page, it could redirect the request. All 117
-  path parameters across every namespace are now encoded at the point they
-  enter the path, including the account id bound by `account(id)`.
+- **Path parameters are percent-encoded, and a few unusable values are now
+  rejected.** Every id you pass to a method was interpolated into the request
+  path verbatim, so any character that means something to a URL parser changed
+  which endpoint the call reached. A share URL passed as a post id turned one
+  path segment into eight (and `https://` collapsed to `https:/` on the way),
+  producing a 404 on a value the API accepts; a `?` moved the rest of the id
+  into the query string; and a value containing `../` was resolved away by the
+  URL parser before the request was sent, retargeting the call at a different
+  endpoint entirely. That last one is a security defect: if any part of an id
+  reaches your code from model output, end-user input, or a scraped page, it
+  could redirect the request. All 117 path parameters across every namespace
+  are now encoded at the point they enter the path, including the account id
+  bound by `account(id)`.
+
+  Encoding closes that on its own for every value except one class. `.` and
+  `..` are not encoded by `encodeURIComponent`, and a URL parser decodes a
+  segment before deciding whether it is a dot segment, so percent-encoding
+  them changes nothing. A path parameter that is exactly `.`, `..`, or the
+  empty string is therefore **rejected** with `INVALID_REQUEST` before any
+  network call, as a rejected promise like every other error here. No id, URN,
+  or slug is ever one of those three values. A value that merely contains a
+  dot (`1.2.3`, `.hidden`, `...`, `a..b`) is untouched, and so is a literal
+  `%2e`, which encoding already makes inert.
 
   What changes for you, concretely:
 
@@ -40,6 +51,27 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
     an id yourself before passing it in, stop: pass the decoded value. The SDK
     owns the encoding now, so a pre-encoded id is treated as a literal value
     containing percent signs and is encoded again.
+  - Every call made through an `account(id)` scope changes on the wire if that
+    id contains a reserved character, not just calls to one method. The bound
+    selector is encoded like any other path parameter.
+  - A whitespace or control character inside an id is no longer silently
+    dropped. Tab, carriage return, and line feed were deleted outright by the
+    URL parser, so an id with a stray one could accidentally match the intended
+    resource; it is now sent encoded and will simply not be found. If you were
+    relying on that accidental cleanup, trim your ids.
+  - An id containing the literal text `{account_id}` is no longer substituted.
+    That placeholder is how an account-scoped path is built internally, and a
+    raw id containing it used to be rewritten mid-flight. It is now encoded and
+    passed through as the value you supplied.
+  - Values that are not strings are stringified before encoding, so a JS
+    consumer passing an array now sends `a%2Cb` where it previously sent `a,b`.
+    Both decode to the same thing; only the bytes differ.
+
+  One deployment note: the encoded form of `/` is `%2F`, and while the Curviate
+  API accepts it, some infrastructure in front of your own code may not. Apache
+  with `AllowEncodedSlashes Off`, certain reverse proxies, and some web
+  application firewalls reject `%2F` in a path outright. This only affects ids
+  that genuinely contain a slash, share URLs above all.
 
 ## [0.20.0] - 2026-08-07
 
