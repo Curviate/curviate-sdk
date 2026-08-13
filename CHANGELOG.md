@@ -9,6 +9,64 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+## [0.21.0] - 2026-08-13
+
+Regeneration against the deployed, served OpenAPI document at server commit
+`d468b90f` (`https://api.staging.curviate.com/.well-known/openapi.json`).
+Nothing was hand-edited.
+
+**Minor, not patch, because two of the mirrored changes are breaking for a
+typed consumer**, even though nothing in this package's own source changed:
+existing code that compiles against 0.20.2's types will not compile against
+these without changes. A `^0.20.x`-pinned consumer will not receive this
+release, by design; that is what the minor bump is for.
+
+### Changed (breaking)
+
+- **`total_count` on a people-search page is now `number | null`** (was
+  `number`): the server stopped reporting a total once results are served
+  cursor-natively, rather than reporting a number that no longer meant
+  "how many pages remain." A consumer that read `total_count` as a bare
+  number must now narrow it.
+- **`profile_url` on a search result's `user` object is now `string | null`**
+  (was `string`), for the same reason as above: the platform does not always
+  surface a public profile URL, and the type now says so instead of lying.
+  A new optional `public_identifier` field (present only when requested via
+  `expand=public_identifier`) is the additive companion to this change.
+- **Profile section arrays (`experience`, `education`, `languages`,
+  `certifications`, `volunteer_experience`, `projects`)** on the classic and
+  Recruiter-enriched profile shapes went from opaque `{}[]` to fully described
+  per-entry shapes. Any consumer that was indexing into these arrays without a
+  described shape gains real fields; one that had hand-rolled its own local
+  type for these arrays now has a mismatch to reconcile.
+
+### Added
+
+- **`PAGE_TRUNCATED`** joins the people-search `notices[].code` enum
+  (`FILTER_VALUE_UNRESOLVED` / `FILTER_VALUE_UNCHECKED` / `SOME_RESULTS_HIDDEN`
+  / `ALL_RESULTS_HIDDEN`), reporting when a page is short because upstream
+  fetching stopped, not because results ran out; follow `cursor` and treat
+  only a `null` cursor as the end.
+- **`POST /v1/webhooks/{id}/test`**, for firing a synthetic delivery at a
+  registered webhook without waiting on a real trigger.
+- **`expand=public_identifier`** query parameter on the four message-detail /
+  chat-detail endpoints, resolving a vanity slug alongside the existing
+  fields for up to 25 people per request.
+
+### Fixed
+
+- **The quota family description no longer describes itself as a
+  "usage-safety recommendation."** `total` is documented as "a substrate
+  capacity ceiling, not a safe sustained rate," and the throttle-hint enum
+  spells out exactly which values are advisory (`none` / `slow_down` /
+  `backoff`, none of which ever block a request) versus the one binding limit
+  (`stop`, `account.per_minute` only, enforced with HTTP 429): a capacity
+  framing, replacing the old safety framing.
+- Quota example values now mirror the live raised ceilings (`messages.daily`
+  400, `connection_requests.daily` 480, `profile_views.daily` 400,
+  `inmail.daily` 60, `profile.endorse` 160), not the retired 100/120/100/40
+  set.
+
 ## [0.20.2] - 2026-08-10
 
 Published as a patch, not a minor, for the same reason 0.20.1 was: it satisfies

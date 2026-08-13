@@ -350,9 +350,10 @@
                     "FILTER_VALUE_UNRESOLVED",
                     "FILTER_VALUE_UNCHECKED",
                     "SOME_RESULTS_HIDDEN",
-                    "ALL_RESULTS_HIDDEN"
+                    "ALL_RESULTS_HIDDEN",
+                    "PAGE_TRUNCATED"
                   ],
-                  "description": "FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on however large total_count is."
+                  "description": "FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on, even when more pages follow. PAGE_TRUNCATED: this page is short because the search stopped fetching upstream pages, not because the results ran out; follow cursor, and treat only a null cursor as the end."
                 },
                 "message": {
                   "type": "string",
@@ -667,63 +668,796 @@
                         },
                         "experience": {
                           "type": "array",
-                          "description": "Work experience entries. Present only when requested via linkedin_sections.",
+                          "description": "Work experience entries, most recent first. Present only when linkedin_experience is requested via linkedin_sections. An entry with no ended_on is the member's current role.",
                           "items": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": true,
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "description": "Identifier of this work-experience entry. Not a company identifier."
+                              },
+                              "company": {
+                                "type": "object",
+                                "additionalProperties": true,
+                                "properties": {
+                                  "id": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ],
+                                    "description": "The organization's platform identifier, when known."
+                                  },
+                                  "name": {
+                                    "type": "string",
+                                    "description": "The organization's name."
+                                  },
+                                  "public_identifier": {
+                                    "type": "string",
+                                    "description": "The organization's public URL slug, when known."
+                                  },
+                                  "picture_url": {
+                                    "type": "string",
+                                    "description": "The organization's logo URL."
+                                  },
+                                  "profile_url": {
+                                    "type": "string",
+                                    "description": "Full LinkedIn URL for the organization."
+                                  },
+                                  "industries": {
+                                    "type": "array",
+                                    "description": "The organization's industry labels.",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "description": "The employer. An object, not a name string."
+                              },
+                              "job_title": {
+                                "type": "string",
+                                "description": "Job title held. This is the title field; there is no 'position' or 'title' key."
+                              },
+                              "started_on": {
+                                "type": "string",
+                                "description": "Date the role started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value uses day 01, so read the month and year and ignore the day."
+                              },
+                              "ended_on": {
+                                "type": "string",
+                                "description": "Date the role ended. Absent while the role is ongoing, so an absent value means current, not unknown. Formatted MM/DD/YYYY, month first, and the day is a derived offset rather than a real date: observed values are the first of the end month plus 29 days, which stays inside the end month for a 30 or 31 day month but pushes a February end into the following March. Subtract 29 days before reading the month and year, otherwise a February end reads as March and overstates the tenure by a month."
+                              },
+                              "location": {
+                                "type": "string",
+                                "description": "Where the role was based, as written on the profile."
+                              },
+                              "description": {
+                                "type": "string",
+                                "description": "The member's own description of the role. Passes through verbatim, never stored."
+                              },
+                              "employment_type": {
+                                "type": "string",
+                                "description": "Employment arrangement, e.g. PERMANENT, PERMANENT_PART_TIME, CONTRACT, CONTRACT_PART_TIME, FREELANCE, SELF_EMPLOYED, INTERNSHIP, APPRENTICESHIP, TEMPORARY, VOLUNTEERING. Not present on every entry."
+                              },
+                              "workplace_type": {
+                                "type": "string",
+                                "description": "Working arrangement: ON_SITE, HYBRID, or REMOTE. Not present on every entry."
+                              },
+                              "skills": {
+                                "type": "array",
+                                "description": "Skills the member associated with this role.",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skills_preview": {
+                                "type": "string",
+                                "description": "A short summary line of the associated skills."
+                              }
+                            }
                           }
                         },
                         "education": {
                           "type": "array",
-                          "description": "Education entries. Present only when requested via linkedin_sections.",
+                          "description": "Education entries. Present only when linkedin_education is requested via linkedin_sections.",
                           "items": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": true,
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "description": "Identifier of this education entry."
+                              },
+                              "school": {
+                                "type": "object",
+                                "additionalProperties": true,
+                                "properties": {
+                                  "id": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ],
+                                    "description": "The organization's platform identifier, when known."
+                                  },
+                                  "name": {
+                                    "type": "string",
+                                    "description": "The organization's name."
+                                  },
+                                  "public_identifier": {
+                                    "type": "string",
+                                    "description": "The organization's public URL slug, when known."
+                                  },
+                                  "picture_url": {
+                                    "type": "string",
+                                    "description": "The organization's logo URL."
+                                  },
+                                  "profile_url": {
+                                    "type": "string",
+                                    "description": "Full LinkedIn URL for the organization."
+                                  },
+                                  "industries": {
+                                    "type": "array",
+                                    "description": "The organization's industry labels.",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "description": "The institution. An object, not a name string."
+                              },
+                              "degree": {
+                                "type": "string",
+                                "description": "Name of the degree or qualification."
+                              },
+                              "fields_of_study": {
+                                "type": "array",
+                                "description": "Subjects studied. Plural and always an array, even for a single subject.",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "grade": {
+                                "type": "string",
+                                "description": "Grade or academic level reached."
+                              },
+                              "activities": {
+                                "type": "string",
+                                "description": "Activities carried out during the studies."
+                              },
+                              "description": {
+                                "type": "string",
+                                "description": "The member's own description of the studies. Passes through verbatim, never stored."
+                              },
+                              "started_on": {
+                                "type": "string",
+                                "description": "Date the studies started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value uses day 01, so read the month and year and ignore the day."
+                              },
+                              "ended_on": {
+                                "type": "string",
+                                "description": "Date the studies ended. Absent while the entry is ongoing, so an absent value means current, not unknown. Formatted MM/DD/YYYY, month first. The platform records month and year only. The day component differs by field on this response: a work-experience end date carries a 29 day offset that can push the value into the following month, while a certification's expiry date uses day 01. Confirm against an entry whose real dates you know before deriving a month from the day here."
+                              },
+                              "skills": {
+                                "type": "array",
+                                "description": "Skills the member associated with the studies.",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skills_preview": {
+                                "type": "string",
+                                "description": "A short summary line of the associated skills."
+                              }
+                            }
                           }
                         },
                         "languages": {
                           "type": "array",
-                          "description": "Languages entries. Present only when requested via linkedin_sections.",
+                          "description": "Language entries. Present only when linkedin_languages is requested via linkedin_sections.",
                           "items": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": true,
+                            "properties": {
+                              "language": {
+                                "type": "string",
+                                "description": "Name of the language."
+                              },
+                              "proficiency": {
+                                "type": "string",
+                                "description": "Stated fluency: ELEMENTARY, LIMITED_WORKING, PROFESSIONAL_WORKING, FULL_PROFESSIONAL, or NATIVE_OR_BILINGUAL."
+                              }
+                            }
                           }
                         },
                         "certifications": {
                           "type": "array",
-                          "description": "Certification entries. Present only when requested via linkedin_sections.",
+                          "description": "Certification entries. Present only when linkedin_certifications is requested via linkedin_sections.",
                           "items": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": true,
+                            "properties": {
+                              "title": {
+                                "type": "string",
+                                "description": "Name of the certification. This is the name field; there is no 'name' key."
+                              },
+                              "organization": {
+                                "type": "object",
+                                "additionalProperties": true,
+                                "properties": {
+                                  "id": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ],
+                                    "description": "The organization's platform identifier, when known."
+                                  },
+                                  "name": {
+                                    "type": "string",
+                                    "description": "The organization's name."
+                                  },
+                                  "public_identifier": {
+                                    "type": "string",
+                                    "description": "The organization's public URL slug, when known."
+                                  },
+                                  "picture_url": {
+                                    "type": "string",
+                                    "description": "The organization's logo URL."
+                                  },
+                                  "profile_url": {
+                                    "type": "string",
+                                    "description": "Full LinkedIn URL for the organization."
+                                  },
+                                  "industries": {
+                                    "type": "array",
+                                    "description": "The organization's industry labels.",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "description": "The issuing body. An object, not a name string."
+                              },
+                              "issued_on": {
+                                "type": "string",
+                                "description": "Date the certification was issued. Formatted MM/DD/YYYY, month first. The platform records month and year only."
+                              },
+                              "expires_on": {
+                                "type": "string",
+                                "description": "Date the certification expires. Absent when it does not expire. Formatted MM/DD/YYYY, month first. The platform records month and year only."
+                              },
+                              "license": {
+                                "type": "string",
+                                "description": "License or credential identifier."
+                              },
+                              "url": {
+                                "type": "string",
+                                "description": "Public URL for the certification."
+                              },
+                              "skills": {
+                                "type": "array",
+                                "description": "Skills the member associated with the certification.",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skills_preview": {
+                                "type": "string",
+                                "description": "A short summary line of the associated skills."
+                              }
+                            }
                           }
                         },
                         "volunteer_experience": {
                           "type": "array",
-                          "description": "Volunteering entries. Present only when requested via linkedin_sections.",
+                          "description": "Volunteering entries. Present only when linkedin_volunteer_experience is requested via linkedin_sections.",
                           "items": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": true,
+                            "properties": {
+                              "organization": {
+                                "type": "object",
+                                "additionalProperties": true,
+                                "properties": {
+                                  "id": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ],
+                                    "description": "The organization's platform identifier, when known."
+                                  },
+                                  "name": {
+                                    "type": "string",
+                                    "description": "The organization's name."
+                                  },
+                                  "public_identifier": {
+                                    "type": "string",
+                                    "description": "The organization's public URL slug, when known."
+                                  },
+                                  "picture_url": {
+                                    "type": "string",
+                                    "description": "The organization's logo URL."
+                                  },
+                                  "profile_url": {
+                                    "type": "string",
+                                    "description": "Full LinkedIn URL for the organization."
+                                  },
+                                  "industries": {
+                                    "type": "array",
+                                    "description": "The organization's industry labels.",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "description": "The organization volunteered for. An object, not a name string."
+                              },
+                              "role": {
+                                "type": "string",
+                                "description": "Role held while volunteering."
+                              },
+                              "cause": {
+                                "type": "string",
+                                "description": "The cause supported, as categorised by the platform."
+                              },
+                              "description": {
+                                "type": "string",
+                                "description": "The member's own description of the work. Passes through verbatim, never stored."
+                              },
+                              "started_on": {
+                                "type": "string",
+                                "description": "Date the work started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value uses day 01, so read the month and year and ignore the day."
+                              },
+                              "ended_on": {
+                                "type": "string",
+                                "description": "Date the work ended. Absent while the entry is ongoing, so an absent value means current, not unknown. Formatted MM/DD/YYYY, month first. The platform records month and year only. The day component differs by field on this response: a work-experience end date carries a 29 day offset that can push the value into the following month, while a certification's expiry date uses day 01. Confirm against an entry whose real dates you know before deriving a month from the day here."
+                              }
+                            }
                           }
                         },
                         "projects": {
                           "type": "array",
-                          "description": "Project entries. Present only when requested via linkedin_sections.",
+                          "description": "Project entries. Present only when linkedin_projects is requested via linkedin_sections.",
                           "items": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": true,
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Name of the project."
+                              },
+                              "description": {
+                                "type": "string",
+                                "description": "The member's own description of the project. Passes through verbatim, never stored."
+                              },
+                              "contributors": {
+                                "type": "array",
+                                "description": "Other members credited on the project.",
+                                "items": {
+                                  "type": "object",
+                                  "additionalProperties": true,
+                                  "properties": {
+                                    "id": {
+                                      "type": "string",
+                                      "description": "The member's opaque identifier."
+                                    },
+                                    "object": {
+                                      "type": "string",
+                                      "description": "Object discriminator for the embedded member."
+                                    },
+                                    "type": {
+                                      "type": "string",
+                                      "description": "Profile type (e.g. individual)."
+                                    },
+                                    "display_name": {
+                                      "type": "string",
+                                      "description": "The member's display name."
+                                    },
+                                    "first_name": {
+                                      "type": "string",
+                                      "description": "First name."
+                                    },
+                                    "last_name": {
+                                      "type": "string",
+                                      "description": "Last name."
+                                    },
+                                    "public_identifier": {
+                                      "type": "string",
+                                      "description": "LinkedIn public URL slug (e.g. 'jane-doe')."
+                                    },
+                                    "profile_url": {
+                                      "type": "string",
+                                      "description": "Full LinkedIn profile URL."
+                                    },
+                                    "public_picture_url": {
+                                      "type": "string",
+                                      "description": "Profile picture URL."
+                                    },
+                                    "description": {
+                                      "type": "string",
+                                      "description": "The member's professional headline."
+                                    }
+                                  }
+                                }
+                              },
+                              "skills": {
+                                "type": "array",
+                                "description": "Skills the member associated with the project.",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skills_preview": {
+                                "type": "string",
+                                "description": "A short summary line of the associated skills."
+                              },
+                              "started_on": {
+                                "type": "string",
+                                "description": "Date the project started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value uses day 01, so read the month and year and ignore the day."
+                              },
+                              "ended_on": {
+                                "type": "string",
+                                "description": "Date the project ended. Absent while the entry is ongoing, so an absent value means current, not unknown. Formatted MM/DD/YYYY, month first. The platform records month and year only. The day component differs by field on this response: a work-experience end date carries a 29 day offset that can push the value into the following month, while a certification's expiry date uses day 01. Confirm against an entry whose real dates you know before deriving a month from the day here."
+                              }
+                            }
                           }
                         },
                         "recommendations": {
                           "type": "object",
-                          "description": "Recommendations received/given. Present only when requested via linkedin_sections.",
-                          "additionalProperties": true
+                          "additionalProperties": true,
+                          "description": "Recommendations written about and by this member. An object with two arrays, not an array. Present only when linkedin_recommendations is requested via linkedin_sections.",
+                          "properties": {
+                            "received": {
+                              "type": "array",
+                              "description": "Recommendations written about this member.",
+                              "items": {
+                                "type": "object",
+                                "additionalProperties": true,
+                                "properties": {
+                                  "text": {
+                                    "type": "string",
+                                    "description": "The recommendation text. Passes through verbatim, never stored."
+                                  },
+                                  "caption": {
+                                    "type": "string",
+                                    "description": "How the two members worked together, as shown on the profile."
+                                  },
+                                  "created_on": {
+                                    "type": "string",
+                                    "description": "When the recommendation was written."
+                                  },
+                                  "user": {
+                                    "type": "object",
+                                    "additionalProperties": true,
+                                    "properties": {
+                                      "id": {
+                                        "type": "string",
+                                        "description": "The member's opaque identifier."
+                                      },
+                                      "object": {
+                                        "type": "string",
+                                        "description": "Object discriminator for the embedded member."
+                                      },
+                                      "type": {
+                                        "type": "string",
+                                        "description": "Profile type (e.g. individual)."
+                                      },
+                                      "display_name": {
+                                        "type": "string",
+                                        "description": "The member's display name."
+                                      },
+                                      "first_name": {
+                                        "type": "string",
+                                        "description": "First name."
+                                      },
+                                      "last_name": {
+                                        "type": "string",
+                                        "description": "Last name."
+                                      },
+                                      "public_identifier": {
+                                        "type": "string",
+                                        "description": "LinkedIn public URL slug (e.g. 'jane-doe')."
+                                      },
+                                      "profile_url": {
+                                        "type": "string",
+                                        "description": "Full LinkedIn profile URL."
+                                      },
+                                      "public_picture_url": {
+                                        "type": "string",
+                                        "description": "Profile picture URL."
+                                      },
+                                      "description": {
+                                        "type": "string",
+                                        "description": "The member's professional headline."
+                                      }
+                                    },
+                                    "description": "The other member involved. May be null when the platform withholds the identity."
+                                  }
+                                }
+                              }
+                            },
+                            "given": {
+                              "type": "array",
+                              "description": "Recommendations this member wrote for others.",
+                              "items": {
+                                "type": "object",
+                                "additionalProperties": true,
+                                "properties": {
+                                  "text": {
+                                    "type": "string",
+                                    "description": "The recommendation text. Passes through verbatim, never stored."
+                                  },
+                                  "caption": {
+                                    "type": "string",
+                                    "description": "How the two members worked together, as shown on the profile."
+                                  },
+                                  "created_on": {
+                                    "type": "string",
+                                    "description": "When the recommendation was written."
+                                  },
+                                  "user": {
+                                    "type": "object",
+                                    "additionalProperties": true,
+                                    "properties": {
+                                      "id": {
+                                        "type": "string",
+                                        "description": "The member's opaque identifier."
+                                      },
+                                      "object": {
+                                        "type": "string",
+                                        "description": "Object discriminator for the embedded member."
+                                      },
+                                      "type": {
+                                        "type": "string",
+                                        "description": "Profile type (e.g. individual)."
+                                      },
+                                      "display_name": {
+                                        "type": "string",
+                                        "description": "The member's display name."
+                                      },
+                                      "first_name": {
+                                        "type": "string",
+                                        "description": "First name."
+                                      },
+                                      "last_name": {
+                                        "type": "string",
+                                        "description": "Last name."
+                                      },
+                                      "public_identifier": {
+                                        "type": "string",
+                                        "description": "LinkedIn public URL slug (e.g. 'jane-doe')."
+                                      },
+                                      "profile_url": {
+                                        "type": "string",
+                                        "description": "Full LinkedIn profile URL."
+                                      },
+                                      "public_picture_url": {
+                                        "type": "string",
+                                        "description": "Profile picture URL."
+                                      },
+                                      "description": {
+                                        "type": "string",
+                                        "description": "The member's professional headline."
+                                      }
+                                    },
+                                    "description": "The other member involved. May be null when the platform withholds the identity."
+                                  }
+                                }
+                              }
+                            }
+                          }
                         },
                         "interests": {
-                          "type": "array",
-                          "description": "Interest entries. Present only when requested via linkedin_sections.",
-                          "items": {
-                            "type": "object",
-                            "additionalProperties": true
+                          "type": "object",
+                          "additionalProperties": true,
+                          "description": "What this member follows, grouped by kind. An object, not an array. Present only when linkedin_interests is requested via linkedin_sections.",
+                          "properties": {
+                            "top_voices": {
+                              "type": "array",
+                              "description": "Followed LinkedIn Top Voices.",
+                              "items": {
+                                "type": "object",
+                                "additionalProperties": true,
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "description": "The member's opaque identifier."
+                                  },
+                                  "object": {
+                                    "type": "string",
+                                    "description": "Object discriminator for the embedded member."
+                                  },
+                                  "type": {
+                                    "type": "string",
+                                    "description": "Profile type (e.g. individual)."
+                                  },
+                                  "display_name": {
+                                    "type": "string",
+                                    "description": "The member's display name."
+                                  },
+                                  "first_name": {
+                                    "type": "string",
+                                    "description": "First name."
+                                  },
+                                  "last_name": {
+                                    "type": "string",
+                                    "description": "Last name."
+                                  },
+                                  "public_identifier": {
+                                    "type": "string",
+                                    "description": "LinkedIn public URL slug (e.g. 'jane-doe')."
+                                  },
+                                  "profile_url": {
+                                    "type": "string",
+                                    "description": "Full LinkedIn profile URL."
+                                  },
+                                  "public_picture_url": {
+                                    "type": "string",
+                                    "description": "Profile picture URL."
+                                  },
+                                  "description": {
+                                    "type": "string",
+                                    "description": "The member's professional headline."
+                                  },
+                                  "specifics": {
+                                    "type": "object",
+                                    "additionalProperties": true,
+                                    "description": "Follow-relationship detail for this member.",
+                                    "properties": {
+                                      "is_following": {
+                                        "type": "boolean",
+                                        "description": "Whether this member is followed."
+                                      },
+                                      "followers_count": {
+                                        "type": "number",
+                                        "description": "How many members follow them."
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "companies": {
+                              "type": "array",
+                              "description": "Followed companies.",
+                              "items": {
+                                "type": "object",
+                                "additionalProperties": true,
+                                "properties": {
+                                  "object": {
+                                    "type": "string",
+                                    "description": "Object discriminator for the followed company."
+                                  },
+                                  "id": {
+                                    "type": "string",
+                                    "description": "The company's platform identifier."
+                                  },
+                                  "name": {
+                                    "type": "string",
+                                    "description": "The company's name."
+                                  },
+                                  "profile_url": {
+                                    "type": "string",
+                                    "description": "Full LinkedIn URL for the company."
+                                  },
+                                  "public_picture_url": {
+                                    "type": "string",
+                                    "description": "The company's logo URL."
+                                  },
+                                  "followers_count": {
+                                    "type": "number",
+                                    "description": "How many members follow the company."
+                                  },
+                                  "is_following": {
+                                    "type": "boolean",
+                                    "description": "Whether this member follows the company."
+                                  }
+                                }
+                              }
+                            },
+                            "schools": {
+                              "type": "array",
+                              "description": "Followed schools.",
+                              "items": {
+                                "type": "object",
+                                "additionalProperties": true,
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "description": "The school's platform identifier."
+                                  },
+                                  "name": {
+                                    "type": "string",
+                                    "description": "The school's name."
+                                  },
+                                  "object": {
+                                    "type": "string",
+                                    "description": "Object discriminator for the followed school."
+                                  },
+                                  "profile_url": {
+                                    "type": "string",
+                                    "description": "Full LinkedIn URL for the school."
+                                  },
+                                  "public_picture_url": {
+                                    "type": "string",
+                                    "description": "The school's logo URL."
+                                  },
+                                  "followers_count": {
+                                    "type": "number",
+                                    "description": "How many members follow the school."
+                                  },
+                                  "is_following": {
+                                    "type": "boolean",
+                                    "description": "Whether this member follows the school."
+                                  }
+                                }
+                              }
+                            },
+                            "newsletters": {
+                              "type": "array",
+                              "description": "Followed newsletters.",
+                              "items": {
+                                "type": "object",
+                                "additionalProperties": true,
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "description": "The newsletter's platform identifier."
+                                  },
+                                  "title": {
+                                    "type": "string",
+                                    "description": "The newsletter's title."
+                                  },
+                                  "description": {
+                                    "type": "string",
+                                    "description": "The newsletter's description. Passes through verbatim, never stored."
+                                  },
+                                  "url": {
+                                    "type": "string",
+                                    "description": "Full LinkedIn URL for the newsletter."
+                                  },
+                                  "posting_frequency": {
+                                    "type": "string",
+                                    "description": "How often the newsletter publishes."
+                                  },
+                                  "public_picture_url": {
+                                    "type": "string",
+                                    "description": "The newsletter's cover image URL."
+                                  },
+                                  "is_subscribed": {
+                                    "type": "boolean",
+                                    "description": "Whether this member subscribes to the newsletter."
+                                  }
+                                }
+                              }
+                            },
+                            "groups": {
+                              "type": "array",
+                              "description": "Groups joined.",
+                              "items": {
+                                "type": "object",
+                                "additionalProperties": true,
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "description": "The group's platform identifier."
+                                  },
+                                  "name": {
+                                    "type": "string",
+                                    "description": "The group's name."
+                                  },
+                                  "url": {
+                                    "type": "string",
+                                    "description": "Full LinkedIn URL for the group."
+                                  },
+                                  "public_picture_url": {
+                                    "type": "string",
+                                    "description": "The group's picture URL."
+                                  },
+                                  "is_member": {
+                                    "type": "boolean",
+                                    "description": "Whether this member belongs to the group."
+                                  }
+                                }
+                              }
+                            }
                           }
                         },
                         "throttled_sections": {
@@ -6699,7 +7433,7 @@
                               "full",
                               "hidden"
                             ],
-                            "description": "Whether this result names someone you can act on. Always present, on both values. full: the result carries a resolvable identity, so you can read the profile and reach the person. hidden: LinkedIn did not disclose this person to the connected account, so the result carries no public_identifier and no member_id, its name is a placeholder rather than a real one, and reading it back returns 403. The cause is the connected LinkedIn account's own subscription level, which decides which profiles it is allowed to identify; it is not an error in your request. A page can be entirely hidden while total_count still reports a large number, so count the full results rather than the total, and see notices[] for a page-level summary."
+                            "description": "Whether this result names someone you can act on. Always present, on both values. full: the result carries a resolvable identity, so you can read the profile and reach the person. hidden: LinkedIn did not disclose this person to the connected account, so the result carries no public_identifier and no member_id, its name is a placeholder rather than a real one, and reading it back returns 403. The cause is the connected LinkedIn account's own subscription level, which decides which profiles it is allowed to identify; it is not an error in your request. A page can be entirely hidden, so count the full results rather than the size of the page, and see notices[] for a page-level summary."
                           }
                         },
                         "required": [
@@ -6715,8 +7449,11 @@
                       ],
                       "properties": {
                         "total_count": {
-                          "type": "number",
-                          "description": "Total number of matching employees across all pages."
+                          "type": [
+                            "number",
+                            "null"
+                          ],
+                          "description": "Total number of matching employees across all pages, or null when the platform does not report one. Count the items rather than relying on this."
                         }
                       }
                     },
@@ -6740,9 +7477,10 @@
                               "FILTER_VALUE_UNRESOLVED",
                               "FILTER_VALUE_UNCHECKED",
                               "SOME_RESULTS_HIDDEN",
-                              "ALL_RESULTS_HIDDEN"
+                              "ALL_RESULTS_HIDDEN",
+                              "PAGE_TRUNCATED"
                             ],
-                            "description": "FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on however large total_count is. Branch on this rather than on message."
+                            "description": "FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on, even when more pages follow. PAGE_TRUNCATED: this page is short because the search stopped fetching upstream pages, not because the results ran out; follow cursor, and treat only a null cursor as the end. Branch on this rather than on message."
                           },
                           "message": {
                             "type": "string",
@@ -6784,7 +7522,7 @@
                         }
                       ],
                       "paging": {
-                        "total_count": 2
+                        "total_count": null
                       },
                       "cursor": "cursor_company_employees_001"
                     }
@@ -7218,8 +7956,11 @@
                       ],
                       "properties": {
                         "total_count": {
-                          "type": "number",
-                          "description": "Total number of matching posts across all pages."
+                          "type": [
+                            "number",
+                            "null"
+                          ],
+                          "description": "Total number of matching posts across all pages, or null when the platform does not report one. Count the items rather than relying on this."
                         }
                       }
                     },
@@ -7688,8 +8429,11 @@
                       ],
                       "properties": {
                         "total_count": {
-                          "type": "number",
-                          "description": "Total number of matching job postings across all pages."
+                          "type": [
+                            "number",
+                            "null"
+                          ],
+                          "description": "Total number of matching job postings across all pages, or null when the platform does not report one. Count the items rather than relying on this."
                         }
                       }
                     },
@@ -9257,6 +10001,15 @@
               "type": "string"
             },
             "description": "Opaque pagination cursor from a prior response's cursor. Omit for the first page."
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all."
           }
         ],
         "responses": {
@@ -9351,8 +10104,18 @@
                                   "description": "Member headline (content pass-through, never stored)."
                                 },
                                 "profile_url": {
-                                  "type": "string",
-                                  "description": "Canonical member profile URL."
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ],
+                                  "description": "Canonical member profile URL, or null when the platform surfaces no public profile for this person."
+                                },
+                                "public_identifier": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ],
+                                  "description": "The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person."
                                 }
                               }
                             }
@@ -9401,6 +10164,39 @@
                         "null"
                       ],
                       "description": "Opaque cursor for the next page, or null at end-of-list."
+                    },
+                    "notices": {
+                      "type": "array",
+                      "description": "Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message.",
+                      "items": {
+                        "type": "object",
+                        "description": "One thing you should know about this response.",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "enum": [
+                              "EXPANSION_LIMIT_REACHED"
+                            ],
+                            "description": "EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone."
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "One sentence explaining the condition and how to resolve it."
+                          },
+                          "field": {
+                            "type": "string",
+                            "description": "The request field the notice is about, here expand."
+                          },
+                          "value": {
+                            "type": "string",
+                            "description": "The expansion the notice is about, here public_identifier."
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
                     }
                   }
                 },
@@ -9727,6 +10523,15 @@
               "type": "string"
             },
             "description": "The conversation id in the \"2-...\" form, the id field of a chats list or search result. Pass it verbatim."
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all."
           }
         ],
         "responses": {
@@ -9803,8 +10608,18 @@
                             "description": "Member headline (content pass-through, never stored)."
                           },
                           "profile_url": {
-                            "type": "string",
-                            "description": "Canonical member profile URL."
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "Canonical member profile URL, or null when the platform surfaces no public profile for this person."
+                          },
+                          "public_identifier": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person."
                           }
                         }
                       }
@@ -9842,6 +10657,39 @@
                           ],
                           "description": "Message body (content pass-through, never stored)."
                         }
+                      }
+                    },
+                    "notices": {
+                      "type": "array",
+                      "description": "Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message.",
+                      "items": {
+                        "type": "object",
+                        "description": "One thing you should know about this response.",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "enum": [
+                              "EXPANSION_LIMIT_REACHED"
+                            ],
+                            "description": "EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone."
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "One sentence explaining the condition and how to resolve it."
+                          },
+                          "field": {
+                            "type": "string",
+                            "description": "The request field the notice is about, here expand."
+                          },
+                          "value": {
+                            "type": "string",
+                            "description": "The expansion the notice is about, here public_identifier."
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
                       }
                     }
                   }
@@ -10178,6 +11026,15 @@
               "type": "string"
             },
             "description": "Opaque pagination cursor from a prior response's cursor. Omit for the first page."
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all."
           }
         ],
         "responses": {
@@ -10245,6 +11102,13 @@
                                   "null"
                                 ],
                                 "description": "Sender display name (content pass-through, never stored)."
+                              },
+                              "public_identifier": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "description": "The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person."
                               }
                             }
                           },
@@ -10268,6 +11132,39 @@
                         "null"
                       ],
                       "description": "Opaque cursor for the next page, or null at end-of-list."
+                    },
+                    "notices": {
+                      "type": "array",
+                      "description": "Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message.",
+                      "items": {
+                        "type": "object",
+                        "description": "One thing you should know about this response.",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "enum": [
+                              "EXPANSION_LIMIT_REACHED"
+                            ],
+                            "description": "EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone."
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "One sentence explaining the condition and how to resolve it."
+                          },
+                          "field": {
+                            "type": "string",
+                            "description": "The request field the notice is about, here expand."
+                          },
+                          "value": {
+                            "type": "string",
+                            "description": "The expansion the notice is about, here public_identifier."
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
                     }
                   }
                 },
@@ -11044,6 +11941,15 @@
               "type": "string"
             },
             "description": "The message id in the \"2-...\" form, the id field of a messages list result. Always resolved scoped to its chat_id."
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all."
           }
         ],
         "responses": {
@@ -11093,6 +11999,13 @@
                             "null"
                           ],
                           "description": "Sender display name (content pass-through, never stored)."
+                        },
+                        "public_identifier": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person."
                         }
                       }
                     },
@@ -11106,6 +12019,39 @@
                         "null"
                       ],
                       "description": "Message body (content pass-through, never stored)."
+                    },
+                    "notices": {
+                      "type": "array",
+                      "description": "Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message.",
+                      "items": {
+                        "type": "object",
+                        "description": "One thing you should know about this response.",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "enum": [
+                              "EXPANSION_LIMIT_REACHED"
+                            ],
+                            "description": "EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone."
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "One sentence explaining the condition and how to resolve it."
+                          },
+                          "field": {
+                            "type": "string",
+                            "description": "The request field the notice is about, here expand."
+                          },
+                          "value": {
+                            "type": "string",
+                            "description": "The expansion the notice is about, here public_identifier."
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
                     }
                   }
                 },
@@ -11448,6 +12394,15 @@
               "type": "string"
             },
             "description": "Opaque pagination cursor from a prior response's cursor. Omit for the first page."
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all."
           }
         ],
         "responses": {
@@ -11542,8 +12497,18 @@
                                   "description": "Member headline (content pass-through, never stored)."
                                 },
                                 "profile_url": {
-                                  "type": "string",
-                                  "description": "Canonical member profile URL."
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ],
+                                  "description": "Canonical member profile URL, or null when the platform surfaces no public profile for this person."
+                                },
+                                "public_identifier": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ],
+                                  "description": "The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person."
                                 }
                               }
                             }
@@ -11599,6 +12564,39 @@
                         true
                       ],
                       "description": "Present and true only in topic/unread filter mode; the signal that the filter was applied upstream. Absent in free-text mode."
+                    },
+                    "notices": {
+                      "type": "array",
+                      "description": "Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message.",
+                      "items": {
+                        "type": "object",
+                        "description": "One thing you should know about this response.",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "enum": [
+                              "EXPANSION_LIMIT_REACHED"
+                            ],
+                            "description": "EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone."
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "One sentence explaining the condition and how to resolve it."
+                          },
+                          "field": {
+                            "type": "string",
+                            "description": "The request field the notice is about, here expand."
+                          },
+                          "value": {
+                            "type": "string",
+                            "description": "The expansion the notice is about, here public_identifier."
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
                     }
                   }
                 },
@@ -13882,7 +14880,7 @@
                               "full",
                               "hidden"
                             ],
-                            "description": "Whether this result names someone you can act on. Always present, on both values. full: the result carries a resolvable identity, so you can read the profile and reach the person. hidden: LinkedIn did not disclose this person to the connected account, so the result carries no public_identifier and no member_id, its name is a placeholder rather than a real one, and reading it back returns 403. The cause is the connected LinkedIn account's own subscription level, which decides which profiles it is allowed to identify; it is not an error in your request. A page can be entirely hidden while total_count still reports a large number, so count the full results rather than the total, and see notices[] for a page-level summary."
+                            "description": "Whether this result names someone you can act on. Always present, on both values. full: the result carries a resolvable identity, so you can read the profile and reach the person. hidden: LinkedIn did not disclose this person to the connected account, so the result carries no public_identifier and no member_id, its name is a placeholder rather than a real one, and reading it back returns 403. The cause is the connected LinkedIn account's own subscription level, which decides which profiles it is allowed to identify; it is not an error in your request. A page can be entirely hidden, so count the full results rather than the size of the page, and see notices[] for a page-level summary."
                           }
                         },
                         "required": [
@@ -13900,7 +14898,7 @@
                             "number",
                             "null"
                           ],
-                          "description": "Total matching result count. Large counts (people/companies/from-url) are a >=1000 ceiling, not an exact total."
+                          "description": "Always null on people search. LinkedIn does not report how many people match, so there is no total to page toward; walk the pages with cursor until it comes back null. A short or empty page is not the end: only a null cursor is."
                         }
                       },
                       "required": [
@@ -13927,9 +14925,10 @@
                               "FILTER_VALUE_UNRESOLVED",
                               "FILTER_VALUE_UNCHECKED",
                               "SOME_RESULTS_HIDDEN",
-                              "ALL_RESULTS_HIDDEN"
+                              "ALL_RESULTS_HIDDEN",
+                              "PAGE_TRUNCATED"
                             ],
-                            "description": "FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on however large total_count is. Branch on this rather than on message."
+                            "description": "FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on, even when more pages follow. PAGE_TRUNCATED: this page is short because the search stopped fetching upstream pages, not because the results ran out; follow cursor, and treat only a null cursor as the end. Branch on this rather than on message."
                           },
                           "message": {
                             "type": "string",
@@ -13977,7 +14976,7 @@
                         }
                       ],
                       "paging": {
-                        "total_count": 1000
+                        "total_count": null
                       },
                       "cursor": "eyJwYWdlIjoyLCJvZmZzZXQiOjEwfQ"
                     }
@@ -14000,13 +14999,13 @@
                         }
                       ],
                       "paging": {
-                        "total_count": 1000
+                        "total_count": null
                       },
                       "cursor": null
                     }
                   },
                   "allHidden": {
-                    "summary": "A large total_count and nothing usable on the page",
+                    "summary": "A full page with nothing usable on it",
                     "value": {
                       "object": "people_search_result",
                       "items": [
@@ -14019,13 +15018,13 @@
                         }
                       ],
                       "paging": {
-                        "total_count": 1000
+                        "total_count": null
                       },
                       "cursor": null,
                       "notices": [
                         {
                           "code": "ALL_RESULTS_HIDDEN",
-                          "message": "None of the 1 results on this page carry an identity this account can see, so none of them can be opened, read back, or contacted. The connected LinkedIn account's own subscription level limits which profiles it is allowed to identify, so a large total_count here does not mean a large number of usable results. Every item on this page has visibility \"hidden\"."
+                          "message": "None of the 1 results on this page carry an identity this account can see, so none of them can be opened, read back, or contacted. The connected LinkedIn account's own subscription level limits which profiles it is allowed to identify, so a full page here does not mean a page of usable results. Every item on this page has visibility \"hidden\"."
                         }
                       ]
                     }
@@ -14601,9 +15600,10 @@
                               "FILTER_VALUE_UNRESOLVED",
                               "FILTER_VALUE_UNCHECKED",
                               "SOME_RESULTS_HIDDEN",
-                              "ALL_RESULTS_HIDDEN"
+                              "ALL_RESULTS_HIDDEN",
+                              "PAGE_TRUNCATED"
                             ],
-                            "description": "FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on however large total_count is. Branch on this rather than on message."
+                            "description": "FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on, even when more pages follow. PAGE_TRUNCATED: this page is short because the search stopped fetching upstream pages, not because the results ran out; follow cursor, and treat only a null cursor as the end. Branch on this rather than on message."
                           },
                           "message": {
                             "type": "string",
@@ -15210,9 +16210,10 @@
                               "FILTER_VALUE_UNRESOLVED",
                               "FILTER_VALUE_UNCHECKED",
                               "SOME_RESULTS_HIDDEN",
-                              "ALL_RESULTS_HIDDEN"
+                              "ALL_RESULTS_HIDDEN",
+                              "PAGE_TRUNCATED"
                             ],
-                            "description": "FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on however large total_count is. Branch on this rather than on message."
+                            "description": "FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on, even when more pages follow. PAGE_TRUNCATED: this page is short because the search stopped fetching upstream pages, not because the results ran out; follow cursor, and treat only a null cursor as the end. Branch on this rather than on message."
                           },
                           "message": {
                             "type": "string",
@@ -15888,9 +16889,10 @@
                               "FILTER_VALUE_UNRESOLVED",
                               "FILTER_VALUE_UNCHECKED",
                               "SOME_RESULTS_HIDDEN",
-                              "ALL_RESULTS_HIDDEN"
+                              "ALL_RESULTS_HIDDEN",
+                              "PAGE_TRUNCATED"
                             ],
-                            "description": "FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on however large total_count is. Branch on this rather than on message."
+                            "description": "FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on, even when more pages follow. PAGE_TRUNCATED: this page is short because the search stopped fetching upstream pages, not because the results ran out; follow cursor, and treat only a null cursor as the end. Branch on this rather than on message."
                           },
                           "message": {
                             "type": "string",
@@ -16608,7 +17610,7 @@
                                   "full",
                                   "hidden"
                                 ],
-                                "description": "Whether this result names someone you can act on. Always present, on both values. full: the result carries a resolvable identity, so you can read the profile and reach the person. hidden: LinkedIn did not disclose this person to the connected account, so the result carries no public_identifier and no member_id, its name is a placeholder rather than a real one, and reading it back returns 403. The cause is the connected LinkedIn account's own subscription level, which decides which profiles it is allowed to identify; it is not an error in your request. A page can be entirely hidden while total_count still reports a large number, so count the full results rather than the total, and see notices[] for a page-level summary."
+                                "description": "Whether this result names someone you can act on. Always present, on both values. full: the result carries a resolvable identity, so you can read the profile and reach the person. hidden: LinkedIn did not disclose this person to the connected account, so the result carries no public_identifier and no member_id, its name is a placeholder rather than a real one, and reading it back returns 403. The cause is the connected LinkedIn account's own subscription level, which decides which profiles it is allowed to identify; it is not an error in your request. A page can be entirely hidden, so count the full results rather than the size of the page, and see notices[] for a page-level summary."
                               }
                             },
                             "required": [
@@ -16889,7 +17891,7 @@
                             "number",
                             "null"
                           ],
-                          "description": "Total matching result count. Large counts are a >=1000 ceiling, not an exact total."
+                          "description": "Total matching result count. Always null when the pasted URL is a people search, because LinkedIn does not report a total for those; page with cursor instead. For company, post, and job URLs a large count is a >=1000 ceiling, not an exact total."
                         }
                       },
                       "required": [
@@ -16931,7 +17933,7 @@
                         }
                       ],
                       "paging": {
-                        "total_count": 1000
+                        "total_count": null
                       },
                       "cursor": null
                     }
@@ -17774,7 +18776,7 @@
                             "number",
                             "null"
                           ],
-                          "description": "Total matching result count."
+                          "description": "Always null. Service-provider search runs on the people index, and LinkedIn does not report how many people match, so walk the pages with cursor until it comes back null."
                         }
                       },
                       "required": [
@@ -17801,9 +18803,10 @@
                               "FILTER_VALUE_UNRESOLVED",
                               "FILTER_VALUE_UNCHECKED",
                               "SOME_RESULTS_HIDDEN",
-                              "ALL_RESULTS_HIDDEN"
+                              "ALL_RESULTS_HIDDEN",
+                              "PAGE_TRUNCATED"
                             ],
-                            "description": "FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on however large total_count is. Branch on this rather than on message."
+                            "description": "FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on, even when more pages follow. PAGE_TRUNCATED: this page is short because the search stopped fetching upstream pages, not because the results ran out; follow cursor, and treat only a null cursor as the end. Branch on this rather than on message."
                           },
                           "message": {
                             "type": "string",
@@ -17853,7 +18856,7 @@
                         }
                       ],
                       "paging": {
-                        "total_count": 1000
+                        "total_count": null
                       },
                       "cursor": null
                     }
@@ -18657,6 +19660,15 @@
               "type": "string"
             },
             "description": "An opaque cursor for pagination. Pass the `cursor` from the preceding response to fetch the next page."
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all."
           }
         ],
         "responses": {
@@ -18873,6 +19885,41 @@
                               "provider": {
                                 "type": "string",
                                 "description": "The platform this message originates from."
+                              },
+                              "sender": {
+                                "description": "The sender's profile, when the platform returned one alongside the message. sender_id always carries the identifier; this object carries the rest of what is known about that person.",
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "description": "Identifier of the counterpart."
+                                  },
+                                  "type": {
+                                    "type": "string",
+                                    "description": "individual | organization."
+                                  },
+                                  "display_name": {
+                                    "type": "string"
+                                  },
+                                  "profile_url": {
+                                    "type": "string"
+                                  },
+                                  "public_picture_url": {
+                                    "type": "string"
+                                  },
+                                  "public_identifier": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ],
+                                    "description": "The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person."
+                                  },
+                                  "specifics": {
+                                    "type": "object",
+                                    "description": "Provider-enriched detail about the sender (for example connection distance, premium or verified status), when the platform returns it.",
+                                    "additionalProperties": true
+                                  }
+                                }
                               }
                             }
                           },
@@ -18896,6 +19943,13 @@
                               },
                               "public_picture_url": {
                                 "type": "string"
+                              },
+                              "public_identifier": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "description": "The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person."
                               }
                             }
                           }
@@ -18908,6 +19962,39 @@
                         "null"
                       ],
                       "description": "Next-page cursor; follow until items is empty (presence is not a has-more guarantee)."
+                    },
+                    "notices": {
+                      "type": "array",
+                      "description": "Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message.",
+                      "items": {
+                        "type": "object",
+                        "description": "One thing you should know about this response.",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "enum": [
+                              "EXPANSION_LIMIT_REACHED"
+                            ],
+                            "description": "EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone."
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "One sentence explaining the condition and how to resolve it."
+                          },
+                          "field": {
+                            "type": "string",
+                            "description": "The request field the notice is about, here expand."
+                          },
+                          "value": {
+                            "type": "string",
+                            "description": "The expansion the notice is about, here public_identifier."
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
                     }
                   }
                 },
@@ -18954,7 +20041,14 @@
                             "is_mentionned": false,
                             "reactions": [],
                             "reaction_count": 0,
-                            "provider": "linkedin"
+                            "provider": "linkedin",
+                            "sender": {
+                              "id": "ACoAAByyyyyyyyyyyyyyyyyy",
+                              "type": "individual",
+                              "display_name": "Ada Lovelace",
+                              "profile_url": "https://www.linkedin.com/in/ada",
+                              "public_picture_url": "https://media.licdn.com/dms/image/ada"
+                            }
                           },
                           "user": {
                             "id": "ACoAAByyyyyyyyyyyyyyyyyy",
@@ -19674,6 +20768,15 @@
               "type": "string"
             },
             "description": "The unique identifier of the chat to retrieve."
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all."
           }
         ],
         "responses": {
@@ -19878,6 +20981,41 @@
                         "provider": {
                           "type": "string",
                           "description": "The platform this message originates from."
+                        },
+                        "sender": {
+                          "description": "The sender's profile, when the platform returned one alongside the message. sender_id always carries the identifier; this object carries the rest of what is known about that person.",
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "Identifier of the counterpart."
+                            },
+                            "type": {
+                              "type": "string",
+                              "description": "individual | organization."
+                            },
+                            "display_name": {
+                              "type": "string"
+                            },
+                            "profile_url": {
+                              "type": "string"
+                            },
+                            "public_picture_url": {
+                              "type": "string"
+                            },
+                            "public_identifier": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "description": "The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person."
+                            },
+                            "specifics": {
+                              "type": "object",
+                              "description": "Provider-enriched detail about the sender (for example connection distance, premium or verified status), when the platform returns it.",
+                              "additionalProperties": true
+                            }
+                          }
                         }
                       }
                     },
@@ -19901,7 +21039,47 @@
                         },
                         "public_picture_url": {
                           "type": "string"
+                        },
+                        "public_identifier": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person."
                         }
+                      }
+                    },
+                    "notices": {
+                      "type": "array",
+                      "description": "Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message.",
+                      "items": {
+                        "type": "object",
+                        "description": "One thing you should know about this response.",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "enum": [
+                              "EXPANSION_LIMIT_REACHED"
+                            ],
+                            "description": "EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone."
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "One sentence explaining the condition and how to resolve it."
+                          },
+                          "field": {
+                            "type": "string",
+                            "description": "The request field the notice is about, here expand."
+                          },
+                          "value": {
+                            "type": "string",
+                            "description": "The expansion the notice is about, here public_identifier."
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
                       }
                     }
                   }
@@ -19946,7 +21124,14 @@
                         "is_mentionned": false,
                         "reactions": [],
                         "reaction_count": 0,
-                        "provider": "linkedin"
+                        "provider": "linkedin",
+                        "sender": {
+                          "id": "ACoAAByyyyyyyyyyyyyyyyyy",
+                          "type": "individual",
+                          "display_name": "Ada Lovelace",
+                          "profile_url": "https://www.linkedin.com/in/ada",
+                          "public_picture_url": "https://media.licdn.com/dms/image/ada"
+                        }
                       },
                       "user": {
                         "id": "ACoAAByyyyyyyyyyyyyyyyyy",
@@ -20517,6 +21702,15 @@
               "type": "string"
             },
             "description": "An opaque cursor for pagination. Pass the `cursor` from the preceding response to fetch the next page."
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all."
           }
         ],
         "responses": {
@@ -20648,6 +21842,41 @@
                           "provider": {
                             "type": "string",
                             "description": "The platform this message originates from."
+                          },
+                          "sender": {
+                            "description": "The sender's profile, when the platform returned one alongside the message. sender_id always carries the identifier; this object carries the rest of what is known about that person.",
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "description": "Identifier of the counterpart."
+                              },
+                              "type": {
+                                "type": "string",
+                                "description": "individual | organization."
+                              },
+                              "display_name": {
+                                "type": "string"
+                              },
+                              "profile_url": {
+                                "type": "string"
+                              },
+                              "public_picture_url": {
+                                "type": "string"
+                              },
+                              "public_identifier": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "description": "The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person."
+                              },
+                              "specifics": {
+                                "type": "object",
+                                "description": "Provider-enriched detail about the sender (for example connection distance, premium or verified status), when the platform returns it.",
+                                "additionalProperties": true
+                              }
+                            }
                           }
                         }
                       }
@@ -20658,6 +21887,39 @@
                         "null"
                       ],
                       "description": "Next-page cursor; follow until items is empty."
+                    },
+                    "notices": {
+                      "type": "array",
+                      "description": "Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message.",
+                      "items": {
+                        "type": "object",
+                        "description": "One thing you should know about this response.",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "enum": [
+                              "EXPANSION_LIMIT_REACHED"
+                            ],
+                            "description": "EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone."
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "One sentence explaining the condition and how to resolve it."
+                          },
+                          "field": {
+                            "type": "string",
+                            "description": "The request field the notice is about, here expand."
+                          },
+                          "value": {
+                            "type": "string",
+                            "description": "The expansion the notice is about, here public_identifier."
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
                     }
                   }
                 },
@@ -20683,7 +21945,14 @@
                           "is_mentionned": false,
                           "reactions": [],
                           "reaction_count": 0,
-                          "provider": "linkedin"
+                          "provider": "linkedin",
+                          "sender": {
+                            "id": "ACoAAByyyyyyyyyyyyyyyyyy",
+                            "type": "individual",
+                            "display_name": "Ada Lovelace",
+                            "profile_url": "https://www.linkedin.com/in/ada",
+                            "public_picture_url": "https://media.licdn.com/dms/image/ada"
+                          }
                         }
                       ],
                       "cursor": null
@@ -21388,6 +22657,15 @@
               "type": "string"
             },
             "description": "The unique identifier of the message to retrieve."
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all."
           }
         ],
         "responses": {
@@ -21507,6 +22785,74 @@
                     "provider": {
                       "type": "string",
                       "description": "The platform this message originates from."
+                    },
+                    "sender": {
+                      "description": "The sender's profile, when the platform returned one alongside the message. sender_id always carries the identifier; this object carries the rest of what is known about that person.",
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Identifier of the counterpart."
+                        },
+                        "type": {
+                          "type": "string",
+                          "description": "individual | organization."
+                        },
+                        "display_name": {
+                          "type": "string"
+                        },
+                        "profile_url": {
+                          "type": "string"
+                        },
+                        "public_picture_url": {
+                          "type": "string"
+                        },
+                        "public_identifier": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person."
+                        },
+                        "specifics": {
+                          "type": "object",
+                          "description": "Provider-enriched detail about the sender (for example connection distance, premium or verified status), when the platform returns it.",
+                          "additionalProperties": true
+                        }
+                      }
+                    },
+                    "notices": {
+                      "type": "array",
+                      "description": "Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message.",
+                      "items": {
+                        "type": "object",
+                        "description": "One thing you should know about this response.",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "enum": [
+                              "EXPANSION_LIMIT_REACHED"
+                            ],
+                            "description": "EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone."
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "One sentence explaining the condition and how to resolve it."
+                          },
+                          "field": {
+                            "type": "string",
+                            "description": "The request field the notice is about, here expand."
+                          },
+                          "value": {
+                            "type": "string",
+                            "description": "The expansion the notice is about, here public_identifier."
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
                     }
                   }
                 },
@@ -21529,7 +22875,14 @@
                       "is_mentionned": false,
                       "reactions": [],
                       "reaction_count": 0,
-                      "provider": "linkedin"
+                      "provider": "linkedin",
+                      "sender": {
+                        "id": "ACoAAByyyyyyyyyyyyyyyyyy",
+                        "type": "individual",
+                        "display_name": "Ada Lovelace",
+                        "profile_url": "https://www.linkedin.com/in/ada",
+                        "public_picture_url": "https://media.licdn.com/dms/image/ada"
+                      }
                     }
                   }
                 }
@@ -22935,6 +24288,15 @@
               "type": "string"
             },
             "description": "Opaque pagination cursor returned from a previous response; wraps a zero-based item offset."
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all."
           }
         ],
         "responses": {
@@ -23078,6 +24440,39 @@
                         "null"
                       ],
                       "description": "Opaque next-page cursor; null on the last page."
+                    },
+                    "notices": {
+                      "type": "array",
+                      "description": "Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message.",
+                      "items": {
+                        "type": "object",
+                        "description": "One thing you should know about this response.",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "enum": [
+                              "EXPANSION_LIMIT_REACHED"
+                            ],
+                            "description": "EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone."
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "One sentence explaining the condition and how to resolve it."
+                          },
+                          "field": {
+                            "type": "string",
+                            "description": "The request field the notice is about, here expand."
+                          },
+                          "value": {
+                            "type": "string",
+                            "description": "The expansion the notice is about, here public_identifier."
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
                     }
                   }
                 },
@@ -24104,6 +25499,15 @@
               "type": "string"
             },
             "description": "An opaque cursor for pagination. Pass the `cursor` from the preceding response to fetch the next page."
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all."
           }
         ],
         "responses": {
@@ -24320,6 +25724,41 @@
                               "provider": {
                                 "type": "string",
                                 "description": "The platform this message originates from."
+                              },
+                              "sender": {
+                                "description": "The sender's profile, when the platform returned one alongside the message. sender_id always carries the identifier; this object carries the rest of what is known about that person.",
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "description": "Identifier of the counterpart."
+                                  },
+                                  "type": {
+                                    "type": "string",
+                                    "description": "individual | organization."
+                                  },
+                                  "display_name": {
+                                    "type": "string"
+                                  },
+                                  "profile_url": {
+                                    "type": "string"
+                                  },
+                                  "public_picture_url": {
+                                    "type": "string"
+                                  },
+                                  "public_identifier": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ],
+                                    "description": "The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person."
+                                  },
+                                  "specifics": {
+                                    "type": "object",
+                                    "description": "Provider-enriched detail about the sender (for example connection distance, premium or verified status), when the platform returns it.",
+                                    "additionalProperties": true
+                                  }
+                                }
                               }
                             }
                           },
@@ -24343,6 +25782,13 @@
                               },
                               "public_picture_url": {
                                 "type": "string"
+                              },
+                              "public_identifier": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "description": "The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person."
                               }
                             }
                           }
@@ -24355,6 +25801,39 @@
                         "null"
                       ],
                       "description": "Next-page cursor. Follow until items is empty."
+                    },
+                    "notices": {
+                      "type": "array",
+                      "description": "Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message.",
+                      "items": {
+                        "type": "object",
+                        "description": "One thing you should know about this response.",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "enum": [
+                              "EXPANSION_LIMIT_REACHED"
+                            ],
+                            "description": "EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone."
+                          },
+                          "message": {
+                            "type": "string",
+                            "description": "One sentence explaining the condition and how to resolve it."
+                          },
+                          "field": {
+                            "type": "string",
+                            "description": "The request field the notice is about, here expand."
+                          },
+                          "value": {
+                            "type": "string",
+                            "description": "The expansion the notice is about, here public_identifier."
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "message"
+                        ]
+                      }
                     }
                   }
                 },
@@ -24401,7 +25880,14 @@
                             "is_mentionned": false,
                             "reactions": [],
                             "reaction_count": 0,
-                            "provider": "linkedin"
+                            "provider": "linkedin",
+                            "sender": {
+                              "id": "ACoAAByyyyyyyyyyyyyyyyyy",
+                              "type": "individual",
+                              "display_name": "Ada Lovelace",
+                              "profile_url": "https://www.linkedin.com/in/ada",
+                              "public_picture_url": "https://media.licdn.com/dms/image/ada"
+                            }
                           },
                           "user": {
                             "id": "ACoAADanaLee00000000000",
@@ -62561,7 +64047,7 @@
                     },
                     "quotas": {
                       "type": "array",
-                      "description": "Usage-safety recommendations for this account, one entry per tracked family (messages.daily, connection_requests.daily, profile_views.daily, inmail.daily, profile.endorse, account.per_minute). These are advisory only: Curviate never rejects a request because a daily recommendation is exceeded; only account.per_minute is a binding limit enforced with HTTP 429.",
+                      "description": "Capacity figures for this account, one entry per tracked family (messages.daily, connection_requests.daily, profile_views.daily, inmail.daily, profile.endorse, account.per_minute). These are advisory only: Curviate never rejects a request because a daily figure is exceeded; only account.per_minute is a binding limit enforced with HTTP 429. Every figure describes what the underlying platform will accept, not a safe sustained rate; pacing is the caller's responsibility.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -62575,7 +64061,7 @@
                           },
                           "total": {
                             "type": "number",
-                            "description": "Window capacity for this family."
+                            "description": "Window capacity for this family. This is a substrate capacity ceiling, not a safe sustained rate; the caller owns its own pacing."
                           },
                           "reset_time": {
                             "type": "string",
@@ -62618,22 +64104,22 @@
                       "quotas": [
                         {
                           "quota_name": "messages.daily",
-                          "remaining": 99,
-                          "total": 100,
+                          "remaining": 399,
+                          "total": 400,
                           "reset_time": "2026-06-11T00:00:00Z",
                           "recommended_throttle_hint": "none"
                         },
                         {
                           "quota_name": "connection_requests.daily",
-                          "remaining": 120,
-                          "total": 120,
+                          "remaining": 480,
+                          "total": 480,
                           "reset_time": "2026-06-11T00:00:00Z",
                           "recommended_throttle_hint": "none"
                         },
                         {
                           "quota_name": "profile_views.daily",
-                          "remaining": 100,
-                          "total": 100,
+                          "remaining": 400,
+                          "total": 400,
                           "reset_time": "2026-06-11T00:00:00Z",
                           "recommended_throttle_hint": "none"
                         },
@@ -62646,8 +64132,8 @@
                         },
                         {
                           "quota_name": "profile.endorse",
-                          "remaining": 40,
-                          "total": 40,
+                          "remaining": 160,
+                          "total": 160,
                           "reset_time": "2026-06-11T00:00:00Z",
                           "recommended_throttle_hint": "none"
                         },
@@ -66280,7 +67766,7 @@
                                     "no_longer_realtime",
                                     "not_realtime"
                                   ],
-                                  "description": "Delivery timing. Omitted (equivalent to 'realtime') on every live-pushed event. 'no_longer_realtime' means no push exists for this event; 'not_realtime' means the event is polled, not pushed, and may lag the underlying LinkedIn event."
+                                  "description": "Delivery timing. Omitted (equivalent to 'realtime') on every live-pushed event. 'no_longer_realtime' means no push exists for this event; 'not_realtime' means delivery is not guaranteed sub-second and may lag the underlying LinkedIn event, typically because it is detected by a poll rather than pushed, though a given event's own reference article may document an additional immediate path."
                                 }
                               }
                             }
@@ -66380,7 +67866,7 @@
                             {
                               "type": "account.connected",
                               "source": "account_status",
-                              "description": "The account health check reported a healthy, connected state."
+                              "description": "The account is in a healthy, connected state. Also sent when a connect reactivates an account you had previously disconnected and it comes back healthy."
                             },
                             {
                               "type": "account.synced",
@@ -66391,7 +67877,7 @@
                             {
                               "type": "account.reconnected",
                               "source": "account_status",
-                              "description": "An existing account was re-authorized in place."
+                              "description": "An existing account was re-authorized in place. Reactivating an account you had previously disconnected does not send this event; that connect reports the state the account comes back in."
                             },
                             {
                               "type": "account.reconnect_needed",
@@ -66401,7 +67887,7 @@
                             {
                               "type": "account.restricted",
                               "source": "account_status",
-                              "description": "LinkedIn restricted the account. Actions on it will fail until the restriction is lifted, so pause outreach for this account. Detected by a daily account reconciliation rather than pushed, so allow up to 24 hours; an on-demand account read reports the state immediately.",
+                              "description": "LinkedIn restricted the account. Actions on it will fail until the restriction is lifted, so pause outreach for this account. A daily account reconciliation detects the restriction within about 24 hours; a connect that observes the restriction can also deliver this event immediately. An on-demand account read always reports the current state.",
                               "availability": "not_realtime"
                             },
                             {
@@ -66413,7 +67899,7 @@
                             {
                               "type": "account.disconnected",
                               "source": "account_status",
-                              "description": "The account was removed from the platform (terminal)."
+                              "description": "The account is in the disconnected state and cannot act until it is reconnected. This includes an explicit disconnect or deletion, and a connect or reconnect attempt that observes an already-disconnected account without removing it. Where the account was actually removed, its id will 404 on a later read."
                             },
                             {
                               "type": "account.error",
@@ -66555,6 +68041,187 @@
           }
         },
         "description": "Returns the complete canonical event catalogue (28 events) grouped by source: messaging (8), user (2), account_status (15), plus 3 tier-gated events. No quota consumed."
+      }
+    },
+    "/v1/webhooks/{id}/test": {
+      "post": {
+        "operationId": "postV1WebhooksIdTest",
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Send a test delivery",
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Webhook id (wh_-prefixed ULID)."
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "The test delivery is queued. It travels the same path as a real delivery: the same signature, the same custom headers, the same delivery record, the same retry schedule. Wait for it to arrive at your endpoint, verify the signature, and match data.test_id to the test_id below.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "object": {
+                      "type": "string",
+                      "enum": [
+                        "webhook_test"
+                      ],
+                      "description": "Response type discriminator."
+                    },
+                    "webhook_id": {
+                      "type": "string",
+                      "description": "The webhook the test delivery was queued for."
+                    },
+                    "test_id": {
+                      "type": "string",
+                      "description": "Correlation id for this test delivery, echoed as data.test_id in the delivered payload. Match it to confirm that the delivery your receiver observed is the one you asked for."
+                    },
+                    "event": {
+                      "type": "string",
+                      "enum": [
+                        "webhook.test"
+                      ],
+                      "description": "Always webhook.test. This name is not part of the event catalogue and can never be subscribed to, so it can never be confused with a real event."
+                    },
+                    "queued_at": {
+                      "type": "string",
+                      "description": "When the test delivery was queued (ISO 8601)."
+                    }
+                  }
+                },
+                "examples": {
+                  "queued": {
+                    "summary": "Test delivery queued",
+                    "value": {
+                      "object": "webhook_test",
+                      "webhook_id": "wh_01J8Z3K9P0Q1R2S3T4V5W6X7Y8",
+                      "test_id": "wht_01J8Z3K9P0Q1R2S3T4V5W6X7Y8",
+                      "event": "webhook.test",
+                      "queued_at": "2026-06-17T10:00:00Z"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "RateLimit-Policy": {
+                "$ref": "#/components/headers/RateLimit-Policy"
+              },
+              "RateLimit": {
+                "$ref": "#/components/headers/RateLimit"
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed webhook id, or the webhook is disabled or targets no account, in which case nothing could be delivered.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "400 error",
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "message": "A parameter failed validation.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "401 error",
+                    "value": {
+                      "code": "UNAUTHORIZED",
+                      "message": "Missing or invalid API key.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Webhook not found or not owned by this tenant.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "404 error",
+                    "value": {
+                      "code": "RESOURCE_NOT_FOUND",
+                      "message": "The referenced resource does not exist for this tenant.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many test deliveries, either for this webhook or across your tenant's webhooks. Wait for the window to reset; the Retry-After header gives the number of seconds.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "429 error",
+                    "value": {
+                      "code": "RATE_LIMIT_ACCOUNT",
+                      "message": "The per-account request rate limit was exceeded; retry after the delay in retry_hint. Per-workspace breaches carry RATE_LIMIT_TENANT; ingress-wide breaches (pre-auth, no per-client key) and upstream saturation both carry PLATFORM_RATE_LIMIT.",
+                      "user_fixable": false,
+                      "retry_likely_to_succeed": true
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "RateLimit-Policy": {
+                "$ref": "#/components/headers/RateLimit-Policy"
+              },
+              "RateLimit": {
+                "$ref": "#/components/headers/RateLimit"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          }
+        },
+        "description": "Queues a synthetic delivery to this webhook so you can confirm your endpoint really receives and verifies deliveries, without waiting for a real event. It travels the normal path: the same signature construction, the same custom headers, the same delivery record, the same retry schedule. The event name is always webhook.test, which is not in the event catalogue and cannot be subscribed to, so it can never be mistaken for a real event. The payload carries no LinkedIn content. Match data.test_id in what arrives against the test_id in this response."
       }
     },
     "/v1/webhooks/{id}": {

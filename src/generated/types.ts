@@ -2442,6 +2442,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/webhooks/{id}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send a test delivery
+         * @description Queues a synthetic delivery to this webhook so you can confirm your endpoint really receives and verifies deliveries, without waiting for a real event. It travels the normal path: the same signature construction, the same custom headers, the same delivery record, the same retry schedule. The event name is always webhook.test, which is not in the event catalogue and cannot be subscribed to, so it can never be mistaken for a real event. The payload carries no LinkedIn content. Match data.test_id in what arrives against the test_id in this response.
+         */
+        post: operations["postV1WebhooksIdTest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/webhooks/{id}": {
         parameters: {
             query?: never;
@@ -2523,10 +2543,10 @@ export interface components {
             /** @description Present when something about this response is true but not visible in it. On a search, an entry names a filter value we could not check before sending it, or reports that some of the people on the page were not disclosed to the connected account, so an unexpected result count is explicable rather than silent. Branch on each entry's code, never on its message. */
             notices?: {
                 /**
-                 * @description FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on however large total_count is.
+                 * @description FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on, even when more pages follow. PAGE_TRUNCATED: this page is short because the search stopped fetching upstream pages, not because the results ran out; follow cursor, and treat only a null cursor as the end.
                  * @enum {string}
                  */
-                code: "FILTER_VALUE_UNRESOLVED" | "FILTER_VALUE_UNCHECKED" | "SOME_RESULTS_HIDDEN" | "ALL_RESULTS_HIDDEN";
+                code: "FILTER_VALUE_UNRESOLVED" | "FILTER_VALUE_UNCHECKED" | "SOME_RESULTS_HIDDEN" | "ALL_RESULTS_HIDDEN" | "PAGE_TRUNCATED";
                 /** @description One sentence explaining the condition and how to resolve it. */
                 message: string;
                 /** @description The request field the notice is about, dotted for nested filters. */
@@ -2669,38 +2689,397 @@ export interface operations {
                             } & {
                                 [key: string]: unknown;
                             })[];
-                            /** @description Work experience entries. Present only when requested via linkedin_sections. */
-                            experience?: {
+                            /** @description Work experience entries, most recent first. Present only when linkedin_experience is requested via linkedin_sections. An entry with no ended_on is the member's current role. */
+                            experience?: ({
+                                /** @description Identifier of this work-experience entry. Not a company identifier. */
+                                id?: string;
+                                /** @description The employer. An object, not a name string. */
+                                company?: {
+                                    /** @description The organization's platform identifier, when known. */
+                                    id?: string | null;
+                                    /** @description The organization's name. */
+                                    name?: string;
+                                    /** @description The organization's public URL slug, when known. */
+                                    public_identifier?: string;
+                                    /** @description The organization's logo URL. */
+                                    picture_url?: string;
+                                    /** @description Full LinkedIn URL for the organization. */
+                                    profile_url?: string;
+                                    /** @description The organization's industry labels. */
+                                    industries?: string[];
+                                } & {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Job title held. This is the title field; there is no 'position' or 'title' key. */
+                                job_title?: string;
+                                /** @description Date the role started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value uses day 01, so read the month and year and ignore the day. */
+                                started_on?: string;
+                                /** @description Date the role ended. Absent while the role is ongoing, so an absent value means current, not unknown. Formatted MM/DD/YYYY, month first, and the day is a derived offset rather than a real date: observed values are the first of the end month plus 29 days, which stays inside the end month for a 30 or 31 day month but pushes a February end into the following March. Subtract 29 days before reading the month and year, otherwise a February end reads as March and overstates the tenure by a month. */
+                                ended_on?: string;
+                                /** @description Where the role was based, as written on the profile. */
+                                location?: string;
+                                /** @description The member's own description of the role. Passes through verbatim, never stored. */
+                                description?: string;
+                                /** @description Employment arrangement, e.g. PERMANENT, PERMANENT_PART_TIME, CONTRACT, CONTRACT_PART_TIME, FREELANCE, SELF_EMPLOYED, INTERNSHIP, APPRENTICESHIP, TEMPORARY, VOLUNTEERING. Not present on every entry. */
+                                employment_type?: string;
+                                /** @description Working arrangement: ON_SITE, HYBRID, or REMOTE. Not present on every entry. */
+                                workplace_type?: string;
+                                /** @description Skills the member associated with this role. */
+                                skills?: string[];
+                                /** @description A short summary line of the associated skills. */
+                                skills_preview?: string;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
-                            /** @description Education entries. Present only when requested via linkedin_sections. */
-                            education?: {
+                            })[];
+                            /** @description Education entries. Present only when linkedin_education is requested via linkedin_sections. */
+                            education?: ({
+                                /** @description Identifier of this education entry. */
+                                id?: string;
+                                /** @description The institution. An object, not a name string. */
+                                school?: {
+                                    /** @description The organization's platform identifier, when known. */
+                                    id?: string | null;
+                                    /** @description The organization's name. */
+                                    name?: string;
+                                    /** @description The organization's public URL slug, when known. */
+                                    public_identifier?: string;
+                                    /** @description The organization's logo URL. */
+                                    picture_url?: string;
+                                    /** @description Full LinkedIn URL for the organization. */
+                                    profile_url?: string;
+                                    /** @description The organization's industry labels. */
+                                    industries?: string[];
+                                } & {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Name of the degree or qualification. */
+                                degree?: string;
+                                /** @description Subjects studied. Plural and always an array, even for a single subject. */
+                                fields_of_study?: string[];
+                                /** @description Grade or academic level reached. */
+                                grade?: string;
+                                /** @description Activities carried out during the studies. */
+                                activities?: string;
+                                /** @description The member's own description of the studies. Passes through verbatim, never stored. */
+                                description?: string;
+                                /** @description Date the studies started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value uses day 01, so read the month and year and ignore the day. */
+                                started_on?: string;
+                                /** @description Date the studies ended. Absent while the entry is ongoing, so an absent value means current, not unknown. Formatted MM/DD/YYYY, month first. The platform records month and year only. The day component differs by field on this response: a work-experience end date carries a 29 day offset that can push the value into the following month, while a certification's expiry date uses day 01. Confirm against an entry whose real dates you know before deriving a month from the day here. */
+                                ended_on?: string;
+                                /** @description Skills the member associated with the studies. */
+                                skills?: string[];
+                                /** @description A short summary line of the associated skills. */
+                                skills_preview?: string;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
-                            /** @description Languages entries. Present only when requested via linkedin_sections. */
-                            languages?: {
+                            })[];
+                            /** @description Language entries. Present only when linkedin_languages is requested via linkedin_sections. */
+                            languages?: ({
+                                /** @description Name of the language. */
+                                language?: string;
+                                /** @description Stated fluency: ELEMENTARY, LIMITED_WORKING, PROFESSIONAL_WORKING, FULL_PROFESSIONAL, or NATIVE_OR_BILINGUAL. */
+                                proficiency?: string;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
-                            /** @description Certification entries. Present only when requested via linkedin_sections. */
-                            certifications?: {
+                            })[];
+                            /** @description Certification entries. Present only when linkedin_certifications is requested via linkedin_sections. */
+                            certifications?: ({
+                                /** @description Name of the certification. This is the name field; there is no 'name' key. */
+                                title?: string;
+                                /** @description The issuing body. An object, not a name string. */
+                                organization?: {
+                                    /** @description The organization's platform identifier, when known. */
+                                    id?: string | null;
+                                    /** @description The organization's name. */
+                                    name?: string;
+                                    /** @description The organization's public URL slug, when known. */
+                                    public_identifier?: string;
+                                    /** @description The organization's logo URL. */
+                                    picture_url?: string;
+                                    /** @description Full LinkedIn URL for the organization. */
+                                    profile_url?: string;
+                                    /** @description The organization's industry labels. */
+                                    industries?: string[];
+                                } & {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Date the certification was issued. Formatted MM/DD/YYYY, month first. The platform records month and year only. */
+                                issued_on?: string;
+                                /** @description Date the certification expires. Absent when it does not expire. Formatted MM/DD/YYYY, month first. The platform records month and year only. */
+                                expires_on?: string;
+                                /** @description License or credential identifier. */
+                                license?: string;
+                                /** @description Public URL for the certification. */
+                                url?: string;
+                                /** @description Skills the member associated with the certification. */
+                                skills?: string[];
+                                /** @description A short summary line of the associated skills. */
+                                skills_preview?: string;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
-                            /** @description Volunteering entries. Present only when requested via linkedin_sections. */
-                            volunteer_experience?: {
+                            })[];
+                            /** @description Volunteering entries. Present only when linkedin_volunteer_experience is requested via linkedin_sections. */
+                            volunteer_experience?: ({
+                                /** @description The organization volunteered for. An object, not a name string. */
+                                organization?: {
+                                    /** @description The organization's platform identifier, when known. */
+                                    id?: string | null;
+                                    /** @description The organization's name. */
+                                    name?: string;
+                                    /** @description The organization's public URL slug, when known. */
+                                    public_identifier?: string;
+                                    /** @description The organization's logo URL. */
+                                    picture_url?: string;
+                                    /** @description Full LinkedIn URL for the organization. */
+                                    profile_url?: string;
+                                    /** @description The organization's industry labels. */
+                                    industries?: string[];
+                                } & {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Role held while volunteering. */
+                                role?: string;
+                                /** @description The cause supported, as categorised by the platform. */
+                                cause?: string;
+                                /** @description The member's own description of the work. Passes through verbatim, never stored. */
+                                description?: string;
+                                /** @description Date the work started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value uses day 01, so read the month and year and ignore the day. */
+                                started_on?: string;
+                                /** @description Date the work ended. Absent while the entry is ongoing, so an absent value means current, not unknown. Formatted MM/DD/YYYY, month first. The platform records month and year only. The day component differs by field on this response: a work-experience end date carries a 29 day offset that can push the value into the following month, while a certification's expiry date uses day 01. Confirm against an entry whose real dates you know before deriving a month from the day here. */
+                                ended_on?: string;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
-                            /** @description Project entries. Present only when requested via linkedin_sections. */
-                            projects?: {
+                            })[];
+                            /** @description Project entries. Present only when linkedin_projects is requested via linkedin_sections. */
+                            projects?: ({
+                                /** @description Name of the project. */
+                                name?: string;
+                                /** @description The member's own description of the project. Passes through verbatim, never stored. */
+                                description?: string;
+                                /** @description Other members credited on the project. */
+                                contributors?: ({
+                                    /** @description The member's opaque identifier. */
+                                    id?: string;
+                                    /** @description Object discriminator for the embedded member. */
+                                    object?: string;
+                                    /** @description Profile type (e.g. individual). */
+                                    type?: string;
+                                    /** @description The member's display name. */
+                                    display_name?: string;
+                                    /** @description First name. */
+                                    first_name?: string;
+                                    /** @description Last name. */
+                                    last_name?: string;
+                                    /** @description LinkedIn public URL slug (e.g. 'jane-doe'). */
+                                    public_identifier?: string;
+                                    /** @description Full LinkedIn profile URL. */
+                                    profile_url?: string;
+                                    /** @description Profile picture URL. */
+                                    public_picture_url?: string;
+                                    /** @description The member's professional headline. */
+                                    description?: string;
+                                } & {
+                                    [key: string]: unknown;
+                                })[];
+                                /** @description Skills the member associated with the project. */
+                                skills?: string[];
+                                /** @description A short summary line of the associated skills. */
+                                skills_preview?: string;
+                                /** @description Date the project started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value uses day 01, so read the month and year and ignore the day. */
+                                started_on?: string;
+                                /** @description Date the project ended. Absent while the entry is ongoing, so an absent value means current, not unknown. Formatted MM/DD/YYYY, month first. The platform records month and year only. The day component differs by field on this response: a work-experience end date carries a 29 day offset that can push the value into the following month, while a certification's expiry date uses day 01. Confirm against an entry whose real dates you know before deriving a month from the day here. */
+                                ended_on?: string;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
-                            /** @description Recommendations received/given. Present only when requested via linkedin_sections. */
+                            })[];
+                            /** @description Recommendations written about and by this member. An object with two arrays, not an array. Present only when linkedin_recommendations is requested via linkedin_sections. */
                             recommendations?: {
+                                /** @description Recommendations written about this member. */
+                                received?: ({
+                                    /** @description The recommendation text. Passes through verbatim, never stored. */
+                                    text?: string;
+                                    /** @description How the two members worked together, as shown on the profile. */
+                                    caption?: string;
+                                    /** @description When the recommendation was written. */
+                                    created_on?: string;
+                                    /** @description The other member involved. May be null when the platform withholds the identity. */
+                                    user?: {
+                                        /** @description The member's opaque identifier. */
+                                        id?: string;
+                                        /** @description Object discriminator for the embedded member. */
+                                        object?: string;
+                                        /** @description Profile type (e.g. individual). */
+                                        type?: string;
+                                        /** @description The member's display name. */
+                                        display_name?: string;
+                                        /** @description First name. */
+                                        first_name?: string;
+                                        /** @description Last name. */
+                                        last_name?: string;
+                                        /** @description LinkedIn public URL slug (e.g. 'jane-doe'). */
+                                        public_identifier?: string;
+                                        /** @description Full LinkedIn profile URL. */
+                                        profile_url?: string;
+                                        /** @description Profile picture URL. */
+                                        public_picture_url?: string;
+                                        /** @description The member's professional headline. */
+                                        description?: string;
+                                    } & {
+                                        [key: string]: unknown;
+                                    };
+                                } & {
+                                    [key: string]: unknown;
+                                })[];
+                                /** @description Recommendations this member wrote for others. */
+                                given?: ({
+                                    /** @description The recommendation text. Passes through verbatim, never stored. */
+                                    text?: string;
+                                    /** @description How the two members worked together, as shown on the profile. */
+                                    caption?: string;
+                                    /** @description When the recommendation was written. */
+                                    created_on?: string;
+                                    /** @description The other member involved. May be null when the platform withholds the identity. */
+                                    user?: {
+                                        /** @description The member's opaque identifier. */
+                                        id?: string;
+                                        /** @description Object discriminator for the embedded member. */
+                                        object?: string;
+                                        /** @description Profile type (e.g. individual). */
+                                        type?: string;
+                                        /** @description The member's display name. */
+                                        display_name?: string;
+                                        /** @description First name. */
+                                        first_name?: string;
+                                        /** @description Last name. */
+                                        last_name?: string;
+                                        /** @description LinkedIn public URL slug (e.g. 'jane-doe'). */
+                                        public_identifier?: string;
+                                        /** @description Full LinkedIn profile URL. */
+                                        profile_url?: string;
+                                        /** @description Profile picture URL. */
+                                        public_picture_url?: string;
+                                        /** @description The member's professional headline. */
+                                        description?: string;
+                                    } & {
+                                        [key: string]: unknown;
+                                    };
+                                } & {
+                                    [key: string]: unknown;
+                                })[];
+                            } & {
                                 [key: string]: unknown;
                             };
-                            /** @description Interest entries. Present only when requested via linkedin_sections. */
+                            /** @description What this member follows, grouped by kind. An object, not an array. Present only when linkedin_interests is requested via linkedin_sections. */
                             interests?: {
+                                /** @description Followed LinkedIn Top Voices. */
+                                top_voices?: ({
+                                    /** @description The member's opaque identifier. */
+                                    id?: string;
+                                    /** @description Object discriminator for the embedded member. */
+                                    object?: string;
+                                    /** @description Profile type (e.g. individual). */
+                                    type?: string;
+                                    /** @description The member's display name. */
+                                    display_name?: string;
+                                    /** @description First name. */
+                                    first_name?: string;
+                                    /** @description Last name. */
+                                    last_name?: string;
+                                    /** @description LinkedIn public URL slug (e.g. 'jane-doe'). */
+                                    public_identifier?: string;
+                                    /** @description Full LinkedIn profile URL. */
+                                    profile_url?: string;
+                                    /** @description Profile picture URL. */
+                                    public_picture_url?: string;
+                                    /** @description The member's professional headline. */
+                                    description?: string;
+                                    /** @description Follow-relationship detail for this member. */
+                                    specifics?: {
+                                        /** @description Whether this member is followed. */
+                                        is_following?: boolean;
+                                        /** @description How many members follow them. */
+                                        followers_count?: number;
+                                    } & {
+                                        [key: string]: unknown;
+                                    };
+                                } & {
+                                    [key: string]: unknown;
+                                })[];
+                                /** @description Followed companies. */
+                                companies?: ({
+                                    /** @description Object discriminator for the followed company. */
+                                    object?: string;
+                                    /** @description The company's platform identifier. */
+                                    id?: string;
+                                    /** @description The company's name. */
+                                    name?: string;
+                                    /** @description Full LinkedIn URL for the company. */
+                                    profile_url?: string;
+                                    /** @description The company's logo URL. */
+                                    public_picture_url?: string;
+                                    /** @description How many members follow the company. */
+                                    followers_count?: number;
+                                    /** @description Whether this member follows the company. */
+                                    is_following?: boolean;
+                                } & {
+                                    [key: string]: unknown;
+                                })[];
+                                /** @description Followed schools. */
+                                schools?: ({
+                                    /** @description The school's platform identifier. */
+                                    id?: string;
+                                    /** @description The school's name. */
+                                    name?: string;
+                                    /** @description Object discriminator for the followed school. */
+                                    object?: string;
+                                    /** @description Full LinkedIn URL for the school. */
+                                    profile_url?: string;
+                                    /** @description The school's logo URL. */
+                                    public_picture_url?: string;
+                                    /** @description How many members follow the school. */
+                                    followers_count?: number;
+                                    /** @description Whether this member follows the school. */
+                                    is_following?: boolean;
+                                } & {
+                                    [key: string]: unknown;
+                                })[];
+                                /** @description Followed newsletters. */
+                                newsletters?: ({
+                                    /** @description The newsletter's platform identifier. */
+                                    id?: string;
+                                    /** @description The newsletter's title. */
+                                    title?: string;
+                                    /** @description The newsletter's description. Passes through verbatim, never stored. */
+                                    description?: string;
+                                    /** @description Full LinkedIn URL for the newsletter. */
+                                    url?: string;
+                                    /** @description How often the newsletter publishes. */
+                                    posting_frequency?: string;
+                                    /** @description The newsletter's cover image URL. */
+                                    public_picture_url?: string;
+                                    /** @description Whether this member subscribes to the newsletter. */
+                                    is_subscribed?: boolean;
+                                } & {
+                                    [key: string]: unknown;
+                                })[];
+                                /** @description Groups joined. */
+                                groups?: ({
+                                    /** @description The group's platform identifier. */
+                                    id?: string;
+                                    /** @description The group's name. */
+                                    name?: string;
+                                    /** @description Full LinkedIn URL for the group. */
+                                    url?: string;
+                                    /** @description The group's picture URL. */
+                                    public_picture_url?: string;
+                                    /** @description Whether this member belongs to the group. */
+                                    is_member?: boolean;
+                                } & {
+                                    [key: string]: unknown;
+                                })[];
+                            } & {
                                 [key: string]: unknown;
-                            }[];
+                            };
                             /** @description Section names that were requested but throttled by LinkedIn. */
                             throttled_sections?: string[];
                         };
@@ -4981,24 +5360,24 @@ export interface operations {
                             /** @description true if the account is verified. Present when available. */
                             is_verified?: boolean;
                             /**
-                             * @description Whether this result names someone you can act on. Always present, on both values. full: the result carries a resolvable identity, so you can read the profile and reach the person. hidden: LinkedIn did not disclose this person to the connected account, so the result carries no public_identifier and no member_id, its name is a placeholder rather than a real one, and reading it back returns 403. The cause is the connected LinkedIn account's own subscription level, which decides which profiles it is allowed to identify; it is not an error in your request. A page can be entirely hidden while total_count still reports a large number, so count the full results rather than the total, and see notices[] for a page-level summary.
+                             * @description Whether this result names someone you can act on. Always present, on both values. full: the result carries a resolvable identity, so you can read the profile and reach the person. hidden: LinkedIn did not disclose this person to the connected account, so the result carries no public_identifier and no member_id, its name is a placeholder rather than a real one, and reading it back returns 403. The cause is the connected LinkedIn account's own subscription level, which decides which profiles it is allowed to identify; it is not an error in your request. A page can be entirely hidden, so count the full results rather than the size of the page, and see notices[] for a page-level summary.
                              * @enum {string}
                              */
                             visibility: "full" | "hidden";
                         }[];
                         paging: {
-                            /** @description Total number of matching employees across all pages. */
-                            total_count: number;
+                            /** @description Total number of matching employees across all pages, or null when the platform does not report one. Count the items rather than relying on this. */
+                            total_count: number | null;
                         };
                         /** @description Opaque cursor for the next page, or null when there are no more results. */
                         cursor: string | null;
                         /** @description Present only when there is something to report about this page, for example that some of these employees were not disclosed to the connected account and cannot be read back. Absent when there is nothing to report. */
                         notices?: {
                             /**
-                             * @description FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on however large total_count is. Branch on this rather than on message.
+                             * @description FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on, even when more pages follow. PAGE_TRUNCATED: this page is short because the search stopped fetching upstream pages, not because the results ran out; follow cursor, and treat only a null cursor as the end. Branch on this rather than on message.
                              * @enum {string}
                              */
-                            code: "FILTER_VALUE_UNRESOLVED" | "FILTER_VALUE_UNCHECKED" | "SOME_RESULTS_HIDDEN" | "ALL_RESULTS_HIDDEN";
+                            code: "FILTER_VALUE_UNRESOLVED" | "FILTER_VALUE_UNCHECKED" | "SOME_RESULTS_HIDDEN" | "ALL_RESULTS_HIDDEN" | "PAGE_TRUNCATED";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, dotted for nested filters. */
@@ -5180,8 +5559,8 @@ export interface operations {
                             repost_count: number;
                         }[];
                         paging: {
-                            /** @description Total number of matching posts across all pages. */
-                            total_count: number;
+                            /** @description Total number of matching posts across all pages, or null when the platform does not report one. Count the items rather than relying on this. */
+                            total_count: number | null;
                         };
                         /** @description Opaque cursor for the next page, or null when there are no more results. */
                         cursor: string | null;
@@ -5359,8 +5738,8 @@ export interface operations {
                             };
                         }[];
                         paging: {
-                            /** @description Total number of matching job postings across all pages. */
-                            total_count: number;
+                            /** @description Total number of matching job postings across all pages, or null when the platform does not report one. Count the items rather than relying on this. */
+                            total_count: number | null;
                         };
                         /** @description Opaque cursor for the next page, or null when there are no more results. */
                         cursor: string | null;
@@ -5930,6 +6309,8 @@ export interface operations {
                 limit?: number;
                 /** @description Opaque pagination cursor from a prior response's cursor. Omit for the first page. */
                 cursor?: string;
+                /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
+                expand?: string;
             };
             header?: never;
             path: {
@@ -5982,8 +6363,10 @@ export interface operations {
                                 kind: "member";
                                 /** @description Member headline (content pass-through, never stored). */
                                 headline?: string | null;
-                                /** @description Canonical member profile URL. */
-                                profile_url: string;
+                                /** @description Canonical member profile URL, or null when the platform surfaces no public profile for this person. */
+                                profile_url: string | null;
+                                /** @description The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person. */
+                                public_identifier?: string | null;
                             }[];
                             /** @description Unread message count (0 = read). */
                             unread_count: number;
@@ -6001,6 +6384,20 @@ export interface operations {
                         }[];
                         /** @description Opaque cursor for the next page, or null at end-of-list. */
                         cursor: string | null;
+                        /** @description Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        notices?: {
+                            /**
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone.
+                             * @enum {string}
+                             */
+                            code: "EXPANSION_LIMIT_REACHED";
+                            /** @description One sentence explaining the condition and how to resolve it. */
+                            message: string;
+                            /** @description The request field the notice is about, here expand. */
+                            field?: string;
+                            /** @description The expansion the notice is about, here public_identifier. */
+                            value?: string;
+                        }[];
                     };
                 };
             };
@@ -6101,7 +6498,10 @@ export interface operations {
     };
     getV1AccountIdCompaniesIdentifierChatsChatId: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
+                expand?: string;
+            };
             header?: never;
             path: {
                 /** @description The connected LinkedIn account, which must administer the page. */
@@ -6148,8 +6548,10 @@ export interface operations {
                             kind: "member";
                             /** @description Member headline (content pass-through, never stored). */
                             headline?: string | null;
-                            /** @description Canonical member profile URL. */
-                            profile_url: string;
+                            /** @description Canonical member profile URL, or null when the platform surfaces no public profile for this person. */
+                            profile_url: string | null;
+                            /** @description The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person. */
+                            public_identifier?: string | null;
                         }[];
                         /** @description Unread message count (0 = read). */
                         unread_count: number;
@@ -6164,6 +6566,20 @@ export interface operations {
                             /** @description Message body (content pass-through, never stored). */
                             text?: string | null;
                         } | null;
+                        /** @description Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        notices?: {
+                            /**
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone.
+                             * @enum {string}
+                             */
+                            code: "EXPANSION_LIMIT_REACHED";
+                            /** @description One sentence explaining the condition and how to resolve it. */
+                            message: string;
+                            /** @description The request field the notice is about, here expand. */
+                            field?: string;
+                            /** @description The expansion the notice is about, here public_identifier. */
+                            value?: string;
+                        }[];
                     };
                 };
             };
@@ -6269,6 +6685,8 @@ export interface operations {
                 limit?: number;
                 /** @description Opaque pagination cursor from a prior response's cursor. Omit for the first page. */
                 cursor?: string;
+                /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
+                expand?: string;
             };
             header?: never;
             path: {
@@ -6313,6 +6731,8 @@ export interface operations {
                                 id: string;
                                 /** @description Sender display name (content pass-through, never stored). */
                                 name: string | null;
+                                /** @description The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person. */
+                                public_identifier?: string | null;
                             };
                             /** @description Epoch-ms delivery time; also the newest-first pagination anchor. */
                             sent_at: number;
@@ -6321,6 +6741,20 @@ export interface operations {
                         }[];
                         /** @description Opaque cursor for the next page, or null at end-of-list. */
                         cursor: string | null;
+                        /** @description Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        notices?: {
+                            /**
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone.
+                             * @enum {string}
+                             */
+                            code: "EXPANSION_LIMIT_REACHED";
+                            /** @description One sentence explaining the condition and how to resolve it. */
+                            message: string;
+                            /** @description The request field the notice is about, here expand. */
+                            field?: string;
+                            /** @description The expansion the notice is about, here public_identifier. */
+                            value?: string;
+                        }[];
                     };
                 };
             };
@@ -6599,7 +7033,10 @@ export interface operations {
     };
     getV1AccountIdCompaniesIdentifierChatsChatIdMessagesMessageId: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
+                expand?: string;
+            };
             header?: never;
             path: {
                 /** @description The connected LinkedIn account, which must administer the page. */
@@ -6638,11 +7075,27 @@ export interface operations {
                             id: string;
                             /** @description Sender display name (content pass-through, never stored). */
                             name: string | null;
+                            /** @description The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person. */
+                            public_identifier?: string | null;
                         };
                         /** @description Epoch-ms delivery time; also the newest-first pagination anchor. */
                         sent_at: number;
                         /** @description Message body (content pass-through, never stored). */
                         text?: string | null;
+                        /** @description Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        notices?: {
+                            /**
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone.
+                             * @enum {string}
+                             */
+                            code: "EXPANSION_LIMIT_REACHED";
+                            /** @description One sentence explaining the condition and how to resolve it. */
+                            message: string;
+                            /** @description The request field the notice is about, here expand. */
+                            field?: string;
+                            /** @description The expansion the notice is about, here public_identifier. */
+                            value?: string;
+                        }[];
                     };
                 };
             };
@@ -6754,6 +7207,8 @@ export interface operations {
                 limit?: number;
                 /** @description Opaque pagination cursor from a prior response's cursor. Omit for the first page. */
                 cursor?: string;
+                /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
+                expand?: string;
             };
             header?: never;
             path: {
@@ -6806,8 +7261,10 @@ export interface operations {
                                 kind: "member";
                                 /** @description Member headline (content pass-through, never stored). */
                                 headline?: string | null;
-                                /** @description Canonical member profile URL. */
-                                profile_url: string;
+                                /** @description Canonical member profile URL, or null when the platform surfaces no public profile for this person. */
+                                profile_url: string | null;
+                                /** @description The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person. */
+                                public_identifier?: string | null;
                             }[];
                             /** @description Unread message count (0 = read). */
                             unread_count: number;
@@ -6830,6 +7287,20 @@ export interface operations {
                          * @enum {boolean}
                          */
                         filter_effective?: true;
+                        /** @description Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        notices?: {
+                            /**
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone.
+                             * @enum {string}
+                             */
+                            code: "EXPANSION_LIMIT_REACHED";
+                            /** @description One sentence explaining the condition and how to resolve it. */
+                            message: string;
+                            /** @description The request field the notice is about, here expand. */
+                            field?: string;
+                            /** @description The expansion the notice is about, here public_identifier. */
+                            value?: string;
+                        }[];
                     };
                 };
             };
@@ -7675,14 +8146,14 @@ export interface operations {
                             /** @description true if the account is verified. Present when available. */
                             is_verified?: boolean;
                             /**
-                             * @description Whether this result names someone you can act on. Always present, on both values. full: the result carries a resolvable identity, so you can read the profile and reach the person. hidden: LinkedIn did not disclose this person to the connected account, so the result carries no public_identifier and no member_id, its name is a placeholder rather than a real one, and reading it back returns 403. The cause is the connected LinkedIn account's own subscription level, which decides which profiles it is allowed to identify; it is not an error in your request. A page can be entirely hidden while total_count still reports a large number, so count the full results rather than the total, and see notices[] for a page-level summary.
+                             * @description Whether this result names someone you can act on. Always present, on both values. full: the result carries a resolvable identity, so you can read the profile and reach the person. hidden: LinkedIn did not disclose this person to the connected account, so the result carries no public_identifier and no member_id, its name is a placeholder rather than a real one, and reading it back returns 403. The cause is the connected LinkedIn account's own subscription level, which decides which profiles it is allowed to identify; it is not an error in your request. A page can be entirely hidden, so count the full results rather than the size of the page, and see notices[] for a page-level summary.
                              * @enum {string}
                              */
                             visibility: "full" | "hidden";
                         }[];
                         /** @description Paging metadata. */
                         paging: {
-                            /** @description Total matching result count. Large counts (people/companies/from-url) are a >=1000 ceiling, not an exact total. */
+                            /** @description Always null on people search. LinkedIn does not report how many people match, so there is no total to page toward; walk the pages with cursor until it comes back null. A short or empty page is not the end: only a null cursor is. */
                             total_count: number | null;
                         };
                         /** @description Opaque next-page cursor; null on the last page. */
@@ -7690,10 +8161,10 @@ export interface operations {
                         /** @description Present only when there is something to report about this page. Each entry names a condition that is true of the response but not visible in it, so a result set is never misleading by omission. Absent when there is nothing to report. */
                         notices?: {
                             /**
-                             * @description FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on however large total_count is. Branch on this rather than on message.
+                             * @description FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on, even when more pages follow. PAGE_TRUNCATED: this page is short because the search stopped fetching upstream pages, not because the results ran out; follow cursor, and treat only a null cursor as the end. Branch on this rather than on message.
                              * @enum {string}
                              */
-                            code: "FILTER_VALUE_UNRESOLVED" | "FILTER_VALUE_UNCHECKED" | "SOME_RESULTS_HIDDEN" | "ALL_RESULTS_HIDDEN";
+                            code: "FILTER_VALUE_UNRESOLVED" | "FILTER_VALUE_UNCHECKED" | "SOME_RESULTS_HIDDEN" | "ALL_RESULTS_HIDDEN" | "PAGE_TRUNCATED";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, dotted for nested filters. */
@@ -7880,10 +8351,10 @@ export interface operations {
                         /** @description Present only when there is something to report about this page. Each entry names a condition that is true of the response but not visible in it, so a result set is never misleading by omission. Absent when there is nothing to report. */
                         notices?: {
                             /**
-                             * @description FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on however large total_count is. Branch on this rather than on message.
+                             * @description FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on, even when more pages follow. PAGE_TRUNCATED: this page is short because the search stopped fetching upstream pages, not because the results ran out; follow cursor, and treat only a null cursor as the end. Branch on this rather than on message.
                              * @enum {string}
                              */
-                            code: "FILTER_VALUE_UNRESOLVED" | "FILTER_VALUE_UNCHECKED" | "SOME_RESULTS_HIDDEN" | "ALL_RESULTS_HIDDEN";
+                            code: "FILTER_VALUE_UNRESOLVED" | "FILTER_VALUE_UNCHECKED" | "SOME_RESULTS_HIDDEN" | "ALL_RESULTS_HIDDEN" | "PAGE_TRUNCATED";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, dotted for nested filters. */
@@ -8116,10 +8587,10 @@ export interface operations {
                         /** @description Present only when there is something to report about this page. Each entry names a condition that is true of the response but not visible in it, so a result set is never misleading by omission. Absent when there is nothing to report. */
                         notices?: {
                             /**
-                             * @description FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on however large total_count is. Branch on this rather than on message.
+                             * @description FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on, even when more pages follow. PAGE_TRUNCATED: this page is short because the search stopped fetching upstream pages, not because the results ran out; follow cursor, and treat only a null cursor as the end. Branch on this rather than on message.
                              * @enum {string}
                              */
-                            code: "FILTER_VALUE_UNRESOLVED" | "FILTER_VALUE_UNCHECKED" | "SOME_RESULTS_HIDDEN" | "ALL_RESULTS_HIDDEN";
+                            code: "FILTER_VALUE_UNRESOLVED" | "FILTER_VALUE_UNCHECKED" | "SOME_RESULTS_HIDDEN" | "ALL_RESULTS_HIDDEN" | "PAGE_TRUNCATED";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, dotted for nested filters. */
@@ -8371,10 +8842,10 @@ export interface operations {
                         /** @description Present only when there is something to report about this page. Each entry names a condition that is true of the response but not visible in it, so a result set is never misleading by omission. Absent when there is nothing to report. */
                         notices?: {
                             /**
-                             * @description FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on however large total_count is. Branch on this rather than on message.
+                             * @description FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on, even when more pages follow. PAGE_TRUNCATED: this page is short because the search stopped fetching upstream pages, not because the results ran out; follow cursor, and treat only a null cursor as the end. Branch on this rather than on message.
                              * @enum {string}
                              */
-                            code: "FILTER_VALUE_UNRESOLVED" | "FILTER_VALUE_UNCHECKED" | "SOME_RESULTS_HIDDEN" | "ALL_RESULTS_HIDDEN";
+                            code: "FILTER_VALUE_UNRESOLVED" | "FILTER_VALUE_UNCHECKED" | "SOME_RESULTS_HIDDEN" | "ALL_RESULTS_HIDDEN" | "PAGE_TRUNCATED";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, dotted for nested filters. */
@@ -8543,7 +9014,7 @@ export interface operations {
                             /** @description true if the account is verified. Present when available. */
                             is_verified?: boolean;
                             /**
-                             * @description Whether this result names someone you can act on. Always present, on both values. full: the result carries a resolvable identity, so you can read the profile and reach the person. hidden: LinkedIn did not disclose this person to the connected account, so the result carries no public_identifier and no member_id, its name is a placeholder rather than a real one, and reading it back returns 403. The cause is the connected LinkedIn account's own subscription level, which decides which profiles it is allowed to identify; it is not an error in your request. A page can be entirely hidden while total_count still reports a large number, so count the full results rather than the total, and see notices[] for a page-level summary.
+                             * @description Whether this result names someone you can act on. Always present, on both values. full: the result carries a resolvable identity, so you can read the profile and reach the person. hidden: LinkedIn did not disclose this person to the connected account, so the result carries no public_identifier and no member_id, its name is a placeholder rather than a real one, and reading it back returns 403. The cause is the connected LinkedIn account's own subscription level, which decides which profiles it is allowed to identify; it is not an error in your request. A page can be entirely hidden, so count the full results rather than the size of the page, and see notices[] for a page-level summary.
                              * @enum {string}
                              */
                             visibility: "full" | "hidden";
@@ -8657,7 +9128,7 @@ export interface operations {
                         })[];
                         /** @description Paging metadata. */
                         paging: {
-                            /** @description Total matching result count. Large counts are a >=1000 ceiling, not an exact total. */
+                            /** @description Total matching result count. Always null when the pasted URL is a people search, because LinkedIn does not report a total for those; page with cursor instead. For company, post, and job URLs a large count is a >=1000 ceiling, not an exact total. */
                             total_count: number | null;
                         };
                         /** @description Opaque next-page cursor; null on the last page. */
@@ -8975,7 +9446,7 @@ export interface operations {
                         }[];
                         /** @description Paging metadata. */
                         paging: {
-                            /** @description Total matching result count. */
+                            /** @description Always null. Service-provider search runs on the people index, and LinkedIn does not report how many people match, so walk the pages with cursor until it comes back null. */
                             total_count: number | null;
                         };
                         /** @description Opaque next-page cursor; null on the last page. */
@@ -8983,10 +9454,10 @@ export interface operations {
                         /** @description Present only when there is something to report about this page. Each entry names a condition that is true of the response but not visible in it, so a result set is never misleading by omission. Absent when there is nothing to report. */
                         notices?: {
                             /**
-                             * @description FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on however large total_count is. Branch on this rather than on message.
+                             * @description FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on, even when more pages follow. PAGE_TRUNCATED: this page is short because the search stopped fetching upstream pages, not because the results ran out; follow cursor, and treat only a null cursor as the end. Branch on this rather than on message.
                              * @enum {string}
                              */
-                            code: "FILTER_VALUE_UNRESOLVED" | "FILTER_VALUE_UNCHECKED" | "SOME_RESULTS_HIDDEN" | "ALL_RESULTS_HIDDEN";
+                            code: "FILTER_VALUE_UNRESOLVED" | "FILTER_VALUE_UNCHECKED" | "SOME_RESULTS_HIDDEN" | "ALL_RESULTS_HIDDEN" | "PAGE_TRUNCATED";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, dotted for nested filters. */
@@ -9240,6 +9711,8 @@ export interface operations {
                 limit?: number;
                 /** @description An opaque cursor for pagination. Pass the `cursor` from the preceding response to fetch the next page. */
                 cursor?: string;
+                /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
+                expand?: string;
             };
             header?: never;
             path: {
@@ -9352,6 +9825,22 @@ export interface operations {
                                 reaction_count?: number;
                                 /** @description The platform this message originates from. */
                                 provider?: string;
+                                /** @description The sender's profile, when the platform returned one alongside the message. sender_id always carries the identifier; this object carries the rest of what is known about that person. */
+                                sender?: {
+                                    /** @description Identifier of the counterpart. */
+                                    id?: string;
+                                    /** @description individual | organization. */
+                                    type?: string;
+                                    display_name?: string;
+                                    profile_url?: string;
+                                    public_picture_url?: string;
+                                    /** @description The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person. */
+                                    public_identifier?: string | null;
+                                    /** @description Provider-enriched detail about the sender (for example connection distance, premium or verified status), when the platform returns it. */
+                                    specifics?: {
+                                        [key: string]: unknown;
+                                    };
+                                };
                             };
                             /** @description The 1:1 counterpart's profile. */
                             user?: {
@@ -9362,10 +9851,26 @@ export interface operations {
                                 display_name?: string;
                                 profile_url?: string;
                                 public_picture_url?: string;
+                                /** @description The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person. */
+                                public_identifier?: string | null;
                             };
                         }[];
                         /** @description Next-page cursor; follow until items is empty (presence is not a has-more guarantee). */
                         cursor?: string | null;
+                        /** @description Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        notices?: {
+                            /**
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone.
+                             * @enum {string}
+                             */
+                            code: "EXPANSION_LIMIT_REACHED";
+                            /** @description One sentence explaining the condition and how to resolve it. */
+                            message: string;
+                            /** @description The request field the notice is about, here expand. */
+                            field?: string;
+                            /** @description The expansion the notice is about, here public_identifier. */
+                            value?: string;
+                        }[];
                     };
                 };
             };
@@ -9625,7 +10130,10 @@ export interface operations {
     };
     getV1AccountIdChatsChatId: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
+                expand?: string;
+            };
             header?: never;
             path: {
                 /** @description The account ID (`acc_...`) that owns the chat. */
@@ -9733,6 +10241,22 @@ export interface operations {
                             reaction_count?: number;
                             /** @description The platform this message originates from. */
                             provider?: string;
+                            /** @description The sender's profile, when the platform returned one alongside the message. sender_id always carries the identifier; this object carries the rest of what is known about that person. */
+                            sender?: {
+                                /** @description Identifier of the counterpart. */
+                                id?: string;
+                                /** @description individual | organization. */
+                                type?: string;
+                                display_name?: string;
+                                profile_url?: string;
+                                public_picture_url?: string;
+                                /** @description The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person. */
+                                public_identifier?: string | null;
+                                /** @description Provider-enriched detail about the sender (for example connection distance, premium or verified status), when the platform returns it. */
+                                specifics?: {
+                                    [key: string]: unknown;
+                                };
+                            };
                         };
                         /** @description The 1:1 counterpart's profile. */
                         user?: {
@@ -9743,7 +10267,23 @@ export interface operations {
                             display_name?: string;
                             profile_url?: string;
                             public_picture_url?: string;
+                            /** @description The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person. */
+                            public_identifier?: string | null;
                         };
+                        /** @description Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        notices?: {
+                            /**
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone.
+                             * @enum {string}
+                             */
+                            code: "EXPANSION_LIMIT_REACHED";
+                            /** @description One sentence explaining the condition and how to resolve it. */
+                            message: string;
+                            /** @description The request field the notice is about, here expand. */
+                            field?: string;
+                            /** @description The expansion the notice is about, here public_identifier. */
+                            value?: string;
+                        }[];
                     };
                 };
             };
@@ -9947,6 +10487,8 @@ export interface operations {
                 limit?: number;
                 /** @description An opaque cursor for pagination. Pass the `cursor` from the preceding response to fetch the next page. */
                 cursor?: string;
+                /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
+                expand?: string;
             };
             header?: never;
             path: {
@@ -10022,9 +10564,39 @@ export interface operations {
                             reaction_count?: number;
                             /** @description The platform this message originates from. */
                             provider?: string;
+                            /** @description The sender's profile, when the platform returned one alongside the message. sender_id always carries the identifier; this object carries the rest of what is known about that person. */
+                            sender?: {
+                                /** @description Identifier of the counterpart. */
+                                id?: string;
+                                /** @description individual | organization. */
+                                type?: string;
+                                display_name?: string;
+                                profile_url?: string;
+                                public_picture_url?: string;
+                                /** @description The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person. */
+                                public_identifier?: string | null;
+                                /** @description Provider-enriched detail about the sender (for example connection distance, premium or verified status), when the platform returns it. */
+                                specifics?: {
+                                    [key: string]: unknown;
+                                };
+                            };
                         }[];
                         /** @description Next-page cursor; follow until items is empty. */
                         cursor?: string | null;
+                        /** @description Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        notices?: {
+                            /**
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone.
+                             * @enum {string}
+                             */
+                            code: "EXPANSION_LIMIT_REACHED";
+                            /** @description One sentence explaining the condition and how to resolve it. */
+                            message: string;
+                            /** @description The request field the notice is about, here expand. */
+                            field?: string;
+                            /** @description The expansion the notice is about, here public_identifier. */
+                            value?: string;
+                        }[];
                     };
                 };
             };
@@ -10274,7 +10846,10 @@ export interface operations {
     };
     getV1AccountIdChatsChatIdMessagesMessageId: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
+                expand?: string;
+            };
             header?: never;
             path: {
                 /** @description The account ID (`acc_...`) that owns the chat. */
@@ -10345,6 +10920,36 @@ export interface operations {
                         reaction_count?: number;
                         /** @description The platform this message originates from. */
                         provider?: string;
+                        /** @description The sender's profile, when the platform returned one alongside the message. sender_id always carries the identifier; this object carries the rest of what is known about that person. */
+                        sender?: {
+                            /** @description Identifier of the counterpart. */
+                            id?: string;
+                            /** @description individual | organization. */
+                            type?: string;
+                            display_name?: string;
+                            profile_url?: string;
+                            public_picture_url?: string;
+                            /** @description The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person. */
+                            public_identifier?: string | null;
+                            /** @description Provider-enriched detail about the sender (for example connection distance, premium or verified status), when the platform returns it. */
+                            specifics?: {
+                                [key: string]: unknown;
+                            };
+                        };
+                        /** @description Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        notices?: {
+                            /**
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone.
+                             * @enum {string}
+                             */
+                            code: "EXPANSION_LIMIT_REACHED";
+                            /** @description One sentence explaining the condition and how to resolve it. */
+                            message: string;
+                            /** @description The request field the notice is about, here expand. */
+                            field?: string;
+                            /** @description The expansion the notice is about, here public_identifier. */
+                            value?: string;
+                        }[];
                     };
                 };
             };
@@ -10892,6 +11497,8 @@ export interface operations {
                 limit?: number;
                 /** @description Opaque pagination cursor returned from a previous response; wraps a zero-based item offset. */
                 cursor?: string;
+                /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
+                expand?: string;
             };
             header?: never;
             path: {
@@ -10973,6 +11580,20 @@ export interface operations {
                         }[];
                         /** @description Opaque next-page cursor; null on the last page. */
                         cursor?: string | null;
+                        /** @description Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        notices?: {
+                            /**
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone.
+                             * @enum {string}
+                             */
+                            code: "EXPANSION_LIMIT_REACHED";
+                            /** @description One sentence explaining the condition and how to resolve it. */
+                            message: string;
+                            /** @description The request field the notice is about, here expand. */
+                            field?: string;
+                            /** @description The expansion the notice is about, here public_identifier. */
+                            value?: string;
+                        }[];
                     };
                 };
             };
@@ -11336,6 +11957,8 @@ export interface operations {
                 limit?: number;
                 /** @description An opaque cursor for pagination. Pass the `cursor` from the preceding response to fetch the next page. */
                 cursor?: string;
+                /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
+                expand?: string;
             };
             header?: never;
             path: {
@@ -11450,6 +12073,22 @@ export interface operations {
                                 reaction_count?: number;
                                 /** @description The platform this message originates from. */
                                 provider?: string;
+                                /** @description The sender's profile, when the platform returned one alongside the message. sender_id always carries the identifier; this object carries the rest of what is known about that person. */
+                                sender?: {
+                                    /** @description Identifier of the counterpart. */
+                                    id?: string;
+                                    /** @description individual | organization. */
+                                    type?: string;
+                                    display_name?: string;
+                                    profile_url?: string;
+                                    public_picture_url?: string;
+                                    /** @description The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person. */
+                                    public_identifier?: string | null;
+                                    /** @description Provider-enriched detail about the sender (for example connection distance, premium or verified status), when the platform returns it. */
+                                    specifics?: {
+                                        [key: string]: unknown;
+                                    };
+                                };
                             };
                             /** @description The 1:1 counterpart's profile. */
                             user?: {
@@ -11460,10 +12099,26 @@ export interface operations {
                                 display_name?: string;
                                 profile_url?: string;
                                 public_picture_url?: string;
+                                /** @description The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person. */
+                                public_identifier?: string | null;
                             };
                         }[];
                         /** @description Next-page cursor. Follow until items is empty. */
                         cursor?: string | null;
+                        /** @description Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        notices?: {
+                            /**
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone.
+                             * @enum {string}
+                             */
+                            code: "EXPANSION_LIMIT_REACHED";
+                            /** @description One sentence explaining the condition and how to resolve it. */
+                            message: string;
+                            /** @description The request field the notice is about, here expand. */
+                            field?: string;
+                            /** @description The expansion the notice is about, here public_identifier. */
+                            value?: string;
+                        }[];
                     };
                 };
             };
@@ -25368,13 +26023,13 @@ export interface operations {
                         requested_products?: ("classic" | "company" | "sales_navigator" | "recruiter")[] | null;
                         /** @description ISO-8601 UTC creation timestamp of the underlying LinkedIn account, distinct from connected_at. Null until the first background enrichment lands. */
                         substrate_created_at?: string | null;
-                        /** @description Usage-safety recommendations for this account, one entry per tracked family (messages.daily, connection_requests.daily, profile_views.daily, inmail.daily, profile.endorse, account.per_minute). These are advisory only: Curviate never rejects a request because a daily recommendation is exceeded; only account.per_minute is a binding limit enforced with HTTP 429. */
+                        /** @description Capacity figures for this account, one entry per tracked family (messages.daily, connection_requests.daily, profile_views.daily, inmail.daily, profile.endorse, account.per_minute). These are advisory only: Curviate never rejects a request because a daily figure is exceeded; only account.per_minute is a binding limit enforced with HTTP 429. Every figure describes what the underlying platform will accept, not a safe sustained rate; pacing is the caller's responsibility. */
                         quotas?: {
                             /** @description Quota family (e.g. messages.daily, account.per_minute). */
                             quota_name?: string;
                             /** @description Remaining units in the current window. */
                             remaining?: number;
-                            /** @description Window capacity for this family. */
+                            /** @description Window capacity for this family. This is a substrate capacity ceiling, not a safe sustained rate; the caller owns its own pacing. */
                             total?: number;
                             /** @description ISO-8601 UTC time the current window resets. */
                             reset_time?: string;
@@ -26793,7 +27448,7 @@ export interface operations {
                                  */
                                 tier?: "recruiter" | "sales_nav";
                                 /**
-                                 * @description Delivery timing. Omitted (equivalent to 'realtime') on every live-pushed event. 'no_longer_realtime' means no push exists for this event; 'not_realtime' means the event is polled, not pushed, and may lag the underlying LinkedIn event.
+                                 * @description Delivery timing. Omitted (equivalent to 'realtime') on every live-pushed event. 'no_longer_realtime' means no push exists for this event; 'not_realtime' means delivery is not guaranteed sub-second and may lag the underlying LinkedIn event, typically because it is detected by a poll rather than pushed, though a given event's own reference article may document an additional immediate path.
                                  * @enum {string}
                                  */
                                 availability?: "realtime" | "no_longer_realtime" | "not_realtime";
@@ -26812,6 +27467,87 @@ export interface operations {
                 };
             };
             /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1WebhooksIdTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Webhook id (wh_-prefixed ULID). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The test delivery is queued. It travels the same path as a real delivery: the same signature, the same custom headers, the same delivery record, the same retry schedule. Wait for it to arrive at your endpoint, verify the signature, and match data.test_id to the test_id below. */
+            202: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object?: "webhook_test";
+                        /** @description The webhook the test delivery was queued for. */
+                        webhook_id?: string;
+                        /** @description Correlation id for this test delivery, echoed as data.test_id in the delivered payload. Match it to confirm that the delivery your receiver observed is the one you asked for. */
+                        test_id?: string;
+                        /**
+                         * @description Always webhook.test. This name is not part of the event catalogue and can never be subscribed to, so it can never be confused with a real event.
+                         * @enum {string}
+                         */
+                        event?: "webhook.test";
+                        /** @description When the test delivery was queued (ISO 8601). */
+                        queued_at?: string;
+                    };
+                };
+            };
+            /** @description Malformed webhook id, or the webhook is disabled or targets no account, in which case nothing could be delivered. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Webhook not found or not owned by this tenant. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Too many test deliveries, either for this webhook or across your tenant's webhooks. Wait for the window to reset; the Retry-After header gives the number of seconds. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];

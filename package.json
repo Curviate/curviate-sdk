@@ -1,6 +1,6 @@
 {
   "name": "@curviate/sdk",
-  "version": "0.20.2",
+  "version": "0.21.0",
   "private": false,
   "description": "TypeScript SDK for the Curviate API.",
   "license": "MIT",
