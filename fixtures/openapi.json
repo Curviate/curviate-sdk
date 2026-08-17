@@ -720,10 +720,12 @@
                               },
                               "started_on": {
                                 "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
                                 "description": "Date the role started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value uses day 01, so read the month and year and ignore the day."
                               },
                               "ended_on": {
                                 "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
                                 "description": "Date the role ended. Absent while the role is ongoing, so an absent value means current, not unknown. Formatted MM/DD/YYYY, month first, and the day is a derived offset rather than a real date: observed values are the first of the end month plus 29 days, which stays inside the end month for a 30 or 31 day month but pushes a February end into the following March. Subtract 29 days before reading the month and year, otherwise a February end reads as March and overstates the tenure by a month."
                               },
                               "location": {
@@ -829,10 +831,12 @@
                               },
                               "started_on": {
                                 "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
                                 "description": "Date the studies started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value uses day 01, so read the month and year and ignore the day."
                               },
                               "ended_on": {
                                 "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
                                 "description": "Date the studies ended. Absent while the entry is ongoing, so an absent value means current, not unknown. Formatted MM/DD/YYYY, month first. The platform records month and year only. The day component differs by field on this response: a work-experience end date carries a 29 day offset that can push the value into the following month, while a certification's expiry date uses day 01. Confirm against an entry whose real dates you know before deriving a month from the day here."
                               },
                               "skills": {
@@ -1003,10 +1007,12 @@
                               },
                               "started_on": {
                                 "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
                                 "description": "Date the work started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value uses day 01, so read the month and year and ignore the day."
                               },
                               "ended_on": {
                                 "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
                                 "description": "Date the work ended. Absent while the entry is ongoing, so an absent value means current, not unknown. Formatted MM/DD/YYYY, month first. The platform records month and year only. The day component differs by field on this response: a work-experience end date carries a 29 day offset that can push the value into the following month, while a certification's expiry date uses day 01. Confirm against an entry whose real dates you know before deriving a month from the day here."
                               }
                             }
@@ -1090,10 +1096,12 @@
                               },
                               "started_on": {
                                 "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
                                 "description": "Date the project started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value uses day 01, so read the month and year and ignore the day."
                               },
                               "ended_on": {
                                 "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
                                 "description": "Date the project ended. Absent while the entry is ongoing, so an absent value means current, not unknown. Formatted MM/DD/YYYY, month first. The platform records month and year only. The day component differs by field on this response: a work-experience end date carries a 29 day offset that can push the value into the following month, while a certification's expiry date uses day 01. Confirm against an entry whose real dates you know before deriving a month from the day here."
                               }
                             }
@@ -11202,7 +11210,7 @@
             }
           },
           "400": {
-            "description": "A non-numeric identifier, or a malformed/empty chat_id.",
+            "description": "A non-numeric identifier, a malformed/empty chat_id, or a malformed cursor.",
             "content": {
               "application/json": {
                 "schema": {
@@ -12677,7 +12685,7 @@
             }
           },
           "400": {
-            "description": "A non-numeric identifier; zero or more than one of query/topic/unread; or an unknown topic.",
+            "description": "A non-numeric identifier; zero or more than one of query/topic/unread; an unknown topic; or a malformed cursor.",
             "content": {
               "application/json": {
                 "schema": {
@@ -15042,7 +15050,7 @@
             }
           },
           "400": {
-            "description": "Invalid request body, missing or malformed filter, or limit outside the 1-50 range. A filter value that matches no filter option is NOT rejected here: it is sent on as an id and reported in notices[] on the 200, because a value we cannot resolve by name may still be a valid id.",
+            "description": "Invalid request body, missing or malformed filter, malformed cursor, or limit outside the 1-50 range. A filter value that matches no filter option is NOT rejected here: it is sent on as an id and reported in notices[] on the 200, because a value we cannot resolve by name may still be a valid id.",
             "content": {
               "application/json": {
                 "schema": {
@@ -15669,7 +15677,7 @@
             }
           },
           "400": {
-            "description": "Invalid request body, malformed filter, or limit outside the 2-50 range (companies require limit >= 2). A filter value that matches no filter option is NOT rejected here: it is sent on as an id and reported in notices[] on the 200, because a value we cannot resolve by name may still be a valid id.",
+            "description": "Invalid request body, malformed filter, malformed cursor, or limit outside the 2-50 range (companies require limit >= 2). A filter value that matches no filter option is NOT rejected here: it is sent on as an id and reported in notices[] on the 200, because a value we cannot resolve by name may still be a valid id.",
             "content": {
               "application/json": {
                 "schema": {
@@ -16299,7 +16307,7 @@
             }
           },
           "400": {
-            "description": "Invalid request body, malformed filter or invalid content_type. A filter value that matches no filter option is NOT rejected here: it is sent on as an id and reported in notices[] on the 200, because a value we cannot resolve by name may still be a valid id.",
+            "description": "Invalid request body, malformed filter, malformed cursor, or invalid content_type. A filter value that matches no filter option is NOT rejected here: it is sent on as an id and reported in notices[] on the 200, because a value we cannot resolve by name may still be a valid id.",
             "content": {
               "application/json": {
                 "schema": {
@@ -16969,7 +16977,7 @@
             }
           },
           "400": {
-            "description": "Invalid request body, malformed filter, invalid seniority value, non-numeric date_posted, or limit outside the 1-100 range. A filter value that matches no filter option is NOT rejected here: it is sent on as an id and reported in notices[] on the 200, because a value we cannot resolve by name may still be a valid id.",
+            "description": "Invalid request body, malformed filter, malformed cursor, invalid seniority value, non-numeric date_posted, or limit outside the 1-100 range. A filter value that matches no filter option is NOT rejected here: it is sent on as an id and reported in notices[] on the 200, because a value we cannot resolve by name may still be a valid id.",
             "content": {
               "application/json": {
                 "schema": {
@@ -17975,7 +17983,7 @@
             }
           },
           "400": {
-            "description": "Missing or malformed url, or limit outside the 1-50 range.",
+            "description": "Missing or malformed url, malformed cursor, or limit outside the 1-50 range.",
             "content": {
               "application/json": {
                 "schema": {
@@ -18401,7 +18409,7 @@
             }
           },
           "400": {
-            "description": "Missing or empty account_id, or missing or empty keywords.",
+            "description": "Missing or empty account_id, missing or empty keywords, or malformed cursor.",
             "content": {
               "application/json": {
                 "schema": {
@@ -18874,7 +18882,7 @@
             }
           },
           "400": {
-            "description": "Missing or empty account_id, or no filter supplied, at least one of keywords, service_category, or location is required. A filter value that matches no filter option is NOT rejected here: it is sent on as an id and reported in notices[] on the 200, because a value we cannot resolve by name may still be a valid id.",
+            "description": "Missing or empty account_id, no filter supplied (at least one of keywords, service_category, or location is required), or malformed cursor. A filter value that matches no filter option is NOT rejected here: it is sent on as an id and reported in notices[] on the 200, because a value we cannot resolve by name may still be a valid id.",
             "content": {
               "application/json": {
                 "schema": {
@@ -19347,7 +19355,7 @@
             }
           },
           "400": {
-            "description": "Missing or empty account_id or keywords, or an unsupported type.",
+            "description": "Missing or empty account_id or keywords, an unsupported type, or malformed cursor.",
             "content": {
               "application/json": {
                 "schema": {
@@ -24526,7 +24534,7 @@
             }
           },
           "400": {
-            "description": "Missing or empty account_id, or missing or empty query.",
+            "description": "Missing or empty account_id, missing or empty query, or a malformed cursor.",
             "content": {
               "application/json": {
                 "schema": {
@@ -34150,7 +34158,7 @@
             }
           },
           "400": {
-            "description": "Missing, empty, or invalid state; or limit greater than 100.",
+            "description": "Missing, empty, or invalid state; limit greater than 100; or malformed cursor.",
             "content": {
               "application/json": {
                 "schema": {
@@ -37646,7 +37654,7 @@
             }
           },
           "400": {
-            "description": "Invalid filter body, or limit greater than 100.",
+            "description": "Invalid filter body, limit greater than 100, or malformed cursor.",
             "content": {
               "application/json": {
                 "schema": {
@@ -43139,66 +43147,545 @@
                         },
                         "skills": {
                           "type": "array",
-                          "description": "Skills entries. Present only when skills or linkedin_* was requested.",
+                          "description": "Skills entries. Present only when skills or linkedin_* was requested. Declared from the classic profile's own live-measured shape for the same underlying LinkedIn section, since this surface's own typed fields already match that shape, rather than from a Recruiter-specific capture. Confirm field-for-field against a real response before treating any inference, an absent field or one under a different name, as fact.",
                           "items": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": true,
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "The skill name."
+                              },
+                              "endorsement_count": {
+                                "type": "number",
+                                "description": "How many people have endorsed this skill."
+                              },
+                              "endorsed": {
+                                "type": "boolean",
+                                "description": "Whether the operator account has already endorsed this skill."
+                              },
+                              "insights": {
+                                "type": "array",
+                                "description": "LinkedIn-provided insight strings about the skill.",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "endorsement_id": {
+                                "type": "number",
+                                "description": "The value passed to POST /v1/{account_id}/users/{user_id}/endorse-skill to endorse this skill. Present ONLY for skills you are eligible to endorse, i.e. those of your 1st-degree connections. Omitted for users outside your network and on your own profile (the skill still lists name, endorsement_count, endorsed, and insights)."
+                              }
+                            }
                           }
                         },
                         "experience": {
                           "type": "array",
-                          "description": "Work experience entries. Present only when experience or linkedin_* was requested.",
+                          "description": "Work experience entries. Present only when experience or linkedin_* was requested. Declared from the classic profile's own live-measured shape for the same underlying LinkedIn section, since this surface's own typed fields already match that shape, rather than from a Recruiter-specific capture. Confirm field-for-field against a real response before treating any inference, an absent field or one under a different name, as fact.",
                           "items": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": true,
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "description": "Identifier of this work-experience entry. Not a company identifier."
+                              },
+                              "company": {
+                                "type": "object",
+                                "additionalProperties": true,
+                                "properties": {
+                                  "id": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ],
+                                    "description": "The organization's platform identifier, when known."
+                                  },
+                                  "name": {
+                                    "type": "string",
+                                    "description": "The organization's name."
+                                  },
+                                  "public_identifier": {
+                                    "type": "string",
+                                    "description": "The organization's public URL slug, when known."
+                                  },
+                                  "picture_url": {
+                                    "type": "string",
+                                    "description": "The organization's logo URL."
+                                  },
+                                  "profile_url": {
+                                    "type": "string",
+                                    "description": "Full LinkedIn URL for the organization."
+                                  },
+                                  "industries": {
+                                    "type": "array",
+                                    "description": "The organization's industry labels.",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "description": "The employer. An object, not a name string."
+                              },
+                              "job_title": {
+                                "type": "string",
+                                "description": "Job title held. This is the title field; there is no 'position' or 'title' key."
+                              },
+                              "started_on": {
+                                "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
+                                "description": "Date the role started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value on the classic profile's response uses day 01. Confirm against an entry whose real start date you know before assuming the day carries no information here."
+                              },
+                              "ended_on": {
+                                "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
+                                "description": "Date the role ended. On the classic profile's response, an absent value means the entry is ongoing rather than unknown. Confirm on this surface before treating an absence as current. Formatted MM/DD/YYYY, month first. The platform records month and year only. The day component differs by field on the classic profile's response: a work-experience end date carries a 29 day offset that can push the value into the following month, while a certification's expiry date uses day 01. Confirm against an entry whose real dates you know before deriving a month from the day here."
+                              },
+                              "location": {
+                                "type": "string",
+                                "description": "Where the role was based, as written on the profile."
+                              },
+                              "description": {
+                                "type": "string",
+                                "description": "The member's own description of the role. Passes through verbatim, never stored."
+                              },
+                              "employment_type": {
+                                "type": "string",
+                                "description": "Employment arrangement, e.g. PERMANENT, PERMANENT_PART_TIME, CONTRACT, CONTRACT_PART_TIME, FREELANCE, SELF_EMPLOYED, INTERNSHIP, APPRENTICESHIP, TEMPORARY, VOLUNTEERING. Not present on every entry."
+                              },
+                              "workplace_type": {
+                                "type": "string",
+                                "description": "Working arrangement: ON_SITE, HYBRID, or REMOTE. Not present on every entry."
+                              },
+                              "skills": {
+                                "type": "array",
+                                "description": "Skills the member associated with this role.",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skills_preview": {
+                                "type": "string",
+                                "description": "A short summary line of the associated skills."
+                              }
+                            }
                           }
                         },
                         "education": {
                           "type": "array",
-                          "description": "Education entries. Present only when education or linkedin_* was requested.",
+                          "description": "Education entries. Present only when education or linkedin_* was requested. Declared from the classic profile's own live-measured shape for the same underlying LinkedIn section, since this surface's own typed fields already match that shape, rather than from a Recruiter-specific capture. Confirm field-for-field against a real response before treating any inference, an absent field or one under a different name, as fact.",
                           "items": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": true,
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "description": "Identifier of this education entry."
+                              },
+                              "school": {
+                                "type": "object",
+                                "additionalProperties": true,
+                                "properties": {
+                                  "id": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ],
+                                    "description": "The organization's platform identifier, when known."
+                                  },
+                                  "name": {
+                                    "type": "string",
+                                    "description": "The organization's name."
+                                  },
+                                  "public_identifier": {
+                                    "type": "string",
+                                    "description": "The organization's public URL slug, when known."
+                                  },
+                                  "picture_url": {
+                                    "type": "string",
+                                    "description": "The organization's logo URL."
+                                  },
+                                  "profile_url": {
+                                    "type": "string",
+                                    "description": "Full LinkedIn URL for the organization."
+                                  },
+                                  "industries": {
+                                    "type": "array",
+                                    "description": "The organization's industry labels.",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "description": "The institution. An object, not a name string."
+                              },
+                              "degree": {
+                                "type": "string",
+                                "description": "Name of the degree or qualification."
+                              },
+                              "fields_of_study": {
+                                "type": "array",
+                                "description": "Subjects studied. Plural and always an array, even for a single subject.",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "grade": {
+                                "type": "string",
+                                "description": "Grade or academic level reached."
+                              },
+                              "activities": {
+                                "type": "string",
+                                "description": "Activities carried out during the studies."
+                              },
+                              "description": {
+                                "type": "string",
+                                "description": "The member's own description of the studies. Passes through verbatim, never stored."
+                              },
+                              "started_on": {
+                                "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
+                                "description": "Date the studies started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value on the classic profile's response uses day 01. Confirm against an entry whose real start date you know before assuming the day carries no information here."
+                              },
+                              "ended_on": {
+                                "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
+                                "description": "Date the studies ended. On the classic profile's response, an absent value means the entry is ongoing rather than unknown. Confirm on this surface before treating an absence as current. Formatted MM/DD/YYYY, month first. The platform records month and year only. The day component differs by field on the classic profile's response: a work-experience end date carries a 29 day offset that can push the value into the following month, while a certification's expiry date uses day 01. Confirm against an entry whose real dates you know before deriving a month from the day here."
+                              },
+                              "skills": {
+                                "type": "array",
+                                "description": "Skills the member associated with the studies.",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skills_preview": {
+                                "type": "string",
+                                "description": "A short summary line of the associated skills."
+                              }
+                            }
                           }
                         },
                         "languages": {
                           "type": "array",
-                          "description": "Languages entries. Present only when languages or linkedin_* was requested.",
+                          "description": "Languages entries. Present only when languages or linkedin_* was requested. Declared from the classic profile's own live-measured shape for the same underlying LinkedIn section, since this surface's own typed fields already match that shape, rather than from a Recruiter-specific capture. Confirm field-for-field against a real response before treating any inference, an absent field or one under a different name, as fact.",
                           "items": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": true,
+                            "properties": {
+                              "language": {
+                                "type": "string",
+                                "description": "Name of the language."
+                              },
+                              "proficiency": {
+                                "type": "string",
+                                "description": "Stated fluency: ELEMENTARY, LIMITED_WORKING, PROFESSIONAL_WORKING, FULL_PROFESSIONAL, or NATIVE_OR_BILINGUAL."
+                              }
+                            }
                           }
                         },
                         "certifications": {
                           "type": "array",
-                          "description": "Certification entries. Present only when certifications or linkedin_* was requested.",
+                          "description": "Certification entries. Present only when certifications or linkedin_* was requested. Declared from the classic profile's own live-measured shape for the same underlying LinkedIn section, since this surface's own typed fields already match that shape, rather than from a Recruiter-specific capture. Confirm field-for-field against a real response before treating any inference, an absent field or one under a different name, as fact.",
                           "items": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": true,
+                            "properties": {
+                              "title": {
+                                "type": "string",
+                                "description": "Name of the certification. This is the name field; there is no 'name' key."
+                              },
+                              "organization": {
+                                "type": "object",
+                                "additionalProperties": true,
+                                "properties": {
+                                  "id": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ],
+                                    "description": "The organization's platform identifier, when known."
+                                  },
+                                  "name": {
+                                    "type": "string",
+                                    "description": "The organization's name."
+                                  },
+                                  "public_identifier": {
+                                    "type": "string",
+                                    "description": "The organization's public URL slug, when known."
+                                  },
+                                  "picture_url": {
+                                    "type": "string",
+                                    "description": "The organization's logo URL."
+                                  },
+                                  "profile_url": {
+                                    "type": "string",
+                                    "description": "Full LinkedIn URL for the organization."
+                                  },
+                                  "industries": {
+                                    "type": "array",
+                                    "description": "The organization's industry labels.",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "description": "The issuing body. An object, not a name string."
+                              },
+                              "issued_on": {
+                                "type": "string",
+                                "description": "Date the certification was issued. Formatted MM/DD/YYYY, month first. The platform records month and year only."
+                              },
+                              "expires_on": {
+                                "type": "string",
+                                "description": "Date the certification expires. Absent when it does not expire. Formatted MM/DD/YYYY, month first. The platform records month and year only."
+                              },
+                              "license": {
+                                "type": "string",
+                                "description": "License or credential identifier."
+                              },
+                              "url": {
+                                "type": "string",
+                                "description": "Public URL for the certification."
+                              },
+                              "skills": {
+                                "type": "array",
+                                "description": "Skills the member associated with the certification.",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skills_preview": {
+                                "type": "string",
+                                "description": "A short summary line of the associated skills."
+                              }
+                            }
                           }
                         },
                         "projects": {
                           "type": "array",
-                          "description": "Project entries. Present only when projects or linkedin_* was requested.",
+                          "description": "Project entries. Present only when projects or linkedin_* was requested. Declared from the classic profile's own live-measured shape for the same underlying LinkedIn section, since this surface's own typed fields already match that shape, rather than from a Recruiter-specific capture. Confirm field-for-field against a real response before treating any inference, an absent field or one under a different name, as fact.",
                           "items": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": true,
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "Name of the project."
+                              },
+                              "description": {
+                                "type": "string",
+                                "description": "The member's own description of the project. Passes through verbatim, never stored."
+                              },
+                              "contributors": {
+                                "type": "array",
+                                "description": "Other members credited on the project.",
+                                "items": {
+                                  "type": "object",
+                                  "additionalProperties": true,
+                                  "properties": {
+                                    "id": {
+                                      "type": "string",
+                                      "description": "The member's opaque identifier."
+                                    },
+                                    "object": {
+                                      "type": "string",
+                                      "description": "Object discriminator for the embedded member."
+                                    },
+                                    "type": {
+                                      "type": "string",
+                                      "description": "Profile type (e.g. individual)."
+                                    },
+                                    "display_name": {
+                                      "type": "string",
+                                      "description": "The member's display name."
+                                    },
+                                    "first_name": {
+                                      "type": "string",
+                                      "description": "First name."
+                                    },
+                                    "last_name": {
+                                      "type": "string",
+                                      "description": "Last name."
+                                    },
+                                    "public_identifier": {
+                                      "type": "string",
+                                      "description": "LinkedIn public URL slug (e.g. 'jane-doe')."
+                                    },
+                                    "profile_url": {
+                                      "type": "string",
+                                      "description": "Full LinkedIn profile URL."
+                                    },
+                                    "public_picture_url": {
+                                      "type": "string",
+                                      "description": "Profile picture URL."
+                                    },
+                                    "description": {
+                                      "type": "string",
+                                      "description": "The member's professional headline."
+                                    }
+                                  }
+                                }
+                              },
+                              "skills": {
+                                "type": "array",
+                                "description": "Skills the member associated with the project.",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skills_preview": {
+                                "type": "string",
+                                "description": "A short summary line of the associated skills."
+                              },
+                              "started_on": {
+                                "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
+                                "description": "Date the project started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value on the classic profile's response uses day 01. Confirm against an entry whose real start date you know before assuming the day carries no information here."
+                              },
+                              "ended_on": {
+                                "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
+                                "description": "Date the project ended. On the classic profile's response, an absent value means the entry is ongoing rather than unknown. Confirm on this surface before treating an absence as current. Formatted MM/DD/YYYY, month first. The platform records month and year only. The day component differs by field on the classic profile's response: a work-experience end date carries a 29 day offset that can push the value into the following month, while a certification's expiry date uses day 01. Confirm against an entry whose real dates you know before deriving a month from the day here."
+                              }
+                            }
                           }
                         },
                         "volunteering": {
                           "type": "array",
-                          "description": "Volunteering entries. Present only when volunteering or linkedin_* was requested.",
+                          "description": "Volunteering entries. Present only when volunteering or linkedin_* was requested. Declared from the classic profile's own live-measured shape for the same underlying LinkedIn section, since this surface's own typed fields already match that shape, rather than from a Recruiter-specific capture. Confirm field-for-field against a real response before treating any inference, an absent field or one under a different name, as fact.",
                           "items": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": true,
+                            "properties": {
+                              "organization": {
+                                "type": "object",
+                                "additionalProperties": true,
+                                "properties": {
+                                  "id": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ],
+                                    "description": "The organization's platform identifier, when known."
+                                  },
+                                  "name": {
+                                    "type": "string",
+                                    "description": "The organization's name."
+                                  },
+                                  "public_identifier": {
+                                    "type": "string",
+                                    "description": "The organization's public URL slug, when known."
+                                  },
+                                  "picture_url": {
+                                    "type": "string",
+                                    "description": "The organization's logo URL."
+                                  },
+                                  "profile_url": {
+                                    "type": "string",
+                                    "description": "Full LinkedIn URL for the organization."
+                                  },
+                                  "industries": {
+                                    "type": "array",
+                                    "description": "The organization's industry labels.",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "description": "The organization volunteered for. An object, not a name string."
+                              },
+                              "role": {
+                                "type": "string",
+                                "description": "Role held while volunteering."
+                              },
+                              "cause": {
+                                "type": "string",
+                                "description": "The cause supported, as categorised by the platform."
+                              },
+                              "description": {
+                                "type": "string",
+                                "description": "The member's own description of the work. Passes through verbatim, never stored."
+                              },
+                              "started_on": {
+                                "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
+                                "description": "Date the work started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value on the classic profile's response uses day 01. Confirm against an entry whose real start date you know before assuming the day carries no information here."
+                              },
+                              "ended_on": {
+                                "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
+                                "description": "Date the work ended. On the classic profile's response, an absent value means the entry is ongoing rather than unknown. Confirm on this surface before treating an absence as current. Formatted MM/DD/YYYY, month first. The platform records month and year only. The day component differs by field on the classic profile's response: a work-experience end date carries a 29 day offset that can push the value into the following month, while a certification's expiry date uses day 01. Confirm against an entry whose real dates you know before deriving a month from the day here."
+                              }
+                            }
                           }
                         },
                         "recommendations": {
                           "type": "array",
-                          "description": "Recommendations entries. Present only when recommendations or linkedin_* was requested.",
+                          "description": "Recommendations entries. Present only when recommendations or linkedin_* was requested. Declared from the classic profile's own live-measured shape for the same underlying LinkedIn section, since this surface's own typed fields already match that shape, rather than from a Recruiter-specific capture. Confirm field-for-field against a real response before treating any inference, an absent field or one under a different name, as fact. That reuse covers the ITEM shape only, not the container: on the classic profile this same underlying section is an OBJECT ({received, given}), not an array. Confirm the shape on this surface before iterating it as an array; guard for both shapes until then.",
                           "items": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": true,
+                            "properties": {
+                              "text": {
+                                "type": "string",
+                                "description": "The recommendation text. Passes through verbatim, never stored."
+                              },
+                              "caption": {
+                                "type": "string",
+                                "description": "How the two members worked together, as shown on the profile."
+                              },
+                              "created_on": {
+                                "type": "string",
+                                "description": "When the recommendation was written."
+                              },
+                              "user": {
+                                "type": "object",
+                                "additionalProperties": true,
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "description": "The member's opaque identifier."
+                                  },
+                                  "object": {
+                                    "type": "string",
+                                    "description": "Object discriminator for the embedded member."
+                                  },
+                                  "type": {
+                                    "type": "string",
+                                    "description": "Profile type (e.g. individual)."
+                                  },
+                                  "display_name": {
+                                    "type": "string",
+                                    "description": "The member's display name."
+                                  },
+                                  "first_name": {
+                                    "type": "string",
+                                    "description": "First name."
+                                  },
+                                  "last_name": {
+                                    "type": "string",
+                                    "description": "Last name."
+                                  },
+                                  "public_identifier": {
+                                    "type": "string",
+                                    "description": "LinkedIn public URL slug (e.g. 'jane-doe')."
+                                  },
+                                  "profile_url": {
+                                    "type": "string",
+                                    "description": "Full LinkedIn profile URL."
+                                  },
+                                  "public_picture_url": {
+                                    "type": "string",
+                                    "description": "Profile picture URL."
+                                  },
+                                  "description": {
+                                    "type": "string",
+                                    "description": "The member's professional headline."
+                                  }
+                                },
+                                "description": "The other member involved. May be null when the platform withholds the identity."
+                              }
+                            }
                           }
                         },
                         "throttled_sections": {
@@ -43315,15 +43802,18 @@
                         "is_premium": true,
                         "experience": [
                           {
-                            "company": "TechCorp",
-                            "title": "Senior Software Engineer",
-                            "started_on": "2021-01",
-                            "ended_on": null
+                            "company": {
+                              "name": "TechCorp"
+                            },
+                            "job_title": "Senior Software Engineer",
+                            "started_on": "01/01/2021"
                           }
                         ],
                         "education": [
                           {
-                            "school": "TU Berlin",
+                            "school": {
+                              "name": "TU Berlin"
+                            },
                             "degree": "MSc Computer Science"
                           }
                         ],
@@ -44513,7 +45003,7 @@
             }
           },
           "400": {
-            "description": "Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error.",
+            "description": "Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -46141,7 +46631,7 @@
             }
           },
           "400": {
-            "description": "Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error.",
+            "description": "Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -46712,7 +47202,7 @@
             }
           },
           "400": {
-            "description": "Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error.",
+            "description": "Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -47043,7 +47533,7 @@
             }
           },
           "400": {
-            "description": "Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error.",
+            "description": "Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -47717,7 +48207,7 @@
             }
           },
           "400": {
-            "description": "Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error.",
+            "description": "Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -48400,7 +48890,7 @@
             }
           },
           "400": {
-            "description": "Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error.",
+            "description": "Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -49712,7 +50202,7 @@
             }
           },
           "400": {
-            "description": "Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error.",
+            "description": "Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -50267,7 +50757,7 @@
             }
           },
           "400": {
-            "description": "Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error.",
+            "description": "Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -50608,7 +51098,7 @@
             }
           },
           "400": {
-            "description": "Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error.",
+            "description": "Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -51350,7 +51840,7 @@
             }
           },
           "400": {
-            "description": "Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error.",
+            "description": "Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -51684,7 +52174,7 @@
             }
           },
           "400": {
-            "description": "Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error.",
+            "description": "Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -52533,7 +53023,7 @@
             }
           },
           "400": {
-            "description": "Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error.",
+            "description": "Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -53058,7 +53548,7 @@
             }
           },
           "400": {
-            "description": "Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error.",
+            "description": "Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -53400,7 +53890,7 @@
             }
           },
           "400": {
-            "description": "Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error.",
+            "description": "Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -54556,7 +55046,7 @@
             }
           },
           "400": {
-            "description": "Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error.",
+            "description": "Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error.",
             "content": {
               "application/json": {
                 "schema": {
@@ -57789,26 +58279,222 @@
                         },
                         "skills": {
                           "type": "array",
-                          "description": "Present when requested via with_sections.",
+                          "description": "Present when requested via with_sections. Declared from the classic profile's own live-measured shape for the same underlying LinkedIn section, rather than from a Sales Navigator-specific capture. Confirm field-for-field against a real response before treating any inference, an absent field or one under a different name, as fact.",
                           "items": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": true,
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "description": "The skill name."
+                              },
+                              "endorsement_count": {
+                                "type": "number",
+                                "description": "How many people have endorsed this skill."
+                              },
+                              "endorsed": {
+                                "type": "boolean",
+                                "description": "Whether the operator account has already endorsed this skill."
+                              },
+                              "insights": {
+                                "type": "array",
+                                "description": "LinkedIn-provided insight strings about the skill.",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "endorsement_id": {
+                                "type": "number",
+                                "description": "The value passed to POST /v1/{account_id}/users/{user_id}/endorse-skill to endorse this skill. Present ONLY for skills you are eligible to endorse, i.e. those of your 1st-degree connections. Omitted for users outside your network and on your own profile (the skill still lists name, endorsement_count, endorsed, and insights)."
+                              }
+                            }
                           }
                         },
                         "experience": {
                           "type": "array",
-                          "description": "Present when requested via with_sections.",
+                          "description": "Present when requested via with_sections. Declared from the classic profile's own live-measured shape for the same underlying LinkedIn section, rather than from a Sales Navigator-specific capture. Confirm field-for-field against a real response before treating any inference, an absent field or one under a different name, as fact.",
                           "items": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": true,
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "description": "Identifier of this work-experience entry. Not a company identifier."
+                              },
+                              "company": {
+                                "type": "object",
+                                "additionalProperties": true,
+                                "properties": {
+                                  "id": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ],
+                                    "description": "The organization's platform identifier, when known."
+                                  },
+                                  "name": {
+                                    "type": "string",
+                                    "description": "The organization's name."
+                                  },
+                                  "public_identifier": {
+                                    "type": "string",
+                                    "description": "The organization's public URL slug, when known."
+                                  },
+                                  "picture_url": {
+                                    "type": "string",
+                                    "description": "The organization's logo URL."
+                                  },
+                                  "profile_url": {
+                                    "type": "string",
+                                    "description": "Full LinkedIn URL for the organization."
+                                  },
+                                  "industries": {
+                                    "type": "array",
+                                    "description": "The organization's industry labels.",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "description": "The employer. An object, not a name string."
+                              },
+                              "job_title": {
+                                "type": "string",
+                                "description": "Job title held. This is the title field; there is no 'position' or 'title' key."
+                              },
+                              "started_on": {
+                                "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
+                                "description": "Date the role started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value on the classic profile's response uses day 01. Confirm against an entry whose real start date you know before assuming the day carries no information here."
+                              },
+                              "ended_on": {
+                                "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
+                                "description": "Date the role ended. On the classic profile's response, an absent value means the entry is ongoing rather than unknown. Confirm on this surface before treating an absence as current. Formatted MM/DD/YYYY, month first. The platform records month and year only. The day component differs by field on the classic profile's response: a work-experience end date carries a 29 day offset that can push the value into the following month, while a certification's expiry date uses day 01. Confirm against an entry whose real dates you know before deriving a month from the day here."
+                              },
+                              "location": {
+                                "type": "string",
+                                "description": "Where the role was based, as written on the profile."
+                              },
+                              "description": {
+                                "type": "string",
+                                "description": "The member's own description of the role. Passes through verbatim, never stored."
+                              },
+                              "employment_type": {
+                                "type": "string",
+                                "description": "Employment arrangement, e.g. PERMANENT, PERMANENT_PART_TIME, CONTRACT, CONTRACT_PART_TIME, FREELANCE, SELF_EMPLOYED, INTERNSHIP, APPRENTICESHIP, TEMPORARY, VOLUNTEERING. Not present on every entry."
+                              },
+                              "workplace_type": {
+                                "type": "string",
+                                "description": "Working arrangement: ON_SITE, HYBRID, or REMOTE. Not present on every entry."
+                              },
+                              "skills": {
+                                "type": "array",
+                                "description": "Skills the member associated with this role.",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skills_preview": {
+                                "type": "string",
+                                "description": "A short summary line of the associated skills."
+                              }
+                            }
                           }
                         },
                         "education": {
                           "type": "array",
-                          "description": "Present when requested via with_sections.",
+                          "description": "Present when requested via with_sections. Declared from the classic profile's own live-measured shape for the same underlying LinkedIn section, rather than from a Sales Navigator-specific capture. Confirm field-for-field against a real response before treating any inference, an absent field or one under a different name, as fact.",
                           "items": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": true,
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "description": "Identifier of this education entry."
+                              },
+                              "school": {
+                                "type": "object",
+                                "additionalProperties": true,
+                                "properties": {
+                                  "id": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ],
+                                    "description": "The organization's platform identifier, when known."
+                                  },
+                                  "name": {
+                                    "type": "string",
+                                    "description": "The organization's name."
+                                  },
+                                  "public_identifier": {
+                                    "type": "string",
+                                    "description": "The organization's public URL slug, when known."
+                                  },
+                                  "picture_url": {
+                                    "type": "string",
+                                    "description": "The organization's logo URL."
+                                  },
+                                  "profile_url": {
+                                    "type": "string",
+                                    "description": "Full LinkedIn URL for the organization."
+                                  },
+                                  "industries": {
+                                    "type": "array",
+                                    "description": "The organization's industry labels.",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "description": "The institution. An object, not a name string."
+                              },
+                              "degree": {
+                                "type": "string",
+                                "description": "Name of the degree or qualification."
+                              },
+                              "fields_of_study": {
+                                "type": "array",
+                                "description": "Subjects studied. Plural and always an array, even for a single subject.",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "grade": {
+                                "type": "string",
+                                "description": "Grade or academic level reached."
+                              },
+                              "activities": {
+                                "type": "string",
+                                "description": "Activities carried out during the studies."
+                              },
+                              "description": {
+                                "type": "string",
+                                "description": "The member's own description of the studies. Passes through verbatim, never stored."
+                              },
+                              "started_on": {
+                                "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
+                                "description": "Date the studies started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value on the classic profile's response uses day 01. Confirm against an entry whose real start date you know before assuming the day carries no information here."
+                              },
+                              "ended_on": {
+                                "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
+                                "description": "Date the studies ended. On the classic profile's response, an absent value means the entry is ongoing rather than unknown. Confirm on this surface before treating an absence as current. Formatted MM/DD/YYYY, month first. The platform records month and year only. The day component differs by field on the classic profile's response: a work-experience end date carries a 29 day offset that can push the value into the following month, while a certification's expiry date uses day 01. Confirm against an entry whose real dates you know before deriving a month from the day here."
+                              },
+                              "skills": {
+                                "type": "array",
+                                "description": "Skills the member associated with the studies.",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "skills_preview": {
+                                "type": "string",
+                                "description": "A short summary line of the associated skills."
+                              }
+                            }
                           }
                         },
                         "throttled_sections": {
@@ -57854,6 +58540,48 @@
                         "is_premium": true,
                         "is_saved_lead": true,
                         "is_crm_imported": false
+                      }
+                    }
+                  },
+                  "withSections": {
+                    "summary": "Sales Navigator-enriched profile, with sections (with_sections=linkedin_experience&with_sections=linkedin_education)",
+                    "value": {
+                      "object": "profile",
+                      "id": "ACw_sn_profile_001",
+                      "type": "individual",
+                      "display_name": "SN Profile User",
+                      "provider": "linkedin",
+                      "first_name": "SN",
+                      "last_name": "Profile User",
+                      "public_identifier": "sn-profile-001",
+                      "profile_url": "https://www.linkedin.com/in/sn-profile-001",
+                      "public_picture_url": "https://media.licdn.com/dms/image/example/profile002",
+                      "location": "Frankfurt, Germany",
+                      "specifics": {
+                        "network_distance": "SECOND_DEGREE",
+                        "is_open_profile": true,
+                        "is_premium": true,
+                        "is_saved_lead": true,
+                        "is_crm_imported": false,
+                        "experience": [
+                          {
+                            "company": {
+                              "name": "TechCorp"
+                            },
+                            "job_title": "Senior Software Engineer",
+                            "started_on": "01/01/2021"
+                          }
+                        ],
+                        "education": [
+                          {
+                            "school": {
+                              "name": "TU Berlin"
+                            },
+                            "degree": "MSc Computer Science"
+                          }
+                        ],
+                        "skills": [],
+                        "throttled_sections": []
                       }
                     }
                   }

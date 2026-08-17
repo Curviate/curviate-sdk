@@ -9,6 +9,37 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+## [0.22.0] - 2026-08-17
+
+Regeneration against the deployed, served OpenAPI document at server commit
+`7bdf0af7` (`https://api.curviate.com/.well-known/openapi.json`). Nothing was
+hand-edited.
+
+**Minor, not patch, because the section arrays gained declared item shapes.**
+No method, path, or response was added or removed, nothing became required,
+and every new field is optional on a type that still carries an open
+`[key: string]: unknown` index signature, so reading code that compiled
+against 0.21.0 continues to compile. Code that *constructs* one of these
+objects with a field whose type conflicts with the declared one (a hand-rolled
+test fixture, most likely) will now be rejected, which is the only way this
+release can break a consumer.
+
+### Changed
+
+- **Recruiter and Sales Navigator profile section arrays now declare their item
+  shape.** `skills`, `experience`, `education`, `certifications`, `languages`,
+  `projects`, `recommendations`, and `volunteering` were typed as bare
+  `{ [key: string]: unknown }[]`; each entry now carries its known fields
+  (`name`, `endorsement_count`, `company`, `title`, and so on) intersected with
+  the same open index signature. Each field's description states where the
+  shape came from: these are declared from the classic profile's live-measured
+  shape for the same underlying section, not from a Recruiter- or Sales
+  Navigator-specific capture, so confirm field-for-field against a real
+  response before treating an inferred or absent field as fact.
+- **Every paginated endpoint's 400 description now names a malformed cursor.**
+  An undecodable cursor is rejected with a 400 rather than silently serving
+  page 1. Documentation only; the response types are unchanged.
+
 ## [0.21.0] - 2026-08-13
 
 Regeneration against the deployed, served OpenAPI document at server commit

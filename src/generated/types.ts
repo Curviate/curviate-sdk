@@ -6758,7 +6758,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description A non-numeric identifier, or a malformed/empty chat_id. */
+            /** @description A non-numeric identifier, a malformed/empty chat_id, or a malformed cursor. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -7304,7 +7304,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description A non-numeric identifier; zero or more than one of query/topic/unread; or an unknown topic. */
+            /** @description A non-numeric identifier; zero or more than one of query/topic/unread; an unknown topic; or a malformed cursor. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -8175,7 +8175,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid request body, missing or malformed filter, or limit outside the 1-50 range. A filter value that matches no filter option is NOT rejected here: it is sent on as an id and reported in notices[] on the 200, because a value we cannot resolve by name may still be a valid id. */
+            /** @description Invalid request body, missing or malformed filter, malformed cursor, or limit outside the 1-50 range. A filter value that matches no filter option is NOT rejected here: it is sent on as an id and reported in notices[] on the 200, because a value we cannot resolve by name may still be a valid id. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -8365,7 +8365,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid request body, malformed filter, or limit outside the 2-50 range (companies require limit >= 2). A filter value that matches no filter option is NOT rejected here: it is sent on as an id and reported in notices[] on the 200, because a value we cannot resolve by name may still be a valid id. */
+            /** @description Invalid request body, malformed filter, malformed cursor, or limit outside the 2-50 range (companies require limit >= 2). A filter value that matches no filter option is NOT rejected here: it is sent on as an id and reported in notices[] on the 200, because a value we cannot resolve by name may still be a valid id. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -8601,7 +8601,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid request body, malformed filter or invalid content_type. A filter value that matches no filter option is NOT rejected here: it is sent on as an id and reported in notices[] on the 200, because a value we cannot resolve by name may still be a valid id. */
+            /** @description Invalid request body, malformed filter, malformed cursor, or invalid content_type. A filter value that matches no filter option is NOT rejected here: it is sent on as an id and reported in notices[] on the 200, because a value we cannot resolve by name may still be a valid id. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -8856,7 +8856,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid request body, malformed filter, invalid seniority value, non-numeric date_posted, or limit outside the 1-100 range. A filter value that matches no filter option is NOT rejected here: it is sent on as an id and reported in notices[] on the 200, because a value we cannot resolve by name may still be a valid id. */
+            /** @description Invalid request body, malformed filter, malformed cursor, invalid seniority value, non-numeric date_posted, or limit outside the 1-100 range. A filter value that matches no filter option is NOT rejected here: it is sent on as an id and reported in notices[] on the 200, because a value we cannot resolve by name may still be a valid id. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -9136,7 +9136,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Missing or malformed url, or limit outside the 1-50 range. */
+            /** @description Missing or malformed url, malformed cursor, or limit outside the 1-50 range. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -9281,7 +9281,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Missing or empty account_id, or missing or empty keywords. */
+            /** @description Missing or empty account_id, missing or empty keywords, or malformed cursor. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -9468,7 +9468,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Missing or empty account_id, or no filter supplied, at least one of keywords, service_category, or location is required. A filter value that matches no filter option is NOT rejected here: it is sent on as an id and reported in notices[] on the 200, because a value we cannot resolve by name may still be a valid id. */
+            /** @description Missing or empty account_id, no filter supplied (at least one of keywords, service_category, or location is required), or malformed cursor. A filter value that matches no filter option is NOT rejected here: it is sent on as an id and reported in notices[] on the 200, because a value we cannot resolve by name may still be a valid id. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -9608,7 +9608,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Missing or empty account_id or keywords, or an unsupported type. */
+            /** @description Missing or empty account_id or keywords, an unsupported type, or malformed cursor. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -11597,7 +11597,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Missing or empty account_id, or missing or empty query. */
+            /** @description Missing or empty account_id, missing or empty query, or a malformed cursor. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -15306,7 +15306,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Missing, empty, or invalid state; or limit greater than 100. */
+            /** @description Missing, empty, or invalid state; limit greater than 100; or malformed cursor. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -16690,7 +16690,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid filter body, or limit greater than 100. */
+            /** @description Invalid filter body, limit greater than 100, or malformed cursor. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -18788,38 +18788,260 @@ export interface operations {
                             is_hiring?: boolean;
                             /** @description Whether the member has Open to Work enabled. */
                             is_open_to_work?: boolean;
-                            /** @description Skills entries. Present only when skills or linkedin_* was requested. */
-                            skills?: {
+                            /** @description Skills entries. Present only when skills or linkedin_* was requested. Declared from the classic profile's own live-measured shape for the same underlying LinkedIn section, since this surface's own typed fields already match that shape, rather than from a Recruiter-specific capture. Confirm field-for-field against a real response before treating any inference, an absent field or one under a different name, as fact. */
+                            skills?: ({
+                                /** @description The skill name. */
+                                name?: string;
+                                /** @description How many people have endorsed this skill. */
+                                endorsement_count?: number;
+                                /** @description Whether the operator account has already endorsed this skill. */
+                                endorsed?: boolean;
+                                /** @description LinkedIn-provided insight strings about the skill. */
+                                insights?: string[];
+                                /** @description The value passed to POST /v1/{account_id}/users/{user_id}/endorse-skill to endorse this skill. Present ONLY for skills you are eligible to endorse, i.e. those of your 1st-degree connections. Omitted for users outside your network and on your own profile (the skill still lists name, endorsement_count, endorsed, and insights). */
+                                endorsement_id?: number;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
-                            /** @description Work experience entries. Present only when experience or linkedin_* was requested. */
-                            experience?: {
+                            })[];
+                            /** @description Work experience entries. Present only when experience or linkedin_* was requested. Declared from the classic profile's own live-measured shape for the same underlying LinkedIn section, since this surface's own typed fields already match that shape, rather than from a Recruiter-specific capture. Confirm field-for-field against a real response before treating any inference, an absent field or one under a different name, as fact. */
+                            experience?: ({
+                                /** @description Identifier of this work-experience entry. Not a company identifier. */
+                                id?: string;
+                                /** @description The employer. An object, not a name string. */
+                                company?: {
+                                    /** @description The organization's platform identifier, when known. */
+                                    id?: string | null;
+                                    /** @description The organization's name. */
+                                    name?: string;
+                                    /** @description The organization's public URL slug, when known. */
+                                    public_identifier?: string;
+                                    /** @description The organization's logo URL. */
+                                    picture_url?: string;
+                                    /** @description Full LinkedIn URL for the organization. */
+                                    profile_url?: string;
+                                    /** @description The organization's industry labels. */
+                                    industries?: string[];
+                                } & {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Job title held. This is the title field; there is no 'position' or 'title' key. */
+                                job_title?: string;
+                                /** @description Date the role started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value on the classic profile's response uses day 01. Confirm against an entry whose real start date you know before assuming the day carries no information here. */
+                                started_on?: string;
+                                /** @description Date the role ended. On the classic profile's response, an absent value means the entry is ongoing rather than unknown. Confirm on this surface before treating an absence as current. Formatted MM/DD/YYYY, month first. The platform records month and year only. The day component differs by field on the classic profile's response: a work-experience end date carries a 29 day offset that can push the value into the following month, while a certification's expiry date uses day 01. Confirm against an entry whose real dates you know before deriving a month from the day here. */
+                                ended_on?: string;
+                                /** @description Where the role was based, as written on the profile. */
+                                location?: string;
+                                /** @description The member's own description of the role. Passes through verbatim, never stored. */
+                                description?: string;
+                                /** @description Employment arrangement, e.g. PERMANENT, PERMANENT_PART_TIME, CONTRACT, CONTRACT_PART_TIME, FREELANCE, SELF_EMPLOYED, INTERNSHIP, APPRENTICESHIP, TEMPORARY, VOLUNTEERING. Not present on every entry. */
+                                employment_type?: string;
+                                /** @description Working arrangement: ON_SITE, HYBRID, or REMOTE. Not present on every entry. */
+                                workplace_type?: string;
+                                /** @description Skills the member associated with this role. */
+                                skills?: string[];
+                                /** @description A short summary line of the associated skills. */
+                                skills_preview?: string;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
-                            /** @description Education entries. Present only when education or linkedin_* was requested. */
-                            education?: {
+                            })[];
+                            /** @description Education entries. Present only when education or linkedin_* was requested. Declared from the classic profile's own live-measured shape for the same underlying LinkedIn section, since this surface's own typed fields already match that shape, rather than from a Recruiter-specific capture. Confirm field-for-field against a real response before treating any inference, an absent field or one under a different name, as fact. */
+                            education?: ({
+                                /** @description Identifier of this education entry. */
+                                id?: string;
+                                /** @description The institution. An object, not a name string. */
+                                school?: {
+                                    /** @description The organization's platform identifier, when known. */
+                                    id?: string | null;
+                                    /** @description The organization's name. */
+                                    name?: string;
+                                    /** @description The organization's public URL slug, when known. */
+                                    public_identifier?: string;
+                                    /** @description The organization's logo URL. */
+                                    picture_url?: string;
+                                    /** @description Full LinkedIn URL for the organization. */
+                                    profile_url?: string;
+                                    /** @description The organization's industry labels. */
+                                    industries?: string[];
+                                } & {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Name of the degree or qualification. */
+                                degree?: string;
+                                /** @description Subjects studied. Plural and always an array, even for a single subject. */
+                                fields_of_study?: string[];
+                                /** @description Grade or academic level reached. */
+                                grade?: string;
+                                /** @description Activities carried out during the studies. */
+                                activities?: string;
+                                /** @description The member's own description of the studies. Passes through verbatim, never stored. */
+                                description?: string;
+                                /** @description Date the studies started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value on the classic profile's response uses day 01. Confirm against an entry whose real start date you know before assuming the day carries no information here. */
+                                started_on?: string;
+                                /** @description Date the studies ended. On the classic profile's response, an absent value means the entry is ongoing rather than unknown. Confirm on this surface before treating an absence as current. Formatted MM/DD/YYYY, month first. The platform records month and year only. The day component differs by field on the classic profile's response: a work-experience end date carries a 29 day offset that can push the value into the following month, while a certification's expiry date uses day 01. Confirm against an entry whose real dates you know before deriving a month from the day here. */
+                                ended_on?: string;
+                                /** @description Skills the member associated with the studies. */
+                                skills?: string[];
+                                /** @description A short summary line of the associated skills. */
+                                skills_preview?: string;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
-                            /** @description Languages entries. Present only when languages or linkedin_* was requested. */
-                            languages?: {
+                            })[];
+                            /** @description Languages entries. Present only when languages or linkedin_* was requested. Declared from the classic profile's own live-measured shape for the same underlying LinkedIn section, since this surface's own typed fields already match that shape, rather than from a Recruiter-specific capture. Confirm field-for-field against a real response before treating any inference, an absent field or one under a different name, as fact. */
+                            languages?: ({
+                                /** @description Name of the language. */
+                                language?: string;
+                                /** @description Stated fluency: ELEMENTARY, LIMITED_WORKING, PROFESSIONAL_WORKING, FULL_PROFESSIONAL, or NATIVE_OR_BILINGUAL. */
+                                proficiency?: string;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
-                            /** @description Certification entries. Present only when certifications or linkedin_* was requested. */
-                            certifications?: {
+                            })[];
+                            /** @description Certification entries. Present only when certifications or linkedin_* was requested. Declared from the classic profile's own live-measured shape for the same underlying LinkedIn section, since this surface's own typed fields already match that shape, rather than from a Recruiter-specific capture. Confirm field-for-field against a real response before treating any inference, an absent field or one under a different name, as fact. */
+                            certifications?: ({
+                                /** @description Name of the certification. This is the name field; there is no 'name' key. */
+                                title?: string;
+                                /** @description The issuing body. An object, not a name string. */
+                                organization?: {
+                                    /** @description The organization's platform identifier, when known. */
+                                    id?: string | null;
+                                    /** @description The organization's name. */
+                                    name?: string;
+                                    /** @description The organization's public URL slug, when known. */
+                                    public_identifier?: string;
+                                    /** @description The organization's logo URL. */
+                                    picture_url?: string;
+                                    /** @description Full LinkedIn URL for the organization. */
+                                    profile_url?: string;
+                                    /** @description The organization's industry labels. */
+                                    industries?: string[];
+                                } & {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Date the certification was issued. Formatted MM/DD/YYYY, month first. The platform records month and year only. */
+                                issued_on?: string;
+                                /** @description Date the certification expires. Absent when it does not expire. Formatted MM/DD/YYYY, month first. The platform records month and year only. */
+                                expires_on?: string;
+                                /** @description License or credential identifier. */
+                                license?: string;
+                                /** @description Public URL for the certification. */
+                                url?: string;
+                                /** @description Skills the member associated with the certification. */
+                                skills?: string[];
+                                /** @description A short summary line of the associated skills. */
+                                skills_preview?: string;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
-                            /** @description Project entries. Present only when projects or linkedin_* was requested. */
-                            projects?: {
+                            })[];
+                            /** @description Project entries. Present only when projects or linkedin_* was requested. Declared from the classic profile's own live-measured shape for the same underlying LinkedIn section, since this surface's own typed fields already match that shape, rather than from a Recruiter-specific capture. Confirm field-for-field against a real response before treating any inference, an absent field or one under a different name, as fact. */
+                            projects?: ({
+                                /** @description Name of the project. */
+                                name?: string;
+                                /** @description The member's own description of the project. Passes through verbatim, never stored. */
+                                description?: string;
+                                /** @description Other members credited on the project. */
+                                contributors?: ({
+                                    /** @description The member's opaque identifier. */
+                                    id?: string;
+                                    /** @description Object discriminator for the embedded member. */
+                                    object?: string;
+                                    /** @description Profile type (e.g. individual). */
+                                    type?: string;
+                                    /** @description The member's display name. */
+                                    display_name?: string;
+                                    /** @description First name. */
+                                    first_name?: string;
+                                    /** @description Last name. */
+                                    last_name?: string;
+                                    /** @description LinkedIn public URL slug (e.g. 'jane-doe'). */
+                                    public_identifier?: string;
+                                    /** @description Full LinkedIn profile URL. */
+                                    profile_url?: string;
+                                    /** @description Profile picture URL. */
+                                    public_picture_url?: string;
+                                    /** @description The member's professional headline. */
+                                    description?: string;
+                                } & {
+                                    [key: string]: unknown;
+                                })[];
+                                /** @description Skills the member associated with the project. */
+                                skills?: string[];
+                                /** @description A short summary line of the associated skills. */
+                                skills_preview?: string;
+                                /** @description Date the project started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value on the classic profile's response uses day 01. Confirm against an entry whose real start date you know before assuming the day carries no information here. */
+                                started_on?: string;
+                                /** @description Date the project ended. On the classic profile's response, an absent value means the entry is ongoing rather than unknown. Confirm on this surface before treating an absence as current. Formatted MM/DD/YYYY, month first. The platform records month and year only. The day component differs by field on the classic profile's response: a work-experience end date carries a 29 day offset that can push the value into the following month, while a certification's expiry date uses day 01. Confirm against an entry whose real dates you know before deriving a month from the day here. */
+                                ended_on?: string;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
-                            /** @description Volunteering entries. Present only when volunteering or linkedin_* was requested. */
-                            volunteering?: {
+                            })[];
+                            /** @description Volunteering entries. Present only when volunteering or linkedin_* was requested. Declared from the classic profile's own live-measured shape for the same underlying LinkedIn section, since this surface's own typed fields already match that shape, rather than from a Recruiter-specific capture. Confirm field-for-field against a real response before treating any inference, an absent field or one under a different name, as fact. */
+                            volunteering?: ({
+                                /** @description The organization volunteered for. An object, not a name string. */
+                                organization?: {
+                                    /** @description The organization's platform identifier, when known. */
+                                    id?: string | null;
+                                    /** @description The organization's name. */
+                                    name?: string;
+                                    /** @description The organization's public URL slug, when known. */
+                                    public_identifier?: string;
+                                    /** @description The organization's logo URL. */
+                                    picture_url?: string;
+                                    /** @description Full LinkedIn URL for the organization. */
+                                    profile_url?: string;
+                                    /** @description The organization's industry labels. */
+                                    industries?: string[];
+                                } & {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Role held while volunteering. */
+                                role?: string;
+                                /** @description The cause supported, as categorised by the platform. */
+                                cause?: string;
+                                /** @description The member's own description of the work. Passes through verbatim, never stored. */
+                                description?: string;
+                                /** @description Date the work started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value on the classic profile's response uses day 01. Confirm against an entry whose real start date you know before assuming the day carries no information here. */
+                                started_on?: string;
+                                /** @description Date the work ended. On the classic profile's response, an absent value means the entry is ongoing rather than unknown. Confirm on this surface before treating an absence as current. Formatted MM/DD/YYYY, month first. The platform records month and year only. The day component differs by field on the classic profile's response: a work-experience end date carries a 29 day offset that can push the value into the following month, while a certification's expiry date uses day 01. Confirm against an entry whose real dates you know before deriving a month from the day here. */
+                                ended_on?: string;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
-                            /** @description Recommendations entries. Present only when recommendations or linkedin_* was requested. */
-                            recommendations?: {
+                            })[];
+                            /** @description Recommendations entries. Present only when recommendations or linkedin_* was requested. Declared from the classic profile's own live-measured shape for the same underlying LinkedIn section, since this surface's own typed fields already match that shape, rather than from a Recruiter-specific capture. Confirm field-for-field against a real response before treating any inference, an absent field or one under a different name, as fact. That reuse covers the ITEM shape only, not the container: on the classic profile this same underlying section is an OBJECT ({received, given}), not an array. Confirm the shape on this surface before iterating it as an array; guard for both shapes until then. */
+                            recommendations?: ({
+                                /** @description The recommendation text. Passes through verbatim, never stored. */
+                                text?: string;
+                                /** @description How the two members worked together, as shown on the profile. */
+                                caption?: string;
+                                /** @description When the recommendation was written. */
+                                created_on?: string;
+                                /** @description The other member involved. May be null when the platform withholds the identity. */
+                                user?: {
+                                    /** @description The member's opaque identifier. */
+                                    id?: string;
+                                    /** @description Object discriminator for the embedded member. */
+                                    object?: string;
+                                    /** @description Profile type (e.g. individual). */
+                                    type?: string;
+                                    /** @description The member's display name. */
+                                    display_name?: string;
+                                    /** @description First name. */
+                                    first_name?: string;
+                                    /** @description Last name. */
+                                    last_name?: string;
+                                    /** @description LinkedIn public URL slug (e.g. 'jane-doe'). */
+                                    public_identifier?: string;
+                                    /** @description Full LinkedIn profile URL. */
+                                    profile_url?: string;
+                                    /** @description Profile picture URL. */
+                                    public_picture_url?: string;
+                                    /** @description The member's professional headline. */
+                                    description?: string;
+                                } & {
+                                    [key: string]: unknown;
+                                };
+                            } & {
                                 [key: string]: unknown;
-                            }[];
+                            })[];
                             /** @description Section names that were requested but throttled by LinkedIn. */
                             throttled_sections?: string[];
                         };
@@ -19373,7 +19595,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error. */
+            /** @description Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -19780,7 +20002,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error. */
+            /** @description Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -19983,7 +20205,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error. */
+            /** @description Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -20140,7 +20362,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error. */
+            /** @description Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -20384,7 +20606,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error. */
+            /** @description Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -20682,7 +20904,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error. */
+            /** @description Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -21014,7 +21236,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error. */
+            /** @description Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -21184,7 +21406,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error. */
+            /** @description Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -21391,7 +21613,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error. */
+            /** @description Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -21536,7 +21758,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error. */
+            /** @description Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -21700,7 +21922,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error. */
+            /** @description Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -21907,7 +22129,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error. */
+            /** @description Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -22077,7 +22299,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error. */
+            /** @description Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -22284,7 +22506,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error. */
+            /** @description Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -22597,7 +22819,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid request, an over-cap limit, an unknown status/sort_by value, or another validation error. */
+            /** @description Invalid request, an over-cap limit, a malformed cursor, an unknown status/sort_by value, or another validation error. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -23742,18 +23964,105 @@ export interface operations {
                             is_saved_lead?: boolean;
                             /** @description true if this member was imported from CRM. SN enrichment. */
                             is_crm_imported?: boolean;
-                            /** @description Present when requested via with_sections. */
-                            skills?: {
+                            /** @description Present when requested via with_sections. Declared from the classic profile's own live-measured shape for the same underlying LinkedIn section, rather than from a Sales Navigator-specific capture. Confirm field-for-field against a real response before treating any inference, an absent field or one under a different name, as fact. */
+                            skills?: ({
+                                /** @description The skill name. */
+                                name?: string;
+                                /** @description How many people have endorsed this skill. */
+                                endorsement_count?: number;
+                                /** @description Whether the operator account has already endorsed this skill. */
+                                endorsed?: boolean;
+                                /** @description LinkedIn-provided insight strings about the skill. */
+                                insights?: string[];
+                                /** @description The value passed to POST /v1/{account_id}/users/{user_id}/endorse-skill to endorse this skill. Present ONLY for skills you are eligible to endorse, i.e. those of your 1st-degree connections. Omitted for users outside your network and on your own profile (the skill still lists name, endorsement_count, endorsed, and insights). */
+                                endorsement_id?: number;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
-                            /** @description Present when requested via with_sections. */
-                            experience?: {
+                            })[];
+                            /** @description Present when requested via with_sections. Declared from the classic profile's own live-measured shape for the same underlying LinkedIn section, rather than from a Sales Navigator-specific capture. Confirm field-for-field against a real response before treating any inference, an absent field or one under a different name, as fact. */
+                            experience?: ({
+                                /** @description Identifier of this work-experience entry. Not a company identifier. */
+                                id?: string;
+                                /** @description The employer. An object, not a name string. */
+                                company?: {
+                                    /** @description The organization's platform identifier, when known. */
+                                    id?: string | null;
+                                    /** @description The organization's name. */
+                                    name?: string;
+                                    /** @description The organization's public URL slug, when known. */
+                                    public_identifier?: string;
+                                    /** @description The organization's logo URL. */
+                                    picture_url?: string;
+                                    /** @description Full LinkedIn URL for the organization. */
+                                    profile_url?: string;
+                                    /** @description The organization's industry labels. */
+                                    industries?: string[];
+                                } & {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Job title held. This is the title field; there is no 'position' or 'title' key. */
+                                job_title?: string;
+                                /** @description Date the role started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value on the classic profile's response uses day 01. Confirm against an entry whose real start date you know before assuming the day carries no information here. */
+                                started_on?: string;
+                                /** @description Date the role ended. On the classic profile's response, an absent value means the entry is ongoing rather than unknown. Confirm on this surface before treating an absence as current. Formatted MM/DD/YYYY, month first. The platform records month and year only. The day component differs by field on the classic profile's response: a work-experience end date carries a 29 day offset that can push the value into the following month, while a certification's expiry date uses day 01. Confirm against an entry whose real dates you know before deriving a month from the day here. */
+                                ended_on?: string;
+                                /** @description Where the role was based, as written on the profile. */
+                                location?: string;
+                                /** @description The member's own description of the role. Passes through verbatim, never stored. */
+                                description?: string;
+                                /** @description Employment arrangement, e.g. PERMANENT, PERMANENT_PART_TIME, CONTRACT, CONTRACT_PART_TIME, FREELANCE, SELF_EMPLOYED, INTERNSHIP, APPRENTICESHIP, TEMPORARY, VOLUNTEERING. Not present on every entry. */
+                                employment_type?: string;
+                                /** @description Working arrangement: ON_SITE, HYBRID, or REMOTE. Not present on every entry. */
+                                workplace_type?: string;
+                                /** @description Skills the member associated with this role. */
+                                skills?: string[];
+                                /** @description A short summary line of the associated skills. */
+                                skills_preview?: string;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
-                            /** @description Present when requested via with_sections. */
-                            education?: {
+                            })[];
+                            /** @description Present when requested via with_sections. Declared from the classic profile's own live-measured shape for the same underlying LinkedIn section, rather than from a Sales Navigator-specific capture. Confirm field-for-field against a real response before treating any inference, an absent field or one under a different name, as fact. */
+                            education?: ({
+                                /** @description Identifier of this education entry. */
+                                id?: string;
+                                /** @description The institution. An object, not a name string. */
+                                school?: {
+                                    /** @description The organization's platform identifier, when known. */
+                                    id?: string | null;
+                                    /** @description The organization's name. */
+                                    name?: string;
+                                    /** @description The organization's public URL slug, when known. */
+                                    public_identifier?: string;
+                                    /** @description The organization's logo URL. */
+                                    picture_url?: string;
+                                    /** @description Full LinkedIn URL for the organization. */
+                                    profile_url?: string;
+                                    /** @description The organization's industry labels. */
+                                    industries?: string[];
+                                } & {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Name of the degree or qualification. */
+                                degree?: string;
+                                /** @description Subjects studied. Plural and always an array, even for a single subject. */
+                                fields_of_study?: string[];
+                                /** @description Grade or academic level reached. */
+                                grade?: string;
+                                /** @description Activities carried out during the studies. */
+                                activities?: string;
+                                /** @description The member's own description of the studies. Passes through verbatim, never stored. */
+                                description?: string;
+                                /** @description Date the studies started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value on the classic profile's response uses day 01. Confirm against an entry whose real start date you know before assuming the day carries no information here. */
+                                started_on?: string;
+                                /** @description Date the studies ended. On the classic profile's response, an absent value means the entry is ongoing rather than unknown. Confirm on this surface before treating an absence as current. Formatted MM/DD/YYYY, month first. The platform records month and year only. The day component differs by field on the classic profile's response: a work-experience end date carries a 29 day offset that can push the value into the following month, while a certification's expiry date uses day 01. Confirm against an entry whose real dates you know before deriving a month from the day here. */
+                                ended_on?: string;
+                                /** @description Skills the member associated with the studies. */
+                                skills?: string[];
+                                /** @description A short summary line of the associated skills. */
+                                skills_preview?: string;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
+                            })[];
                             /** @description Present when available. */
                             throttled_sections?: string[];
                         };
