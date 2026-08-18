@@ -9,6 +9,27 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+## [0.23.0] - 2026-08-18
+
+Regeneration against the deployed OpenAPI document following recent server
+changes. Nothing was hand-edited.
+
+**Minor, not patch: removing an optional field from a request-body type can
+red a consumer's typecheck** (an object literal or a spread that still
+supplies `network_distance` now fails structural typing), even though the
+field never functioned against the server. That is a breaking change for a
+0.x consumer, and under 0.x, minor is how it gets signalled.
+
+### Changed
+
+- **`SearchCompaniesBody` drops `network_distance`.** The field was removed
+  server-side; it never filtered anything, and declaring it invited a
+  request the server ignores. `SearchPeopleBody` is unaffected and keeps its
+  own `network_distance`.
+- **`GET /v1/webhooks` cursor description now says it is decodable.** Previously
+  "Opaque pagination cursor from a previous response"; now describes it as
+  decodable and to be passed back verbatim. No type change.
+
 ## [0.22.0] - 2026-08-17
 
 Regeneration against the deployed, served OpenAPI document at server commit
