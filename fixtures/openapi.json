@@ -15967,18 +15967,6 @@
                       ]
                     },
                     "description": "Filter by company size buckets. Each entry is a { min, max } object (e.g. { min: 51, max: 200 })."
-                  },
-                  "network_distance": {
-                    "type": "array",
-                    "items": {
-                      "type": "number",
-                      "enum": [
-                        1,
-                        2,
-                        3
-                      ]
-                    },
-                    "description": "Filter by network distance: 1 = 1st degree, 2 = 2nd degree, 3 = 3rd degree."
                   }
                 },
                 "additionalProperties": false
@@ -67582,7 +67570,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Opaque pagination cursor from a previous response"
+            "description": "Pagination cursor from a previous response; decodable, pass it back verbatim"
           },
           {
             "name": "limit",

@@ -8296,8 +8296,6 @@ export interface operations {
                         /** @description Upper bound of a company-size bucket. Valid values: 1, 10, 50, 200, 500, 1000, 5000, 10000. */
                         max: number;
                     }[];
-                    /** @description Filter by network distance: 1 = 1st degree, 2 = 2nd degree, 3 = 3rd degree. */
-                    network_distance?: (1 | 2 | 3)[];
                 };
             };
         };
@@ -27408,7 +27406,7 @@ export interface operations {
     getV1Webhooks: {
         parameters: {
             query?: {
-                /** @description Opaque pagination cursor from a previous response */
+                /** @description Pagination cursor from a previous response; decodable, pass it back verbatim */
                 cursor?: string;
                 /** @description Max items per page (1-250, default 50) */
                 limit?: number;
