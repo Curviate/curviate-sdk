@@ -11493,7 +11493,7 @@ export interface operations {
                 query: string;
                 /** @description Maximum chats to return per page (1-100, default 20). The server may walk a few internal pages to fill one page. */
                 limit?: number;
-                /** @description Opaque pagination cursor returned from a previous response; wraps a zero-based item offset. */
+                /** @description Pagination cursor from a previous response; decodable, wraps a zero-based item offset, pass it back verbatim. */
                 cursor?: string;
                 /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
                 expand?: string;
@@ -15451,9 +15451,13 @@ export interface operations {
                     /** @description Optional skill parameter ids from GET /v1/{account_id}/search/parameters. */
                     skills?: string[];
                     /** @description Optional screening questions attached to the posting. */
-                    screening_questions?: unknown[];
+                    screening_questions?: {
+                        [key: string]: unknown;
+                    }[];
                     /** @description Optional automatic-rejection configuration. */
-                    rejection_settings?: unknown;
+                    rejection_settings?: {
+                        [key: string]: unknown;
+                    };
                 };
             };
         };
@@ -15903,9 +15907,13 @@ export interface operations {
                     /** @description Optional skill parameter ids from GET /v1/{account_id}/search/parameters. */
                     skills?: string[];
                     /** @description Optional screening questions attached to the posting. */
-                    screening_questions?: unknown[];
+                    screening_questions?: {
+                        [key: string]: unknown;
+                    }[];
                     /** @description Optional automatic-rejection configuration. */
-                    rejection_settings?: unknown;
+                    rejection_settings?: {
+                        [key: string]: unknown;
+                    };
                 };
             };
         };
@@ -17160,7 +17168,9 @@ export interface operations {
                             profile_picture_url?: string | null;
                         };
                         /** @description The member who wrote the post (may differ from author for organization posts), or null. */
-                        written_by?: Record<string, never> | null;
+                        written_by?: {
+                            [key: string]: unknown;
+                        } | null;
                         /** @description Interaction permissions for the authenticated account, or null. */
                         permissions?: {
                             /** @description true if the account can react to this post. */
@@ -17625,7 +17635,9 @@ export interface operations {
                                 profile_picture_url?: string | null;
                             };
                             /** @description The member who wrote the post (may differ from author for organization posts), or null. */
-                            written_by?: Record<string, never> | null;
+                            written_by?: {
+                                [key: string]: unknown;
+                            } | null;
                             /** @description Interaction permissions for the authenticated account, or null. */
                             permissions?: {
                                 /** @description true if the account can react to this post. */
@@ -18194,7 +18206,9 @@ export interface operations {
                             /** @description true when the queried account itself made this reaction. */
                             is_sender?: boolean;
                             /** @description The user who made the reaction. */
-                            sender?: Record<string, never>;
+                            sender?: {
+                                [key: string]: unknown;
+                            };
                             /** @description The post this reaction was made on (full Post or a lighter preview). Its `urn` is the stable identifier for that post, so compare it against a post's own `urn` to tell whether you already reacted to it. */
                             parent_post?: {
                                 /**
@@ -24523,7 +24537,7 @@ export interface operations {
                          */
                         object: "sn_saved_account_result";
                         /** @description The saved accounts in the list. */
-                        items: {
+                        items: ({
                             /**
                              * @description Item type discriminator.
                              * @enum {string}
@@ -24533,7 +24547,47 @@ export interface operations {
                             id: string;
                             /** @description Display name. */
                             display_name: string;
-                        }[];
+                            /** @description LinkedIn public identifier (vanity slug). May be null. */
+                            public_identifier?: string | null;
+                            /** @description Company LinkedIn profile URL. May be null. */
+                            profile_url?: string | null;
+                            /** @description Company logo URL. May be null. */
+                            public_picture_url?: string | null;
+                            /** @description Company headquarters location. May be null. */
+                            location?: string | null;
+                            /** @description Industry the company operates in. May be null. */
+                            industry?: string | null;
+                            /** @description Company summary text. May be null. */
+                            summary?: string | null;
+                            /** @description Connection count at this company. May be null. */
+                            relations_count?: number | null;
+                            /** @description Employee count. May be null. */
+                            headcount?: number | null;
+                            /** @description Structural platform pass-through (ADR-033); shape and presence vary. May be null. */
+                            specialties?: {
+                                [key: string]: unknown;
+                            };
+                            /** @description May be null. */
+                            is_hiring_on_linkedin?: boolean | null;
+                            /** @description How many lists this account is saved to. Present when available. */
+                            lists_count?: number;
+                            /** @description How many notes are attached. Present when available. */
+                            notes_count?: number;
+                            /** @description Company website URL. May be null. */
+                            website?: string | null;
+                            /** @description Structural platform pass-through (ADR-033); shape and presence vary. May be null. */
+                            founded_on?: {
+                                [key: string]: unknown;
+                            };
+                            /** @description true when the account is starred on the seat. Present when available. */
+                            is_starred?: boolean;
+                            /** @description Structural platform pass-through (ADR-033); shape and presence vary. May be null. */
+                            recommended_lead?: {
+                                [key: string]: unknown;
+                            };
+                        } & {
+                            [key: string]: unknown;
+                        })[];
                         paging: {
                             /** @description Total number of items. May be null. */
                             total_count?: number | null;
@@ -24694,7 +24748,7 @@ export interface operations {
                          */
                         object: "sn_saved_lead_result";
                         /** @description The saved leads in the list. */
-                        items: {
+                        items: ({
                             /**
                              * @description Item type discriminator.
                              * @enum {string}
@@ -24704,7 +24758,76 @@ export interface operations {
                             id: string;
                             /** @description Display name. */
                             display_name: string;
-                        }[];
+                            /**
+                             * @description Connection distance to the operator account. Present when available.
+                             * @enum {string}
+                             */
+                            network_distance?: "SELF" | "FIRST_DEGREE" | "SECOND_DEGREE" | "THIRD_DEGREE" | "OUT_OF_NETWORK";
+                            /** @description Present when available. */
+                            has_posted_recently?: boolean;
+                            /** @description Present when available. */
+                            has_viewed_your_profile?: boolean;
+                            /** @description Present when available. */
+                            was_hired_recently?: boolean;
+                            /** @description Present when available. */
+                            was_promoted_recently?: boolean;
+                            /** @description Present when available. */
+                            follows_your_company?: boolean;
+                            /** @description true if this is a LinkedIn Premium account. Present when available. */
+                            is_premium?: boolean;
+                            /** @description Present when available. */
+                            is_past_colleague?: boolean;
+                            /** @description Present when available. */
+                            is_open_profile?: boolean;
+                            /** @description Contact info. Present when available. */
+                            contact_info?: {
+                                phones?: {
+                                    [key: string]: unknown;
+                                }[];
+                                emails?: {
+                                    [key: string]: unknown;
+                                }[];
+                            };
+                            /** @description How many lists this lead is saved to. Present when available. */
+                            lists_count?: number;
+                            /** @description How many notes are attached. Present when available. */
+                            notes_count?: number;
+                            /** @description Present when available. */
+                            education?: {
+                                [key: string]: unknown;
+                            }[];
+                            /** @description Structural platform pass-through (ADR-033); the fake substrate returns strings. Present when available. */
+                            skills?: unknown[];
+                            /** @description Present when available. */
+                            work_experience?: {
+                                [key: string]: unknown;
+                            }[];
+                            /** @description Structural platform pass-through (ADR-033); the fake substrate returns strings. Present when available. */
+                            languages?: unknown[];
+                            /** @description Present when available. */
+                            volunteering?: {
+                                [key: string]: unknown;
+                            }[];
+                            /** @description ISO-8601 timestamp of when the lead was saved. Present when available. */
+                            saved_at?: string;
+                            /** @description The company associated with this saved lead. Present when available. */
+                            associated_account?: {
+                                id?: string;
+                                name?: string;
+                                /** @description Present when available. */
+                                industry?: string;
+                                /** @description Present when available. */
+                                location?: string;
+                                public_identifier?: string;
+                                profile_url?: string;
+                                /** @description Present when available. */
+                                public_picture_url?: string;
+                            } & {
+                                [key: string]: unknown;
+                            };
+                        } & {
+                            [key: string]: unknown;
+                        })[];
                         paging: {
                             /** @description Total number of items. May be null. */
                             total_count?: number | null;
@@ -26522,7 +26645,9 @@ export interface operations {
             content: {
                 "application/json": {
                     /** @description Flat string->string map that replaces this account's custom-data store wholesale (unprovided keys are removed). */
-                    metadata?: unknown;
+                    metadata?: {
+                        [key: string]: string;
+                    };
                     /** @description Custom-proxy egress config, or null to clear it (revert to automatic proxy protection). Omit to leave it unchanged. */
                     proxy?: {
                         /**
