@@ -59770,7 +59770,7 @@
                             "description": "Employee count. May be null."
                           },
                           "specialties": {
-                            "description": "Structural platform pass-through (ADR-033); shape and presence vary. May be null.",
+                            "description": "Structural platform pass-through; shape and presence vary. May be null.",
                             "items": {},
                             "additionalProperties": true
                           },
@@ -59797,7 +59797,7 @@
                             "description": "Company website URL. May be null."
                           },
                           "founded_on": {
-                            "description": "Structural platform pass-through (ADR-033); shape and presence vary. May be null.",
+                            "description": "Structural platform pass-through; shape and presence vary. May be null.",
                             "items": {},
                             "additionalProperties": true
                           },
@@ -59806,7 +59806,7 @@
                             "description": "true when the account is starred on the seat. Present when available."
                           },
                           "recommended_lead": {
-                            "description": "Structural platform pass-through (ADR-033); shape and presence vary. May be null.",
+                            "description": "Structural platform pass-through; shape and presence vary. May be null.",
                             "items": {},
                             "additionalProperties": true
                           }
@@ -59848,7 +59848,6 @@
                 "examples": {
                   "basic": {
                     "summary": "Saved accounts",
-                    "description": "Two items: one with every nullable field populated, one with every nullable field null (#866 — the schema's null arm must be exercised, not just asserted).",
                     "value": {
                       "object": "sn_saved_account_result",
                       "items": [
@@ -60377,7 +60376,7 @@
                           },
                           "skills": {
                             "type": "array",
-                            "description": "Structural platform pass-through (ADR-033); the fake substrate returns strings. Present when available.",
+                            "description": "Structural platform pass-through; returned as strings. Present when available.",
                             "items": {}
                           },
                           "work_experience": {
@@ -60390,7 +60389,7 @@
                           },
                           "languages": {
                             "type": "array",
-                            "description": "Structural platform pass-through (ADR-033); the fake substrate returns strings. Present when available.",
+                            "description": "Structural platform pass-through; returned as strings. Present when available.",
                             "items": {}
                           },
                           "volunteering": {
@@ -60474,7 +60473,6 @@
                 "examples": {
                   "basic": {
                     "summary": "Saved leads",
-                    "description": "Mirrors the fake substrate's SN_SAVED_LEAD_FIXTURES (#866) — skills/languages are arrays of strings, the shape the substrate actually returns, plus an associated_account to exercise that sub-object.",
                     "value": {
                       "object": "sn_saved_lead_result",
                       "items": [

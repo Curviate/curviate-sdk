@@ -24563,7 +24563,7 @@ export interface operations {
                             relations_count?: number | null;
                             /** @description Employee count. May be null. */
                             headcount?: number | null;
-                            /** @description Structural platform pass-through (ADR-033); shape and presence vary. May be null. */
+                            /** @description Structural platform pass-through; shape and presence vary. May be null. */
                             specialties?: {
                                 [key: string]: unknown;
                             };
@@ -24575,13 +24575,13 @@ export interface operations {
                             notes_count?: number;
                             /** @description Company website URL. May be null. */
                             website?: string | null;
-                            /** @description Structural platform pass-through (ADR-033); shape and presence vary. May be null. */
+                            /** @description Structural platform pass-through; shape and presence vary. May be null. */
                             founded_on?: {
                                 [key: string]: unknown;
                             };
                             /** @description true when the account is starred on the seat. Present when available. */
                             is_starred?: boolean;
-                            /** @description Structural platform pass-through (ADR-033); shape and presence vary. May be null. */
+                            /** @description Structural platform pass-through; shape and presence vary. May be null. */
                             recommended_lead?: {
                                 [key: string]: unknown;
                             };
@@ -24796,13 +24796,13 @@ export interface operations {
                             education?: {
                                 [key: string]: unknown;
                             }[];
-                            /** @description Structural platform pass-through (ADR-033); the fake substrate returns strings. Present when available. */
+                            /** @description Structural platform pass-through; returned as strings. Present when available. */
                             skills?: unknown[];
                             /** @description Present when available. */
                             work_experience?: {
                                 [key: string]: unknown;
                             }[];
-                            /** @description Structural platform pass-through (ADR-033); the fake substrate returns strings. Present when available. */
+                            /** @description Structural platform pass-through; returned as strings. Present when available. */
                             languages?: unknown[];
                             /** @description Present when available. */
                             volunteering?: {
