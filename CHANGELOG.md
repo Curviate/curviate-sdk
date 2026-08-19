@@ -9,6 +9,27 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+## [0.24.0] - 2026-08-19
+
+Regeneration against the deployed OpenAPI document following the server's
+document-wide examples-oracle work. Additive only: 107 schema leaves added,
+0 removed, 0 retyped.
+
+**Minor, not patch: purely additive, but several fields go from absent or
+untyped to a real declared shape**, which is new surface a 0.x consumer can
+now rely on.
+
+### Added
+
+- Sales Navigator saved-account and saved-lead item fields are now declared
+  with correct nullability, matching what the API actually returns.
+- `skills` and `languages` are now correctly typed as string arrays.
+- Fields backed by a free-form object on the server (for example `PATCH
+  /v1/accounts` `metadata`) are now typed as objects instead of being
+  propertyless.
+- Pass-through platform objects are now declared open, so an unlisted key on
+  a passed-through object no longer types as an error.
+
 ## [0.23.0] - 2026-08-18
 
 Regeneration against the deployed OpenAPI document following recent server
