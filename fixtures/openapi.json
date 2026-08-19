@@ -921,10 +921,12 @@
                               },
                               "issued_on": {
                                 "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
                                 "description": "Date the certification was issued. Formatted MM/DD/YYYY, month first. The platform records month and year only."
                               },
                               "expires_on": {
                                 "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
                                 "description": "Date the certification expires. Absent when it does not expire. Formatted MM/DD/YYYY, month first. The platform records month and year only."
                               },
                               "license": {
@@ -43430,10 +43432,12 @@
                               },
                               "issued_on": {
                                 "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
                                 "description": "Date the certification was issued. Formatted MM/DD/YYYY, month first. The platform records month and year only."
                               },
                               "expires_on": {
                                 "type": "string",
+                                "pattern": "^\\d{2}/\\d{2}/\\d{4}$",
                                 "description": "Date the certification expires. Absent when it does not expire. Formatted MM/DD/YYYY, month first. The platform records month and year only."
                               },
                               "license": {
@@ -43816,7 +43820,16 @@
                         ],
                         "skills": [],
                         "languages": [],
-                        "certifications": [],
+                        "certifications": [
+                          {
+                            "title": "AWS Certified Solutions Architect",
+                            "organization": {
+                              "name": "Amazon Web Services"
+                            },
+                            "issued_on": "02/01/2023",
+                            "expires_on": "03/01/2026"
+                          }
+                        ],
                         "projects": [],
                         "volunteering": [],
                         "recommendations": [],
