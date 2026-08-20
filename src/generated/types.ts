@@ -12843,8 +12843,6 @@ export interface operations {
                                 display_name?: string;
                                 /** @description Author's display name. Absent on the shape that carries `display_name` instead. */
                                 name?: string;
-                                /** @description Author's profile picture URL, or null if not set. */
-                                profile_picture_url?: string | null;
                             };
                             /** @description true if the authenticated account can reply to this comment. */
                             can_reply?: boolean;
@@ -12896,8 +12894,6 @@ export interface operations {
                                     display_name?: string;
                                     /** @description Author's display name. Absent on the shape that carries `display_name` instead. */
                                     name?: string;
-                                    /** @description Author's profile picture URL, or null if not set. */
-                                    profile_picture_url?: string | null;
                                 };
                                 /** @description Per-reaction-type count buckets on the parent post. Present on the full form only. */
                                 reactions_counter?: {
@@ -13070,8 +13066,6 @@ export interface operations {
                                 object?: string;
                                 /** @description Author entity type (for example individual or organization), on the shape that carries one. */
                                 type?: string;
-                                /** @description Author's profile picture URL, or null if not set. */
-                                profile_picture_url?: string | null;
                             };
                             /** @description true if the authenticated account can reply to this comment. */
                             can_reply?: boolean;
@@ -13253,8 +13247,6 @@ export interface operations {
                             display_name?: string;
                             /** @description Author's display name. Absent on the shape that carries `display_name` instead. */
                             name?: string;
-                            /** @description Author's profile picture URL, or null if not set. */
-                            profile_picture_url?: string | null;
                         };
                         /** @description true if the authenticated account can reply to this comment. */
                         can_reply?: boolean;
@@ -13462,8 +13454,6 @@ export interface operations {
                             display_name?: string;
                             /** @description Author's display name. Absent on the shape that carries `display_name` instead. */
                             name?: string;
-                            /** @description Author's profile picture URL, or null if not set. */
-                            profile_picture_url?: string | null;
                         };
                         /** @description true if the authenticated account can reply to this comment. */
                         can_reply?: boolean;
@@ -13771,8 +13761,6 @@ export interface operations {
                             display_name?: string;
                             /** @description Author's display name. Absent on the shape that carries `display_name` instead. */
                             name?: string;
-                            /** @description Author's profile picture URL, or null if not set. */
-                            profile_picture_url?: string | null;
                         };
                         /** @description true if the authenticated account can reply to this comment. */
                         can_reply?: boolean;
@@ -13956,8 +13944,6 @@ export interface operations {
                                 display_name?: string;
                                 /** @description Author's display name. Absent on the shape that carries `display_name` instead. */
                                 name?: string;
-                                /** @description Author's profile picture URL, or null if not set. */
-                                profile_picture_url?: string | null;
                             };
                             /** @description true if the authenticated account can reply to this comment. */
                             can_reply?: boolean;
@@ -14124,8 +14110,6 @@ export interface operations {
                                 display_name?: string;
                                 /** @description Author's display name. Absent on the shape that carries `display_name` instead. */
                                 name?: string;
-                                /** @description Author's profile picture URL, or null if not set. */
-                                profile_picture_url?: string | null;
                             };
                         }[];
                         /** @description Next-page cursor; null on the last page. */

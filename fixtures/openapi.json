@@ -27858,13 +27858,6 @@
                               "name": {
                                 "type": "string",
                                 "description": "Author's display name. Absent on the shape that carries `display_name` instead."
-                              },
-                              "profile_picture_url": {
-                                "type": [
-                                  "string",
-                                  "null"
-                                ],
-                                "description": "Author's profile picture URL, or null if not set."
                               }
                             }
                           },
@@ -27980,13 +27973,6 @@
                                   "name": {
                                     "type": "string",
                                     "description": "Author's display name. Absent on the shape that carries `display_name` instead."
-                                  },
-                                  "profile_picture_url": {
-                                    "type": [
-                                      "string",
-                                      "null"
-                                    ],
-                                    "description": "Author's profile picture URL, or null if not set."
                                   }
                                 }
                               },
@@ -28411,13 +28397,6 @@
                         "name": {
                           "type": "string",
                           "description": "Author's display name. Absent on the shape that carries `display_name` instead."
-                        },
-                        "profile_picture_url": {
-                          "type": [
-                            "string",
-                            "null"
-                          ],
-                          "description": "Author's profile picture URL, or null if not set."
                         }
                       }
                     },
@@ -28999,13 +28978,6 @@
                               "type": {
                                 "type": "string",
                                 "description": "Author entity type (for example individual or organization), on the shape that carries one."
-                              },
-                              "profile_picture_url": {
-                                "type": [
-                                  "string",
-                                  "null"
-                                ],
-                                "description": "Author's profile picture URL, or null if not set."
                               }
                             }
                           },
@@ -29434,13 +29406,6 @@
                         "name": {
                           "type": "string",
                           "description": "Author's display name. Absent on the shape that carries `display_name` instead."
-                        },
-                        "profile_picture_url": {
-                          "type": [
-                            "string",
-                            "null"
-                          ],
-                          "description": "Author's profile picture URL, or null if not set."
                         }
                       }
                     },
@@ -30163,13 +30128,6 @@
                         "name": {
                           "type": "string",
                           "description": "Author's display name. Absent on the shape that carries `display_name` instead."
-                        },
-                        "profile_picture_url": {
-                          "type": [
-                            "string",
-                            "null"
-                          ],
-                          "description": "Author's profile picture URL, or null if not set."
                         }
                       }
                     },
@@ -30731,13 +30689,6 @@
                               "name": {
                                 "type": "string",
                                 "description": "Author's display name. Absent on the shape that carries `display_name` instead."
-                              },
-                              "profile_picture_url": {
-                                "type": [
-                                  "string",
-                                  "null"
-                                ],
-                                "description": "Author's profile picture URL, or null if not set."
                               }
                             }
                           },
@@ -31163,13 +31114,6 @@
                               "name": {
                                 "type": "string",
                                 "description": "Author's display name. Absent on the shape that carries `display_name` instead."
-                              },
-                              "profile_picture_url": {
-                                "type": [
-                                  "string",
-                                  "null"
-                                ],
-                                "description": "Author's profile picture URL, or null if not set."
                               }
                             }
                           }
