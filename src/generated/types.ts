@@ -12831,16 +12831,20 @@ export interface operations {
                             }[];
                             /** @description Total reaction count on this comment, the sum of reactions[].count. */
                             reaction_count?: number;
-                            /** @description Author of the comment. */
+                            /** @description Author of the comment. Two shapes reach this field, so read the display name as `display_name` when it is present and `name` otherwise. */
                             author?: {
                                 /** @description LinkedIn profile identifier. */
                                 id?: string;
-                                /** @description Author entity discriminator. */
+                                /** @description Author entity discriminator, on the shape that carries one. */
                                 object?: string;
-                                /** @description Author entity type (e.g. individual, organization). */
+                                /** @description Author entity type (for example individual or organization), on the shape that carries one. */
                                 type?: string;
-                                /** @description Author's display name. */
+                                /** @description Author's display name. Absent on the shape that carries `name` instead. */
                                 display_name?: string;
+                                /** @description Author's display name. Absent on the shape that carries `display_name` instead. */
+                                name?: string;
+                                /** @description Author's profile picture URL, or null if not set. */
+                                profile_picture_url?: string | null;
                             };
                             /** @description true if the authenticated account can reply to this comment. */
                             can_reply?: boolean;
@@ -12874,6 +12878,40 @@ export interface operations {
                                  * @enum {string}
                                  */
                                 object?: "post";
+                                /** @description Shareable URL for the parent post. Present on the full form only. */
+                                share_url?: string | null;
+                                /** @description Full text of the parent post (content pass-through, never stored). Present on the full form only. */
+                                text?: string | null;
+                                /** @description true if the parent post is itself a repost. Present on the full form only. */
+                                is_repost?: boolean;
+                                /** @description Author of the parent post. Present on the full form only. */
+                                author?: {
+                                    /** @description LinkedIn profile identifier. */
+                                    id?: string;
+                                    /** @description Author entity discriminator, on the shape that carries one. */
+                                    object?: string;
+                                    /** @description Author entity type (for example individual or organization), on the shape that carries one. */
+                                    type?: string;
+                                    /** @description Author's display name. Absent on the shape that carries `name` instead. */
+                                    display_name?: string;
+                                    /** @description Author's display name. Absent on the shape that carries `display_name` instead. */
+                                    name?: string;
+                                    /** @description Author's profile picture URL, or null if not set. */
+                                    profile_picture_url?: string | null;
+                                };
+                                /** @description Per-reaction-type count buckets on the parent post. Present on the full form only. */
+                                reactions_counter?: {
+                                    /** @description Reaction type, as the platform names it. */
+                                    reaction?: string;
+                                    /** @description Count of this reaction type on the parent post. */
+                                    count?: number;
+                                }[];
+                                /** @description Total comment count on the parent post. Present on the full form only. */
+                                comments_counter?: number | null;
+                                /** @description Total repost count on the parent post. Present on the full form only. */
+                                reposts_counter?: number | null;
+                                /** @description Media attachments on the parent post. Present on the full form only. */
+                                attachments?: Record<string, never>[];
                             };
                         }[];
                         /** @description Next-page cursor; null on the last page. */
@@ -13024,12 +13062,16 @@ export interface operations {
                             author?: {
                                 /** @description LinkedIn profile identifier. */
                                 id?: string;
-                                /** @description Author entity discriminator. */
-                                object?: string;
-                                /** @description Author entity type (e.g. individual, organization). */
-                                type?: string;
-                                /** @description Author's display name. */
+                                /** @description Author's display name. Absent on the shape that carries `display_name` instead. */
+                                name?: string;
+                                /** @description Author's display name. Absent on the shape that carries `name` instead. */
                                 display_name?: string;
+                                /** @description Author entity discriminator, on the shape that carries one. */
+                                object?: string;
+                                /** @description Author entity type (for example individual or organization), on the shape that carries one. */
+                                type?: string;
+                                /** @description Author's profile picture URL, or null if not set. */
+                                profile_picture_url?: string | null;
                             };
                             /** @description true if the authenticated account can reply to this comment. */
                             can_reply?: boolean;
@@ -13199,16 +13241,20 @@ export interface operations {
                         }[];
                         /** @description Total reaction count on this comment, the sum of reactions[].count. */
                         reaction_count?: number;
-                        /** @description Author of the comment. */
+                        /** @description Author of the comment. Two shapes reach this field, so read the display name as `display_name` when it is present and `name` otherwise. */
                         author?: {
                             /** @description LinkedIn profile identifier. */
                             id?: string;
-                            /** @description Author entity discriminator. */
+                            /** @description Author entity discriminator, on the shape that carries one. */
                             object?: string;
-                            /** @description Author entity type (e.g. individual, organization). */
+                            /** @description Author entity type (for example individual or organization), on the shape that carries one. */
                             type?: string;
-                            /** @description Author's display name. */
+                            /** @description Author's display name. Absent on the shape that carries `name` instead. */
                             display_name?: string;
+                            /** @description Author's display name. Absent on the shape that carries `display_name` instead. */
+                            name?: string;
+                            /** @description Author's profile picture URL, or null if not set. */
+                            profile_picture_url?: string | null;
                         };
                         /** @description true if the authenticated account can reply to this comment. */
                         can_reply?: boolean;
@@ -13404,16 +13450,20 @@ export interface operations {
                         }[];
                         /** @description Total reaction count on this comment, the sum of reactions[].count. */
                         reaction_count?: number;
-                        /** @description Author of the comment. */
+                        /** @description Author of the comment. Two shapes reach this field, so read the display name as `display_name` when it is present and `name` otherwise. */
                         author?: {
                             /** @description LinkedIn profile identifier. */
                             id?: string;
-                            /** @description Author entity discriminator. */
+                            /** @description Author entity discriminator, on the shape that carries one. */
                             object?: string;
-                            /** @description Author entity type (e.g. individual, organization). */
+                            /** @description Author entity type (for example individual or organization), on the shape that carries one. */
                             type?: string;
-                            /** @description Author's display name. */
+                            /** @description Author's display name. Absent on the shape that carries `name` instead. */
                             display_name?: string;
+                            /** @description Author's display name. Absent on the shape that carries `display_name` instead. */
+                            name?: string;
+                            /** @description Author's profile picture URL, or null if not set. */
+                            profile_picture_url?: string | null;
                         };
                         /** @description true if the authenticated account can reply to this comment. */
                         can_reply?: boolean;
@@ -13564,9 +13614,7 @@ export interface operations {
                     RateLimit: components["headers"]["RateLimit"];
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": Record<string, never>;
-                };
+                content?: never;
             };
             /** @description Missing or invalid path parameter. */
             400: {
@@ -13711,16 +13759,20 @@ export interface operations {
                         }[];
                         /** @description Total reaction count on this comment, the sum of reactions[].count. */
                         reaction_count?: number;
-                        /** @description Author of the comment. */
+                        /** @description Author of the comment. Two shapes reach this field, so read the display name as `display_name` when it is present and `name` otherwise. */
                         author?: {
                             /** @description LinkedIn profile identifier. */
                             id?: string;
-                            /** @description Author entity discriminator. */
+                            /** @description Author entity discriminator, on the shape that carries one. */
                             object?: string;
-                            /** @description Author entity type (e.g. individual, organization). */
+                            /** @description Author entity type (for example individual or organization), on the shape that carries one. */
                             type?: string;
-                            /** @description Author's display name. */
+                            /** @description Author's display name. Absent on the shape that carries `name` instead. */
                             display_name?: string;
+                            /** @description Author's display name. Absent on the shape that carries `display_name` instead. */
+                            name?: string;
+                            /** @description Author's profile picture URL, or null if not set. */
+                            profile_picture_url?: string | null;
                         };
                         /** @description true if the authenticated account can reply to this comment. */
                         can_reply?: boolean;
@@ -13892,16 +13944,20 @@ export interface operations {
                             }[];
                             /** @description Total reaction count on this comment, the sum of reactions[].count. */
                             reaction_count?: number;
-                            /** @description Author of the comment. */
+                            /** @description Author of the comment. Two shapes reach this field, so read the display name as `display_name` when it is present and `name` otherwise. */
                             author?: {
                                 /** @description LinkedIn profile identifier. */
                                 id?: string;
-                                /** @description Author entity discriminator. */
+                                /** @description Author entity discriminator, on the shape that carries one. */
                                 object?: string;
-                                /** @description Author entity type (e.g. individual, organization). */
+                                /** @description Author entity type (for example individual or organization), on the shape that carries one. */
                                 type?: string;
-                                /** @description Author's display name. */
+                                /** @description Author's display name. Absent on the shape that carries `name` instead. */
                                 display_name?: string;
+                                /** @description Author's display name. Absent on the shape that carries `display_name` instead. */
+                                name?: string;
+                                /** @description Author's profile picture URL, or null if not set. */
+                                profile_picture_url?: string | null;
                             };
                             /** @description true if the authenticated account can reply to this comment. */
                             can_reply?: boolean;
@@ -14060,12 +14116,16 @@ export interface operations {
                             sender?: {
                                 /** @description LinkedIn profile identifier. */
                                 id?: string;
-                                /** @description Author entity discriminator. */
+                                /** @description Author entity discriminator, on the shape that carries one. */
                                 object?: string;
-                                /** @description Author entity type (e.g. individual, organization). */
+                                /** @description Author entity type (for example individual or organization), on the shape that carries one. */
                                 type?: string;
-                                /** @description Author's display name. */
+                                /** @description Author's display name. Absent on the shape that carries `name` instead. */
                                 display_name?: string;
+                                /** @description Author's display name. Absent on the shape that carries `display_name` instead. */
+                                name?: string;
+                                /** @description Author's profile picture URL, or null if not set. */
+                                profile_picture_url?: string | null;
                             };
                         }[];
                         /** @description Next-page cursor; null on the last page. */
@@ -17158,12 +17218,18 @@ export interface operations {
                          * @enum {string|null}
                          */
                         user_reacted?: "like" | "celebrate" | "support" | "love" | "insightful" | "funny" | null;
-                        /** @description Author of the post or comment. */
+                        /** @description Author of the post or comment. Two shapes reach this field, so read the display name as `name` when it is present and `display_name` otherwise. */
                         author?: {
                             /** @description LinkedIn profile identifier. */
                             id?: string;
-                            /** @description Author's display name. */
+                            /** @description Author's display name. Absent on the shape that carries `display_name` instead. */
                             name?: string;
+                            /** @description Author's display name. Absent on the shape that carries `name` instead. */
+                            display_name?: string;
+                            /** @description Author entity discriminator, on the shape that carries one. */
+                            object?: string;
+                            /** @description Author entity type (for example individual or organization), on the shape that carries one. */
+                            type?: string;
                             /** @description Author's profile picture URL, or null if not set. */
                             profile_picture_url?: string | null;
                         };
@@ -17295,9 +17361,7 @@ export interface operations {
                     RateLimit: components["headers"]["RateLimit"];
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": Record<string, never>;
-                };
+                content?: never;
             };
             /** @description Missing or invalid path parameter. */
             400: {
@@ -17625,12 +17689,18 @@ export interface operations {
                              * @enum {string|null}
                              */
                             user_reacted?: "like" | "celebrate" | "support" | "love" | "insightful" | "funny" | null;
-                            /** @description Author of the post or comment. */
+                            /** @description Author of the post or comment. Two shapes reach this field, so read the display name as `name` when it is present and `display_name` otherwise. */
                             author?: {
                                 /** @description LinkedIn profile identifier. */
                                 id?: string;
-                                /** @description Author's display name. */
+                                /** @description Author's display name. Absent on the shape that carries `display_name` instead. */
                                 name?: string;
+                                /** @description Author's display name. Absent on the shape that carries `name` instead. */
+                                display_name?: string;
+                                /** @description Author entity discriminator, on the shape that carries one. */
+                                object?: string;
+                                /** @description Author entity type (for example individual or organization), on the shape that carries one. */
+                                type?: string;
                                 /** @description Author's profile picture URL, or null if not set. */
                                 profile_picture_url?: string | null;
                             };
@@ -18222,6 +18292,40 @@ export interface operations {
                                 urn?: string | null;
                                 /** @description ISO-8601 UTC datetime the parent post was created, or null if unavailable. This is the post's own creation time, not the time of the reaction. */
                                 created_at?: string | null;
+                                /** @description Shareable URL for the parent post. Present on the full form only. */
+                                share_url?: string | null;
+                                /** @description Full text of the parent post (content pass-through, never stored). Present on the full form only. */
+                                text?: string | null;
+                                /** @description true if the parent post is itself a repost. Present on the full form only. */
+                                is_repost?: boolean;
+                                /** @description Author of the parent post. Present on the full form only. */
+                                author?: {
+                                    /** @description LinkedIn profile identifier. */
+                                    id?: string;
+                                    /** @description Author's display name. Absent on the shape that carries `display_name` instead. */
+                                    name?: string;
+                                    /** @description Author's display name. Absent on the shape that carries `name` instead. */
+                                    display_name?: string;
+                                    /** @description Author entity discriminator, on the shape that carries one. */
+                                    object?: string;
+                                    /** @description Author entity type (for example individual or organization), on the shape that carries one. */
+                                    type?: string;
+                                    /** @description Author's profile picture URL, or null if not set. */
+                                    profile_picture_url?: string | null;
+                                };
+                                /** @description Per-reaction-type count buckets on the parent post. Present on the full form only. */
+                                reactions_counter?: {
+                                    /** @description Reaction type, as the platform names it. */
+                                    reaction?: string;
+                                    /** @description Count of this reaction type on the parent post. */
+                                    count?: number;
+                                }[];
+                                /** @description Total comment count on the parent post. Present on the full form only. */
+                                comments_counter?: number | null;
+                                /** @description Total repost count on the parent post. Present on the full form only. */
+                                reposts_counter?: number | null;
+                                /** @description Media attachments on the parent post. Present on the full form only. */
+                                attachments?: Record<string, never>[];
                             };
                         }[];
                         /** @description Next-page cursor; null on the last page. */
@@ -21099,7 +21203,8 @@ export interface operations {
                                 endorsement_count?: number;
                             }[];
                         }[];
-                        cursor?: string;
+                        /** @description Opaque cursor for the next page. null when there are no more results. */
+                        cursor?: string | null;
                         total_count?: number;
                     } | {
                         /** @enum {string} */
@@ -21171,7 +21276,8 @@ export interface operations {
                                 }[];
                             };
                         }[];
-                        cursor?: string;
+                        /** @description Opaque cursor for the next page. null when there are no more results. */
+                        cursor?: string | null;
                         total_count?: number;
                     } | {
                         /** @enum {string} */
@@ -21243,7 +21349,8 @@ export interface operations {
                                 }[];
                             };
                         }[];
-                        cursor?: string;
+                        /** @description Opaque cursor for the next page. null when there are no more results. */
+                        cursor?: string | null;
                         total_count?: number;
                     };
                 };

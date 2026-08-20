@@ -27837,7 +27837,7 @@
                           },
                           "author": {
                             "type": "object",
-                            "description": "Author of the comment.",
+                            "description": "Author of the comment. Two shapes reach this field, so read the display name as `display_name` when it is present and `name` otherwise.",
                             "properties": {
                               "id": {
                                 "type": "string",
@@ -27845,15 +27845,26 @@
                               },
                               "object": {
                                 "type": "string",
-                                "description": "Author entity discriminator."
+                                "description": "Author entity discriminator, on the shape that carries one."
                               },
                               "type": {
                                 "type": "string",
-                                "description": "Author entity type (e.g. individual, organization)."
+                                "description": "Author entity type (for example individual or organization), on the shape that carries one."
                               },
                               "display_name": {
                                 "type": "string",
-                                "description": "Author's display name."
+                                "description": "Author's display name. Absent on the shape that carries `name` instead."
+                              },
+                              "name": {
+                                "type": "string",
+                                "description": "Author's display name. Absent on the shape that carries `display_name` instead."
+                              },
+                              "profile_picture_url": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "description": "Author's profile picture URL, or null if not set."
                               }
                             }
                           },
@@ -27927,6 +27938,96 @@
                                   "post"
                                 ],
                                 "description": "Response type discriminator."
+                              },
+                              "share_url": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "description": "Shareable URL for the parent post. Present on the full form only."
+                              },
+                              "text": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "description": "Full text of the parent post (content pass-through, never stored). Present on the full form only."
+                              },
+                              "is_repost": {
+                                "type": "boolean",
+                                "description": "true if the parent post is itself a repost. Present on the full form only."
+                              },
+                              "author": {
+                                "type": "object",
+                                "description": "Author of the parent post. Present on the full form only.",
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "description": "LinkedIn profile identifier."
+                                  },
+                                  "object": {
+                                    "type": "string",
+                                    "description": "Author entity discriminator, on the shape that carries one."
+                                  },
+                                  "type": {
+                                    "type": "string",
+                                    "description": "Author entity type (for example individual or organization), on the shape that carries one."
+                                  },
+                                  "display_name": {
+                                    "type": "string",
+                                    "description": "Author's display name. Absent on the shape that carries `name` instead."
+                                  },
+                                  "name": {
+                                    "type": "string",
+                                    "description": "Author's display name. Absent on the shape that carries `display_name` instead."
+                                  },
+                                  "profile_picture_url": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ],
+                                    "description": "Author's profile picture URL, or null if not set."
+                                  }
+                                }
+                              },
+                              "reactions_counter": {
+                                "type": "array",
+                                "description": "Per-reaction-type count buckets on the parent post. Present on the full form only.",
+                                "items": {
+                                  "type": "object",
+                                  "description": "A per-reaction-type count bucket.",
+                                  "properties": {
+                                    "reaction": {
+                                      "type": "string",
+                                      "description": "Reaction type, as the platform names it."
+                                    },
+                                    "count": {
+                                      "type": "number",
+                                      "description": "Count of this reaction type on the parent post."
+                                    }
+                                  }
+                                }
+                              },
+                              "comments_counter": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ],
+                                "description": "Total comment count on the parent post. Present on the full form only."
+                              },
+                              "reposts_counter": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ],
+                                "description": "Total repost count on the parent post. Present on the full form only."
+                              },
+                              "attachments": {
+                                "type": "array",
+                                "description": "Media attachments on the parent post. Present on the full form only.",
+                                "items": {
+                                  "type": "object"
+                                }
                               }
                             }
                           }
@@ -28289,7 +28390,7 @@
                     },
                     "author": {
                       "type": "object",
-                      "description": "Author of the comment.",
+                      "description": "Author of the comment. Two shapes reach this field, so read the display name as `display_name` when it is present and `name` otherwise.",
                       "properties": {
                         "id": {
                           "type": "string",
@@ -28297,15 +28398,26 @@
                         },
                         "object": {
                           "type": "string",
-                          "description": "Author entity discriminator."
+                          "description": "Author entity discriminator, on the shape that carries one."
                         },
                         "type": {
                           "type": "string",
-                          "description": "Author entity type (e.g. individual, organization)."
+                          "description": "Author entity type (for example individual or organization), on the shape that carries one."
                         },
                         "display_name": {
                           "type": "string",
-                          "description": "Author's display name."
+                          "description": "Author's display name. Absent on the shape that carries `name` instead."
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "Author's display name. Absent on the shape that carries `display_name` instead."
+                        },
+                        "profile_picture_url": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Author's profile picture URL, or null if not set."
                         }
                       }
                     },
@@ -28872,17 +28984,28 @@
                                 "type": "string",
                                 "description": "LinkedIn profile identifier."
                               },
-                              "object": {
+                              "name": {
                                 "type": "string",
-                                "description": "Author entity discriminator."
-                              },
-                              "type": {
-                                "type": "string",
-                                "description": "Author entity type (e.g. individual, organization)."
+                                "description": "Author's display name. Absent on the shape that carries `display_name` instead."
                               },
                               "display_name": {
                                 "type": "string",
-                                "description": "Author's display name."
+                                "description": "Author's display name. Absent on the shape that carries `name` instead."
+                              },
+                              "object": {
+                                "type": "string",
+                                "description": "Author entity discriminator, on the shape that carries one."
+                              },
+                              "type": {
+                                "type": "string",
+                                "description": "Author entity type (for example individual or organization), on the shape that carries one."
+                              },
+                              "profile_picture_url": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "description": "Author's profile picture URL, or null if not set."
                               }
                             }
                           },
@@ -29290,7 +29413,7 @@
                     },
                     "author": {
                       "type": "object",
-                      "description": "Author of the comment.",
+                      "description": "Author of the comment. Two shapes reach this field, so read the display name as `display_name` when it is present and `name` otherwise.",
                       "properties": {
                         "id": {
                           "type": "string",
@@ -29298,15 +29421,26 @@
                         },
                         "object": {
                           "type": "string",
-                          "description": "Author entity discriminator."
+                          "description": "Author entity discriminator, on the shape that carries one."
                         },
                         "type": {
                           "type": "string",
-                          "description": "Author entity type (e.g. individual, organization)."
+                          "description": "Author entity type (for example individual or organization), on the shape that carries one."
                         },
                         "display_name": {
                           "type": "string",
-                          "description": "Author's display name."
+                          "description": "Author's display name. Absent on the shape that carries `name` instead."
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "Author's display name. Absent on the shape that carries `display_name` instead."
+                        },
+                        "profile_picture_url": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Author's profile picture URL, or null if not set."
                         }
                       }
                     },
@@ -29677,13 +29811,6 @@
         "responses": {
           "204": {
             "description": "The comment was deleted. No response body.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            },
             "headers": {
               "RateLimit-Policy": {
                 "$ref": "#/components/headers/RateLimit-Policy"
@@ -30015,7 +30142,7 @@
                     },
                     "author": {
                       "type": "object",
-                      "description": "Author of the comment.",
+                      "description": "Author of the comment. Two shapes reach this field, so read the display name as `display_name` when it is present and `name` otherwise.",
                       "properties": {
                         "id": {
                           "type": "string",
@@ -30023,15 +30150,26 @@
                         },
                         "object": {
                           "type": "string",
-                          "description": "Author entity discriminator."
+                          "description": "Author entity discriminator, on the shape that carries one."
                         },
                         "type": {
                           "type": "string",
-                          "description": "Author entity type (e.g. individual, organization)."
+                          "description": "Author entity type (for example individual or organization), on the shape that carries one."
                         },
                         "display_name": {
                           "type": "string",
-                          "description": "Author's display name."
+                          "description": "Author's display name. Absent on the shape that carries `name` instead."
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "Author's display name. Absent on the shape that carries `display_name` instead."
+                        },
+                        "profile_picture_url": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Author's profile picture URL, or null if not set."
                         }
                       }
                     },
@@ -30572,7 +30710,7 @@
                           },
                           "author": {
                             "type": "object",
-                            "description": "Author of the comment.",
+                            "description": "Author of the comment. Two shapes reach this field, so read the display name as `display_name` when it is present and `name` otherwise.",
                             "properties": {
                               "id": {
                                 "type": "string",
@@ -30580,15 +30718,26 @@
                               },
                               "object": {
                                 "type": "string",
-                                "description": "Author entity discriminator."
+                                "description": "Author entity discriminator, on the shape that carries one."
                               },
                               "type": {
                                 "type": "string",
-                                "description": "Author entity type (e.g. individual, organization)."
+                                "description": "Author entity type (for example individual or organization), on the shape that carries one."
                               },
                               "display_name": {
                                 "type": "string",
-                                "description": "Author's display name."
+                                "description": "Author's display name. Absent on the shape that carries `name` instead."
+                              },
+                              "name": {
+                                "type": "string",
+                                "description": "Author's display name. Absent on the shape that carries `display_name` instead."
+                              },
+                              "profile_picture_url": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "description": "Author's profile picture URL, or null if not set."
                               }
                             }
                           },
@@ -31001,15 +31150,26 @@
                               },
                               "object": {
                                 "type": "string",
-                                "description": "Author entity discriminator."
+                                "description": "Author entity discriminator, on the shape that carries one."
                               },
                               "type": {
                                 "type": "string",
-                                "description": "Author entity type (e.g. individual, organization)."
+                                "description": "Author entity type (for example individual or organization), on the shape that carries one."
                               },
                               "display_name": {
                                 "type": "string",
-                                "description": "Author's display name."
+                                "description": "Author's display name. Absent on the shape that carries `name` instead."
+                              },
+                              "name": {
+                                "type": "string",
+                                "description": "Author's display name. Absent on the shape that carries `display_name` instead."
+                              },
+                              "profile_picture_url": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "description": "Author's profile picture URL, or null if not set."
                               }
                             }
                           }
@@ -38897,7 +39057,7 @@
                     },
                     "author": {
                       "type": "object",
-                      "description": "Author of the post or comment.",
+                      "description": "Author of the post or comment. Two shapes reach this field, so read the display name as `name` when it is present and `display_name` otherwise.",
                       "properties": {
                         "id": {
                           "type": "string",
@@ -38905,7 +39065,19 @@
                         },
                         "name": {
                           "type": "string",
-                          "description": "Author's display name."
+                          "description": "Author's display name. Absent on the shape that carries `display_name` instead."
+                        },
+                        "display_name": {
+                          "type": "string",
+                          "description": "Author's display name. Absent on the shape that carries `name` instead."
+                        },
+                        "object": {
+                          "type": "string",
+                          "description": "Author entity discriminator, on the shape that carries one."
+                        },
+                        "type": {
+                          "type": "string",
+                          "description": "Author entity type (for example individual or organization), on the shape that carries one."
                         },
                         "profile_picture_url": {
                           "type": [
@@ -39276,13 +39448,6 @@
         "responses": {
           "204": {
             "description": "The post was deleted. No response body.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            },
             "headers": {
               "RateLimit-Policy": {
                 "$ref": "#/components/headers/RateLimit-Policy"
@@ -40115,7 +40280,7 @@
                           },
                           "author": {
                             "type": "object",
-                            "description": "Author of the post or comment.",
+                            "description": "Author of the post or comment. Two shapes reach this field, so read the display name as `name` when it is present and `display_name` otherwise.",
                             "properties": {
                               "id": {
                                 "type": "string",
@@ -40123,7 +40288,19 @@
                               },
                               "name": {
                                 "type": "string",
-                                "description": "Author's display name."
+                                "description": "Author's display name. Absent on the shape that carries `display_name` instead."
+                              },
+                              "display_name": {
+                                "type": "string",
+                                "description": "Author's display name. Absent on the shape that carries `name` instead."
+                              },
+                              "object": {
+                                "type": "string",
+                                "description": "Author entity discriminator, on the shape that carries one."
+                              },
+                              "type": {
+                                "type": "string",
+                                "description": "Author entity type (for example individual or organization), on the shape that carries one."
                               },
                               "profile_picture_url": {
                                 "type": [
@@ -41665,6 +41842,96 @@
                                   "null"
                                 ],
                                 "description": "ISO-8601 UTC datetime the parent post was created, or null if unavailable. This is the post's own creation time, not the time of the reaction."
+                              },
+                              "share_url": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "description": "Shareable URL for the parent post. Present on the full form only."
+                              },
+                              "text": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "description": "Full text of the parent post (content pass-through, never stored). Present on the full form only."
+                              },
+                              "is_repost": {
+                                "type": "boolean",
+                                "description": "true if the parent post is itself a repost. Present on the full form only."
+                              },
+                              "author": {
+                                "type": "object",
+                                "description": "Author of the parent post. Present on the full form only.",
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "description": "LinkedIn profile identifier."
+                                  },
+                                  "name": {
+                                    "type": "string",
+                                    "description": "Author's display name. Absent on the shape that carries `display_name` instead."
+                                  },
+                                  "display_name": {
+                                    "type": "string",
+                                    "description": "Author's display name. Absent on the shape that carries `name` instead."
+                                  },
+                                  "object": {
+                                    "type": "string",
+                                    "description": "Author entity discriminator, on the shape that carries one."
+                                  },
+                                  "type": {
+                                    "type": "string",
+                                    "description": "Author entity type (for example individual or organization), on the shape that carries one."
+                                  },
+                                  "profile_picture_url": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ],
+                                    "description": "Author's profile picture URL, or null if not set."
+                                  }
+                                }
+                              },
+                              "reactions_counter": {
+                                "type": "array",
+                                "description": "Per-reaction-type count buckets on the parent post. Present on the full form only.",
+                                "items": {
+                                  "type": "object",
+                                  "description": "A per-reaction-type count bucket.",
+                                  "properties": {
+                                    "reaction": {
+                                      "type": "string",
+                                      "description": "Reaction type, as the platform names it."
+                                    },
+                                    "count": {
+                                      "type": "number",
+                                      "description": "Count of this reaction type on the parent post."
+                                    }
+                                  }
+                                }
+                              },
+                              "comments_counter": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ],
+                                "description": "Total comment count on the parent post. Present on the full form only."
+                              },
+                              "reposts_counter": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ],
+                                "description": "Total repost count on the parent post. Present on the full form only."
+                              },
+                              "attachments": {
+                                "type": "array",
+                                "description": "Media attachments on the parent post. Present on the full form only.",
+                                "items": {
+                                  "type": "object"
+                                }
                               }
                             }
                           }
@@ -49721,7 +49988,11 @@
                           }
                         },
                         "cursor": {
-                          "type": "string"
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Opaque cursor for the next page. null when there are no more results."
                         },
                         "total_count": {
                           "type": "number"
@@ -49945,7 +50216,11 @@
                           }
                         },
                         "cursor": {
-                          "type": "string"
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Opaque cursor for the next page. null when there are no more results."
                         },
                         "total_count": {
                           "type": "number"
@@ -50161,7 +50436,11 @@
                           }
                         },
                         "cursor": {
-                          "type": "string"
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Opaque cursor for the next page. null when there are no more results."
                         },
                         "total_count": {
                           "type": "number"

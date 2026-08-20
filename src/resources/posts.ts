@@ -43,8 +43,13 @@ export type PostCommentListQuery = NonNullable<
 export type PostDetail =
   paths["/v1/{account_id}/posts/{post_id}"]["get"]["responses"]["200"]["content"]["application/json"];
 
-export type PostDeleteResult =
-  paths["/v1/{account_id}/posts/{post_id}"]["delete"]["responses"]["204"]["content"]["application/json"];
+/**
+ * Delete-post resolves with nothing. The API answers 204, which carries no body,
+ * and the document now says so: the 204 response declares no content at all. This
+ * alias used to be derived from a JSON body the document declared and the API
+ * never sent, so it described a value no caller could ever receive.
+ */
+export type PostDeleteResult = void;
 
 export type CreatePostBody =
   paths["/v1/{account_id}/posts"]["post"]["requestBody"]["content"]["application/json"];
