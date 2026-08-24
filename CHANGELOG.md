@@ -9,6 +9,23 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+## [0.24.2] - 2026-08-24
+
+Fixture regenerated against the deployed production document
+(`https://api.curviate.com`, `git_sha bc7f42a2...`). Patch: no `ErrorCode`
+change, no runtime change.
+
+- `already_disconnected` (`type: boolean, enum: [true]`) declared on the
+  `200` response of `DELETE /v1/accounts/{account_id}`. Present and `true`
+  only when the account was already disconnected before the call, so a
+  retry (or an id superseded by a reconnect) is distinguishable from a
+  fresh disconnect. The endpoint's status code and idempotency are
+  unchanged.
+- 404 descriptions across ~30 account-scoped operations reworded to note
+  that a superseded account id (one whose connection was replaced or
+  removed) also resolves as not-found here, with a pointer to re-read
+  `GET /v1/accounts` for the current id.
+
 ## [0.24.1] - 2026-08-24
 
 Fixture regenerated against the deployed production document
