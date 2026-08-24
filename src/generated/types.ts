@@ -3113,7 +3113,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the requested user was not found. */
+            /** @description The account_id does not belong to this tenant, or the requested user was not found. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -3270,7 +3270,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant. */
+            /** @description The account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -3439,7 +3439,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The supplied account_id does not belong to this tenant. */
+            /** @description The supplied account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -3565,7 +3565,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The supplied account_id does not belong to this tenant. */
+            /** @description The supplied account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -3689,7 +3689,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the user_id was not found. */
+            /** @description The account_id does not belong to this tenant, or the user_id was not found. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -3885,7 +3885,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant. */
+            /** @description The account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -4038,7 +4038,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the account is unknown. */
+            /** @description The account_id does not belong to this tenant, or the account is unknown. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -4180,7 +4180,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the account is unknown. */
+            /** @description The account_id does not belong to this tenant, or the account is unknown. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -4322,7 +4322,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the account is unknown. */
+            /** @description The account_id does not belong to this tenant, or the account is unknown. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -4460,7 +4460,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the account is unknown. */
+            /** @description The account_id does not belong to this tenant, or the account is unknown. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -4604,7 +4604,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the requested user was not found. */
+            /** @description The account_id does not belong to this tenant, or the requested user was not found. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -4757,7 +4757,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the requested user was not found. */
+            /** @description The account_id does not belong to this tenant, or the requested user was not found. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -4914,7 +4914,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the requested user was not found. */
+            /** @description The account_id does not belong to this tenant, or the requested user was not found. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -5031,7 +5031,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the requested user was not found. */
+            /** @description The account_id does not belong to this tenant, or the requested user was not found. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -5234,7 +5234,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the company was not found. */
+            /** @description The account_id does not belong to this tenant, or the company was not found. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -5424,7 +5424,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant. */
+            /** @description The account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -5603,7 +5603,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant. */
+            /** @description The account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -5782,7 +5782,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant. */
+            /** @description The account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -5939,7 +5939,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or a wholly-invalid invitee did not resolve. */
+            /** @description The account_id does not belong to this tenant, or a wholly-invalid invitee did not resolve. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -6105,7 +6105,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the company id does not resolve to a page. */
+            /** @description The account_id does not belong to this tenant, or the company id does not resolve to a page. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -6252,7 +6252,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the company id does not resolve to a page. */
+            /** @description The account_id does not belong to this tenant, or the company id does not resolve to a page. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -6446,7 +6446,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant. */
+            /** @description The account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -6628,7 +6628,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the conversation is not in this mailbox. */
+            /** @description The account_id does not belong to this tenant, or the conversation is not in this mailbox. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -6803,7 +6803,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the conversation does not exist. */
+            /** @description The account_id does not belong to this tenant, or the conversation does not exist. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -6963,7 +6963,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant. */
+            /** @description The account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -7144,7 +7144,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the message is not in this conversation. */
+            /** @description The account_id does not belong to this tenant, or the message is not in this conversation. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -7349,7 +7349,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant. */
+            /** @description The account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -7541,7 +7541,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the account is unknown. */
+            /** @description The account_id does not belong to this tenant, or the account is unknown. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -7705,7 +7705,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Either the account_id does not belong to this tenant, or the referenced group does not exist, is not accessible, or the account is not a member of it. */
+            /** @description Either the account_id does not belong to this tenant, or the referenced group does not exist, is not accessible, or the account is not a member of it. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -7867,7 +7867,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Either the account_id does not belong to this tenant, or the referenced group does not exist, is not accessible, or the account is not a member of it. */
+            /** @description Either the account_id does not belong to this tenant, or the referenced group does not exist, is not accessible, or the account is not a member of it. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -7991,7 +7991,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The supplied account_id does not belong to this tenant. */
+            /** @description The supplied account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -8211,7 +8211,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The supplied account_id does not belong to this tenant. */
+            /** @description The supplied account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -8408,7 +8408,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The supplied account_id does not belong to this tenant. */
+            /** @description The supplied account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -8653,7 +8653,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The supplied account_id does not belong to this tenant. */
+            /** @description The supplied account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -8917,7 +8917,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The supplied account_id does not belong to this tenant. */
+            /** @description The supplied account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -9206,7 +9206,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The supplied account_id does not belong to this tenant. */
+            /** @description The supplied account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -9360,7 +9360,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The supplied account_id does not belong to this tenant. */
+            /** @description The supplied account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -9547,7 +9547,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The supplied account_id does not belong to this tenant. */
+            /** @description The supplied account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -9696,7 +9696,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The supplied account_id does not belong to this tenant. */
+            /** @description The supplied account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -9962,7 +9962,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The supplied account_id does not belong to this tenant. */
+            /** @description The supplied account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -10112,7 +10112,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The supplied account_id does not belong to this tenant. */
+            /** @description The supplied account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -10366,7 +10366,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The chat does not exist for this account. */
+            /** @description The chat does not exist for this account. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -10485,7 +10485,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The chat does not exist for this account. */
+            /** @description The chat does not exist for this account. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -10697,7 +10697,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The chat does not exist for this account. */
+            /** @description The chat does not exist for this account. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -10837,7 +10837,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The chat does not exist for this account. */
+            /** @description The chat does not exist for this account. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -11041,7 +11041,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The message does not exist for this account. */
+            /** @description The message does not exist for this account. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -11144,7 +11144,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The message does not exist for this chat. */
+            /** @description The message does not exist for this chat. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -11272,7 +11272,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The message does not exist for this chat. */
+            /** @description The message does not exist for this chat. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -11411,7 +11411,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The message does not exist for this chat. */
+            /** @description The message does not exist for this chat. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -11526,7 +11526,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The message or attachment does not exist for this chat. */
+            /** @description The message or attachment does not exist for this chat. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -11712,7 +11712,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The supplied account_id does not belong to this tenant. */
+            /** @description The supplied account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -11851,7 +11851,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The supplied account_id does not belong to this tenant. */
+            /** @description The supplied account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -12430,7 +12430,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the account is unknown. */
+            /** @description The account_id does not belong to this tenant, or the account is unknown. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -12592,7 +12592,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the account is unknown. */
+            /** @description The account_id does not belong to this tenant, or the account is unknown. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -12706,7 +12706,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant or is unknown, or the `card_urn` does not exist on this account (it belongs to another account, or never existed). Deleting a card that you already deleted is NOT a 404; it succeeds with 200; see the 200 description. */
+            /** @description The account_id does not belong to this tenant or is unknown, or the `card_urn` does not exist on this account (it belongs to another account, or never existed). Deleting a card that you already deleted is NOT a 404; it succeeds with 200; see the 200 description. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -12829,7 +12829,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant or is unknown, or the `card_urn` does not exist on this account (it belongs to another account, or never existed). Deleting a card that you already deleted is NOT a 404; it succeeds with 200; see the 200 description. */
+            /** @description The account_id does not belong to this tenant or is unknown, or the `card_urn` does not exist on this account (it belongs to another account, or never existed). Deleting a card that you already deleted is NOT a 404; it succeeds with 200; see the 200 description. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -12991,9 +12991,9 @@ export interface operations {
                             }[];
                             /** @description The post this comment was made on. Use `urn` to tell whether you have already commented on a given post; `id` varies with the surface that returned it, `urn` does not. */
                             parent_post?: {
-                                /** @description The post's identifier as returned on this surface. Use this value, not `urn`, on sub-resource operations such as commenting. */
+                                /** @description The post's identifier as returned on this surface. Accepted as the post_id path param on every operation that takes one, including commenting, as is `urn`. */
                                 id?: string;
-                                /** @description Stable identifier for the parent post, in `urn:li:activity:ID` or `urn:li:ugcPost:ID` form. Compare it against a post's own `urn` to join a comment to its parent, including posts whose identity is a ugcPost. Also accepted as the post_id path param on get-post. null when the post carries no resolvable identity, and two nulls are not a match: treat null as unknown, never as equal. */
+                                /** @description Stable identifier for the parent post, in `urn:li:activity:ID` or `urn:li:ugcPost:ID` form. Compare it against a post's own `urn` to join a comment to its parent, including posts whose identity is a ugcPost. Also accepted as the post_id path param on every operation that takes one. null when the post carries no resolvable identity, and two nulls are not a match: treat null as unknown, never as equal. */
                                 urn?: string | null;
                                 /** @description ISO-8601 UTC datetime the parent post was created, or null if unavailable. This is the post's own creation time, not the time of the comment. */
                                 created_at?: string | null;
@@ -13059,7 +13059,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the user was not found (RESOURCE_NOT_FOUND). */
+            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the user was not found (RESOURCE_NOT_FOUND). An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -13132,7 +13132,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
                 post_id: string;
             };
             cookie?: never;
@@ -13236,7 +13236,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the post was not found (RESOURCE_NOT_FOUND). */
+            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the post was not found (RESOURCE_NOT_FOUND). An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -13302,7 +13302,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) to comment as. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
                 post_id: string;
             };
             cookie?: never;
@@ -13414,7 +13414,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the post was not found (RESOURCE_NOT_FOUND). */
+            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the post was not found (RESOURCE_NOT_FOUND). An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -13507,7 +13507,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) to reply as. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
                 post_id: string;
                 /** @description The parent comment's `id` (a bare numeric string), as returned by comment_on_post / list_comment_replies. */
                 comment_id: string;
@@ -13621,7 +13621,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the comment was not found (RESOURCE_NOT_FOUND). */
+            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the comment was not found (RESOURCE_NOT_FOUND). An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -13714,7 +13714,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) that authored the comment. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
                 post_id: string;
                 /** @description The comment's `id` (a bare numeric string), as returned by comment_on_post / list_comment_replies. */
                 comment_id: string;
@@ -13759,7 +13759,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the comment was not found (RESOURCE_NOT_FOUND). */
+            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the comment was not found (RESOURCE_NOT_FOUND). An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -13825,7 +13825,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) that authored the comment. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
                 post_id: string;
                 /** @description The comment's `id` (a bare numeric string), as returned by comment_on_post / list_comment_replies. */
                 comment_id: string;
@@ -13937,7 +13937,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the comment was not found (RESOURCE_NOT_FOUND). */
+            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the comment was not found (RESOURCE_NOT_FOUND). An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -14017,7 +14017,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
                 post_id: string;
                 /** @description The parent comment's `id` (a bare numeric string), as returned by comment_on_post / list_comment_replies. */
                 comment_id: string;
@@ -14125,7 +14125,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the comment was not found (RESOURCE_NOT_FOUND). */
+            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the comment was not found (RESOURCE_NOT_FOUND). An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -14196,7 +14196,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
                 post_id: string;
                 /** @description The comment's `id` (a bare numeric string), as returned by comment_on_post / list_comment_replies. */
                 comment_id: string;
@@ -14270,7 +14270,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the comment was not found (RESOURCE_NOT_FOUND). */
+            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the comment was not found (RESOURCE_NOT_FOUND). An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -14336,7 +14336,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) to react from. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
                 post_id: string;
                 /** @description The comment's `id` (a bare numeric string), as returned by comment_on_post / list_comment_replies. */
                 comment_id: string;
@@ -14399,7 +14399,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the comment was not found (RESOURCE_NOT_FOUND). */
+            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the comment was not found (RESOURCE_NOT_FOUND). An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -14483,7 +14483,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) whose reaction to remove. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
                 post_id: string;
                 /** @description The comment's `id` (a bare numeric string), as returned by comment_on_post / list_comment_replies. */
                 comment_id: string;
@@ -14544,7 +14544,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the comment was not found (RESOURCE_NOT_FOUND). */
+            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the comment was not found (RESOURCE_NOT_FOUND). An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -14706,7 +14706,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Account not found or not owned by this tenant. */
+            /** @description Account not found or not owned by this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -14878,7 +14878,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Account not found or not owned by this tenant. */
+            /** @description Account not found or not owned by this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -15036,7 +15036,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Account not found or not owned by this tenant. */
+            /** @description Account not found or not owned by this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -15160,7 +15160,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Account not found or not owned by this tenant. */
+            /** @description Account not found or not owned by this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -15284,7 +15284,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Account not found or not owned by this tenant. */
+            /** @description Account not found or not owned by this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -15408,7 +15408,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Account not found or not owned by this tenant. */
+            /** @description Account not found or not owned by this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -15564,7 +15564,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant. */
+            /** @description The account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -15814,7 +15814,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant. */
+            /** @description The account_id does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16027,7 +16027,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the job posting was not found. */
+            /** @description The account_id does not belong to this tenant, or the job posting was not found. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16279,7 +16279,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the job posting was not found. */
+            /** @description The account_id does not belong to this tenant, or the job posting was not found. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16448,7 +16448,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the job posting was not found. */
+            /** @description The account_id does not belong to this tenant, or the job posting was not found. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16635,7 +16635,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the job posting was not found. */
+            /** @description The account_id does not belong to this tenant, or the job posting was not found. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16770,7 +16770,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the job posting was not found. */
+            /** @description The account_id does not belong to this tenant, or the job posting was not found. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -16992,7 +16992,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the job posting was not found. */
+            /** @description The account_id does not belong to this tenant, or the job posting was not found. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -17183,7 +17183,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, or the job posting/applicant was not found. */
+            /** @description The account_id does not belong to this tenant, or the job posting/applicant was not found. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -17305,7 +17305,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant, the job posting/applicant was not found, or this applicant has no résumé on file. */
+            /** @description The account_id does not belong to this tenant, the job posting/applicant was not found, or this applicant has no résumé on file. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -17380,7 +17380,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
-                /** @description The post's `id`, as returned by get-post / list-posts. Full LinkedIn share URLs are also accepted (e.g. `https://www.linkedin.com/posts/someone_title-activity-7332661864792854528-Qh99/` or `https://www.linkedin.com/feed/update/urn:li:activity:7332661864792854528-slug`). Bare numeric ids and URN forms are also accepted: `7332661864792854528`, `urn:li:activity:N`, `urn:li:ugcPost:N`, `urn:li:share:N`. */
+                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
                 post_id: string;
             };
             cookie?: never;
@@ -17403,7 +17403,7 @@ export interface operations {
                         object?: "post";
                         /** @description The post's own identifier as returned on this surface, use this value as the post_id path param on sub-resource endpoints. Its exact value can differ between two responses about the same post, so compare `urn` rather than `id` when you need to tell whether two responses describe one post. */
                         id?: string;
-                        /** @description Stable identifier for the post itself, in `urn:li:activity:ID` or `urn:li:ugcPost:ID` form. Unlike `id`, this value is the same however you reached the post, so compare it to decide whether two responses describe the same post; a comment's `parent_post.urn` joins to it directly. For a repost it names the post being reshared, so reshares of one post share a `urn` while each keeps its own `created_at`. It is also accepted as the post_id path param on get-post; sub-resource operations still need the opaque `id`. null when the post carries no resolvable identity, and two nulls are not a match: treat null as unknown, never as equal. */
+                        /** @description Stable identifier for the post itself, in `urn:li:activity:ID` or `urn:li:ugcPost:ID` form. Unlike `id`, this value is the same however you reached the post, so compare it to decide whether two responses describe the same post; a comment's `parent_post.urn` joins to it directly. For a repost it names the post being reshared, so reshares of one post share a `urn` while each keeps its own `created_at`. It is also accepted as the post_id path param on every operation that takes one, reads and writes alike, exactly like `id` is. null when the post carries no resolvable identity, and two nulls are not a match: treat null as unknown, never as equal. */
                         urn?: string | null;
                         /** @description Shareable URL for the post. */
                         share_url?: string | null;
@@ -17499,7 +17499,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the post was not found (RESOURCE_NOT_FOUND). */
+            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the post was not found (RESOURCE_NOT_FOUND). An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -17565,7 +17565,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) that owns the post. */
                 account_id: string;
-                /** @description The post's `id`, as returned by get-post / list-posts. Full LinkedIn share URLs are also accepted (e.g. `https://www.linkedin.com/posts/someone_title-activity-7332661864792854528-Qh99/` or `https://www.linkedin.com/feed/update/urn:li:activity:7332661864792854528-slug`). Bare numeric ids and URN forms are also accepted: `7332661864792854528`, `urn:li:activity:N`, `urn:li:ugcPost:N`, `urn:li:share:N`. */
+                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
                 post_id: string;
             };
             cookie?: never;
@@ -17608,7 +17608,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the post was not found (RESOURCE_NOT_FOUND). */
+            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the post was not found (RESOURCE_NOT_FOUND). An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -17691,7 +17691,7 @@ export interface operations {
                         /** @description File name for the attachment. */
                         filename: string;
                     }[];
-                    /** @description A post_id to quote/repost. Empty text + quoted_post_id = a simple repost; non-empty text + quoted_post_id = a quote-post. */
+                    /** @description The post to quote or repost. Empty text + quoted_post_id = a simple repost; non-empty text + quoted_post_id = a quote-post. The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
                     quoted_post_id?: string;
                     /**
                      * @description Who can read the post (substrate default: anyone if omitted).
@@ -17746,7 +17746,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND). */
+            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND). An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -17874,7 +17874,7 @@ export interface operations {
                             object?: "post";
                             /** @description The post's own identifier as returned on this surface, use this value as the post_id path param on sub-resource endpoints. Its exact value can differ between two responses about the same post, so compare `urn` rather than `id` when you need to tell whether two responses describe one post. */
                             id?: string;
-                            /** @description Stable identifier for the post itself, in `urn:li:activity:ID` or `urn:li:ugcPost:ID` form. Unlike `id`, this value is the same however you reached the post, so compare it to decide whether two responses describe the same post; a comment's `parent_post.urn` joins to it directly. For a repost it names the post being reshared, so reshares of one post share a `urn` while each keeps its own `created_at`. It is also accepted as the post_id path param on get-post; sub-resource operations still need the opaque `id`. null when the post carries no resolvable identity, and two nulls are not a match: treat null as unknown, never as equal. */
+                            /** @description Stable identifier for the post itself, in `urn:li:activity:ID` or `urn:li:ugcPost:ID` form. Unlike `id`, this value is the same however you reached the post, so compare it to decide whether two responses describe the same post; a comment's `parent_post.urn` joins to it directly. For a repost it names the post being reshared, so reshares of one post share a `urn` while each keeps its own `created_at`. It is also accepted as the post_id path param on every operation that takes one, reads and writes alike, exactly like `id` is. null when the post carries no resolvable identity, and two nulls are not a match: treat null as unknown, never as equal. */
                             urn?: string | null;
                             /** @description Shareable URL for the post. */
                             share_url?: string | null;
@@ -17973,7 +17973,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the user_id could not be resolved (RESOURCE_NOT_FOUND). */
+            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the user_id could not be resolved (RESOURCE_NOT_FOUND). An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -18044,7 +18044,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
                 post_id: string;
             };
             cookie?: never;
@@ -18121,7 +18121,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the post was not found (RESOURCE_NOT_FOUND). */
+            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the post was not found (RESOURCE_NOT_FOUND). An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -18187,7 +18187,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) to react from. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
                 post_id: string;
             };
             cookie?: never;
@@ -18246,7 +18246,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the post was not found (RESOURCE_NOT_FOUND). */
+            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the post was not found (RESOURCE_NOT_FOUND). An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -18330,7 +18330,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) whose reaction to remove. */
                 account_id: string;
-                /** @description The post's `id` exactly as returned by get-post / list-posts (the opaque id form). Other id forms (bare numeric, `urn:li:...`, share URLs) are not accepted on this operation; fetch the post first and use its `id` verbatim. */
+                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
                 post_id: string;
             };
             cookie?: never;
@@ -18387,7 +18387,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the post was not found (RESOURCE_NOT_FOUND). */
+            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the post was not found (RESOURCE_NOT_FOUND). An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -18522,9 +18522,9 @@ export interface operations {
                                  * @enum {string}
                                  */
                                 object?: "post";
-                                /** @description The post's identifier as returned on this surface. Use this value, not `urn`, on sub-resource operations. */
+                                /** @description The post's identifier as returned on this surface. Accepted as the post_id path param on every operation that takes one, as is `urn`. */
                                 id?: string;
-                                /** @description Stable identifier for the parent post, in `urn:li:activity:ID` or `urn:li:ugcPost:ID` form. Also accepted as the post_id path param on get-post. null when the post carries no resolvable identity, and two nulls are not a match: treat null as unknown, never as equal. */
+                                /** @description Stable identifier for the parent post, in `urn:li:activity:ID` or `urn:li:ugcPost:ID` form. Also accepted as the post_id path param on every operation that takes one. null when the post carries no resolvable identity, and two nulls are not a match: treat null as unknown, never as equal. */
                                 urn?: string | null;
                                 /** @description ISO-8601 UTC datetime the parent post was created, or null if unavailable. This is the post's own creation time, not the time of the reaction. */
                                 created_at?: string | null;
@@ -18587,7 +18587,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the user_id could not be resolved (RESOURCE_NOT_FOUND). */
+            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the user_id could not be resolved (RESOURCE_NOT_FOUND). An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -18686,7 +18686,7 @@ export interface operations {
                             object?: "saved_post_preview";
                             /** @description The numeric activity id. */
                             id?: string | null;
-                            /** @description The activity id, stripped of the urn:li:activity: prefix, the actionable handle for save/unsave and for GET /v1/{account_id}/posts/{post_id}. */
+                            /** @description The activity id, stripped of the urn:li:activity: prefix. Accepted directly as the post_id path param on every operation that takes one, including save/unsave, get-post, and the comment and reaction sub-resources. */
                             activity_urn_id?: string | null;
                             /** @description Canonical post URL. */
                             url?: string | null;
@@ -18752,7 +18752,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND). */
+            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND). An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -18824,7 +18824,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description The post to save. Accepts the id returned by get_post / list_profile_activity, a full LinkedIn post URL, or `urn:li:activity:/ugcPost:/share:/<id>`, or a bare numeric `<id>`; all resolve to the same target. */
+                    /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
                     post_id: string;
                 };
             };
@@ -18851,7 +18851,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Missing/malformed account_id, or post_id is not a bare numeric id or a `urn:li:activity:<id>`. */
+            /** @description Missing/malformed account_id, or post_id is not in an accepted form (the `id` from a post read, a bare numeric activity id, a `urn:li:activity:<id>` URN, or a full LinkedIn post URL). */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -18878,7 +18878,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the target post was not found (RESOURCE_NOT_FOUND). */
+            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the target post was not found (RESOURCE_NOT_FOUND). An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -18953,7 +18953,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) that performs the unsave. */
                 account_id: string;
-                /** @description The post to unsave. Accepts `urn:li:activity:<id>` or a bare numeric `<id>`. */
+                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
                 post_id: string;
             };
             cookie?: never;
@@ -18981,7 +18981,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Missing/malformed account_id, or post_id is not a bare numeric id or a `urn:li:activity:<id>`. */
+            /** @description Missing/malformed account_id, or post_id is not in an accepted form (the `id` from a post read, a bare numeric activity id, a `urn:li:activity:<id>` URN, or a full LinkedIn post URL). */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -19008,7 +19008,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the target post was not found (RESOURCE_NOT_FOUND). */
+            /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the target post was not found (RESOURCE_NOT_FOUND). An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -19454,7 +19454,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND, the profile does not exist or is not visible to the operator account. */
+            /** @description RESOURCE_NOT_FOUND, the profile does not exist or is not visible to the operator account. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -19671,7 +19671,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -19983,7 +19983,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -20175,7 +20175,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Not found. RESOURCE_NOT_FOUND, the project_id supplied in the body (PIPELINE, APPLICANTS) does not exist or is not visible to this account. ACCOUNT_NOT_FOUND; the account_id does not exist or does not belong to this tenant. */
+            /** @description Not found. RESOURCE_NOT_FOUND, the project_id supplied in the body (PIPELINE, APPLICANTS) does not exist or is not visible to this account. ACCOUNT_NOT_FOUND; the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -20408,7 +20408,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -20611,7 +20611,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -20768,7 +20768,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -21021,7 +21021,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -21328,7 +21328,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -21672,7 +21672,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -21851,7 +21851,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22058,7 +22058,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22212,7 +22212,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22376,7 +22376,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22583,7 +22583,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22762,7 +22762,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -22969,7 +22969,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -23163,7 +23163,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -23300,7 +23300,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -23444,7 +23444,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Not found. RESOURCE_NOT_FOUND, the project_id, stage_id, or candidate_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description Not found. RESOURCE_NOT_FOUND, the project_id, stage_id, or candidate_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -23775,7 +23775,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Not found. RESOURCE_NOT_FOUND, the project_id or applicant_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description Not found. RESOURCE_NOT_FOUND, the project_id or applicant_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -23982,7 +23982,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Not found. RESOURCE_NOT_FOUND, the project_id or applicant_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description Not found. RESOURCE_NOT_FOUND, the project_id or applicant_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -24104,7 +24104,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND, the applicant has no résumé on file, or the project/applicant does not exist. */
+            /** @description RESOURCE_NOT_FOUND, the applicant has no résumé on file, or the project/applicant does not exist. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -24263,7 +24263,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -24577,7 +24577,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND, the profile does not exist, or ACCOUNT_NOT_FOUND; the account_id does not exist or does not belong to this tenant. */
+            /** @description RESOURCE_NOT_FOUND, the profile does not exist, or ACCOUNT_NOT_FOUND; the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -24724,7 +24724,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND, the account_id or list does not exist or does not belong to this tenant. */
+            /** @description RESOURCE_NOT_FOUND, the account_id or list does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -24880,7 +24880,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND, the account_id or list does not exist or does not belong to this tenant. */
+            /** @description RESOURCE_NOT_FOUND, the account_id or list does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -25093,7 +25093,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND, the account_id or list does not exist or does not belong to this tenant. */
+            /** @description RESOURCE_NOT_FOUND, the account_id or list does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -25342,7 +25342,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND, the account_id or list does not exist or does not belong to this tenant. */
+            /** @description RESOURCE_NOT_FOUND, the account_id or list does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -25488,7 +25488,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND, the account_id or list does not exist or does not belong to this tenant. */
+            /** @description RESOURCE_NOT_FOUND, the account_id or list does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -25634,7 +25634,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND, the account_id or list does not exist or does not belong to this tenant. */
+            /** @description RESOURCE_NOT_FOUND, the account_id or list does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -25794,7 +25794,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND, the account_id or list does not exist or does not belong to this tenant. */
+            /** @description RESOURCE_NOT_FOUND, the account_id or list does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -26178,7 +26178,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -26449,7 +26449,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -26753,7 +26753,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
+            /** @description ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -27013,7 +27013,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description No such account for this tenant. */
+            /** @description No such account for this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -27075,7 +27075,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The account was disconnected and hard-deleted; its seat is released. */
+            /** @description The account was disconnected and hard-deleted; its seat is released. This endpoint is idempotent: calling it again for the same account also returns 200, with `already_disconnected` set so you can tell the two apart. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -27092,6 +27092,11 @@ export interface operations {
                         account_id?: string;
                         /** @enum {string} */
                         status?: "archived";
+                        /**
+                         * @description Present and true only when this account was already disconnected before the call, so this request changed nothing. Absent on a normal disconnect. It means either that you are retrying a call that already succeeded, or that the id you used has been replaced by a reconnect and the live connection now has a different id. Read `GET /v1/accounts` to see your current accounts before assuming the person is disconnected.
+                         * @enum {boolean}
+                         */
+                        already_disconnected?: true;
                     };
                 };
             };
@@ -27104,7 +27109,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description No such account for this tenant. */
+            /** @description No such account for this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -27227,7 +27232,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description No such account for this tenant. */
+            /** @description No such account for this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
