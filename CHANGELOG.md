@@ -9,6 +9,28 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+## [0.24.1] - 2026-08-24
+
+Fixture regenerated against the deployed production document
+(`https://api.curviate.com`, `git_sha 52740a21...`), the first regeneration
+taken from production rather than a local server. Patch: no `ErrorCode`
+change, no runtime change.
+
+- `413` (`PAYLOAD_TOO_LARGE`) response declared on all body-taking operations
+  that accept one (61 of 63; the remaining 2 take no request body). 9 of
+  those `413` descriptions were also reworded for clarity.
+- Catching up two already-shipped-but-unfixtured changes, both live in
+  production before this release and now reflected here for the first time:
+  - `403` (`ACCOUNT_RESTRICTED` / `TIER_NOT_ACTIVE`) declared on
+    `POST /v1/auth/intent`, `POST /v1/auth/checkpoint/solve`, and
+    `POST /v1/auth/checkpoint/request`, mapping a `provider/access_restricted`
+    403 correctly instead of the previous `FEATURE_NOT_SUBSCRIBED`.
+  - Chat/message-send descriptions (`POST /v1/{account_id}/chats`,
+    `POST /v1/{account_id}/chats/{chat_id}/messages`,
+    `POST /v1/{account_id}/companies/{identifier}/chats/{chat_id}/messages`)
+    now state the 9 MiB whole-request-body budget alongside the existing
+    5 MiB per-file limit.
+
 ## [0.24.0] - 2026-08-19
 
 Regeneration against the deployed OpenAPI document following the server's
