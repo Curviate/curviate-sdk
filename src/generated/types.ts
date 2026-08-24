@@ -445,7 +445,7 @@ export interface paths {
         put?: never;
         /**
          * Reply as the company page
-         * @description Sends a message into an existing company-inbox conversation, as the page. chat_id is the conversation id from GET /v1/{account_id}/companies/{identifier}/chats, the same 2-... id this group's chat reads return, passed verbatim. The connected account must administer the page. Reply-only: a page can never start a new conversation, only answer an existing one. Send application/json with text, base64 attachments (max 5 MiB per file), or both; at least one of text or attachments is required. Message content passes through to the platform and is never stored. The response's sent_as field names the acting identity that was actually used.
+         * @description Sends a message into an existing company-inbox conversation, as the page. chat_id is the conversation id from GET /v1/{account_id}/companies/{identifier}/chats, the same 2-... id this group's chat reads return, passed verbatim. The connected account must administer the page. Reply-only: a page can never start a new conversation, only answer an existing one. Send application/json with text, base64 attachments (max 5 MiB per file, and 9 MiB for the whole request body; base64 makes a file about a third larger in the body than on disk), or both; at least one of text or attachments is required. Message content passes through to the platform and is never stored. The response's sent_as field names the acting identity that was actually used.
          */
         post: operations["postV1AccountIdCompaniesIdentifierChatsChatIdMessages"];
         delete?: never;
@@ -749,7 +749,7 @@ export interface paths {
         put?: never;
         /**
          * Start a chat
-         * @description Starts a new chat with one or more members from a connected account. Send application/json; attach files as base64-encoded attachments (max 5 MiB per file). Message content passes through to the platform and is never stored. Company pages are reply-only and cannot start a conversation; reply using a `COMPANY_` chat id from GET /v1/{account_id}/inboxes/{inbox_id}/chats instead.
+         * @description Starts a new chat with one or more members from a connected account. Send application/json; attach files as base64-encoded attachments (max 5 MiB per file, and 9 MiB for the whole request body; base64 makes a file about a third larger in the body than on disk). Message content passes through to the platform and is never stored. Company pages are reply-only and cannot start a conversation; reply using a `COMPANY_` chat id from GET /v1/{account_id}/inboxes/{inbox_id}/chats instead.
          */
         post: operations["postV1AccountIdChats"];
         delete?: never;
@@ -797,7 +797,7 @@ export interface paths {
         put?: never;
         /**
          * Send a message
-         * @description Sends a message into an existing chat. Send application/json with text, base64 attachments (max 5 MiB per file), or both; at least one of text or attachments is required. Message content passes through to the platform and is never stored. Sending on behalf of a company page: use a COMPANY_ chat id (from GET /v1/{account_id}/inboxes/{inbox_id}/chats) and the message sends AS THE PAGE, no separate parameter needed. The response's sent_as field names the acting identity that was actually used. Company pages are reply-only: this endpoint can answer an existing conversation on a page's behalf, but a page can never start a new one.
+         * @description Sends a message into an existing chat. Send application/json with text, base64 attachments (max 5 MiB per file, and 9 MiB for the whole request body; base64 makes a file about a third larger in the body than on disk), or both; at least one of text or attachments is required. Message content passes through to the platform and is never stored. Sending on behalf of a company page: use a COMPANY_ chat id (from GET /v1/{account_id}/inboxes/{inbox_id}/chats) and the message sends AS THE PAGE, no separate parameter needed. The response's sent_as field names the acting identity that was actually used. Company pages are reply-only: this endpoint can answer an existing conversation on a page's behalf, but a page can never start a new one.
          */
         post: operations["postV1AccountIdChatsChatIdMessages"];
         delete?: never;
@@ -3279,7 +3279,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description picture or background_picture exceeds the size limit. */
+            /** @description Payload too large. Three triggers, smallest first: the platform's own ceiling on total request size, which rejects bodies from roughly 1 MB and is the one most callers hit; then the caps enforced here, 5 MiB per attachment and 9 MiB for the whole request body. Base64 inflates a file by about 33 percent, so a 5 MiB file costs about 6.7 MiB of the body budget. Send fewer or smaller attachments; retrying the same request unchanged will not help. */
             413: {
                 headers: {
                     [name: string]: unknown;
@@ -3691,6 +3691,15 @@ export interface operations {
             };
             /** @description The account_id does not belong to this tenant, or the user_id was not found. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5939,6 +5948,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description The account is restricted and cannot perform this operation. */
             422: {
                 headers: {
@@ -6954,7 +6972,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Payload too large, an attachment exceeds 5 MiB or the total body exceeds 8 MiB. */
+            /** @description Payload too large. Three triggers, smallest first: the platform's own ceiling on total request size, which rejects bodies from roughly 1 MB and is the one most callers hit; then the caps enforced here, 5 MiB per attachment and 9 MiB for the whole request body. Base64 inflates a file by about 33 percent, so a 5 MiB file costs about 6.7 MiB of the body budget. Send fewer or smaller attachments; retrying the same request unchanged will not help. */
             413: {
                 headers: {
                     [name: string]: unknown;
@@ -8202,6 +8220,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Either FILTER_CANDIDATES_REQUIRED, meaning a filter value matched several options and you must choose one, or ACCOUNT_RESTRICTED, meaning the connected account cannot perform searches. On FILTER_CANDIDATES_REQUIRED the body carries unresolved[], listing every offending field with its value and the candidate ids to pick from, plus a next_action sentence. Re-send the request with a chosen id. */
             422: {
                 headers: {
@@ -8383,6 +8410,15 @@ export interface operations {
             };
             /** @description The supplied account_id does not belong to this tenant. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -8619,6 +8655,15 @@ export interface operations {
             };
             /** @description The supplied account_id does not belong to this tenant. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -8874,6 +8919,15 @@ export interface operations {
             };
             /** @description The supplied account_id does not belong to this tenant. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -9154,6 +9208,15 @@ export interface operations {
             };
             /** @description The supplied account_id does not belong to this tenant. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -9486,6 +9549,15 @@ export interface operations {
             };
             /** @description The supplied account_id does not belong to this tenant. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -10049,7 +10121,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Payload too large: an attachment exceeds 5 MiB or the total body exceeds 8 MiB. */
+            /** @description Payload too large. Three triggers, smallest first: the platform's own ceiling on total request size, which rejects bodies from roughly 1 MB and is the one most callers hit; then the caps enforced here, 5 MiB per attachment and 9 MiB for the whole request body. Base64 inflates a file by about 33 percent, so a 5 MiB file costs about 6.7 MiB of the body budget. Send fewer or smaller attachments; retrying the same request unchanged will not help. */
             413: {
                 headers: {
                     [name: string]: unknown;
@@ -10422,6 +10494,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Rate limited. */
             429: {
                 headers: {
@@ -10765,7 +10846,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Payload too large: an attachment exceeds 5 MiB or the total body exceeds 8 MiB. */
+            /** @description Payload too large. Three triggers, smallest first: the platform's own ceiling on total request size, which rejects bodies from roughly 1 MB and is the one most callers hit; then the caps enforced here, 5 MiB per attachment and 9 MiB for the whole request body. Base64 inflates a file by about 33 percent, so a 5 MiB file costs about 6.7 MiB of the body budget. Send fewer or smaller attachments; retrying the same request unchanged will not help. */
             413: {
                 headers: {
                     [name: string]: unknown;
@@ -11200,6 +11281,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description The edit window (~60 minutes) has passed for this message. */
             422: {
                 headers: {
@@ -11323,6 +11413,15 @@ export interface operations {
             };
             /** @description The message does not exist for this chat. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -11754,6 +11853,15 @@ export interface operations {
             };
             /** @description The supplied account_id does not belong to this tenant. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -12607,6 +12715,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Rate limited, retry after the hinted delay. */
             429: {
                 headers: {
@@ -12714,6 +12831,15 @@ export interface operations {
             };
             /** @description The account_id does not belong to this tenant or is unknown, or the `card_urn` does not exist on this account (it belongs to another account, or never existed). Deleting a card that you already deleted is NOT a 404; it succeeds with 200; see the 200 description. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -13297,7 +13423,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Attachment or total request body exceeds the size cap (base64 inflates ~+33%). */
+            /** @description Payload too large. Three triggers, smallest first: the platform's own ceiling on total request size, which rejects bodies from roughly 1 MB and is the one most callers hit; then the caps enforced here, 5 MiB per attachment and 9 MiB for the whole request body. Base64 inflates a file by about 33 percent, so a 5 MiB file costs about 6.7 MiB of the body budget. Send fewer or smaller attachments; retrying the same request unchanged will not help. */
             413: {
                 headers: {
                     [name: string]: unknown;
@@ -13504,7 +13630,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Attachment or total request body exceeds the size cap (base64 inflates ~+33%). */
+            /** @description Payload too large. Three triggers, smallest first: the platform's own ceiling on total request size, which rejects bodies from roughly 1 MB and is the one most callers hit; then the caps enforced here, 5 MiB per attachment and 9 MiB for the whole request body. Base64 inflates a file by about 33 percent, so a 5 MiB file costs about 6.7 MiB of the body budget. Send fewer or smaller attachments; retrying the same request unchanged will not help. */
             413: {
                 headers: {
                     [name: string]: unknown;
@@ -13813,6 +13939,15 @@ export interface operations {
             };
             /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the comment was not found (RESOURCE_NOT_FOUND). */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -14273,6 +14408,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description The platform rejected the reaction. Conservative mapping, outage-indistinguishable errors stay 502. */
             422: {
                 headers: {
@@ -14402,6 +14546,15 @@ export interface operations {
             };
             /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the comment was not found (RESOURCE_NOT_FOUND). */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -14564,6 +14717,15 @@ export interface operations {
             };
             /** @description A connect-request to this member already exists, or you are already connected (CONNECTION_REQUEST_CONFLICT). Do not re-send. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -15007,6 +15169,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Quota exceeded, slow down and retry after the hinted delay. */
             429: {
                 headers: {
@@ -15122,6 +15293,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Quota exceeded, slow down and retry after the hinted delay. */
             429: {
                 headers: {
@@ -15230,6 +15410,15 @@ export interface operations {
             };
             /** @description Account not found or not owned by this tenant. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -15627,6 +15816,15 @@ export interface operations {
             };
             /** @description The account_id does not belong to this tenant. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -16090,6 +16288,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description The account is restricted and cannot edit this job posting. */
             422: {
                 headers: {
@@ -16437,6 +16644,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description The account is restricted and cannot publish this job posting. */
             422: {
                 headers: {
@@ -16556,6 +16772,15 @@ export interface operations {
             };
             /** @description The account_id does not belong to this tenant, or the job posting was not found. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -16769,6 +16994,15 @@ export interface operations {
             };
             /** @description The account_id does not belong to this tenant, or the job posting was not found. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -17521,7 +17755,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Attachment or total request body exceeds the size cap (base64 inflates ~+33%). */
+            /** @description Payload too large. Three triggers, smallest first: the platform's own ceiling on total request size, which rejects bodies from roughly 1 MB and is the one most callers hit; then the caps enforced here, 5 MiB per attachment and 9 MiB for the whole request body. Base64 inflates a file by about 33 percent, so a 5 MiB file costs about 6.7 MiB of the body budget. Send fewer or smaller attachments; retrying the same request unchanged will not help. */
             413: {
                 headers: {
                     [name: string]: unknown;
@@ -18021,6 +18255,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description The platform rejected the reaction. Conservative mapping. */
             422: {
                 headers: {
@@ -18146,6 +18389,15 @@ export interface operations {
             };
             /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the post was not found (RESOURCE_NOT_FOUND). */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -18628,6 +18880,15 @@ export interface operations {
             };
             /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the target post was not found (RESOURCE_NOT_FOUND). */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -19419,7 +19680,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description PAYLOAD_TOO_LARGE, an attachment exceeds 5 MiB, or the total body exceeds 8 MiB. */
+            /** @description Payload too large. Three triggers, smallest first: the platform's own ceiling on total request size, which rejects bodies from roughly 1 MB and is the one most callers hit; then the caps enforced here, 5 MiB per attachment and 9 MiB for the whole request body. Base64 inflates a file by about 33 percent, so a 5 MiB file costs about 6.7 MiB of the body budget. Send fewer or smaller attachments; retrying the same request unchanged will not help. */
             413: {
                 headers: {
                     [name: string]: unknown;
@@ -19731,6 +19992,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Unprocessable entity, the account or project state is invalid for this operation. */
             422: {
                 headers: {
@@ -19907,6 +20177,15 @@ export interface operations {
             };
             /** @description Not found. RESOURCE_NOT_FOUND, the project_id supplied in the body (PIPELINE, APPLICANTS) does not exist or is not visible to this account. ACCOUNT_NOT_FOUND; the account_id does not exist or does not belong to this tenant. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -20498,6 +20777,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Unprocessable entity, the account or project state is invalid for this operation. */
             422: {
                 headers: {
@@ -20735,6 +21023,15 @@ export interface operations {
             };
             /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -21033,6 +21330,15 @@ export interface operations {
             };
             /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -21368,6 +21674,15 @@ export interface operations {
             };
             /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -21745,6 +22060,15 @@ export interface operations {
             };
             /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -22268,6 +22592,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Unprocessable entity, the account or project state is invalid for this operation. */
             422: {
                 headers: {
@@ -22645,6 +22978,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Unprocessable entity, the account or project state is invalid for this operation. */
             422: {
                 headers: {
@@ -22830,6 +23172,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Unprocessable entity, the account or project state is invalid for this operation. */
             422: {
                 headers: {
@@ -22951,6 +23302,15 @@ export interface operations {
             };
             /** @description Not found. RESOURCE_NOT_FOUND, the project_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -23086,6 +23446,15 @@ export interface operations {
             };
             /** @description Not found. RESOURCE_NOT_FOUND, the project_id, stage_id, or candidate_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -23408,6 +23777,15 @@ export interface operations {
             };
             /** @description Not found. RESOURCE_NOT_FOUND, the project_id or applicant_id does not exist or is not visible to this account. ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -23894,7 +24272,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description PAYLOAD_TOO_LARGE, an attachment exceeds 5 MiB, or the total body exceeds 8 MiB. */
+            /** @description Payload too large. Three triggers, smallest first: the platform's own ceiling on total request size, which rejects bodies from roughly 1 MB and is the one most callers hit; then the caps enforced here, 5 MiB per attachment and 9 MiB for the whole request body. Base64 inflates a file by about 33 percent, so a 5 MiB file costs about 6.7 MiB of the body budget. Send fewer or smaller attachments; retrying the same request unchanged will not help. */
             413: {
                 headers: {
                     [name: string]: unknown;
@@ -24724,6 +25102,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description ACCOUNT_RESTRICTED, the account cannot perform this operation. */
             422: {
                 headers: {
@@ -24964,6 +25351,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description ACCOUNT_RESTRICTED, the account cannot perform this operation. */
             422: {
                 headers: {
@@ -25101,6 +25497,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description ACCOUNT_RESTRICTED, the account cannot perform this operation. */
             422: {
                 headers: {
@@ -25231,6 +25636,15 @@ export interface operations {
             };
             /** @description RESOURCE_NOT_FOUND, the account_id or list does not exist or does not belong to this tenant. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -25773,6 +26187,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description ACCOUNT_RESTRICTED, the account cannot perform this operation. */
             422: {
                 headers: {
@@ -26028,6 +26451,15 @@ export interface operations {
             };
             /** @description ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -26323,6 +26755,15 @@ export interface operations {
             };
             /** @description ACCOUNT_NOT_FOUND, the account_id does not exist or does not belong to this tenant. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -26795,6 +27236,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Rate limited, slow down and retry after the hinted delay. */
             429: {
                 headers: {
@@ -27040,8 +27490,26 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Either LINKEDIN_FEATURE_NOT_SUBSCRIBED (the seat requested a premium product, Sales Navigator or Recruiter, that this LinkedIn account is not subscribed to; match the seat tier to the account's actual plan, or use a different seat), or ACCOUNT_RESTRICTED (LinkedIn has restricted this account; sign in to LinkedIn to see what it needs, resolve it there, then connect again). The code field distinguishes the two. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description This LinkedIn account is already linked (names your own account_id when your tenant owns it). */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -27188,6 +27656,15 @@ export interface operations {
                     };
                 };
             };
+            /** @description ACCOUNT_RESTRICTED. LinkedIn has restricted this account (not a wrong code and not our subscription gate). Sign in to LinkedIn to see what it needs, resolve it there, then reconnect. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description No pending checkpoint for this account. */
             404: {
                 headers: {
@@ -27199,6 +27676,15 @@ export interface operations {
             };
             /** @description The checkpoint has expired. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -27300,6 +27786,15 @@ export interface operations {
                     };
                 };
             };
+            /** @description ACCOUNT_RESTRICTED. LinkedIn has restricted this account. Sign in to LinkedIn to see what it needs, resolve it there, then reconnect. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description No pending checkpoint for this account. */
             404: {
                 headers: {
@@ -27311,6 +27806,15 @@ export interface operations {
             };
             /** @description The checkpoint has expired. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -27452,6 +27956,15 @@ export interface operations {
             };
             /** @description The approved LinkedIn identity is already linked to another account. Reconnect or disconnect the existing account instead of linking it again. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -27916,6 +28429,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Rate limited, slow down and retry after the hinted delay. */
             429: {
                 headers: {
@@ -28366,6 +28888,15 @@ export interface operations {
             };
             /** @description Webhook not found, or one or more account_ids not found for this tenant. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };

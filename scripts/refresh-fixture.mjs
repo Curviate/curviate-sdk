@@ -27,6 +27,19 @@
 //
 // This writes the fixture only. The generated types are a separate step on
 // purpose, so a refresh and a regen show up as two reviewable changes.
+//
+// PRE-PUBLISH REGEN MUST TARGET THE DEPLOYED DOCUMENT, i.e.
+// CURVIATE_BASE_URL=https://api.curviate.com — not localhost. A fixture
+// captured from a local server can encode local-only state that never
+// shipped, and nothing downstream catches it: check:types only proves the
+// fixture and the committed types agree with each other, never that either
+// matches production. The fixture also lags whatever was deployed *between*
+// publishes, not just the current batch — a regen can turn up changes from
+// an earlier, unrelated deploy that never made it into any fixture yet
+// (found 2026-08-22, sdk 0.24.x: a prior fixture captured from
+// localhost:3007 was missing an already-shipped 403 block). That is
+// expected, not a sign the deployed document is wrong — verify each
+// surprise against what is actually live, then proceed.
 
 import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
