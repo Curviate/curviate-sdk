@@ -7,6 +7,12 @@ coverage/
 .npmrc
 *.tgz
 
+# This repo ships no committed lockfile/workspace manifest (see the publish
+# runbook's "no lockfile" gotcha) — a local `pnpm install` throwaway config
+# must never get swept into a commit by an unqualified `git add -A`.
+pnpm-lock.yaml
+pnpm-workspace.yaml
+
 # NOTE: src/generated/ is intentionally NOT ignored — the generated types
 # are committed so consumers get full type safety straight from install,
 # with no codegen step or running server required to build against the SDK.

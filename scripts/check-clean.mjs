@@ -144,12 +144,19 @@ const PATTERNS = [
   },
   {
     label: "npm auth token (credential shape)",
-    // Classic npm auth tokens are "npm_" + 36 base62 chars, the shape an
+    // Classic granular npm auth tokens are "npm_" + 36+ base62 chars (qa,
+    // cycle 3: exactly-36 missed a real longer token) — the shape an
     // accidentally-committed .npmrc `//registry.npmjs.org/:_authToken=` line
-    // carries. Same gap probed and fixed in the sibling cli package's copy
-    // of this scanner (security-auditor F3); ported here since both copies
-    // shared the same hole.
-    pattern: /\bnpm_[A-Za-z0-9]{36}\b/,
+    // carries. Also matches the legacy pre-granular token shape, a bare UUID,
+    // which carries no "npm_" prefix at all — keyed off the `_authToken=`
+    // assignment itself (not a bare UUID anywhere) so an unrelated UUID in
+    // ordinary code, e.g. a request id, is not a false positive. Verified
+    // clean against npm_config_*/npm_package_*/npm_lifecycle_* prose, none of
+    // which contain a 20+ char unbroken alnum run after the underscore.
+    // Same gap probed and fixed in the sibling cli package's copy of this
+    // scanner (security-auditor F3); ported here since both copies shared it.
+    pattern:
+      /\bnpm_[A-Za-z0-9]{36,}\b|_authToken\s*=\s*(?:npm_[A-Za-z0-9]{20,}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i,
   },
 ];
 
