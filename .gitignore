@@ -4,6 +4,8 @@ dist/
 *.log
 .DS_Store
 coverage/
+.npmrc
+*.tgz
 
 # NOTE: src/generated/ is intentionally NOT ignored — the generated types
 # are committed so consumers get full type safety straight from install,
