@@ -89,7 +89,16 @@ const SCAN_EXTS = new Set([".ts", ".mts", ".cts", ".mjs", ".cjs", ".js", ".md", 
 
 // Extensionless dotfiles to scan explicitly, matched by exact basename
 // (SCAN_EXTS can't catch these — see the module header comment).
-const SCAN_DOTFILES = new Set([".gitignore", ".npmrc", ".nvmrc", ".env.example", ".editorconfig"]);
+// LICENSE added (security-auditor F2): it ships in this package's
+// `files` allowlist and extname("LICENSE") === "" like every dotfile above,
+// so it sat outside both the extension filter and the dotfile allowlist —
+// unscanned here (and, before this same fix, by check:copy too, which
+// already carried this exact SCAN_BASENAMES fix and its own comment naming
+// the hazard). Proven by mutation: appending the vendor name to LICENSE
+// passed every gate green until this fix. The rest of the `files` array
+// (README.md/CHANGELOG.md, src/generated/types.ts, dist/) was checked too —
+// all already extensioned or covered by --dist mode; LICENSE was the only gap.
+const SCAN_DOTFILES = new Set([".gitignore", ".npmrc", ".nvmrc", ".env.example", ".editorconfig", "LICENSE"]);
 
 // The vendor name assembled from parts so the literal never appears in this file.
 const vendorName = ["uni", "pi", "le"].join("");

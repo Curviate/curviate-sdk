@@ -41,16 +41,26 @@
 // resolved==declared, then publish @curviate/cli.
 
 import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { satisfies, validRange } from "semver";
+
+const REAL_NPM_REGISTRY = "https://registry.npmjs.org/";
 
 /**
  * @param {string} pkgName npm package name to look up
  * @returns {Record<string, string>} the published package's `dependencies`
  */
 export function fetchDependenciesFromRegistry(pkgName) {
-  const raw = execFileSync("npm", ["view", pkgName, "dependencies", "--json"], {
-    encoding: "utf8",
-  });
+  // --registry pinned explicitly (security-auditor F4): this runs with
+  // ambient npm config, so a project `.npmrc` or `npm_config_registry` env
+  // var could otherwise redirect the lookup and spoof a false OK. Not a
+  // credential-leak path (no token flows through this call) — this pin is
+  // about correctness of the oracle, not secrecy.
+  const raw = execFileSync(
+    "npm",
+    ["view", pkgName, "dependencies", "--json", "--registry", REAL_NPM_REGISTRY],
+    { encoding: "utf8" },
+  );
   const trimmed = raw.trim();
   if (trimmed.length === 0) return {};
   return JSON.parse(trimmed);
@@ -130,6 +140,17 @@ async function main() {
 // Run only when invoked directly, never on import — a test drives
 // checkCliNotice() with an injected fetcher and must not trigger
 // process.exit or a real npm-registry call as a side effect of importing.
-if (process.argv[1] === new URL(import.meta.url).pathname) {
+//
+// MUST be fileURLToPath(), never `new URL(import.meta.url).pathname` — the
+// latter percent-encodes (space -> %20, # -> %23, ? -> %3F, % -> %25,
+// non-ASCII -> UTF-8 percent-escapes) while process.argv[1] never does, so
+// any checkout path containing one of those characters makes this
+// comparison silently false: main() never runs, no output, exit 0 — a
+// runbook step read as PASS when it never executed at all (security-auditor
+// F1). The publish runbook's step 1 clones into an operator-chosen
+// `/tmp/<scratch>/`, so this was reachable in normal use. check-clean.mjs
+// and check-sdk-pin.mjs in the sibling CLI repo already use the correct
+// idiom; this was the one script that didn't.
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   await main();
 }

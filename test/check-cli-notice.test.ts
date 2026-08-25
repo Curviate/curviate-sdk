@@ -28,10 +28,16 @@
  *      install. Fixed with `semver.satisfies()`.
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 import { execFileSync } from "node:child_process";
+import { mkdtemp, cp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 // @ts-expect-error - plain .mjs tooling script, no type declarations
 import { checkCliNotice } from "../scripts/check-cli-notice.mjs";
+
+const REAL_SCRIPT_PATH = fileURLToPath(new URL("../scripts/check-cli-notice.mjs", import.meta.url));
 
 describe("checkCliNotice — semver range satisfaction, not string equality", () => {
   it.each([
@@ -167,5 +173,65 @@ describe("check:cli-notice — real invocation via --published-version, not a li
 
   it("the real script (no harness) exits 1 with FAIL, not NOTICE, when --published-version is omitted", () => {
     expect(() => execFileSync(process.execPath, [scriptPath], { encoding: "utf8" })).toThrow();
+  });
+});
+
+describe("check:cli-notice — main() actually runs from a path with special characters (security-auditor F1)", () => {
+  // `new URL(import.meta.url).pathname` percent-encodes (space -> %20, # ->
+  // %23, ? -> %3F, % -> %25, non-ASCII -> UTF-8 percent-escapes) while
+  // process.argv[1] never does, so a direct-invocation check written with
+  // `.pathname` silently never matches on any such path: main() never runs,
+  // no stderr output, exit 0 — a runbook step read as PASS when it never
+  // executed at all. The runbook's own step 1 clones into an
+  // operator-chosen `/tmp/<scratch>/`, so this is reachable in normal use.
+  //
+  // Copied (not symlinked) into a directory NESTED inside this package —
+  // rather than a bare OS tmp dir — so plain Node ESM module resolution
+  // still finds this package's real node_modules by walking up parent
+  // directories; a bare `tmpdir()` location would need its own node_modules
+  // just to resolve the script's `semver` import, which is irrelevant to
+  // what this test is actually proving.
+  const pkgRoot = dirname(dirname(REAL_SCRIPT_PATH));
+  const specialDirNames = [
+    "has space",
+    "has#hash",
+    "has?question",
+    "has%percent",
+    "unicode-éé",
+  ];
+
+  const tmpBases: string[] = [];
+  afterEach(async () => {
+    while (tmpBases.length > 0) {
+      const dir = tmpBases.pop()!;
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it.each(specialDirNames)("produces output and exits non-zero when run from a path containing %s", async (specialName) => {
+    const base = await mkdtemp(join(pkgRoot, ".tmp-f1-regression-"));
+    tmpBases.push(base);
+    const targetDir = join(base, specialName);
+    await cp(join(pkgRoot, "scripts"), targetDir, { recursive: true });
+    const copiedScript = join(targetDir, "check-cli-notice.mjs");
+
+    // No --published-version given -> if main() actually runs, this is the
+    // documented FAIL path: non-zero exit, stderr output. The broken
+    // `.pathname` shape instead exits 0 with empty stdout/stderr.
+    let stdout = "";
+    let stderr = "";
+    let exitCode = 0;
+    try {
+      stdout = execFileSync(process.execPath, [copiedScript], { encoding: "utf8" });
+    } catch (err) {
+      const e = err as { status?: number; stdout?: string; stderr?: string };
+      exitCode = e.status ?? 1;
+      stdout = e.stdout ?? "";
+      stderr = e.stderr ?? "";
+    }
+
+    expect(exitCode).not.toBe(0);
+    expect((stdout + stderr).length).toBeGreaterThan(0);
+    expect(stdout + stderr).toMatch(/check:cli-notice FAIL/);
   });
 });
