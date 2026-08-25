@@ -9,6 +9,21 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+### Added
+
+- **`postpublish` now notices a stale CLI pin.** After every `npm publish`,
+  `scripts/check-cli-notice.mjs` compares the version just published
+  against what `@curviate/cli` actually declares for `@curviate/sdk` on the
+  registry (never a dist-tag lookup, since `npm view @curviate/sdk version`
+  returns `latest` and this package's own RC/0.x releases route to `--tag
+  next`). Exits non-zero, loudly, when the CLI has not picked up the
+  release yet. It cannot undo the publish and does not try to; it replaces
+  the prior manual runbook step, which could not fail by construction
+  (the SDK-CLI drift-notice defect).
+- `check:clean` now flags a committed npm auth token (`npm_`-prefixed
+  shape), and `.npmrc`/`*.tgz` are gitignored. Same gap as the sibling
+  `cli` package's copy of this scanner (security-auditor F3).
+
 ## [0.24.2] - 2026-08-24
 
 Fixture regenerated against the deployed production document

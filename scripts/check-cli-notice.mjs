@@ -1,6 +1,6 @@
 // postpublish — notices when a just-published SDK version leaves the CLI's
-// declared pin stale (Curviate/redarc#1001 bullet 3: "make the publish flow
-// notice"). Wired as `postpublish`, an npm lifecycle script npm runs
+// declared pin stale ("make the publish flow notice" — the requirement this
+// replaces a manual runbook step for). Wired as `postpublish`, an npm lifecycle script npm runs
 // automatically after `npm publish` succeeds — unlike a runbook step, it
 // cannot be forgotten, and unlike the CLI's own `check:sdk-pin` prepack
 // guard, it fires from the SDK side of the publish, not the CLI's.

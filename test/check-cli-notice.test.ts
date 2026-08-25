@@ -1,6 +1,6 @@
 /**
  * Mutation-proven coverage for the postpublish CLI-resolution notice
- * (scripts/check-cli-notice.mjs) — Curviate/redarc#1001 bullet 3.
+ * (scripts/check-cli-notice.mjs), the SDK-CLI drift-notice defect.
  *
  * Three real reasons the OLD runbook-only "check" could never actually fire
  * are covered here, each with a red-then-green pair:
