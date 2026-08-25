@@ -20,10 +20,12 @@
 // The oracle is what a user actually resolves — `npm view @curviate/cli
 // dependencies` — never a dist-tag lookup. `npm view @curviate/sdk version`
 // (the shape the old runbook snippet used) returns the registry's `latest`
-// DIST-TAG, not the version just published; this repo's own /npm-publish
-// skill routes every 0.x/RC release to `--tag next`, and every SDK release
-// right now IS 0.x, so a next-tagged publish would silently compare against
-// an unrelated "latest" and print a false OK (security-auditor F4).
+// DIST-TAG, not the version just published. Per /npm-publish, ordinary 0.x
+// releases publish untagged and land on `latest`, so today those two usually
+// coincide; a deliberate `--tag next` RC (an opt-in workflow, not the default
+// path) would leave `latest` pointing at an unrelated version and the dist-tag
+// read would print a false OK (security-auditor F4). Taking the version from
+// the explicit --published-version argument avoids the question entirely.
 //
 // Match is semver RANGE SATISFACTION, not string equality: the CLI's
 // declared dependency is a range (e.g. `~0.24.2`, `=0.24.2`, `*`), and every
