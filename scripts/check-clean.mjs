@@ -89,7 +89,16 @@ const SCAN_EXTS = new Set([".ts", ".mts", ".cts", ".mjs", ".cjs", ".js", ".md", 
 
 // Extensionless dotfiles to scan explicitly, matched by exact basename
 // (SCAN_EXTS can't catch these — see the module header comment).
-const SCAN_DOTFILES = new Set([".gitignore", ".npmrc", ".nvmrc", ".env.example", ".editorconfig"]);
+// LICENSE added (security-auditor F2): it ships in this package's
+// `files` allowlist and extname("LICENSE") === "" like every dotfile above,
+// so it sat outside both the extension filter and the dotfile allowlist —
+// unscanned here (and, before this same fix, by check:copy too, which
+// already carried this exact SCAN_BASENAMES fix and its own comment naming
+// the hazard). Proven by mutation: appending the vendor name to LICENSE
+// passed every gate green until this fix. The rest of the `files` array
+// (README.md/CHANGELOG.md, src/generated/types.ts, dist/) was checked too —
+// all already extensioned or covered by --dist mode; LICENSE was the only gap.
+const SCAN_DOTFILES = new Set([".gitignore", ".npmrc", ".nvmrc", ".env.example", ".editorconfig", "LICENSE"]);
 
 // The vendor name assembled from parts so the literal never appears in this file.
 const vendorName = ["uni", "pi", "le"].join("");
@@ -141,6 +150,22 @@ const PATTERNS = [
   {
     label: "substrate vendor name",
     pattern: new RegExp(vendorName, "i"),
+  },
+  {
+    label: "npm auth token (credential shape)",
+    // Classic granular npm auth tokens are "npm_" + 36+ base62 chars (qa,
+    // cycle 3: exactly-36 missed a real longer token) — the shape an
+    // accidentally-committed .npmrc `//registry.npmjs.org/:_authToken=` line
+    // carries. Also matches the legacy pre-granular token shape, a bare UUID,
+    // which carries no "npm_" prefix at all — keyed off the `_authToken=`
+    // assignment itself (not a bare UUID anywhere) so an unrelated UUID in
+    // ordinary code, e.g. a request id, is not a false positive. Verified
+    // clean against npm_config_*/npm_package_*/npm_lifecycle_* prose, none of
+    // which contain a 20+ char unbroken alnum run after the underscore.
+    // Same gap probed and fixed in the sibling cli package's copy of this
+    // scanner (security-auditor F3); ported here since both copies shared it.
+    pattern:
+      /\bnpm_[A-Za-z0-9]{36,}\b|_authToken\s*=\s*(?:npm_[A-Za-z0-9]{20,}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i,
   },
 ];
 
