@@ -9,6 +9,48 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+## [0.24.3] - 2026-08-27
+
+Fixture regenerated against the deployed production document
+(`https://api.curviate.com`, `git_sha cf4fc77e...`). Patch: no `ErrorCode`
+change, no runtime change.
+
+These are corrections, not changes. The wire has always sent these shapes;
+the previous declarations described them wrongly, so consumer code that
+type-checked against the old declaration was already failing at runtime.
+Upgrading may turn a consumer's `tsc` red where it was previously green
+against a declaration that did not match reality. That red is the bug
+becoming visible, not a new one.
+
+### Sales Navigator response corrections
+
+- `founded_on`: was an open object, is a `number`
+  (`sales-navigator/search/companies` and `sales-navigator/account-lists`).
+- `websites`, `addresses`: were arrays of open objects, are `string[]`.
+- `contact_info.phones`, `contact_info.emails`: were arrays of open objects,
+  are `string[]`.
+- `specialties`: was `unknown`, is `string[]` on
+  `sales-navigator/search/companies`.
+- Nested `school`, `company` and `organization` references on `education`,
+  `work_experience` and `volunteering` are now declared, each with a
+  nullable `id`.
+- `job_title` and `role` are now required (non-optional) on
+  `work_experience` and `volunteering`.
+
+### Also reflected from production, first fixtured here
+
+- `expand` removed from `GET /v1/{account_id}/chats/search`. The parameter
+  was inert: that endpoint's response is a strict subset that emits no user
+  object, so the expansion had nowhere to land. Its `notices` block goes
+  with it. Removed server-side before this release; every other
+  `expand`-accepting endpoint is unaffected.
+- `quoted` on a message is now declared recursively as a `Message`, so a
+  quoted message carries the full message shape and may itself carry a
+  `quoted`.
+- Wording only: "Provider-enriched detail about the sender" is now
+  "Platform-enriched detail about the sender" (5 occurrences).
+
+
 ## [0.24.2] - 2026-08-24
 
 Fixture regenerated against the deployed production document

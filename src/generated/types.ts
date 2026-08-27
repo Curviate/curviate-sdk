@@ -2555,6 +2555,74 @@ export interface components {
                 value?: string;
             }[];
         };
+        /** @description A message. `quoted` carries the message this one quotes, when it quotes one; a quoted message has the same shape and may itself carry a `quoted`. */
+        Message: {
+            /**
+             * @description Response type discriminator.
+             * @enum {string}
+             */
+            object?: "message";
+            quoted?: components["schemas"]["Message"];
+            /** @description Message identifier. */
+            id?: string;
+            /** @description Account id that owns this message. */
+            account_id?: string;
+            /** @description Chat this message belongs to. */
+            chat_id?: string;
+            /** @description Identifier of the sender. */
+            sender_id?: string;
+            /** @description Full message text (content pass-through, never stored). */
+            text?: string | null;
+            /** @description Attachment descriptors (no bytes, use the attachment endpoint to download). */
+            attachments?: {
+                /** @description Attachment identifier. */
+                id?: string;
+                /** @description MIME type of the attachment. */
+                mimetype?: string;
+                /** @description Attachment kind: file | img | video | audio. */
+                type?: string;
+                /** @description Original file name. */
+                filename?: string;
+                /** @description Size in bytes. */
+                file_size?: number;
+                /** @description True when the attachment is no longer available. */
+                unavailable?: boolean | null;
+            }[];
+            /** @description ISO-8601 UTC send timestamp. */
+            timestamp?: string;
+            /** @description True if the connected account sent this message. */
+            is_sender?: boolean;
+            is_seen?: boolean;
+            is_delivered?: boolean;
+            is_edited?: boolean;
+            /** @description True if the account is mentioned in this message. */
+            is_mentionned?: boolean;
+            /** @description Per-type reaction breakdown on the message. */
+            reactions?: {
+                type?: string;
+                count?: number;
+            }[];
+            /** @description Total reaction count across all types (derived). */
+            reaction_count?: number;
+            /** @description The platform this message originates from. */
+            provider?: string;
+            /** @description The sender's profile, when the platform returned one alongside the message. sender_id always carries the identifier; this object carries the rest of what is known about that person. */
+            sender?: {
+                /** @description Identifier of the counterpart. */
+                id?: string;
+                /** @description individual | organization. */
+                type?: string;
+                display_name?: string;
+                profile_url?: string;
+                public_picture_url?: string;
+                /** @description The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person. */
+                public_identifier?: string | null;
+                /** @description Platform-enriched detail about the sender (for example connection distance, premium or verified status), when the platform returns it. */
+                specifics?: {
+                    [key: string]: unknown;
+                };
+            };
+        };
     };
     responses: never;
     parameters: never;
@@ -5536,9 +5604,9 @@ export interface operations {
                             /** @description Post author object. Present when available. */
                             author?: {
                                 id?: string;
-                                name?: string;
+                                name?: string | null;
                                 is_company?: boolean;
-                                public_identifier?: string;
+                                public_identifier?: string | null;
                             } & {
                                 [key: string]: unknown;
                             };
@@ -5737,11 +5805,11 @@ export interface operations {
                             insights?: string[];
                             /** @description Hiring company details. Present when available. */
                             company?: {
-                                id?: string;
-                                name?: string;
-                                profile_url?: string;
-                                public_identifier?: string;
-                                public_picture_url?: string;
+                                id?: string | null;
+                                name?: string | null;
+                                profile_url?: string | null;
+                                public_identifier?: string | null;
+                                public_picture_url?: string | null;
                             } & {
                                 [key: string]: unknown;
                             };
@@ -8580,9 +8648,9 @@ export interface operations {
                             /** @description Post author object. Present when available. */
                             author?: {
                                 id?: string;
-                                name?: string;
+                                name?: string | null;
                                 is_company?: boolean;
-                                public_identifier?: string;
+                                public_identifier?: string | null;
                             } & {
                                 [key: string]: unknown;
                             };
@@ -8866,11 +8934,11 @@ export interface operations {
                             insights?: string[];
                             /** @description Hiring company details. Present when available. */
                             company?: {
-                                id?: string;
-                                name?: string;
-                                profile_url?: string;
-                                public_identifier?: string;
-                                public_picture_url?: string;
+                                id?: string | null;
+                                name?: string | null;
+                                profile_url?: string | null;
+                                public_identifier?: string | null;
+                                public_picture_url?: string | null;
                             } & {
                                 [key: string]: unknown;
                             };
@@ -9107,9 +9175,9 @@ export interface operations {
                             /** @description Post author object. Present when available. */
                             author?: {
                                 id?: string;
-                                name?: string;
+                                name?: string | null;
                                 is_company?: boolean;
-                                public_identifier?: string;
+                                public_identifier?: string | null;
                             } & {
                                 [key: string]: unknown;
                             };
@@ -9169,11 +9237,11 @@ export interface operations {
                             insights?: string[];
                             /** @description Hiring company details. Present when available. */
                             company?: {
-                                id?: string;
-                                name?: string;
-                                profile_url?: string;
-                                public_identifier?: string;
-                                public_picture_url?: string;
+                                id?: string | null;
+                                name?: string | null;
+                                profile_url?: string | null;
+                                public_identifier?: string | null;
+                                public_picture_url?: string | null;
                             } & {
                                 [key: string]: unknown;
                             };
@@ -9852,6 +9920,7 @@ export interface operations {
                                  * @enum {string}
                                  */
                                 object?: "message";
+                                quoted?: components["schemas"]["Message"];
                                 /** @description Message identifier. */
                                 id?: string;
                                 /** @description Account id that owns this message. */
@@ -9906,7 +9975,7 @@ export interface operations {
                                     public_picture_url?: string;
                                     /** @description The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person. */
                                     public_identifier?: string | null;
-                                    /** @description Provider-enriched detail about the sender (for example connection distance, premium or verified status), when the platform returns it. */
+                                    /** @description Platform-enriched detail about the sender (for example connection distance, premium or verified status), when the platform returns it. */
                                     specifics?: {
                                         [key: string]: unknown;
                                     };
@@ -10268,6 +10337,7 @@ export interface operations {
                              * @enum {string}
                              */
                             object?: "message";
+                            quoted?: components["schemas"]["Message"];
                             /** @description Message identifier. */
                             id?: string;
                             /** @description Account id that owns this message. */
@@ -10322,7 +10392,7 @@ export interface operations {
                                 public_picture_url?: string;
                                 /** @description The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person. */
                                 public_identifier?: string | null;
-                                /** @description Provider-enriched detail about the sender (for example connection distance, premium or verified status), when the platform returns it. */
+                                /** @description Platform-enriched detail about the sender (for example connection distance, premium or verified status), when the platform returns it. */
                                 specifics?: {
                                     [key: string]: unknown;
                                 };
@@ -10600,6 +10670,7 @@ export interface operations {
                              * @enum {string}
                              */
                             object?: "message";
+                            quoted?: components["schemas"]["Message"];
                             /** @description Message identifier. */
                             id?: string;
                             /** @description Account id that owns this message. */
@@ -10654,7 +10725,7 @@ export interface operations {
                                 public_picture_url?: string;
                                 /** @description The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person. */
                                 public_identifier?: string | null;
-                                /** @description Provider-enriched detail about the sender (for example connection distance, premium or verified status), when the platform returns it. */
+                                /** @description Platform-enriched detail about the sender (for example connection distance, premium or verified status), when the platform returns it. */
                                 specifics?: {
                                     [key: string]: unknown;
                                 };
@@ -10956,6 +11027,7 @@ export interface operations {
                          * @enum {string}
                          */
                         object?: "message";
+                        quoted?: components["schemas"]["Message"];
                         /** @description Message identifier. */
                         id?: string;
                         /** @description Account id that owns this message. */
@@ -11010,7 +11082,7 @@ export interface operations {
                             public_picture_url?: string;
                             /** @description The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person. */
                             public_identifier?: string | null;
-                            /** @description Provider-enriched detail about the sender (for example connection distance, premium or verified status), when the platform returns it. */
+                            /** @description Platform-enriched detail about the sender (for example connection distance, premium or verified status), when the platform returns it. */
                             specifics?: {
                                 [key: string]: unknown;
                             };
@@ -11594,8 +11666,6 @@ export interface operations {
                 limit?: number;
                 /** @description Pagination cursor from a previous response; decodable, wraps a zero-based item offset, pass it back verbatim. */
                 cursor?: string;
-                /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
-                expand?: string;
             };
             header?: never;
             path: {
@@ -11677,20 +11747,6 @@ export interface operations {
                         }[];
                         /** @description Opaque next-page cursor; null on the last page. */
                         cursor?: string | null;
-                        /** @description Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
-                        notices?: {
-                            /**
-                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone.
-                             * @enum {string}
-                             */
-                            code: "EXPANSION_LIMIT_REACHED";
-                            /** @description One sentence explaining the condition and how to resolve it. */
-                            message: string;
-                            /** @description The request field the notice is about, here expand. */
-                            field?: string;
-                            /** @description The expansion the notice is about, here public_identifier. */
-                            value?: string;
-                        }[];
                     };
                 };
             };
@@ -12006,6 +12062,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description No such account for this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Rate limited. */
             429: {
                 headers: {
@@ -12136,6 +12201,7 @@ export interface operations {
                                  * @enum {string}
                                  */
                                 object?: "message";
+                                quoted?: components["schemas"]["Message"];
                                 /** @description Message identifier. */
                                 id?: string;
                                 /** @description Account id that owns this message. */
@@ -12190,7 +12256,7 @@ export interface operations {
                                     public_picture_url?: string;
                                     /** @description The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person. */
                                     public_identifier?: string | null;
-                                    /** @description Provider-enriched detail about the sender (for example connection distance, premium or verified status), when the platform returns it. */
+                                    /** @description Platform-enriched detail about the sender (for example connection distance, premium or verified status), when the platform returns it. */
                                     specifics?: {
                                         [key: string]: unknown;
                                     };
@@ -12248,6 +12314,15 @@ export interface operations {
             };
             /** @description The connected account does not administer this inbox: either it is not an admin of this page, or the mailbox is unknown to this account. No existence disclosure. */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description No such account for this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -25044,10 +25119,8 @@ export interface operations {
                             notes_count?: number;
                             /** @description Company website URL. May be null. */
                             website?: string | null;
-                            /** @description Structural platform pass-through; shape and presence vary. May be null. */
-                            founded_on?: {
-                                [key: string]: unknown;
-                            };
+                            /** @description Year the company was founded, as a number. Present when available. */
+                            founded_on?: number;
                             /** @description true when the account is starred on the seat. Present when available. */
                             is_starred?: boolean;
                             /** @description Structural platform pass-through; shape and presence vary. May be null. */
@@ -25236,6 +25309,38 @@ export interface operations {
                             id: string;
                             /** @description Display name. */
                             display_name: string;
+                            /** @description Numeric member ID, distinct from id. Present when available. */
+                            member_id?: string;
+                            /** @description LinkedIn public identifier. Present when available. */
+                            public_identifier?: string;
+                            /** @description Sales Navigator profile URL. Present when available. */
+                            profile_url?: string;
+                            /** @description Profile picture URL. Present when available. */
+                            public_picture_url?: string;
+                            /** @description Large variant of the profile picture URL. Present when available. */
+                            public_picture_url_large?: string;
+                            /** @description Connection count. Present when available. */
+                            relations_count?: number;
+                            /** @description Member location. Present when available. */
+                            location?: string;
+                            /** @description LinkedIn headline. Present when available. */
+                            headline?: string;
+                            /** @description About section text. Present when populated. */
+                            summary?: string;
+                            /** @description Whether an InMail can be sent to this member. */
+                            can_send_inmail?: boolean;
+                            /** @description Shared connections count. Present when available. */
+                            shared_relations_count?: number;
+                            /** @description Present when available. */
+                            latest_contact?: {
+                                type?: string;
+                                /** @description ISO-8601 UTC timestamp. */
+                                performed_at?: string;
+                                resource_id?: string;
+                            };
+                            social_handles?: {
+                                twitter?: string;
+                            };
                             /**
                              * @description Connection distance to the operator account. Present when available.
                              * @enum {string}
@@ -25257,35 +25362,139 @@ export interface operations {
                             is_past_colleague?: boolean;
                             /** @description Present when available. */
                             is_open_profile?: boolean;
+                            /** @description Present when available. */
+                            websites?: string[];
+                            /** @description Present when available. */
+                            addresses?: string[];
                             /** @description Contact info. Present when available. */
                             contact_info?: {
-                                phones?: {
-                                    [key: string]: unknown;
-                                }[];
-                                emails?: {
-                                    [key: string]: unknown;
-                                }[];
+                                phones?: string[];
+                                emails?: string[];
                             };
                             /** @description How many lists this lead is saved to. Present when available. */
                             lists_count?: number;
                             /** @description How many notes are attached. Present when available. */
                             notes_count?: number;
                             /** @description Present when available. */
-                            education?: {
+                            education?: ({
+                                /** @description Identifier of this education entry. Present when available. */
+                                id?: string;
+                                /** @description The institution. May carry a null id. */
+                                school?: {
+                                    /** @description The organization's platform identifier, when known. */
+                                    id?: string | null;
+                                    /** @description The organization's name. */
+                                    name?: string;
+                                    /** @description The organization's public URL slug, when known. */
+                                    public_identifier?: string;
+                                    /** @description The organization's logo URL. */
+                                    picture_url?: string;
+                                    /** @description Full LinkedIn URL for the organization. */
+                                    profile_url?: string;
+                                    /** @description The organization's industry labels. */
+                                    industries?: string[];
+                                } & {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Present when available. */
+                                degree?: string;
+                                /** @description Present when populated. */
+                                description?: string;
+                                /** @description Present when available. */
+                                activities?: string;
+                                /** @description Present when available. */
+                                skills?: string[];
+                                /** @description Present when available. */
+                                skills_preview?: string;
+                                /** @description Present when available. */
+                                grade?: string;
+                                /** @description Present when available. */
+                                fields_of_study?: string[];
+                                /** @description Present when available. */
+                                started_on?: string;
+                                /** @description Present when available. */
+                                ended_on?: string;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
+                            })[];
                             /** @description Structural platform pass-through; returned as strings. Present when available. */
                             skills?: unknown[];
                             /** @description Present when available. */
-                            work_experience?: {
+                            work_experience?: ({
+                                /** @description Identifier of this work-experience entry. Present when available. */
+                                id?: string;
+                                /** @description The employer. May carry a null id. */
+                                company?: {
+                                    /** @description The organization's platform identifier, when known. */
+                                    id?: string | null;
+                                    /** @description The organization's name. */
+                                    name?: string;
+                                    /** @description The organization's public URL slug, when known. */
+                                    public_identifier?: string;
+                                    /** @description The organization's logo URL. */
+                                    picture_url?: string;
+                                    /** @description Full LinkedIn URL for the organization. */
+                                    profile_url?: string;
+                                    /** @description The organization's industry labels. */
+                                    industries?: string[];
+                                } & {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Job title held. */
+                                job_title: string;
+                                /** @description Present when available. */
+                                started_on?: string;
+                                /** @description Present when available. */
+                                ended_on?: string;
+                                /** @description Present when available. */
+                                location?: string;
+                                /** @description Present when populated. */
+                                description?: string;
+                                /** @description Present when available. */
+                                employment_type?: string;
+                                /** @description Present when available. */
+                                workplace_type?: string;
+                                /** @description Present when available. */
+                                skills?: string[];
+                                /** @description Present when available. */
+                                skills_preview?: string;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
+                            })[];
                             /** @description Structural platform pass-through; returned as strings. Present when available. */
                             languages?: unknown[];
                             /** @description Present when available. */
-                            volunteering?: {
+                            volunteering?: ({
+                                /** @description Present when available. May carry a null id. */
+                                organization?: {
+                                    /** @description The organization's platform identifier, when known. */
+                                    id?: string | null;
+                                    /** @description The organization's name. */
+                                    name?: string;
+                                    /** @description The organization's public URL slug, when known. */
+                                    public_identifier?: string;
+                                    /** @description The organization's logo URL. */
+                                    picture_url?: string;
+                                    /** @description Full LinkedIn URL for the organization. */
+                                    profile_url?: string;
+                                    /** @description The organization's industry labels. */
+                                    industries?: string[];
+                                } & {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Role held. */
+                                role: string;
+                                /** @description Present when available. */
+                                cause?: string;
+                                /** @description Present when populated. */
+                                description?: string;
+                                /** @description Present when available. */
+                                started_on?: string;
+                                /** @description Present when available. */
+                                ended_on?: string;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
+                            })[];
                             /** @description ISO-8601 timestamp of when the lead was saved. Present when available. */
                             saved_at?: string;
                             /** @description The company associated with this saved lead. Present when available. */
@@ -26090,21 +26299,13 @@ export interface operations {
                             is_past_colleague?: boolean;
                             is_open_profile?: boolean;
                             /** @description Present when available. */
-                            websites?: {
-                                [key: string]: unknown;
-                            }[];
+                            websites?: string[];
                             /** @description Present when available. */
-                            addresses?: {
-                                [key: string]: unknown;
-                            }[];
+                            addresses?: string[];
                             /** @description Contact info. Present when available. */
                             contact_info?: {
-                                phones?: {
-                                    [key: string]: unknown;
-                                }[];
-                                emails?: {
-                                    [key: string]: unknown;
-                                }[];
+                                phones?: string[];
+                                emails?: string[];
                             };
                             /** @description Present when available. */
                             latest_contact?: {
@@ -26119,27 +26320,131 @@ export interface operations {
                                 twitter?: string;
                             };
                             /** @description Present when available. */
-                            education?: {
+                            education?: ({
+                                /** @description Identifier of this education entry. Present when available. */
+                                id?: string;
+                                /** @description The institution. May carry a null id. */
+                                school?: {
+                                    /** @description The organization's platform identifier, when known. */
+                                    id?: string | null;
+                                    /** @description The organization's name. */
+                                    name?: string;
+                                    /** @description The organization's public URL slug, when known. */
+                                    public_identifier?: string;
+                                    /** @description The organization's logo URL. */
+                                    picture_url?: string;
+                                    /** @description Full LinkedIn URL for the organization. */
+                                    profile_url?: string;
+                                    /** @description The organization's industry labels. */
+                                    industries?: string[];
+                                } & {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Present when available. */
+                                degree?: string;
+                                /** @description Present when populated. */
+                                description?: string;
+                                /** @description Present when available. */
+                                activities?: string;
+                                /** @description Present when available. */
+                                skills?: string[];
+                                /** @description Present when available. */
+                                skills_preview?: string;
+                                /** @description Present when available. */
+                                grade?: string;
+                                /** @description Present when available. */
+                                fields_of_study?: string[];
+                                /** @description Present when available. */
+                                started_on?: string;
+                                /** @description Present when available. */
+                                ended_on?: string;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
+                            })[];
                             /** @description Present when available. */
                             skills?: {
                                 name?: string;
                                 endorsement_count?: number;
                             }[];
                             /** @description Present when available. */
-                            work_experience?: {
+                            work_experience?: ({
+                                /** @description Identifier of this work-experience entry. Present when available. */
+                                id?: string;
+                                /** @description The employer. May carry a null id. */
+                                company?: {
+                                    /** @description The organization's platform identifier, when known. */
+                                    id?: string | null;
+                                    /** @description The organization's name. */
+                                    name?: string;
+                                    /** @description The organization's public URL slug, when known. */
+                                    public_identifier?: string;
+                                    /** @description The organization's logo URL. */
+                                    picture_url?: string;
+                                    /** @description Full LinkedIn URL for the organization. */
+                                    profile_url?: string;
+                                    /** @description The organization's industry labels. */
+                                    industries?: string[];
+                                } & {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Job title held. */
+                                job_title: string;
+                                /** @description Present when available. */
+                                started_on?: string;
+                                /** @description Present when available. */
+                                ended_on?: string;
+                                /** @description Present when available. */
+                                location?: string;
+                                /** @description Present when populated. */
+                                description?: string;
+                                /** @description Present when available. */
+                                employment_type?: string;
+                                /** @description Present when available. */
+                                workplace_type?: string;
+                                /** @description Present when available. */
+                                skills?: string[];
+                                /** @description Present when available. */
+                                skills_preview?: string;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
+                            })[];
                             /** @description Present when available. */
                             languages?: {
                                 language?: string;
                                 proficiency?: string;
                             }[];
                             /** @description Present when available. */
-                            volunteering?: {
+                            volunteering?: ({
+                                /** @description Present when available. May carry a null id. */
+                                organization?: {
+                                    /** @description The organization's platform identifier, when known. */
+                                    id?: string | null;
+                                    /** @description The organization's name. */
+                                    name?: string;
+                                    /** @description The organization's public URL slug, when known. */
+                                    public_identifier?: string;
+                                    /** @description The organization's logo URL. */
+                                    picture_url?: string;
+                                    /** @description Full LinkedIn URL for the organization. */
+                                    profile_url?: string;
+                                    /** @description The organization's industry labels. */
+                                    industries?: string[];
+                                } & {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Role held. */
+                                role: string;
+                                /** @description Present when available. */
+                                cause?: string;
+                                /** @description Present when populated. */
+                                description?: string;
+                                /** @description Present when available. */
+                                started_on?: string;
+                                /** @description Present when available. */
+                                ended_on?: string;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
+                            })[];
                         }[];
                         /** @description Pagination metadata. */
                         paging: {
@@ -26405,12 +26710,12 @@ export interface operations {
                             /** @description Employee count. Present when available. */
                             headcount?: number;
                             /** @description Present when available. */
-                            specialties?: unknown;
+                            specialties?: string[];
                             is_hiring_on_linkedin?: boolean;
                             /** @description Company website URL. Present when available. */
                             website?: string;
-                            /** @description Year or date the company was founded. Present when available. */
-                            founded_on?: unknown;
+                            /** @description Year the company was founded, as a number. Present when available. */
+                            founded_on?: number;
                         }[];
                         /** @description Pagination metadata. */
                         paging: {
@@ -26610,21 +26915,13 @@ export interface operations {
                             is_past_colleague?: boolean;
                             is_open_profile?: boolean;
                             /** @description Present when available. */
-                            websites?: {
-                                [key: string]: unknown;
-                            }[];
+                            websites?: string[];
                             /** @description Present when available. */
-                            addresses?: {
-                                [key: string]: unknown;
-                            }[];
+                            addresses?: string[];
                             /** @description Contact info. Present when available. */
                             contact_info?: {
-                                phones?: {
-                                    [key: string]: unknown;
-                                }[];
-                                emails?: {
-                                    [key: string]: unknown;
-                                }[];
+                                phones?: string[];
+                                emails?: string[];
                             };
                             /** @description Present when available. */
                             latest_contact?: {
@@ -26639,27 +26936,131 @@ export interface operations {
                                 twitter?: string;
                             };
                             /** @description Present when available. */
-                            education?: {
+                            education?: ({
+                                /** @description Identifier of this education entry. Present when available. */
+                                id?: string;
+                                /** @description The institution. May carry a null id. */
+                                school?: {
+                                    /** @description The organization's platform identifier, when known. */
+                                    id?: string | null;
+                                    /** @description The organization's name. */
+                                    name?: string;
+                                    /** @description The organization's public URL slug, when known. */
+                                    public_identifier?: string;
+                                    /** @description The organization's logo URL. */
+                                    picture_url?: string;
+                                    /** @description Full LinkedIn URL for the organization. */
+                                    profile_url?: string;
+                                    /** @description The organization's industry labels. */
+                                    industries?: string[];
+                                } & {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Present when available. */
+                                degree?: string;
+                                /** @description Present when populated. */
+                                description?: string;
+                                /** @description Present when available. */
+                                activities?: string;
+                                /** @description Present when available. */
+                                skills?: string[];
+                                /** @description Present when available. */
+                                skills_preview?: string;
+                                /** @description Present when available. */
+                                grade?: string;
+                                /** @description Present when available. */
+                                fields_of_study?: string[];
+                                /** @description Present when available. */
+                                started_on?: string;
+                                /** @description Present when available. */
+                                ended_on?: string;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
+                            })[];
                             /** @description Present when available. */
                             skills?: {
                                 name?: string;
                                 endorsement_count?: number;
                             }[];
                             /** @description Present when available. */
-                            work_experience?: {
+                            work_experience?: ({
+                                /** @description Identifier of this work-experience entry. Present when available. */
+                                id?: string;
+                                /** @description The employer. May carry a null id. */
+                                company?: {
+                                    /** @description The organization's platform identifier, when known. */
+                                    id?: string | null;
+                                    /** @description The organization's name. */
+                                    name?: string;
+                                    /** @description The organization's public URL slug, when known. */
+                                    public_identifier?: string;
+                                    /** @description The organization's logo URL. */
+                                    picture_url?: string;
+                                    /** @description Full LinkedIn URL for the organization. */
+                                    profile_url?: string;
+                                    /** @description The organization's industry labels. */
+                                    industries?: string[];
+                                } & {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Job title held. */
+                                job_title: string;
+                                /** @description Present when available. */
+                                started_on?: string;
+                                /** @description Present when available. */
+                                ended_on?: string;
+                                /** @description Present when available. */
+                                location?: string;
+                                /** @description Present when populated. */
+                                description?: string;
+                                /** @description Present when available. */
+                                employment_type?: string;
+                                /** @description Present when available. */
+                                workplace_type?: string;
+                                /** @description Present when available. */
+                                skills?: string[];
+                                /** @description Present when available. */
+                                skills_preview?: string;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
+                            })[];
                             /** @description Present when available. */
                             languages?: {
                                 language?: string;
                                 proficiency?: string;
                             }[];
                             /** @description Present when available. */
-                            volunteering?: {
+                            volunteering?: ({
+                                /** @description Present when available. May carry a null id. */
+                                organization?: {
+                                    /** @description The organization's platform identifier, when known. */
+                                    id?: string | null;
+                                    /** @description The organization's name. */
+                                    name?: string;
+                                    /** @description The organization's public URL slug, when known. */
+                                    public_identifier?: string;
+                                    /** @description The organization's logo URL. */
+                                    picture_url?: string;
+                                    /** @description Full LinkedIn URL for the organization. */
+                                    profile_url?: string;
+                                    /** @description The organization's industry labels. */
+                                    industries?: string[];
+                                } & {
+                                    [key: string]: unknown;
+                                };
+                                /** @description Role held. */
+                                role: string;
+                                /** @description Present when available. */
+                                cause?: string;
+                                /** @description Present when populated. */
+                                description?: string;
+                                /** @description Present when available. */
+                                started_on?: string;
+                                /** @description Present when available. */
+                                ended_on?: string;
+                            } & {
                                 [key: string]: unknown;
-                            }[];
+                            })[];
                         } | {
                             /**
                              * @description Item type discriminator.
@@ -26691,12 +27092,12 @@ export interface operations {
                             /** @description Employee count. Present when available. */
                             headcount?: number;
                             /** @description Present when available. */
-                            specialties?: unknown;
+                            specialties?: string[];
                             is_hiring_on_linkedin?: boolean;
                             /** @description Company website URL. Present when available. */
                             website?: string;
-                            /** @description Year or date the company was founded. Present when available. */
-                            founded_on?: unknown;
+                            /** @description Year the company was founded, as a number. Present when available. */
+                            founded_on?: number;
                         } | {
                             /**
                              * @description Item type discriminator.
