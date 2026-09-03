@@ -247,6 +247,75 @@ describe("retry logic", () => {
     expect((err as CurviateError).retryLikelyToSucceed).toBe(true);
   });
 
+  // #1154 (core/018) — a 429 that means one account-safety budget ROW is paused
+  // carries `row` and `retry_after`. The row surfaces as `budgetRow`; the
+  // seconds fill `retryAfterMs` only when the `Retry-After` header is missing.
+  it("surfaces the paused budget row, taking the delay from the header", async () => {
+    server.use(
+      http.get(`${BASE}/v1/accounts/x`, () =>
+        HttpResponse.json(
+          {
+            code: "PLATFORM_RATE_LIMIT",
+            message: "paused",
+            user_fixable: false,
+            retry_likely_to_succeed: true,
+            row: "profile_views",
+            retry_after: 120,
+          },
+          { status: 429, headers: { "Retry-After": "120" } },
+        ),
+      ),
+    );
+    const err = (await execute("GET", "/v1/accounts/x", det({ maxRetries: 0 })).catch(
+      (e) => e,
+    )) as CurviateError;
+    expect(err.budgetRow).toBe("profile_views");
+    expect(err.retryAfterMs).toBe(120_000);
+    expect(err.toJSON().budgetRow).toBe("profile_views");
+  });
+
+  it("falls back to the body's retry_after when a proxy dropped the header", async () => {
+    server.use(
+      http.get(`${BASE}/v1/accounts/x`, () =>
+        HttpResponse.json(
+          {
+            code: "PLATFORM_RATE_LIMIT",
+            message: "paused",
+            user_fixable: false,
+            retry_likely_to_succeed: true,
+            row: "search",
+            retry_after: 90,
+          },
+          { status: 429 },
+        ),
+      ),
+    );
+    const err = (await execute("GET", "/v1/accounts/x", det({ maxRetries: 0 })).catch(
+      (e) => e,
+    )) as CurviateError;
+    expect(err.budgetRow).toBe("search");
+    expect(err.retryAfterMs).toBe(90_000);
+  });
+
+  it("CONTROL ARM: an ordinary 429 carries no budgetRow, and toJSON omits it", async () => {
+    // Additive means absent by default: an envelope written before #1154 must
+    // produce a byte-identical error object.
+    server.use(
+      http.get(`${BASE}/v1/accounts/x`, () =>
+        HttpResponse.json(
+          { code: "PLATFORM_RATE_LIMIT", message: "slow", user_fixable: false, retry_likely_to_succeed: true },
+          { status: 429 },
+        ),
+      ),
+    );
+    const err = (await execute("GET", "/v1/accounts/x", det({ maxRetries: 0 })).catch(
+      (e) => e,
+    )) as CurviateError;
+    expect(err.budgetRow).toBeUndefined();
+    expect(err.retryAfterMs).toBeUndefined();
+    expect(err.toJSON()).not.toHaveProperty("budgetRow");
+  });
+
   // a non-retryable code (404) on a GET throws immediately (1 fetch).
   it("does not retry a non-retryable GET error (404, 1 fetch)", async () => {
     let calls = 0;

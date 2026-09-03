@@ -180,6 +180,18 @@ export interface CurviateErrorInit {
   requiredTier?: RequiredTier;
   /** Milliseconds to wait before retry, parsed from the `Retry-After` response header. */
   retryAfterMs?: number;
+  /**
+   * Present on a `PLATFORM_RATE_LIMIT` that was refused because one
+   * account-safety budget row is PAUSED: LinkedIn refused a recent call on that
+   * row, so this one never left Curviate. Names the paused row (for example
+   * `profile_views`, `connection_requests_no_note`).
+   *
+   * The pause is scoped to this row on this account. Other rows keep working, so
+   * the recovery is to switch work rather than back off across the account, and
+   * never to retry this row before {@link CurviateError.retryAfterMs} elapses,
+   * because retrying into a LinkedIn rate limit is what escalates it.
+   */
+  budgetRow?: string;
 }
 
 /** Plain-object shape produced by {@link CurviateError.toJSON}. */
@@ -193,6 +205,7 @@ export interface CurviateErrorJSON {
   retryLikelyToSucceed: boolean;
   requiredTier?: RequiredTier;
   retryAfterMs?: number;
+  budgetRow?: string;
 }
 
 /**
@@ -216,6 +229,8 @@ export class CurviateError extends Error {
   readonly retryLikelyToSucceed: boolean;
   readonly requiredTier: RequiredTier | undefined;
   readonly retryAfterMs: number | undefined;
+  /** The paused account-safety budget row. See {@link CurviateErrorInit.budgetRow}. */
+  readonly budgetRow: string | undefined;
 
   constructor(init: CurviateErrorInit) {
     super(init.message);
@@ -226,6 +241,7 @@ export class CurviateError extends Error {
     this.retryLikelyToSucceed = init.retryLikelyToSucceed;
     this.requiredTier = init.requiredTier;
     this.retryAfterMs = init.retryAfterMs;
+    this.budgetRow = init.budgetRow;
     // Maintains a correct prototype chain when targeting ES5-class semantics.
     Object.setPrototypeOf(this, CurviateError.prototype);
   }
@@ -247,6 +263,7 @@ export class CurviateError extends Error {
     if (this.httpStatus !== undefined) json.httpStatus = this.httpStatus;
     if (this.requiredTier !== undefined) json.requiredTier = this.requiredTier;
     if (this.retryAfterMs !== undefined) json.retryAfterMs = this.retryAfterMs;
+    if (this.budgetRow !== undefined) json.budgetRow = this.budgetRow;
     return json;
   }
 }
