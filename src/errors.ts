@@ -192,6 +192,17 @@ export interface CurviateErrorInit {
    * because retrying into a LinkedIn rate limit is what escalates it.
    */
   budgetRow?: string;
+  /**
+   * Seconds until the paused {@link CurviateErrorInit.budgetRow} is usable
+   * again. Present only alongside it.
+   *
+   * A SEPARATE FIELD FROM {@link CurviateErrorInit.retryAfterMs}, on purpose.
+   * `retryAfterMs` is the transport's own sleep budget and is acted on
+   * automatically; this one is informational, because a pause can last an hour
+   * and sleeping that inside a call is a hang. The SDK never retries a paused
+   * row: switch to other work and come back after this many seconds.
+   */
+  retryAfterSeconds?: number;
 }
 
 /** Plain-object shape produced by {@link CurviateError.toJSON}. */
@@ -206,6 +217,7 @@ export interface CurviateErrorJSON {
   requiredTier?: RequiredTier;
   retryAfterMs?: number;
   budgetRow?: string;
+  retryAfterSeconds?: number;
 }
 
 /**
@@ -231,6 +243,8 @@ export class CurviateError extends Error {
   readonly retryAfterMs: number | undefined;
   /** The paused account-safety budget row. See {@link CurviateErrorInit.budgetRow}. */
   readonly budgetRow: string | undefined;
+  /** Seconds until the paused row lifts. See {@link CurviateErrorInit.retryAfterSeconds}. */
+  readonly retryAfterSeconds: number | undefined;
 
   constructor(init: CurviateErrorInit) {
     super(init.message);
@@ -242,6 +256,7 @@ export class CurviateError extends Error {
     this.requiredTier = init.requiredTier;
     this.retryAfterMs = init.retryAfterMs;
     this.budgetRow = init.budgetRow;
+    this.retryAfterSeconds = init.retryAfterSeconds;
     // Maintains a correct prototype chain when targeting ES5-class semantics.
     Object.setPrototypeOf(this, CurviateError.prototype);
   }
@@ -264,6 +279,7 @@ export class CurviateError extends Error {
     if (this.requiredTier !== undefined) json.requiredTier = this.requiredTier;
     if (this.retryAfterMs !== undefined) json.retryAfterMs = this.retryAfterMs;
     if (this.budgetRow !== undefined) json.budgetRow = this.budgetRow;
+    if (this.retryAfterSeconds !== undefined) json.retryAfterSeconds = this.retryAfterSeconds;
     return json;
   }
 }

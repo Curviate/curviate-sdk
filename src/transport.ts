@@ -112,7 +112,7 @@ function toRetryHint(hint: WireErrorEnvelope["retry_hint"]): RetryHint | null {
 
 /** Build a {@link CurviateError} from an HTTP error response. */
 async function errorFromResponse(res: Response): Promise<CurviateError> {
-  const headerRetryAfterMs = parseRetryAfterMs(res.headers.get("Retry-After"));
+  const retryAfterMs = parseRetryAfterMs(res.headers.get("Retry-After"));
   let env: WireErrorEnvelope | undefined;
   try {
     env = (await res.clone().json()) as WireErrorEnvelope;
@@ -123,15 +123,12 @@ async function errorFromResponse(res: Response): Promise<CurviateError> {
     env?.required_tier && KNOWN_REQUIRED_TIERS.has(env.required_tier)
       ? (env.required_tier as RequiredTier)
       : undefined;
-  // The `Retry-After` HEADER stays authoritative; the body's `retry_after` is a
-  // fallback for the case where a proxy dropped the header. Both carry the same
-  // number in seconds, so this can only fill a gap, never disagree. It is
-  // strictly additive: before it, that case produced `retryAfterMs: undefined`.
-  const bodyRetryAfterMs =
-    typeof env?.retry_after === "number" && Number.isFinite(env.retry_after) && env.retry_after > 0
-      ? env.retry_after * 1000
-      : undefined;
-  const retryAfterMs = headerRetryAfterMs ?? bodyRetryAfterMs;
+  // `retry_after` is DELIBERATELY NOT folded into `retryAfterMs`. Everything
+  // that reads `retryAfterMs` SLEEPS it, on reads and on writes; a paused budget
+  // row can be paused for an hour, and turning that into an hour-long sleep
+  // inside a client call would be a hang, not a backoff. It stays on
+  // `retryAfterSeconds` for the caller to decide about, next to `budgetRow`,
+  // which is the field that says what to do instead: switch work.
 
   return new CurviateError({
     code: toErrorCode(env?.code),
@@ -143,6 +140,9 @@ async function errorFromResponse(res: Response): Promise<CurviateError> {
     ...(requiredTier !== undefined ? { requiredTier } : {}),
     ...(retryAfterMs !== undefined ? { retryAfterMs } : {}),
     ...(typeof env?.row === "string" ? { budgetRow: env.row } : {}),
+    ...(typeof env?.retry_after === "number" && Number.isFinite(env.retry_after)
+      ? { retryAfterSeconds: env.retry_after }
+      : {}),
   });
 }
 
@@ -254,7 +254,15 @@ export async function execute<T = unknown>(
     }
 
     const err = await errorFromResponse(res);
-    const retryable = !isWrite && RETRYABLE_CODES.has(err.code) && attempt < opts.maxRetries;
+    // A PAUSED BUDGET ROW IS NEVER RETRIED, on any method. It is not a transient
+    // rate limit: LinkedIn refused a recent call on that row, and the API is
+    // refusing this one locally until the pause lifts, so every retry inside the
+    // window is guaranteed to fail. Retrying into a LinkedIn rate limit is also
+    // what escalates it into an account restriction, which is the whole reason
+    // the pause exists. Surface it and let the caller switch work.
+    const paused = err.budgetRow !== undefined;
+    const retryable =
+      !isWrite && !paused && RETRYABLE_CODES.has(err.code) && attempt < opts.maxRetries;
     if (retryable) {
       await sleep(retryDelay(err, attempt + 1, jitterFn()));
       attempt += 1;

@@ -250,51 +250,87 @@ describe("retry logic", () => {
   // #1154 (core/018) — a 429 that means one account-safety budget ROW is paused
   // carries `row` and `retry_after`. The row surfaces as `budgetRow`; the
   // seconds fill `retryAfterMs` only when the `Retry-After` header is missing.
-  it("surfaces the paused budget row, taking the delay from the header", async () => {
+  it("surfaces the paused budget row and the seconds, and never sleeps them", async () => {
+    let calls = 0;
+    const sleeps: number[] = [];
     server.use(
-      http.get(`${BASE}/v1/accounts/x`, () =>
-        HttpResponse.json(
+      http.get(`${BASE}/v1/accounts/x`, () => {
+        calls += 1;
+        return HttpResponse.json(
           {
             code: "PLATFORM_RATE_LIMIT",
             message: "paused",
             user_fixable: false,
             retry_likely_to_succeed: true,
             row: "profile_views",
-            retry_after: 120,
+            retry_after: 3600,
           },
-          { status: 429, headers: { "Retry-After": "120" } },
-        ),
-      ),
+          { status: 429 },
+        );
+      }),
     );
-    const err = (await execute("GET", "/v1/accounts/x", det({ maxRetries: 0 })).catch(
-      (e) => e,
-    )) as CurviateError;
+    const err = (await execute(
+      "GET",
+      "/v1/accounts/x",
+      det({ maxRetries: 3, _sleepFn: async (ms: number) => void sleeps.push(ms) }),
+    ).catch((e) => e)) as CurviateError;
+
     expect(err.budgetRow).toBe("profile_views");
-    expect(err.retryAfterMs).toBe(120_000);
+    expect(err.retryAfterSeconds).toBe(3600);
     expect(err.toJSON().budgetRow).toBe("profile_views");
+    // A pause can last an hour. Retrying inside it cannot succeed, and sleeping
+    // it inside the call is a hang, not a backoff.
+    expect(calls).toBe(1);
+    expect(sleeps).toEqual([]);
+    expect(err.retryAfterMs).toBeUndefined();
   });
 
-  it("falls back to the body's retry_after when a proxy dropped the header", async () => {
+  it("CONTROL ARM: the same 429 WITHOUT a row is retried as before", async () => {
+    // Without this, "never retries" could be true because PLATFORM_RATE_LIMIT
+    // stopped being retryable at all, which would be a silent regression for
+    // every ordinary rate limit.
+    let calls = 0;
     server.use(
-      http.get(`${BASE}/v1/accounts/x`, () =>
+      http.get(`${BASE}/v1/accounts/x`, () => {
+        calls += 1;
+        return HttpResponse.json(
+          { code: "PLATFORM_RATE_LIMIT", message: "slow", user_fixable: false, retry_likely_to_succeed: true },
+          { status: 429 },
+        );
+      }),
+    );
+    await execute(
+      "GET",
+      "/v1/accounts/x",
+      det({ maxRetries: 2, _sleepFn: async () => undefined }),
+    ).catch((e) => e);
+    expect(calls).toBe(3);
+  });
+
+  it("a paused row on a WRITE is not slept either", async () => {
+    const sleeps: number[] = [];
+    server.use(
+      http.post(`${BASE}/v1/accounts/link`, () =>
         HttpResponse.json(
           {
             code: "PLATFORM_RATE_LIMIT",
             message: "paused",
             user_fixable: false,
             retry_likely_to_succeed: true,
-            row: "search",
-            retry_after: 90,
+            row: "connection_requests_no_note",
+            retry_after: 3600,
           },
           { status: 429 },
         ),
       ),
     );
-    const err = (await execute("GET", "/v1/accounts/x", det({ maxRetries: 0 })).catch(
-      (e) => e,
-    )) as CurviateError;
-    expect(err.budgetRow).toBe("search");
-    expect(err.retryAfterMs).toBe(90_000);
+    const err = (await execute(
+      "POST",
+      "/v1/accounts/link",
+      det({ body: {}, _sleepFn: async (ms: number) => void sleeps.push(ms) }),
+    ).catch((e) => e)) as CurviateError;
+    expect(err.budgetRow).toBe("connection_requests_no_note");
+    expect(sleeps).toEqual([]);
   });
 
   it("CONTROL ARM: an ordinary 429 carries no budgetRow, and toJSON omits it", async () => {
@@ -312,8 +348,10 @@ describe("retry logic", () => {
       (e) => e,
     )) as CurviateError;
     expect(err.budgetRow).toBeUndefined();
+    expect(err.retryAfterSeconds).toBeUndefined();
     expect(err.retryAfterMs).toBeUndefined();
     expect(err.toJSON()).not.toHaveProperty("budgetRow");
+    expect(err.toJSON()).not.toHaveProperty("retryAfterSeconds");
   });
 
   // a non-retryable code (404) on a GET throws immediately (1 fetch).
