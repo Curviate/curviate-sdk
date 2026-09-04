@@ -325,6 +325,43 @@ describe("retry logic", () => {
     expect(calls).toBe(1);
   });
 
+  // 401 LINKEDIN_SESSION_EVICTED (someone signed into this LinkedIn account
+  // elsewhere and LinkedIn allows one session at a time for it) must decode to
+  // its own code rather than falling back to INTERNAL, and must NOT be retried:
+  // a person has to close the other session, so every retry inside that window
+  // is guaranteed to fail. Proven on a GET, where a retryable INTERNAL fallback
+  // would otherwise re-fire up to maxRetries times — the control arm is the
+  // fetch count, not the code alone.
+  it("maps 401 LINKEDIN_SESSION_EVICTED to its own code and does not retry it (1 fetch)", async () => {
+    let calls = 0;
+    server.use(
+      http.get(`${BASE}/v1/accounts/x`, () => {
+        calls += 1;
+        return HttpResponse.json(
+          {
+            code: "LINKEDIN_SESSION_EVICTED",
+            message:
+              "This LinkedIn account is signed in somewhere else, and LinkedIn allows only one session at a time for it.",
+            user_fixable: true,
+            retry_likely_to_succeed: false,
+            retry_hint: { kind: "never" },
+          },
+          { status: 401 },
+        );
+      }),
+    );
+    const err = await execute("GET", "/v1/accounts/x", det()).catch((e) => e);
+    expect(isCurviateError(err)).toBe(true);
+    expect((err as CurviateError).code).toBe("LINKEDIN_SESSION_EVICTED");
+    // Not the generic auth code it was split from: a caller that cannot tell
+    // them apart retries a wall only a person can move.
+    expect((err as CurviateError).code).not.toBe("LINKEDIN_AUTH_FAILED");
+    expect((err as CurviateError).httpStatus).toBe(401);
+    expect((err as CurviateError).userFixable).toBe(true);
+    expect((err as CurviateError).retryLikelyToSucceed).toBe(false);
+    expect(calls).toBe(1);
+  });
+
   // 409 CONNECTION_REQUEST_CONFLICT (a connect-request to a recipient who already
   // has a pending request from this account, or is already a first-degree
   // connection) must decode to its own code, not fall back to INTERNAL — and must
