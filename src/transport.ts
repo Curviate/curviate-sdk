@@ -55,6 +55,10 @@ interface WireErrorEnvelope {
   user_fixable?: boolean;
   retry_likely_to_succeed?: boolean;
   required_tier?: string;
+  /** The paused account-safety budget row on a halted-row PLATFORM_RATE_LIMIT. */
+  row?: string;
+  /** Seconds until that row is usable again. Mirrors the `Retry-After` header. */
+  retry_after?: number;
 }
 
 // Backoff defaults.
@@ -119,6 +123,12 @@ async function errorFromResponse(res: Response): Promise<CurviateError> {
     env?.required_tier && KNOWN_REQUIRED_TIERS.has(env.required_tier)
       ? (env.required_tier as RequiredTier)
       : undefined;
+  // `retry_after` is DELIBERATELY NOT folded into `retryAfterMs`. Everything
+  // that reads `retryAfterMs` SLEEPS it, on reads and on writes; a paused budget
+  // row can be paused for an hour, and turning that into an hour-long sleep
+  // inside a client call would be a hang, not a backoff. It stays on
+  // `retryAfterSeconds` for the caller to decide about, next to `budgetRow`,
+  // which is the field that says what to do instead: switch work.
 
   return new CurviateError({
     code: toErrorCode(env?.code),
@@ -129,6 +139,10 @@ async function errorFromResponse(res: Response): Promise<CurviateError> {
     retryLikelyToSucceed: env?.retry_likely_to_succeed ?? false,
     ...(requiredTier !== undefined ? { requiredTier } : {}),
     ...(retryAfterMs !== undefined ? { retryAfterMs } : {}),
+    ...(typeof env?.row === "string" ? { budgetRow: env.row } : {}),
+    ...(typeof env?.retry_after === "number" && Number.isFinite(env.retry_after)
+      ? { retryAfterSeconds: env.retry_after }
+      : {}),
   });
 }
 
@@ -240,7 +254,15 @@ export async function execute<T = unknown>(
     }
 
     const err = await errorFromResponse(res);
-    const retryable = !isWrite && RETRYABLE_CODES.has(err.code) && attempt < opts.maxRetries;
+    // A PAUSED BUDGET ROW IS NEVER RETRIED, on any method. It is not a transient
+    // rate limit: LinkedIn refused a recent call on that row, and the API is
+    // refusing this one locally until the pause lifts, so every retry inside the
+    // window is guaranteed to fail. Retrying into a LinkedIn rate limit is also
+    // what escalates it into an account restriction, which is the whole reason
+    // the pause exists. Surface it and let the caller switch work.
+    const paused = err.budgetRow !== undefined;
+    const retryable =
+      !isWrite && !paused && RETRYABLE_CODES.has(err.code) && attempt < opts.maxRetries;
     if (retryable) {
       await sleep(retryDelay(err, attempt + 1, jitterFn()));
       attempt += 1;
