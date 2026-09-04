@@ -95,6 +95,14 @@ export const ERROR_CODES = [
   "REAUTH_REQUIRED",
   // LinkedIn-specific connect errors
   "LINKEDIN_AUTH_FAILED",
+  // LinkedIn allows only one session at a time for some accounts, so a person
+  // signing in elsewhere breaks this one. A 401 like LINKEDIN_AUTH_FAILED and a
+  // separate code because the remedy is different and the auth one prescribes
+  // the wrong remedy: reconnecting does nothing while the other session is
+  // open. user_fixable, never retryable: a person has to close the other
+  // session. While it lasts, `account_states` on the account resource carries
+  // `recruiter_session_evicted`.
+  "LINKEDIN_SESSION_EVICTED",
   "LINKEDIN_RATE_LIMITED",
   "LINKEDIN_COOKIE_INVALID",
   "LINKEDIN_SERVICE_UNAVAILABLE",
