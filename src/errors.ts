@@ -66,6 +66,14 @@ export const ERROR_CODES = [
   // response headers). Distinct from the account/tenant/platform trio above.
   // Always retry-safe (retry_likely_to_succeed: true); see RETRYABLE_CODES.
   "RATE_LIMITED",
+  // Curviate's OWN account-safety ceiling, not a request-rate limit and not
+  // LinkedIn refusing. A 429 that never reached LinkedIn and spent nothing:
+  // the budget row named by `budgetRow` is at the ceiling configured on
+  // `PATCH /v1/{account_id}/safety-policy`, or the account is outside its
+  // activity window. Deliberately absent from RETRYABLE_CODES: a monthly
+  // row's reset can be weeks out, so backing off is the wrong recovery.
+  // Read `resetAt`, `safetyReason` and `safetyHint` instead.
+  "BUDGET_EXHAUSTED",
   // Platform errors
   "PLATFORM_ERROR",
   "PLATFORM_NOT_IMPLEMENTED",
@@ -95,6 +103,14 @@ export const ERROR_CODES = [
   "REAUTH_REQUIRED",
   // LinkedIn-specific connect errors
   "LINKEDIN_AUTH_FAILED",
+  // LinkedIn allows only one session at a time for some accounts, so a person
+  // signing in elsewhere breaks this one. A 401 like LINKEDIN_AUTH_FAILED and a
+  // separate code because the remedy differs and the auth one prescribes the
+  // wrong remedy: reconnecting does nothing while the other session is open.
+  // user_fixable, never retryable: a person has to close the other session.
+  // While it lasts, `account_states` on the account resource carries
+  // `recruiter_session_evicted`.
+  "LINKEDIN_SESSION_EVICTED",
   "LINKEDIN_RATE_LIMITED",
   "LINKEDIN_COOKIE_INVALID",
   "LINKEDIN_SERVICE_UNAVAILABLE",
@@ -166,6 +182,33 @@ export interface RetryHint {
   delayMs?: number;
 }
 
+/**
+ * Which safety rule refused, on a `BUDGET_EXHAUSTED`. Wire field `reason`.
+ *
+ * `ceiling`: the row's configured limit is spent; wait until
+ * {@link CurviateError.resetAt} or raise the limit.
+ * `activity_window`: the account is outside the hours it works in; `resetAt`
+ * is when the window next opens.
+ *
+ * The two need different fixes, which is why this is a field rather than
+ * something to read out of the message.
+ */
+export type SafetyReason = "ceiling" | "activity_window";
+
+/**
+ * The exact setting to change to lift a `BUDGET_EXHAUSTED`, as data rather
+ * than as prose. Wire field `hint`.
+ *
+ * `parameter` is addressable on `PATCH /v1/{account_id}/safety-policy` (for
+ * example `profile_views.ceiling`, or `posture` where no ceiling can be
+ * raised), so an agent can choose between waiting, escalating to a human and
+ * reconfiguring without parsing `message`.
+ */
+export interface SafetyHint {
+  parameter: string;
+  message: string;
+}
+
 /** Constructor input for {@link CurviateError}. */
 export interface CurviateErrorInit {
   code: ErrorCode;
@@ -180,6 +223,66 @@ export interface CurviateErrorInit {
   requiredTier?: RequiredTier;
   /** Milliseconds to wait before retry, parsed from the `Retry-After` response header. */
   retryAfterMs?: number;
+  /**
+   * The account-safety budget row this response names. Wire field `row`.
+   *
+   * TWO CODES CARRY IT AND THEY MEAN DIFFERENT THINGS. Read {@link
+   * CurviateErrorInit.code} to tell them apart:
+   *
+   * - `PLATFORM_RATE_LIMIT`: the row is PAUSED. LinkedIn refused a recent call
+   *   on it, so this one was refused locally without reaching LinkedIn. The
+   *   pause is scoped to this row on this account and every other row keeps
+   *   working, so the recovery is to switch work, never to retry this row
+   *   before {@link CurviateErrorInit.retryAfterSeconds} elapses, because retrying
+   *   into a LinkedIn rate limit is what escalates it into a restriction.
+   * - `BUDGET_EXHAUSTED`: the row hit the CEILING you configured, or the
+   *   account is outside its activity window. Nothing reached LinkedIn and
+   *   nothing was spent. Wait until {@link CurviateErrorInit.resetAt} or
+   *   change {@link CurviateErrorInit.safetyHint}'s parameter.
+   *
+   * Either way the SDK never auto-retries a response carrying this field.
+   */
+  budgetRow?: string;
+  /**
+   * Seconds until the PAUSED {@link CurviateErrorInit.budgetRow} is usable
+   * again, on a `PLATFORM_RATE_LIMIT`. Wire field `retry_after`.
+   *
+   * A SEPARATE FIELD FROM {@link CurviateErrorInit.retryAfterMs}, on purpose.
+   * `retryAfterMs` is the transport's own sleep budget and is acted on
+   * automatically; this one is informational, because a pause can last an hour
+   * and sleeping that inside a call is a hang. Switch to other work and come
+   * back after this many seconds.
+   */
+  retryAfterSeconds?: number;
+  /**
+   * When the exhausted {@link CurviateErrorInit.budgetRow} frees up, on a
+   * `BUDGET_EXHAUSTED`. Wire field `reset_at`.
+   *
+   * An absolute ISO-8601 instant rather than a duration, so it stays true
+   * however long you hold it. It is the window roll on a spent ceiling and the
+   * next window open on an activity-window refusal.
+   *
+   * `null`, present rather than absent, in exactly two cases where no clock
+   * frees the account: the `pending_invites` row, whose backlog falls when
+   * invitations are accepted or withdrawn rather than at any window boundary,
+   * and an InMail CREDIT exhaustion (`row: inmail`), which LinkedIn regrants on
+   * a schedule this product cannot read. Null-check it before scheduling on it.
+   */
+  resetAt?: string | null;
+  /** The settable parameter that would lift a `BUDGET_EXHAUSTED`. Wire field `hint`. */
+  safetyHint?: SafetyHint;
+  /** Which safety rule refused, on a `BUDGET_EXHAUSTED`. Wire field `reason`. */
+  safetyReason?: SafetyReason;
+  /**
+   * Whether the action was refused. Wire field `blocked`; always `true` here,
+   * because an error means it did not happen and spent nothing.
+   *
+   * The same payload with `blocked: false` rides the SUCCESS body of an account
+   * on the default `warn` posture, under `safety_warning`, and is otherwise
+   * field-identical, so one branch of your code handles both postures and
+   * moving an account to `enforce` is not a breaking change.
+   */
+  blocked?: boolean;
 }
 
 /** Plain-object shape produced by {@link CurviateError.toJSON}. */
@@ -193,6 +296,12 @@ export interface CurviateErrorJSON {
   retryLikelyToSucceed: boolean;
   requiredTier?: RequiredTier;
   retryAfterMs?: number;
+  budgetRow?: string;
+  retryAfterSeconds?: number;
+  resetAt?: string | null;
+  safetyHint?: SafetyHint;
+  safetyReason?: SafetyReason;
+  blocked?: boolean;
 }
 
 /**
@@ -216,6 +325,18 @@ export class CurviateError extends Error {
   readonly retryLikelyToSucceed: boolean;
   readonly requiredTier: RequiredTier | undefined;
   readonly retryAfterMs: number | undefined;
+  /** The budget row this response names. See {@link CurviateErrorInit.budgetRow}. */
+  readonly budgetRow: string | undefined;
+  /** Seconds until a paused row lifts. See {@link CurviateErrorInit.retryAfterSeconds}. */
+  readonly retryAfterSeconds: number | undefined;
+  /** When the refusal lifts; `null` on the gauge and on InMail credits. See {@link CurviateErrorInit.resetAt}. */
+  readonly resetAt: string | null | undefined;
+  /** The settable parameter that would lift the refusal. See {@link CurviateErrorInit.safetyHint}. */
+  readonly safetyHint: SafetyHint | undefined;
+  /** Which safety rule refused. See {@link CurviateErrorInit.safetyReason}. */
+  readonly safetyReason: SafetyReason | undefined;
+  /** Whether the action was refused. See {@link CurviateErrorInit.blocked}. */
+  readonly blocked: boolean | undefined;
 
   constructor(init: CurviateErrorInit) {
     super(init.message);
@@ -226,6 +347,12 @@ export class CurviateError extends Error {
     this.retryLikelyToSucceed = init.retryLikelyToSucceed;
     this.requiredTier = init.requiredTier;
     this.retryAfterMs = init.retryAfterMs;
+    this.budgetRow = init.budgetRow;
+    this.retryAfterSeconds = init.retryAfterSeconds;
+    this.resetAt = init.resetAt;
+    this.safetyHint = init.safetyHint;
+    this.safetyReason = init.safetyReason;
+    this.blocked = init.blocked;
     // Maintains a correct prototype chain when targeting ES5-class semantics.
     Object.setPrototypeOf(this, CurviateError.prototype);
   }
@@ -247,6 +374,16 @@ export class CurviateError extends Error {
     if (this.httpStatus !== undefined) json.httpStatus = this.httpStatus;
     if (this.requiredTier !== undefined) json.requiredTier = this.requiredTier;
     if (this.retryAfterMs !== undefined) json.retryAfterMs = this.retryAfterMs;
+    if (this.budgetRow !== undefined) json.budgetRow = this.budgetRow;
+    if (this.retryAfterSeconds !== undefined) json.retryAfterSeconds = this.retryAfterSeconds;
+    // `resetAt` is null-BEARING: null says "no clock frees this" (the
+    // pending_invites gauge, or an InMail credit exhaustion), which is a
+    // different fact from the field being absent. Guard on undefined, not on
+    // falsiness.
+    if (this.resetAt !== undefined) json.resetAt = this.resetAt;
+    if (this.safetyHint !== undefined) json.safetyHint = this.safetyHint;
+    if (this.safetyReason !== undefined) json.safetyReason = this.safetyReason;
+    if (this.blocked !== undefined) json.blocked = this.blocked;
     return json;
   }
 }

@@ -73,8 +73,31 @@ export class AccountsResource {
 
   /**
    * Return metadata and current state for one connected account, including the
-   * central `quotas[]` view for all tracked quota families and `seat_id` (the
-   * seat this account occupies, `null` for an admin seatless account).
+   * central `quotas[]` account-safety view, `account_states[]` and `seat_id`
+   * (the seat this account occupies, `null` for an admin seatless account).
+   *
+   * `quotas[]` REPLACED its earlier `quota_name` / `remaining` / `total` /
+   * `reset_time` / `recommended_throttle_hint` shape. Each row now reports
+   * `budget_row`, `kind`, `used`, `ceiling`, `effective_ceiling`, `band`,
+   * `posture`, `over_default`, `halt` and the window fields. **Compare `used`
+   * against `effective_ceiling`, not `ceiling`**: the effective one is the
+   * ceiling with the account's warm-up ramp applied, and on a new account the
+   * two differ by roughly a factor of seven. `posture` says what happens at the
+   * ceiling and defaults to `warn`, so nothing here refuses until it is
+   * configured to. Two rows are not counters and say so in `kind`:
+   * `total_actions` (`tally`) and `pending_invites` (`gauge`, whose `used` is
+   * `null` until something has observed it).
+   *
+   * The per-minute REQUEST ceiling is a different thing and is deliberately
+   * NOT in this array: it protects Curviate's own servers rather than the
+   * LinkedIn account, and it is always enforced with `429` whatever the
+   * posture.
+   *
+   * `account_states[]` lists platform conditions the account is in right now,
+   * additive to `status` and independent of it: `recruiter_session_evicted`,
+   * `commercial_use_limited`, `profile_view_limited`. The last two are read on
+   * calls that SUCCEEDED, so check them before concluding thin results are
+   * wrong. Empty for an unaffected account.
    *
    * This is a stale-while-revalidate read; it always returns immediately
    * from the cached row (never blocks on a live substrate call). The cached

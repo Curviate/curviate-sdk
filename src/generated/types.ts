@@ -884,6 +884,8 @@ export interface paths {
         /**
          * Search chats
          * @description Free-text search of the connected account's own inbox. Matches both participant names and message content. A no-match term returns an empty list, not an error.
+         *
+         *     Served from the chats and messages already retrieved for this account, so it costs no platform call and draws down no budget. A chat that has never been retrieved cannot match. The `coverage` block on the response says how complete the searched corpus is.
          */
         get: operations["getV1AccountIdChatsSearch"];
         put?: never;
@@ -2279,7 +2281,7 @@ export interface paths {
         };
         /**
          * Get a linked LinkedIn account
-         * @description Return the metadata and current state for one connected account. Status is mapped to the stable whitelist: active | reconnect_needed | restricted | connecting.
+         * @description Return the metadata and current state for one connected account. Status is mapped to the stable whitelist: active | reconnect_needed | restricted | connecting | disconnected.
          */
         get: operations["getV1AccountsAccountId"];
         put?: never;
@@ -2398,6 +2400,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/{account_id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the events received for an account
+         * @description Returns the events Curviate received for this account in the last 24 hours, newest received first, with the exact payload a registered webhook would have been delivered. Events are retained whether or not any webhook is subscribed to them, so this works with no listener running. Retention is 24 hours from received_at and is absolute, and a live claim does not extend it. Disconnecting an account removes its events from this response immediately; the rows are not otherwise deleted early. Events can arrive out of order, so treat the ordering as arrival order, not causal order. Each item carries its queue state, and `state` filters on it: `done` is what your agents have already handled, `unread` is what is still waiting, `claimed` is what someone holds right now. This read claims nothing and is safe to poll. Page until cursor is null.
+         */
+        get: operations["getV1AccountIdEvents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/{account_id}/events/claim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Claim events to work on
+         * @description Leases up to `limit` unread events for this account and returns them, oldest `occurred_at` first, in one atomic step. Two agents claiming at the same instant never receive the same event, which a plain read plus a read flag cannot promise. Claiming when nothing is available returns an empty list and a 200. `consumer` is free text that identifies your worker. It is recorded on each event and never verified, so the lease is cooperative: it keeps your own agents from duplicating work, and it is not access control. Finish an event with the done call, or hand it back with release. If you do neither, the lease expires after `lease_seconds` (default 300, max 3600) and the event becomes claimable again. `limit` defaults to 10 and caps at 100. Ordering is arrival order, not causal order: events can arrive out of sequence, so establish causality from the payload if you need it. Retention is still 24 hours from `received_at` and a lease does not extend it, so an event can disappear while you hold it.
+         */
+        post: operations["postV1AccountIdEventsClaim"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/{account_id}/events/{event_id}/release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Release a claimed event
+         * @description Hands a leased event back so it can be claimed again immediately, by you or by anyone else. Use it when your handler fails: returning the work is better than holding it for the rest of the lease. No request body. The caller is not checked against whoever claimed it, because the lease is cooperative rather than access control. Releasing an event that is already done changes nothing and returns state `done`.
+         */
+        post: operations["postV1AccountIdEventsEventIdRelease"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/{account_id}/events/{event_id}/done": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark an event done
+         * @description Marks an event handled. This is the only terminal state there is, and it is shared across every consumer under this tenant: a done event leaves the unread set for all of them, so it is the signal that the work is finished rather than a per-agent bookmark. There is no failed state. An event nothing can handle needs no special marking, it expires with the rest at 24 hours. No request body, safe to call twice, and it keeps the first completion time.
+         */
+        post: operations["postV1AccountIdEventsEventIdDone"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/webhooks": {
         parameters: {
             query?: never;
@@ -2431,7 +2513,7 @@ export interface paths {
         };
         /**
          * List webhook event types
-         * @description Returns the complete canonical event catalogue (28 events) grouped by source: messaging (8), user (2), account_status (15), plus 3 tier-gated events. No quota consumed.
+         * @description Returns the complete canonical event catalogue (28 events) grouped by source: messaging (8), user (2), account_status (15), plus 3 tier-gated events. A local catalogue read: no platform call is made.
          */
         get: operations["getV1WebhooksEvents"];
         put?: never;
@@ -2490,6 +2572,50 @@ export interface paths {
         patch: operations["patchV1WebhooksId"];
         trace?: never;
     };
+    "/v1/{account_id}/safety-policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read an account's safety policy
+         * @description Returns every configurable safety field for every budget row of one account, in a single response: the ceiling, the green and amber bands, the counting window, the enforcement posture and where it was inherited from, the activity window, warm-up state, the per-row character caps and search per-query cap, and how well calibrated each row's number is. Every value is seeded configuration and every one of them is settable. Where a configured value is above the Curviate default, the row carries an `over_default` entry naming the value, the default and the source class of that default. The response also carries `tenant_default_posture`, the workspace-wide default every account inherits, separately from this account's own effective `posture`, and `limit_profile`, which says which of the four Curviate default sets (`basic`, `premium`, `sales_navigator`, `recruiter`) every row below was resolved from, detected from the platform when the account connected. When the Curviate seat attached to this account disagrees with that, `seat_tier_mismatch` names the seat tier; the detected product wins the numbers either way.
+         */
+        get: operations["getV1AccountIdSafetyPolicy"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update an account's safety policy
+         * @description The single safety-policy write. Send only the fields you are changing: everything you omit is left byte-identical, and sending `null` for a field clears your override and restores the Curviate default. Any limit may be set to any value: Curviate does not clamp, cap or refuse a change on the grounds that the number is unsafe. A value above the Curviate default is reported back in the response, and on every later read, with the default and its source class attached; there is no way to acknowledge it away, and setting the value back to the default removes it. A value that is not a value, such as a negative ceiling or an unknown row name, is a 400. Every field whose value CHANGES is appended to the account's action ledger with the previous value, the new value, the Curviate default, the actor and the time; a field you send whose value already equals its current effective value is not ledgered and is not stored as an override, so reading the policy and sending the document back changes nothing. Four fields on the read are derived rather than configured: `effective_ceiling`, `posture_source`, `over_default` and each row's `warm_up_state`. Send them and they are accepted and ignored, never stored and never ledgered, so the document you read can go straight back. To pin a row's ramp, set `warm_up_factor`. `activity_window` is not accepted: send its settable subfields instead, which for the zone is the top-level `timezone`. And read `changes nothing` as `changes no limit`: the `posture` fields are OVERRIDES at every scope, so writing back a posture a scope merely inherits PINS it there and appends one ledger entry per pinned scope. That is what stops a later account- or tenant-wide change from moving it. A pin already in place is a no-op. An agent-authenticated write is accepted on exactly the same footing as an operator's. There is no bulk import, file upload or policy template: configuring many rows or many accounts is a loop over this operation. One field is not account-scoped: `tenant_default_posture` sets the default for EVERY account in the tenant, not just the one in the path, which is what makes it a one-call change for a whole workspace of personas. It is reported back at the top of every policy response, so a change to it is visible even on an account that overrides it. One other field is not row-scoped: `limit_profile` selects which of the four Curviate default sets this account's rows resolve from, so it moves the default under every row at once while leaving every value you have configured explicitly exactly as you set it. It is the platform product active on the account, not your Curviate seat entitlement, and the two can disagree: a lapsed subscription leaves the seat untouched. Curviate detects it when the account connects and re-detects it on every reconnect; setting it here is an operator override of that result, and it holds until the next connect. When the seat and the detected product disagree, the detected product wins the numbers and the read reports the disagreement as `seat_tier_mismatch`.
+         */
+        patch: operations["patchV1AccountIdSafetyPolicy"];
+        trace?: never;
+    };
+    "/v1/{account_id}/safety-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List what Curviate refused or warned about
+         * @description Returns this account's safety events, newest first: every action Curviate refused, and every action it let through while flagging that a limit had been crossed. Under the default posture nothing is refused, so everything here is a warning and `blocked` is how you tell the two apart. Each event names the budget row that breached, why, the operation that hit it and when. Filter by `budget_row` for one action type and by `since` / `until` for a period, and page until `cursor` is null. This is a read of what already happened, so it never changes a limit or a count: to change what is refused, update the safety policy. The account resource is the other half of the picture, reporting where each row stands right now rather than what has already been flagged.
+         */
+        get: operations["getV1AccountIdSafetyEvents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2524,6 +2650,26 @@ export interface components {
              * @enum {string}
              */
             required_tier?: "core" | "sales_nav" | "recruiter";
+            /** @description Present on a PLATFORM_RATE_LIMIT raised because one account-safety budget row is paused: LinkedIn refused a recent call on that row, so this one was refused locally without reaching LinkedIn. Names the paused row (for example profile_views, connection_requests_no_note). The pause is scoped to this row on this account; every other row keeps working. Absent on every other rate limit. Also present on BUDGET_EXHAUSTED, where it names the row that hit its CEILING rather than one LinkedIn paused: read the code to tell the two apart, because the recovery differs. */
+            row?: string;
+            /** @description Present on BUDGET_EXHAUSTED: when this row's budget frees up, as an absolute instant rather than a duration, so it stays true however long you hold it. Null for the pending_invites row, whose backlog falls when invitations are accepted or withdrawn rather than at any window boundary, so there is no instant to name. */
+            reset_at?: string | null;
+            /** @description Present on BUDGET_EXHAUSTED: the exact setting to change, as a field rather than as prose. parameter is addressable on PATCH /v1/{account_id}/safety-policy, so an agent can decide between waiting until reset_at, escalating to a human, and reconfiguring, without parsing the message. */
+            hint?: {
+                /** @description The settable parameter, for example profile_views.ceiling or posture. */
+                parameter: string;
+                /** @description One paragraph naming the condition and what changing that parameter would do. */
+                message: string;
+            };
+            /**
+             * @description Present on BUDGET_EXHAUSTED: which rule refused. ceiling means the row's configured limit is spent, and you wait until reset_at or raise it. activity_window means the account is outside the hours it works in, and reset_at is when the window next opens. The two need different fixes, so branch on this rather than on the message; hint.parameter already names the right setting for each.
+             * @enum {string}
+             */
+            reason?: "ceiling" | "activity_window";
+            /** @description Present on BUDGET_EXHAUSTED, always true: the action did not happen and spent nothing. The same payload with blocked false rides the SUCCESS body of an account on the default warn posture, under safety_warning, and is otherwise field-identical, so one branch of your code handles both postures and moving an account to enforce is not a breaking change. */
+            blocked?: boolean;
+            /** @description Present alongside row: whole seconds until that row is usable again. This response carries no Retry-After header and no delay retry_hint, deliberately: a paused row can be paused for an hour, and a client that sleeps that inside the call hangs. Do not retry this row before the wait elapses; switch to other work instead. Seconds, not milliseconds. */
+            retry_after?: number;
             /** @description Present when a structured search filter value matched several filter options and one has to be picked (422 FILTER_CANDIDATES_REQUIRED). One entry per offending value, so a single retry can fix them all. A value that matched no option at all is not listed here and is not an error: it is sent on as an id and reported in notices[] on the 200. */
             unresolved?: {
                 /** @description The request body field the value came from. Dotted for nested filters, for example author.company. */
@@ -2554,6 +2700,38 @@ export interface components {
                 /** @description The offending value. */
                 value?: string;
             }[];
+        };
+        /**
+         * @description Present on a successful response when this account crossed an account-safety ceiling while the affected budget row is on the default warn posture. The action still happened. Field-identical to the BUDGET_EXHAUSTED error body except that blocked is false, so one branch handles both postures and switching the account to enforce is a configuration change rather than a client rewrite.
+         * @example {
+         *       "row": "profile_views",
+         *       "reset_at": "2026-09-05T00:00:00.000Z",
+         *       "hint": {
+         *         "parameter": "profile_views.ceiling",
+         *         "message": "This account is at its configured ceiling for profile_views."
+         *       },
+         *       "reason": "ceiling",
+         *       "blocked": false
+         *     }
+         */
+        SafetyWarning: {
+            /** @description The budget row that breached, for example profile_views or pending_invites. */
+            row: string;
+            /** @description When the row frees up, as an absolute instant. Null for the pending_invites gauge. */
+            reset_at: string | null;
+            hint: {
+                /** @description The settable parameter on PATCH /v1/{account_id}/safety-policy. */
+                parameter: string;
+                /** @description What the condition is and what changing that parameter would do. */
+                message: string;
+            };
+            /**
+             * @description Which rule was crossed. ceiling means the row's configured limit is spent; activity_window means the account is outside the hours it works in, which is a different fact with a different remedy. hint.parameter names the right setting for each.
+             * @enum {string}
+             */
+            reason: "ceiling" | "activity_window";
+            /** @description Always false here. True on the BUDGET_EXHAUSTED refusal carrying the same payload. */
+            blocked: boolean;
         };
         /** @description A message. `quoted` carries the message this one quotes, when it quotes one; a quoted message has the same shape and may itself carry a `quoted`. */
         Message: {
@@ -2644,6 +2822,10 @@ export interface operations {
             query?: {
                 /** @description Which profile sections to fetch (repeatable, flat). Pass one or more of: linkedin_experience, linkedin_education, linkedin_languages, linkedin_skills, linkedin_certifications, linkedin_volunteer_experience, linkedin_projects, linkedin_recommendations, linkedin_interests (or linkedin_* for all), plus each value's _preview variant. Omit for base fields only. */
                 linkedin_sections?: string[];
+                /** @description How willing this read is to reach LinkedIn. `auto` (default) serves a stored copy while it is within the resource's freshness threshold; `live` always fetches; `refill` serves a stored copy at any age and fetches once when this read has no stored copy yet; `cache_only` never fetches and returns NOT_STORED when nothing is stored. `cache_only` cannot be combined with max_age. A 502 under `cache_only` means the store could not be read, not that nothing is stored: no request was made to LinkedIn, and the same read is worth retrying. */
+                mode?: "live" | "auto" | "refill" | "cache_only";
+                /** @description Maximum age, in seconds, of a stored copy this read will accept. Overrides the `auto`, `live` and `refill` presets in both directions; `0` is the same as `mode=live`. Not accepted with `mode=cache_only`, whose guarantee is not a freshness threshold. */
+                max_age?: number;
             };
             header?: never;
             path: {
@@ -2661,6 +2843,8 @@ export interface operations {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     RateLimit: components["headers"]["RateLimit"];
+                    /** @description Seconds since this data was observed on LinkedIn. Present only when source is `store`; a live fetch sets no Age header at all. */
+                    Age?: number;
                     [name: string]: unknown;
                 };
                 content: {
@@ -3151,10 +3335,22 @@ export interface operations {
                             /** @description Section names that were requested but throttled by LinkedIn. */
                             throttled_sections?: string[];
                         };
+                        /** @description ISO-8601 timestamp for when this data was observed on LinkedIn. On a live fetch this is the time of the fetch; on a stored answer it is when the data was actually seen, not when you asked for it. */
+                        observed_at: string;
+                        /**
+                         * @description Whether this answer came from Curviate's stored copy or from a fresh LinkedIn fetch. A stored answer costs the connected account nothing and is never surfaced to the person being read. It also carries less: fields Curviate does not retain (message bodies, notes, attachments, third-party contact details) are only ever present on a live fetch. Pass mode=live when you need them.
+                         * @enum {string}
+                         */
+                        source: "store" | "live";
+                        /** @description Whether LinkedIn has told us this resource no longer exists, such as a removed profile. When true, the answer above is the copy Curviate still holds and must not be treated as current. Always present; false is the normal case. */
+                        withdrawn: boolean;
+                        /** @description ISO-8601 timestamp for when a fetch MOST RECENTLY found this resource gone on LinkedIn. Every later fetch that finds it gone again moves it. Present only when withdrawn is true. */
+                        withdrawn_at?: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
-            /** @description Malformed linkedin_sections value or invalid query param. */
+            /** @description Either a query param failed validation (the error details name the field), or the platform rejected the request for this target profile: The request was rejected as invalid. In the latter case the linkedin_sections value is not at fault, and the same request may succeed on another profile. INVALID_REQUEST also covers `mode=cache_only` sent together with `max_age`: that mode never reaches LinkedIn at any age, so a freshness threshold cannot change its answer, and the pair is refused rather than one of the two being ignored. Drop `max_age`, or use `mode=refill` (stored at any age, fetch only when nothing is stored). */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -3190,7 +3386,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account is restricted and cannot be queried. */
+            /** @description The account is restricted and cannot be queried (ACCOUNT_RESTRICTED). Nothing is stored for this resource and `mode=cache_only` never fetches (NOT_STORED). Not the same as a 404: the resource may exist, and this API holds no copy of it. Re-read with `mode=refill` or `mode=auto` to fetch it. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -3220,7 +3416,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description A temporary error occurred. Please try again. Under `mode=cache_only` this specifically means the stored copy could not be read: no request was made to LinkedIn, and the same read is worth retrying. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -3315,6 +3511,7 @@ export interface operations {
                          * @enum {string}
                          */
                         object: "user_updated";
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     } & {
                         [key: string]: unknown;
                     };
@@ -3486,6 +3683,7 @@ export interface operations {
                         }[];
                         /** @description Next-page cursor; null on the last page. */
                         cursor?: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -3612,6 +3810,7 @@ export interface operations {
                             /** @description Remaining InMail credits on a Sales Navigator seat, or null if not subscribed. */
                             sales_navigator: number | null;
                         };
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -3727,6 +3926,7 @@ export interface operations {
                          * @enum {string}
                          */
                         object: "skill_endorsed";
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -3923,6 +4123,7 @@ export interface operations {
                         };
                         /** @description Always null for this resource; the full administered set returns in one page. */
                         cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -4085,6 +4286,7 @@ export interface operations {
                         actions: {
                             [key: string]: string;
                         };
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -4227,6 +4429,7 @@ export interface operations {
                             /** @description Trend magnitude in percent (direction is a client-rendered icon absent from the source, so magnitude only). */
                             change_pct_magnitude: number | null;
                         };
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -4369,6 +4572,7 @@ export interface operations {
                         }[];
                         /** @description Opaque cursor for the next page; null when the list is known-exhausted. A non-null cursor means more may exist, keep paging (zero individuals on a page is not exhaustion). There is no total (the upstream total is unreliable). */
                         cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -4498,6 +4702,7 @@ export interface operations {
                         active_seat: boolean;
                         /** @description Freshness watermark (epoch ms). Treat 0/null as "no watermark / computed on read", not a 1970 date. */
                         calculated_at: number | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -4651,6 +4856,7 @@ export interface operations {
                         }[];
                         /** @description Next-page cursor; null on the last page. */
                         cursor?: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -4804,6 +5010,7 @@ export interface operations {
                         }[];
                         /** @description Next-page cursor; null on the last page. */
                         cursor?: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -5078,6 +5285,7 @@ export interface operations {
                          * @enum {string}
                          */
                         object: "user_unfollowed";
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -5272,6 +5480,18 @@ export interface operations {
                             /** @description Average employee tenure, in years. */
                             average_tenure?: number;
                         };
+                        /** @description ISO-8601 timestamp for when this data was observed on LinkedIn. On a live fetch this is the time of the fetch; on a stored answer it is when the data was actually seen, not when you asked for it. */
+                        observed_at: string;
+                        /**
+                         * @description Whether this answer came from Curviate's stored copy or from a fresh LinkedIn fetch. A stored answer costs the connected account nothing and is never surfaced to the person being read. It also carries less: fields Curviate does not retain (message bodies, notes, attachments, third-party contact details) are only ever present on a live fetch. Pass mode=live when you need them.
+                         * @enum {string}
+                         */
+                        source: "store" | "live";
+                        /** @description Whether LinkedIn has told us this resource no longer exists, such as a removed profile. When true, the answer above is the copy Curviate still holds and must not be treated as current. Always present; false is the normal case. */
+                        withdrawn: boolean;
+                        /** @description ISO-8601 timestamp for when a fetch MOST RECENTLY found this resource gone on LinkedIn. Every later fetch that finds it gone again moves it. Present only when withdrawn is true. */
+                        withdrawn_at?: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -5462,6 +5682,7 @@ export interface operations {
                             /** @description The offending value. */
                             value?: string;
                         }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -5636,11 +5857,26 @@ export interface operations {
                             repost_count: number;
                         }[];
                         paging: {
-                            /** @description Total number of matching posts across all pages, or null when the platform does not report one. Count the items rather than relying on this. */
+                            /** @description Always null. This list runs on the post search, which no longer reports how many posts match, so there is no total to page toward; walk the pages with cursor until it comes back null. */
                             total_count: number | null;
                         };
                         /** @description Opaque cursor for the next page, or null when there are no more results. */
                         cursor: string | null;
+                        /** @description Present only when there is something to report about this page, for example that this page is short because the walk stopped fetching upstream pages after hitting the page cap, not because the results ran out; more results wait behind the cursor (a null cursor is the only reliable end-of-results signal). Absent when there is nothing to report. */
+                        notices?: {
+                            /**
+                             * @description FILTER_VALUE_UNRESOLVED: the value matched no known filter option, so it was sent on as an id we could not check. FILTER_VALUE_UNCHECKED: the value already looked like an id, so it was never looked up, and this page came back empty. SOME_RESULTS_HIDDEN: some people on this page were not disclosed to the connected account, so those entries cannot be read back. ALL_RESULTS_HIDDEN: none of the people on this page were disclosed, so the page yielded nothing you can act on, even when more pages follow. PAGE_TRUNCATED: this page is short because the search stopped fetching upstream pages, not because the results ran out; follow cursor, and treat only a null cursor as the end. Branch on this rather than on message.
+                             * @enum {string}
+                             */
+                            code: "FILTER_VALUE_UNRESOLVED" | "FILTER_VALUE_UNCHECKED" | "SOME_RESULTS_HIDDEN" | "ALL_RESULTS_HIDDEN" | "PAGE_TRUNCATED";
+                            /** @description One sentence explaining the condition and how to resolve it. */
+                            message: string;
+                            /** @description The request field the notice is about, dotted for nested filters. */
+                            field?: string;
+                            /** @description The offending value. */
+                            value?: string;
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -5820,6 +6056,7 @@ export interface operations {
                         };
                         /** @description Opaque cursor for the next page, or null when there are no more results. */
                         cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -5977,6 +6214,7 @@ export interface operations {
                                 message?: string;
                             } | null;
                         }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -6143,6 +6381,7 @@ export interface operations {
                         }[];
                         /** @description Opaque cursor for the next page, or null at end-of-list. */
                         cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -6290,6 +6529,7 @@ export interface operations {
                         }[];
                         /** @description Opaque cursor for the next page, or null when exhausted. */
                         cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -6484,6 +6724,7 @@ export interface operations {
                             /** @description The expansion the notice is about, here public_identifier. */
                             value?: string;
                         }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -6666,6 +6907,7 @@ export interface operations {
                             /** @description The expansion the notice is about, here public_identifier. */
                             value?: string;
                         }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -6841,6 +7083,7 @@ export interface operations {
                             /** @description The expansion the notice is about, here public_identifier. */
                             value?: string;
                         }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -6986,11 +7229,11 @@ export interface operations {
                          * @description Response type discriminator.
                          * @enum {string}
                          */
-                        object?: "message_sent";
-                        /** @description The sent message's identifier. */
-                        message_id?: string;
+                        object: "message_sent";
+                        /** @description The sent message's identifier. Null when no message was actually sent, and an array when the message was delivered as several messages, one per attachment. */
+                        message_id: string | string[] | null;
                         /** @description The identity this message was actually sent as. */
-                        sent_as?: {
+                        sent_as: {
                             /**
                              * @description Which identity sent the message.
                              * @enum {string}
@@ -7001,6 +7244,7 @@ export interface operations {
                             /** @description Company inboxes only. The page's display name, or null in the rare case the page itself could not be resolved at all. */
                             name?: string | null;
                         };
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -7182,6 +7426,7 @@ export interface operations {
                             /** @description The expansion the notice is about, here public_identifier. */
                             value?: string;
                         }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -7387,6 +7632,7 @@ export interface operations {
                             /** @description The expansion the notice is about, here public_identifier. */
                             value?: string;
                         }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -7579,6 +7825,7 @@ export interface operations {
                         };
                         /** @description Opaque cursor for the next page; null when the enumeration is exhausted. */
                         cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -7743,6 +7990,18 @@ export interface operations {
                         invitation_level: string | null;
                         /** @description Up to ~12 sampled member ids, a partial sample, possibly empty. */
                         sample_past_members: string[];
+                        /** @description ISO-8601 timestamp for when this data was observed on LinkedIn. On a live fetch this is the time of the fetch; on a stored answer it is when the data was actually seen, not when you asked for it. */
+                        observed_at: string;
+                        /**
+                         * @description Whether this answer came from Curviate's stored copy or from a fresh LinkedIn fetch. A stored answer costs the connected account nothing and is never surfaced to the person being read. It also carries less: fields Curviate does not retain (message bodies, notes, attachments, third-party contact details) are only ever present on a live fetch. Pass mode=live when you need them.
+                         * @enum {string}
+                         */
+                        source: "store" | "live";
+                        /** @description Whether LinkedIn has told us this resource no longer exists, such as a removed profile. When true, the answer above is the copy Curviate still holds and must not be treated as current. Always present; false is the normal case. */
+                        withdrawn: boolean;
+                        /** @description ISO-8601 timestamp for when a fetch MOST RECENTLY found this resource gone on LinkedIn. Every later fetch that finds it gone again moves it. Present only when withdrawn is true. */
+                        withdrawn_at?: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -7905,6 +8164,7 @@ export interface operations {
                         };
                         /** @description Opaque cursor for the next page; null on the last page. */
                         cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -8038,6 +8298,7 @@ export interface operations {
                         }[];
                         /** @description Opaque pagination cursor for the next page, or null when this is the last page. */
                         cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -8258,6 +8519,7 @@ export interface operations {
                             /** @description The offending value. */
                             value?: string;
                         }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -8436,7 +8698,7 @@ export interface operations {
                         }[];
                         /** @description Paging metadata. */
                         paging: {
-                            /** @description Total matching result count. Large counts are a >=1000 ceiling, not an exact total. */
+                            /** @description Always null on this search. LinkedIn stopped reporting how many results match, so there is no total to page toward; walk the pages with cursor until it comes back null. A short or empty page is not the end: only a null cursor is. */
                             total_count: number | null;
                         };
                         /** @description Opaque next-page cursor; null on the last page. */
@@ -8455,6 +8717,7 @@ export interface operations {
                             /** @description The offending value. */
                             value?: string;
                         }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -8681,7 +8944,7 @@ export interface operations {
                         }[];
                         /** @description Paging metadata. */
                         paging: {
-                            /** @description Total matching result count. */
+                            /** @description Always null on this search. LinkedIn stopped reporting how many results match, so there is no total to page toward; walk the pages with cursor until it comes back null. A short or empty page is not the end: only a null cursor is. */
                             total_count: number | null;
                         };
                         /** @description Opaque next-page cursor; null on the last page. */
@@ -8700,6 +8963,7 @@ export interface operations {
                             /** @description The offending value. */
                             value?: string;
                         }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -8964,6 +9228,7 @@ export interface operations {
                             /** @description The offending value. */
                             value?: string;
                         }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -9248,11 +9513,12 @@ export interface operations {
                         })[];
                         /** @description Paging metadata. */
                         paging: {
-                            /** @description Total matching result count. Always null when the pasted URL is a people search, because LinkedIn does not report a total for those; page with cursor instead. For company, post, and job URLs a large count is a >=1000 ceiling, not an exact total. */
+                            /** @description Present only when LinkedIn reports a total for the kind of search the pasted URL names, and null whenever it does not. Never treat it as the has-more signal or as an exact figure; page with cursor until that comes back null. */
                             total_count: number | null;
                         };
                         /** @description Opaque next-page cursor; null on the last page. */
                         cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -9407,6 +9673,7 @@ export interface operations {
                         }[];
                         /** @description Opaque next-page cursor; null on the last page. */
                         cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -9594,6 +9861,7 @@ export interface operations {
                             /** @description The offending value. */
                             value?: string;
                         }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -9743,6 +10011,7 @@ export interface operations {
                         }[];
                         /** @description Opaque pagination cursor for the next page, or null when this is the last page. */
                         cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -10010,6 +10279,7 @@ export interface operations {
                             /** @description The expansion the notice is about, here public_identifier. */
                             value?: string;
                         }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -10155,11 +10425,12 @@ export interface operations {
                          * @description Response type discriminator.
                          * @enum {string}
                          */
-                        object?: "chat_started";
+                        object: "chat_started";
                         /** @description The chat's identifier (existing thread reused when messaging a known 1:1 contact). */
-                        chat_id?: string;
-                        /** @description The opening message identifier. */
-                        message_id?: string;
+                        chat_id: string;
+                        /** @description The opening message identifier. Null when no message was actually sent, and an array when the message was delivered as several messages, one per attachment. Confirm the send with chat_id, which is always present. */
+                        message_id: string | string[] | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -10272,6 +10543,10 @@ export interface operations {
             query?: {
                 /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
                 expand?: string;
+                /** @description How willing this read is to reach LinkedIn. `auto` (default) serves a stored copy while it is within the resource's freshness threshold; `live` always fetches; `refill` serves a stored copy at any age and fetches once when this read has no stored copy yet; `cache_only` never fetches and returns NOT_STORED when nothing is stored. `cache_only` cannot be combined with max_age. A 502 under `cache_only` means the store could not be read, not that nothing is stored: no request was made to LinkedIn, and the same read is worth retrying. */
+                mode?: "live" | "auto" | "refill" | "cache_only";
+                /** @description Maximum age, in seconds, of a stored copy this read will accept. Overrides the `auto`, `live` and `refill` presets in both directions; `0` is the same as `mode=live`. Not accepted with `mode=cache_only`, whose guarantee is not a freshness threshold. */
+                max_age?: number;
             };
             header?: never;
             path: {
@@ -10284,11 +10559,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The chat's metadata and most-recent message. */
+            /** @description The chat's metadata and most-recent message. `source` says whether it came from Curviate's stored copy or from a fresh fetch, and `observed_at` says when it was seen; a stored answer also carries an `Age` header. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     RateLimit: components["headers"]["RateLimit"];
+                    /** @description Seconds since this data was observed on LinkedIn. Present only when source is `store`; a live fetch sets no Age header at all. */
+                    Age?: number;
                     [name: string]: unknown;
                 };
                 content: {
@@ -10424,7 +10701,28 @@ export interface operations {
                             /** @description The expansion the notice is about, here public_identifier. */
                             value?: string;
                         }[];
+                        /** @description ISO-8601 timestamp for when this data was observed on LinkedIn. On a live fetch this is the time of the fetch; on a stored answer it is when the data was actually seen, not when you asked for it. */
+                        observed_at: string;
+                        /**
+                         * @description Whether this answer came from Curviate's stored copy or from a fresh LinkedIn fetch. A stored answer costs the connected account nothing and is never surfaced to the person being read. It also carries less: fields Curviate does not retain (message bodies, notes, attachments, third-party contact details) are only ever present on a live fetch. Pass mode=live when you need them.
+                         * @enum {string}
+                         */
+                        source: "store" | "live";
+                        /** @description Whether LinkedIn has told us this resource no longer exists, such as a removed profile. When true, the answer above is the copy Curviate still holds and must not be treated as current. Always present; false is the normal case. */
+                        withdrawn: boolean;
+                        /** @description ISO-8601 timestamp for when a fetch MOST RECENTLY found this resource gone on LinkedIn. Every later fetch that finds it gone again moves it. Present only when withdrawn is true. */
+                        withdrawn_at?: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
+                };
+            };
+            /** @description A query parameter failed validation. INVALID_REQUEST also covers `mode=cache_only` sent together with `max_age`: that mode never reaches LinkedIn at any age, so a freshness threshold cannot change its answer, and the pair is refused rather than one of the two being ignored. Either parameter sent more than once is refused for the same reason, in either order. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Missing or invalid API key. */
@@ -10438,6 +10736,15 @@ export interface operations {
             };
             /** @description The chat does not exist for this account. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Nothing is stored for this chat and `mode=cache_only` never fetches (NOT_STORED). Not the same as a 404: the chat may exist, and this API holds no copy of it. Re-read with `mode=refill` or `mode=auto` to fetch it. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -10466,7 +10773,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description A temporary error occurred. Please try again. Under `mode=cache_only` this specifically means the stored copy could not be read: no request was made to LinkedIn, and the same read is worth retrying. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -10534,6 +10841,7 @@ export interface operations {
                         chat_id?: string;
                         /** @description The applied read status. */
                         read?: boolean;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -10626,6 +10934,10 @@ export interface operations {
     getV1AccountIdChatsChatIdMessages: {
         parameters: {
             query?: {
+                /** @description How willing this read is to reach LinkedIn. `auto` (default) serves a stored copy while it is within the resource's freshness threshold; `live` always fetches; `refill` serves a stored copy at any age and fetches once when this read has no stored copy yet; `cache_only` never fetches and returns NOT_STORED when nothing is stored. `cache_only` cannot be combined with max_age. A 502 under `cache_only` means the store could not be read, not that nothing is stored: no request was made to LinkedIn, and the same read is worth retrying. */
+                mode?: "live" | "auto" | "refill" | "cache_only";
+                /** @description Maximum age, in seconds, of a stored copy this read will accept. Overrides the `auto`, `live` and `refill` presets in both directions; `0` is the same as `mode=live`. Not accepted with `mode=cache_only`, whose guarantee is not a freshness threshold. */
+                max_age?: number;
                 /** @description Optional filter: only return messages from this sender ID. */
                 user_id?: string;
                 /** @description ISO-8601 UTC datetime (exclusive upper bound). Only entries before this time are returned. */
@@ -10650,11 +10962,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description A page of messages from the chat. Full message text is returned verbatim (content pass-through). */
+            /** @description A page of messages from the chat, newest first. Full message text is returned verbatim (content pass-through). `source` says whether the page came from Curviate's stored copy or from a fresh fetch, and `observed_at` says when the chat was last read end to end; a stored answer also carries an `Age` header and always sets `cursor` to null, because a page is served from the store only when it is the whole answer. Narrowing the request with `user_id`, `before`, `after` or a `cursor` always fetches. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     RateLimit: components["headers"]["RateLimit"];
+                    /** @description Seconds since this data was observed on LinkedIn. Present only when source is `store`; a live fetch sets no Age header at all. */
+                    Age?: number;
                     [name: string]: unknown;
                 };
                 content: {
@@ -10747,10 +11061,22 @@ export interface operations {
                             /** @description The expansion the notice is about, here public_identifier. */
                             value?: string;
                         }[];
+                        /** @description ISO-8601 timestamp for when this data was observed on LinkedIn. On a live fetch this is the time of the fetch; on a stored answer it is when the data was actually seen, not when you asked for it. */
+                        observed_at: string;
+                        /**
+                         * @description Whether this answer came from Curviate's stored copy or from a fresh LinkedIn fetch. A stored answer costs the connected account nothing and is never surfaced to the person being read. It also carries less: fields Curviate does not retain (message bodies, notes, attachments, third-party contact details) are only ever present on a live fetch. Pass mode=live when you need them.
+                         * @enum {string}
+                         */
+                        source: "store" | "live";
+                        /** @description Whether LinkedIn has told us this resource no longer exists, such as a removed profile. When true, the answer above is the copy Curviate still holds and must not be treated as current. Always present; false is the normal case. */
+                        withdrawn: boolean;
+                        /** @description ISO-8601 timestamp for when a fetch MOST RECENTLY found this resource gone on LinkedIn. Every later fetch that finds it gone again moves it. Present only when withdrawn is true. */
+                        withdrawn_at?: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
-            /** @description limit out of range (1-25), malformed cursor, or invalid before/after datetime. */
+            /** @description limit out of range (1-25), malformed cursor, or invalid before/after datetime. INVALID_REQUEST also covers `mode=cache_only` sent together with `max_age`, and either parameter sent more than once, in either order. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -10770,6 +11096,15 @@ export interface operations {
             };
             /** @description The chat does not exist for this account. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description `mode=cache_only` and this chat's messages cannot be answered from the stored copy (NOT_STORED): either no complete read of the chat has been observed, or the request narrows the page in a way the stored copy cannot reproduce. Not a 404: the chat may exist. Re-read with `mode=refill`, `auto` or `live`, without the narrowing parameters. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -10798,7 +11133,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description A temporary error occurred. Please try again. Under `mode=cache_only` this specifically means the stored copy could not be read: no request was made to LinkedIn, and the same read is worth retrying. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -10872,11 +11207,11 @@ export interface operations {
                          * @description Response type discriminator.
                          * @enum {string}
                          */
-                        object?: "message_sent";
-                        /** @description The sent message's identifier. */
-                        message_id?: string;
+                        object: "message_sent";
+                        /** @description The sent message's identifier. Null when no message was actually sent, and an array when the message was delivered as several messages, one per attachment. */
+                        message_id: string | string[] | null;
                         /** @description The identity this message was actually sent as. */
-                        sent_as?: {
+                        sent_as: {
                             /**
                              * @description Which identity sent the message.
                              * @enum {string}
@@ -10887,6 +11222,7 @@ export interface operations {
                             /** @description Company inboxes only. The page's display name, or null in the rare case the page itself could not be resolved at all. */
                             name?: string | null;
                         };
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -11101,6 +11437,7 @@ export interface operations {
                             /** @description The expansion the notice is about, here public_identifier. */
                             value?: string;
                         }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -11204,6 +11541,7 @@ export interface operations {
                         object?: "message_deleted";
                         /** @description The deleted message's identifier. */
                         message_id?: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -11323,6 +11661,7 @@ export interface operations {
                         object?: "message_edited";
                         /** @description The edited message's identifier. */
                         message_id?: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -11462,6 +11801,7 @@ export interface operations {
                         message_id?: string;
                         /** @description The emoji reaction value. */
                         reaction?: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -11676,7 +12016,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description A page of chats matching the search term (participant names and/or message content), plus the next-page cursor. */
+            /** @description A page of chats matching the search term (participant names and/or message content), the next-page cursor, and how much of the stored inbox the search could see. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -11703,17 +12043,17 @@ export interface operations {
                             /** @description Chat display name, or null. */
                             name?: string | null;
                             /**
-                             * @description Conversation type (search results are never channels).
+                             * @description Conversation type.
                              * @enum {string}
                              */
-                            type?: "1to1" | "group";
+                            type?: "1to1" | "group" | "channel";
                             is_group?: boolean;
                             is_1to1?: boolean;
                             /** @description Number of unread messages in this chat. */
                             unread_count?: number;
                             /** @description Identifier of the 1:1 counterpart, when the match is a 1:1 chat. */
                             user_id?: string;
-                            /** @description The most recent message in the chat, when the search carrier returned one. */
+                            /** @description The most recent stored message in the chat, when one is stored. */
                             last_message?: {
                                 /**
                                  * @description Response type discriminator.
@@ -11728,7 +12068,7 @@ export interface operations {
                                 text?: string | null;
                                 /** @description Identifier of the sender. */
                                 sender_id?: string;
-                                /** @description Always empty; the search carrier does not surface attachment descriptors. */
+                                /** @description Attachment descriptors on the message, without the file bytes. Empty when the message has none. */
                                 attachments?: {
                                     /** @description Attachment identifier. */
                                     id?: string;
@@ -11747,6 +12087,16 @@ export interface operations {
                         }[];
                         /** @description Opaque next-page cursor; null on the last page. */
                         cursor?: string | null;
+                        /** @description How complete the searched corpus is. This searches the chats and messages already retrieved for this account, so a chat never retrieved cannot match. Retrieve a chat's messages (GET .../chats/{chat_id}/messages) to widen it. */
+                        coverage?: {
+                            /** @description True when every stored chat has a complete message walk that no later invalidation has withdrawn; false when any chat is unwalked, mid-walk or withdrawn. */
+                            complete?: boolean;
+                            /** @description Chats held for this account. */
+                            chats_stored?: number;
+                            /** @description Of those, how many have messages that were never fully enumerated. */
+                            chats_incomplete?: number;
+                        };
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -11872,11 +12222,12 @@ export interface operations {
                          * @description Response type discriminator.
                          * @enum {string}
                          */
-                        object?: "inmail_sent";
-                        /** @description The InMail message identifier. */
-                        message_id?: string;
+                        object: "inmail_sent";
+                        /** @description The InMail message identifier. Null when no message was actually sent, and an array when the message was delivered as several messages, one per attachment. Confirm the send with chat_id, which is always present. */
+                        message_id: string | string[] | null;
                         /** @description The conversation thread identifier. */
-                        chat_id?: string;
+                        chat_id: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -12041,6 +12392,7 @@ export interface operations {
                         }[];
                         /** @description Present only when no company inbox exists. Names the reconnect requirement. */
                         hint?: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -12291,6 +12643,7 @@ export interface operations {
                             /** @description The expansion the notice is about, here public_identifier. */
                             value?: string;
                         }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -12475,6 +12828,7 @@ export interface operations {
                         }[];
                         /** @description Opaque cursor for the next page; null when the walk is exhausted. Self-describing of the sort, pass it back verbatim as `cursor`. The relevant cursor expires (~1h). There is no total (an unbounded, reordering stream); page until cursor is null. */
                         cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -12637,6 +12991,7 @@ export interface operations {
                         unread_count: number;
                         /** @description Timestamp (epoch ms) of the newest notification, a poll watermark to detect 'anything new since last poll'. null if unavailable. */
                         latest_published_at: number | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -12760,6 +13115,7 @@ export interface operations {
                         object: "notification_deleted";
                         /** @description The card urn that was deleted. */
                         card_urn: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -12883,6 +13239,7 @@ export interface operations {
                         object: "notification_show_less_applied";
                         /** @description The card urn the show-less action was applied to. */
                         card_urn: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -13113,6 +13470,7 @@ export interface operations {
                         }[];
                         /** @description Next-page cursor; null on the last page. */
                         cursor?: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -13290,6 +13648,7 @@ export interface operations {
                         }[];
                         /** @description Next-page cursor; null on the last page. cursor:null does not confirm completeness when limit is small, the underlying pagination is offset-based. */
                         cursor?: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -13468,6 +13827,7 @@ export interface operations {
                             /** @description File size in bytes, when known. */
                             file_size?: number;
                         }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -13675,6 +14035,7 @@ export interface operations {
                             /** @description File size in bytes, when known. */
                             file_size?: number;
                         }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -13982,6 +14343,7 @@ export interface operations {
                             /** @description File size in bytes, when known. */
                             file_size?: number;
                         }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -14179,6 +14541,7 @@ export interface operations {
                         cursor?: string | null;
                         /** @description Total reply count, when the platform reports it. */
                         total_count?: number;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -14324,6 +14687,7 @@ export interface operations {
                         }[];
                         /** @description Next-page cursor; null on the last page. */
                         cursor?: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -14453,6 +14817,7 @@ export interface operations {
                          * @enum {string}
                          */
                         reaction?: "like" | "celebrate" | "support" | "love" | "insightful" | "funny";
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -14598,6 +14963,7 @@ export interface operations {
                          * @enum {string}
                          */
                         reaction?: "like" | "celebrate" | "support" | "love" | "insightful" | "funny";
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -14760,6 +15126,7 @@ export interface operations {
                             /** @description Public profile picture URL. */
                             public_picture_url?: string;
                         };
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -14838,7 +15205,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred while processing the request. */
+            /** @description The platform did not complete the invitation, or is temporarily unavailable. When `retry_hint` is `never`, the invitation may already have been delivered and re-sending would send a second one: read the sent invitations before trying again. The per-response `retry_hint` and `retry_likely_to_succeed` are authoritative, not the general meaning of the code. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -14932,6 +15299,7 @@ export interface operations {
                         }[];
                         /** @description Opaque pagination cursor for the next page, or null if at the end. */
                         cursor?: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -15090,6 +15458,7 @@ export interface operations {
                         }[];
                         /** @description Opaque pagination cursor for the next page, or null if at the end. */
                         cursor?: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -15214,6 +15583,7 @@ export interface operations {
                          * @enum {string}
                          */
                         status?: "accepted" | "not_found";
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -15338,6 +15708,7 @@ export interface operations {
                          * @enum {string}
                          */
                         status?: "declined" | "not_found";
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -15462,6 +15833,7 @@ export interface operations {
                          * @enum {string}
                          */
                         status?: "withdrawn" | "not_found";
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -15609,6 +15981,7 @@ export interface operations {
                         }[];
                         /** @description Opaque pagination cursor for the next page; null when no next page. A string only when a full page was returned, pass it back verbatim to page forward. */
                         cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -15859,6 +16232,7 @@ export interface operations {
                         listed_at?: string;
                         /** @description Hiring team members associated with this posting, when the posting exposes any. */
                         hiring_team?: unknown[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -16072,6 +16446,18 @@ export interface operations {
                         listed_at?: string;
                         /** @description Hiring team members associated with this posting, when the posting exposes any. */
                         hiring_team?: unknown[];
+                        /** @description ISO-8601 timestamp for when this data was observed on LinkedIn. On a live fetch this is the time of the fetch; on a stored answer it is when the data was actually seen, not when you asked for it. */
+                        observed_at: string;
+                        /**
+                         * @description Whether this answer came from Curviate's stored copy or from a fresh LinkedIn fetch. A stored answer costs the connected account nothing and is never surfaced to the person being read. It also carries less: fields Curviate does not retain (message bodies, notes, attachments, third-party contact details) are only ever present on a live fetch. Pass mode=live when you need them.
+                         * @enum {string}
+                         */
+                        source: "store" | "live";
+                        /** @description Whether LinkedIn has told us this resource no longer exists, such as a removed profile. When true, the answer above is the copy Curviate still holds and must not be treated as current. Always present; false is the normal case. */
+                        withdrawn: boolean;
+                        /** @description ISO-8601 timestamp for when a fetch MOST RECENTLY found this resource gone on LinkedIn. Every later fetch that finds it gone again moves it. Present only when withdrawn is true. */
+                        withdrawn_at?: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -16324,6 +16710,7 @@ export interface operations {
                         listed_at?: string;
                         /** @description Hiring team members associated with this posting, when the posting exposes any. */
                         hiring_team?: unknown[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -16493,6 +16880,7 @@ export interface operations {
                             /** @description Estimated daily applicants if published for free. */
                             estimated_daily_applicants_count?: number;
                         };
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -16680,6 +17068,7 @@ export interface operations {
                          * @enum {string}
                          */
                         job_state: "DRAFT" | "LISTED" | "CLOSED" | "REVIEW" | "SUSPENDED";
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -16815,6 +17204,7 @@ export interface operations {
                          * @enum {string}
                          */
                         object: "job_posting_closed";
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -17037,6 +17427,7 @@ export interface operations {
                         };
                         /** @description Opaque pagination cursor for the next page. Present only when more applicants remain past this page, omit on the first request, pass back verbatim to page forward. */
                         cursor?: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -17228,6 +17619,7 @@ export interface operations {
                             /** @description The applicant's phone number. */
                             phone?: string;
                         };
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -17553,6 +17945,18 @@ export interface operations {
                         poll?: Record<string, never> | null;
                         /** @description Job-posting or article context on the post, present only when applicable. */
                         specifics?: Record<string, never> | null;
+                        /** @description ISO-8601 timestamp for when this data was observed on LinkedIn. On a live fetch this is the time of the fetch; on a stored answer it is when the data was actually seen, not when you asked for it. */
+                        observed_at: string;
+                        /**
+                         * @description Whether this answer came from Curviate's stored copy or from a fresh LinkedIn fetch. A stored answer costs the connected account nothing and is never surfaced to the person being read. It also carries less: fields Curviate does not retain (message bodies, notes, attachments, third-party contact details) are only ever present on a live fetch. Pass mode=live when you need them.
+                         * @enum {string}
+                         */
+                        source: "store" | "live";
+                        /** @description Whether LinkedIn has told us this resource no longer exists, such as a removed profile. When true, the answer above is the copy Curviate still holds and must not be treated as current. Always present; false is the normal case. */
+                        withdrawn: boolean;
+                        /** @description ISO-8601 timestamp for when a fetch MOST RECENTLY found this resource gone on LinkedIn. Every later fetch that finds it gone again moves it. Present only when withdrawn is true. */
+                        withdrawn_at?: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -17800,6 +18204,7 @@ export interface operations {
                         object: "post_created";
                         /** @description The newly published post's own identifier. */
                         id: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -18027,6 +18432,7 @@ export interface operations {
                         }[];
                         /** @description Next-page cursor; null on the last page. */
                         cursor?: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -18175,6 +18581,7 @@ export interface operations {
                         }[];
                         /** @description Next-page cursor; null on the last page. cursor:null does not confirm completeness when limit is small, the underlying pagination is offset-based; use --all / paginate() for exhaustive reads. */
                         cursor?: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -18300,6 +18707,7 @@ export interface operations {
                          * @enum {string}
                          */
                         reaction: "like" | "celebrate" | "support" | "love" | "insightful" | "funny";
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -18441,6 +18849,7 @@ export interface operations {
                          * @enum {string}
                          */
                         reaction: "like" | "celebrate" | "support" | "love" | "insightful" | "funny";
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -18558,7 +18967,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Reactions made by this account (user_id="me") or another LinkedIn user. Each item embeds the reacted-on post and whether the queried account is the sender. */
+            /** @description Reactions made by this account (user_id="me") or another LinkedIn user. Each item embeds the reacted-on post and whether the queried account is the sender. No reaction-time field is available on this item, an upstream limitation rather than something this endpoint drops; parent_post.created_at is the post's own creation time, not the reaction's, and is not a usable proxy for it. List order is not documented or guaranteed, so do not rely on it to filter by date; cap results by count (limit) instead. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -18641,6 +19050,7 @@ export interface operations {
                         }[];
                         /** @description Next-page cursor; null on the last page. */
                         cursor?: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -18797,6 +19207,7 @@ export interface operations {
                         }[];
                         /** @description Next-page cursor; null on the last page. */
                         cursor?: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -18923,6 +19334,7 @@ export interface operations {
                         saved: boolean;
                         /** @description The target post's activity id, stripped of the urn:li:activity: prefix. */
                         post_id: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -19053,6 +19465,7 @@ export interface operations {
                         saved: boolean;
                         /** @description The target post's activity id, stripped of the urn:li:activity: prefix. */
                         post_id: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -19499,6 +19912,7 @@ export interface operations {
                                 message_status?: string;
                             }[];
                         };
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -19698,7 +20112,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Recruiter chat started. Returns the object discriminator, the chat_id, and the message_id of the opening message. Message content is never echoed back. The InMail daily quota is consumed; remaining capacity is read from GET /v1/accounts/{account_id}, never echoed here. Requires a Recruiter seat. */
+            /** @description Recruiter chat started. Returns the object discriminator, the chat_id, and the message_id of the opening message. Message content is never echoed back. Requires a Recruiter seat. */
             201: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -19714,8 +20128,9 @@ export interface operations {
                         object: "chat_started";
                         /** @description The newly created chat's identifier. */
                         chat_id: string;
-                        /** @description The opening message identifier. */
-                        message_id: string;
+                        /** @description The opening message identifier. Null when no message was actually sent, and an array when the message was delivered as several messages, one per attachment. Confirm the send with chat_id, which is always present. */
+                        message_id: string | string[] | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -20028,6 +20443,7 @@ export interface operations {
                         cursor?: string;
                         /** @description Total number of matching results, when the platform returns it. */
                         total_count?: number;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -20220,6 +20636,7 @@ export interface operations {
                         cursor?: string;
                         /** @description Total number of matching parameters, when the platform returns it. */
                         total_count?: number;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -20453,6 +20870,7 @@ export interface operations {
                         cursor?: string;
                         /** @description Total number of projects, when the platform returns it. */
                         total_count?: number;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -20656,6 +21074,7 @@ export interface operations {
                         };
                         /** @description ISO 8601 timestamp of the account's last access, when known. */
                         last_accessed_at?: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -20813,6 +21232,7 @@ export interface operations {
                          * @enum {string}
                          */
                         object: "recruiter_project_edited";
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -21066,6 +21486,7 @@ export interface operations {
                         cursor?: string;
                         /** @description Total number of matching candidates, when the platform returns it. */
                         total_count?: number;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -21373,6 +21794,7 @@ export interface operations {
                         cursor?: string;
                         /** @description Total number of matching results, when the platform returns it. */
                         total_count?: number;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -21896,6 +22318,7 @@ export interface operations {
                             is_eliminatory?: boolean;
                             choices?: string[];
                         }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -22103,6 +22526,7 @@ export interface operations {
                         object: "recruiter_job_posting_created";
                         job_id: string;
                         project_id: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -22257,6 +22681,7 @@ export interface operations {
                         free: {
                             eligible?: boolean;
                         };
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -22421,6 +22846,7 @@ export interface operations {
                         cursor?: string;
                         /** @description Total number of matching job postings, when the platform returns it. */
                         total_count?: number;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -22628,6 +23054,7 @@ export interface operations {
                         object: "recruiter_job_posting_created";
                         job_id: string;
                         project_id: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -22807,6 +23234,7 @@ export interface operations {
                             is_eliminatory?: boolean;
                             choices?: string[];
                         }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -23014,6 +23442,7 @@ export interface operations {
                          * @enum {string}
                          */
                         object: "recruiter_job_posting_edited";
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -23208,6 +23637,7 @@ export interface operations {
                          * @enum {string}
                          */
                         job_state: "DRAFT" | "CLOSED" | "LISTED" | "REVIEW" | "SUSPENDED";
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -23345,6 +23775,7 @@ export interface operations {
                          * @enum {string}
                          */
                         object: "recruiter_job_posting_closed";
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -23489,6 +23920,7 @@ export interface operations {
                          * @enum {string}
                          */
                         object: "recruiter_candidate_saved";
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -23820,6 +24252,7 @@ export interface operations {
                         cursor?: string;
                         /** @description Total number of matching applicants, when the platform returns it. */
                         total_count?: number;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -24027,6 +24460,7 @@ export interface operations {
                                 endorsement_count?: number;
                             }[];
                         };
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -24306,8 +24740,9 @@ export interface operations {
                         object: "chat_started";
                         /** @description The newly created Sales Navigator chat identifier. */
                         chat_id: string | null;
-                        /** @description The opening message identifier. May be an array when attachments are delivered as separate messages. */
+                        /** @description The opening message identifier. Null when no message was actually sent, and an array when the message was delivered as several messages, one per attachment. Confirm the send with chat_id, which is always present. */
                         message_id: string | string[] | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -24622,6 +25057,7 @@ export interface operations {
                             /** @description Present when available. */
                             throttled_sections?: string[];
                         };
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -24769,6 +25205,7 @@ export interface operations {
                         };
                         /** @description Opaque cursor for the next page, or null when exhausted. */
                         cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -24925,6 +25362,7 @@ export interface operations {
                         };
                         /** @description Opaque cursor for the next page, or null when exhausted. */
                         cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -25136,6 +25574,7 @@ export interface operations {
                         };
                         /** @description Opaque cursor for the next page, or null when exhausted. */
                         cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -25521,6 +25960,7 @@ export interface operations {
                         };
                         /** @description Opaque cursor for the next page, or null when exhausted. */
                         cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -25667,6 +26107,7 @@ export interface operations {
                         list_id: string;
                         /** @description The LinkedIn company id that was saved. */
                         company_id: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -25813,6 +26254,7 @@ export interface operations {
                         list_id: string;
                         /** @description The LinkedIn member id that was saved. */
                         user_id: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -25973,6 +26415,7 @@ export interface operations {
                         };
                         /** @description Opaque cursor for the next page, or null when exhausted. */
                         cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -26453,6 +26896,7 @@ export interface operations {
                         };
                         /** @description Opaque pagination cursor. Null when exhausted. */
                         cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -26724,6 +27168,7 @@ export interface operations {
                         };
                         /** @description Opaque pagination cursor. Null when exhausted. */
                         cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -27124,6 +27569,7 @@ export interface operations {
                         };
                         /** @description Opaque pagination cursor. Null when exhausted. */
                         cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -27282,6 +27728,7 @@ export interface operations {
                         }[];
                         /** @description Next-page cursor; null on the last page. */
                         cursor?: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -27356,7 +27803,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The account's metadata and current state, including the central quotas[] view, one entry per tracked quota family for this account. */
+            /** @description The account's metadata and current state, including the quotas[] budget view (one entry per counted action row for this account, for the current window of that row's grain) account_states[], the platform conditions the account is currently in, and activity_window, the hours in which live writes are reported or refused. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -27386,22 +27833,73 @@ export interface operations {
                         requested_products?: ("classic" | "company" | "sales_navigator" | "recruiter")[] | null;
                         /** @description ISO-8601 UTC creation timestamp of the underlying LinkedIn account, distinct from connected_at. Null until the first background enrichment lands. */
                         substrate_created_at?: string | null;
-                        /** @description Capacity figures for this account, one entry per tracked family (messages.daily, connection_requests.daily, profile_views.daily, inmail.daily, profile.endorse, account.per_minute). These are advisory only: Curviate never rejects a request because a daily figure is exceeded; only account.per_minute is a binding limit enforced with HTTP 429. Every figure describes what the underlying platform will accept, not a safe sustained rate; pacing is the caller's responsibility. */
+                        /** @description Account-safety rows for this account: one entry per counted action for the current window of its grain, plus the derived total and the invitation backlog. Each row reports where the account stands, what it is allowed, which band that puts it in, what happens at the ceiling, whether the ceiling was raised above the Curviate default, and any active pause the platform caused. Whether a breach is refused or merely reported is `posture`, and the default is to report: nothing here refuses until you configure it to. Pacing is still the caller's responsibility, and nothing on this array paces for you. The per-minute REQUEST ceiling is a different thing and is deliberately not in this array: it protects Curviate's own servers rather than your LinkedIn account, it counts requests where these count platform operations, it is always enforced with HTTP 429 whatever your posture, and its envelope is returned on that refusal. Read this array to see where the account stands; read the safety events surface to see what has already been refused or flagged. */
                         quotas?: {
-                            /** @description Quota family (e.g. messages.daily, account.per_minute). */
-                            quota_name?: string;
-                            /** @description Remaining units in the current window. */
-                            remaining?: number;
-                            /** @description Window capacity for this family. This is a substrate capacity ceiling, not a safe sustained rate; the caller owns its own pacing. */
-                            total?: number;
-                            /** @description ISO-8601 UTC time the current window resets. */
-                            reset_time?: string;
                             /**
-                             * @description Pacing recommendation for this family, advisory only. `none` (under 80% consumed), `slow_down` (80-99% consumed), and `backoff` (100%+ consumed) never block a request. `stop` is reserved exclusively for `account.per_minute`; the sole binding limit, whose breach is enforced with HTTP 429.
+                             * @description The safety row. `search` counts result LINES, not queries issued; `content_poll` also debits `profile_views`. Two rows are not counters and say so in `kind`: `total_actions` is a tally of everything this account did in the window, and `pending_invites` is the outstanding invitation backlog read from the platform rather than something this account spends.
                              * @enum {string}
                              */
-                            recommended_throttle_hint?: "none" | "slow_down" | "backoff" | "stop";
+                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "total_actions" | "pending_invites";
+                            /**
+                             * @description Which arithmetic produced `used`. `debit`: actions this account spent, counted as they happen. `tally`: a sum across the debit rows in the window, which is why it has a warn threshold and no ceiling. `gauge`: a level read from the platform rather than counted here, so it falls on its own as invitations are accepted or withdrawn.
+                             * @enum {string}
+                             */
+                            kind: "debit" | "tally" | "gauge";
+                            /**
+                             * @description Calendar grain this row is counted in. UTC, not account-local. `null` on the gauge, which has no window at all.
+                             * @enum {string|null}
+                             */
+                            window: "day" | "week" | "month" | null;
+                            /** @description ISO-8601 UTC start of the current window; `null` on the gauge. */
+                            window_start: string | null;
+                            /** @description ISO-8601 UTC instant the current window rolls over and `used` returns to 0. `null` on the gauge: a backlog falls when invitations are accepted or withdrawn, not at a window edge, so naming an instant would promise something nothing keeps. */
+                            resets_at: string | null;
+                            /** @description Where the account stands: actions counted in the current window for a debit row, the summed tally for `total_actions`, the observed backlog for the gauge. A debit row with no activity reports 0, never null. Only the gauge can be `null`, and only before anything has observed it: 0 there would be a backlog nobody looked at. */
+                            used: number | null;
+                            /** @description What this account is allowed on this row in this window, as configured. `null` where the row deliberately has no ceiling: the tally is reported and never enforced, and an uncalibrated row has no figure at all. Change it on the safety policy; Curviate never clamps what you set. */
+                            ceiling: number | null;
+                            /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While an account is new, thinly connected, dormant or recovering from a restriction the two differ, and on a five-day-old account they differ by a factor of about seven. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
+                            effective_ceiling?: number | null;
+                            /**
+                             * @description Where `used` sits against this row's own bands. `green` routine, `amber` at or past the routine band, `hard` at or past the warn-louder band, `over` at or past the ceiling. `over` is what `posture` acts on: `warn` reports it and lets the action through, `enforce` refuses. A row with no figures reports `green` at every value, because there is nothing to be past.
+                             * @enum {string}
+                             */
+                            band: "green" | "amber" | "hard" | "over";
+                            /**
+                             * @description What happens when this row is `over`. `warn`: the action goes through and the response carries the breach. `enforce`: the action is refused before it reaches the platform. Set per row, per account or workspace-wide on the safety policy; the default is `warn`. One exception worth knowing: on `pending_invites` this field is not the one that acts. That row blocks invitations rather than being spent itself, and the posture that decides whether a full backlog warns or refuses is the one on the invitation row, so setting `enforce` on invitations is enough and you never have to find a posture on a row nothing spends.
+                             * @enum {string}
+                             */
+                            posture: "warn" | "enforce";
+                            /** @description Whether something on this row is configured above Curviate's own default. The safety policy carries the detail: which field, the value, the default and how well calibrated that default is. */
+                            over_default: boolean;
+                            /** @description An active pause on this row because the platform refused a recent request on it, or `null`. A halt is not a ceiling: no limit you raise lifts it, and it clears itself when it expires. */
+                            halt: {
+                                /** @description What the platform did: `rate_limited`, `platform_fault`, or `resend_cooldown` (the same invitation was sent too recently). */
+                                reason?: string;
+                                /** @description Whole seconds until the pause expires. */
+                                retry_after_seconds?: number;
+                            } | null;
+                            /**
+                             * Format: date-time
+                             * @description When the gauge's level was read from the platform. `null` on every other row, whose numbers are read live from Curviate's own records. Read it before acting on the backlog: the level is refreshed in the background, so it can be up to an hour old.
+                             */
+                            observed_at: string | null;
+                            /**
+                             * @description How well calibrated this row is, in descending order of trust: `substrate` (the transport layer's own guidance), `linkedin_official` (platform-published; reliable for mechanics such as credit counts and reset dates, not for safe volume), `practitioner` (corroborated operator experience), `inferred` (Curviate's own reasoning; flagged, never hidden), `unseeded` (no figure at all for this row on this account's limit profile, reported so nothing is silently missing, never presented as a number).
+                             * @enum {string}
+                             */
+                            source: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
                         }[];
+                        /** @description Platform conditions this LinkedIn account is currently in, additive to `status` and independent of it. `recruiter_session_evicted`: the account is signed in somewhere else and LinkedIn allows one session at a time for it, so a person has to close the other session; reconnecting will not help. `commercial_use_limited`: LinkedIn's commercial-use limit has tripped, so people search returns only a handful of results per query. It is a paywall, not a penalty, and nothing else about the account is affected. `profile_view_limited`: profile views outside this account's own network are being blocked; first-degree views still work. The two limits are detected from their symptom: LinkedIn publishes no threshold for either, exposes no counter, and lifts neither on request, so no number is reported. `commercial_use_limited` is a present-tense reading and a genuinely narrow search can also produce the shape it looks for, so treat it as a reason to check rather than a certainty; the next people search that returns a full page clears it. An account in none of these reports an empty array. */
+                        account_states?: ("recruiter_session_evicted" | "commercial_use_limited" | "profile_view_limited")[];
+                        /** @description The account's activity window, the hours in which Curviate reports or refuses live writes to LinkedIn. Reads and anything served from Curviate's own store are never affected, at any hour. Configure it on the account's safety policy. */
+                        activity_window?: {
+                            /** @description The IANA zone the window is read in, or null when none is set. */
+                            timezone?: string | null;
+                            /** @description True when no zone is set, which DISABLES the activity window. Curviate never guesses a zone: a guess eight hours wrong inverts the window, refusing every daytime write and permitting every nocturnal one. If you configured a window and it never fires, this is why. */
+                            timezone_unset?: boolean;
+                        };
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -27498,6 +27996,7 @@ export interface operations {
                          * @enum {boolean}
                          */
                         already_disconnected?: true;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -27621,6 +28120,7 @@ export interface operations {
                          */
                         object?: "account";
                         account_id?: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -27800,6 +28300,7 @@ export interface operations {
                         account_id?: string;
                         /** @enum {string} */
                         status?: "active";
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -27833,6 +28334,7 @@ export interface operations {
                         attached_seat_id?: string | null;
                         /** @description Present and true only when this connect reactivated an account you had previously disconnected, instead of opening a brand-new one. Absent on a normal connect. The account keeps its original id, and its status reflects its real observed state, which may need a reconnect. */
                         recovered?: boolean;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -27866,6 +28368,7 @@ export interface operations {
                         }[];
                         /** @description ISO-8601 expiry of the challenge. */
                         expires_at?: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -28026,6 +28529,7 @@ export interface operations {
                         attached_seat_id?: string | null;
                         /** @description Present and true only when this connect reactivated an account you had previously disconnected, instead of opening a brand-new one. Absent on a normal connect. The account keeps its original id, and its status reflects its real observed state, which may need a reconnect. */
                         recovered?: boolean;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -28059,6 +28563,7 @@ export interface operations {
                         }[];
                         /** @description ISO-8601 expiry of the challenge. */
                         expires_at?: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -28189,6 +28694,7 @@ export interface operations {
                         object?: "checkpoint";
                         account_id?: string;
                         resent?: boolean;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -28348,6 +28854,7 @@ export interface operations {
                         }[];
                         /** @description Human-readable, actionable next step when the approval timed out. Present on status:"expired". */
                         recovery_hint?: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -28476,6 +28983,7 @@ export interface operations {
                         challenge_type?: string;
                         /** @description ISO-8601 UTC challenge expiry, when known; null otherwise. */
                         expires_at?: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -28529,6 +29037,469 @@ export interface operations {
             };
             /** @description Gateway timeout. */
             504: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1AccountIdEvents: {
+        parameters: {
+            query?: {
+                /** @description Pagination cursor from a previous response; decodable, pass it back verbatim */
+                cursor?: string;
+                /** @description Return only events in this queue state. unread: nobody holds it, which includes an event whose lease expired. claimed: leased to a consumer right now. done: already handled, and it will never be handed out again. Omit to return every state. There is no failed state. */
+                state?: "unread" | "claimed" | "done";
+                /** @description How many events to return per page, 1 to 100. Defaults to 50. */
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                /** @description The connected LinkedIn account whose received events to read. */
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The events Curviate received for this account in the last 24 hours, newest received first. Events are retained whether or not any webhook is subscribed to them, which is what makes this readable with no listener running. Retention is 24 hours from received_at, absolute: an event is deleted on that clock and nothing extends it, including a live claim. Disconnecting an account removes its events from this response immediately. Each item carries its queue state, so state=done answers what your agents have already handled and state=unread answers what is still waiting. This read never claims anything. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "event_list";
+                        /** @description Retained events for this account, newest received first. [] when nothing arrived in the last 24 hours. */
+                        items: {
+                            /**
+                             * @description Item type discriminator.
+                             * @enum {string}
+                             */
+                            object: "event";
+                            /** @description The retained event's id. Also the value encoded in the next page's cursor. */
+                            id: string;
+                            /** @description The canonical event name, the same name you subscribe a webhook to (for example message.received, account.connected). */
+                            event: string;
+                            /**
+                             * Format: date-time
+                             * @description When the platform says the event happened. Events can arrive out of order, so do not treat this ordering as causal, establish ordering from the payload if you need it.
+                             */
+                            occurred_at: string;
+                            /**
+                             * Format: date-time
+                             * @description When Curviate received the event. Retention is 24 hours from this instant, absolute.
+                             */
+                            received_at: string;
+                            /** @description Exactly the payload a registered webhook would have been delivered for this event, content included. It always carries account_id, event and occurred_at; the remaining fields depend on the event. This is the delivered payload itself, not a summary of it, and not the per-delivery envelope (there is no delivery when nothing is subscribed). */
+                            payload: {
+                                [key: string]: unknown;
+                            };
+                            /**
+                             * @description Queue state. unread: nobody holds it. claimed: leased to a consumer until lease_until, and an expired lease reads as unread again. done: handled, and it will never be handed out again. There is no failed state. Filter on it with the state query parameter, which is how you ask what your agents have already handled.
+                             * @enum {string}
+                             */
+                            state: "unread" | "claimed" | "done";
+                            /** @description The consumer name recorded by the last claim, or null. Free text, never verified, so treat it as a label rather than an identity. */
+                            claimed_by: string | null;
+                            /**
+                             * Format: date-time
+                             * @description When the current lease expires, or null when the event is not leased. A lease never extends the 24 hour retention.
+                             */
+                            lease_until: string | null;
+                            /**
+                             * Format: date-time
+                             * @description When the event was marked done, or null. Set once and never moved.
+                             */
+                            done_at: string | null;
+                        }[];
+                        /** @description Cursor for the next page; null on the terminal page. Pass it back verbatim. Page until cursor is null. */
+                        cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Invalid request, an out-of-range `limit`, an unknown `state`, or a corrupt `cursor`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description The account_id does not belong to this tenant, or the account is unknown. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Internal error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1AccountIdEventsClaim: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connected LinkedIn account whose received events to read. */
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    consumer: string;
+                    limit?: number;
+                    lease_seconds?: number;
+                };
+            };
+        };
+        responses: {
+            /** @description The events now leased to you, oldest occurred_at first. Claiming when nothing is available returns an empty list and a 200, so an idle poll is not an error. Each event is handed to one caller only: a second claim running at the same instant gets different events, or none. The lease is cooperative and is not access control: it stops your own agents duplicating work, it does not stop anything from acting on an event it did not claim. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "event_claim";
+                        /** @description The consumer name you sent, echoed as recorded on the claimed events. Like every echoed input on this API it passes the output filter on the way back, so a value containing a filtered term returns altered. */
+                        consumer: string;
+                        /**
+                         * Format: date-time
+                         * @description When this batch's lease expires. After this instant the events become claimable by anyone again, whether or not you finished. null when nothing was claimed.
+                         */
+                        lease_until: string | null;
+                        /** @description The events now leased to you, oldest occurred_at first. [] when nothing was available, which is a success and not an error. */
+                        items: {
+                            /**
+                             * @description Item type discriminator.
+                             * @enum {string}
+                             */
+                            object: "event";
+                            /** @description The retained event's id. Also the value encoded in the next page's cursor. */
+                            id: string;
+                            /** @description The canonical event name, the same name you subscribe a webhook to (for example message.received, account.connected). */
+                            event: string;
+                            /**
+                             * Format: date-time
+                             * @description When the platform says the event happened. Events can arrive out of order, so do not treat this ordering as causal, establish ordering from the payload if you need it.
+                             */
+                            occurred_at: string;
+                            /**
+                             * Format: date-time
+                             * @description When Curviate received the event. Retention is 24 hours from this instant, absolute.
+                             */
+                            received_at: string;
+                            /** @description Exactly the payload a registered webhook would have been delivered for this event, content included. It always carries account_id, event and occurred_at; the remaining fields depend on the event. This is the delivered payload itself, not a summary of it, and not the per-delivery envelope (there is no delivery when nothing is subscribed). */
+                            payload: {
+                                [key: string]: unknown;
+                            };
+                            /**
+                             * @description Queue state. unread: nobody holds it. claimed: leased to a consumer until lease_until, and an expired lease reads as unread again. done: handled, and it will never be handed out again. There is no failed state. Filter on it with the state query parameter, which is how you ask what your agents have already handled.
+                             * @enum {string}
+                             */
+                            state: "unread" | "claimed" | "done";
+                            /** @description The consumer name recorded by the last claim, or null. Free text, never verified, so treat it as a label rather than an identity. */
+                            claimed_by: string | null;
+                            /**
+                             * Format: date-time
+                             * @description When the current lease expires, or null when the event is not leased. A lease never extends the 24 hour retention.
+                             */
+                            lease_until: string | null;
+                            /**
+                             * Format: date-time
+                             * @description When the event was marked done, or null. Set once and never moved.
+                             */
+                            done_at: string | null;
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Invalid request, a missing consumer or an out-of-range limit or lease_seconds. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description The account_id does not belong to this tenant, or the account is unknown. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Internal error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1AccountIdEventsEventIdRelease: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connected LinkedIn account whose received events to read. */
+                account_id: string;
+                /** @description The event's `id`, as returned by the events read or by a claim. */
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The event's state after the release. A released event is claimable again immediately, by you or by anyone else. Releasing an event that is already done changes nothing and comes back with state done, because done is final. Release is the right move when your handler fails: hand the work back rather than sit on it for the rest of the lease. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "event_lease";
+                        /** @description The event's id. */
+                        id: string;
+                        /**
+                         * @description unread: claimable now. claimed: leased to someone until lease_until. done: handled, and it will never be handed out again. There is no failed state.
+                         * @enum {string}
+                         */
+                        state: "unread" | "claimed" | "done";
+                        /** @description The consumer name recorded by the last claim, or null. Free text, never verified, so treat it as a label rather than an identity. */
+                        claimed_by: string | null;
+                        /**
+                         * Format: date-time
+                         * @description When the current lease expires, or null when the event is not leased.
+                         */
+                        lease_until: string | null;
+                        /**
+                         * Format: date-time
+                         * @description When the event was marked done, or null. Set once and never moved.
+                         */
+                        done_at: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description No such event for this account, or it has already passed its 24 hour retention. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Internal error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1AccountIdEventsEventIdDone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connected LinkedIn account whose received events to read. */
+                account_id: string;
+                /** @description The event's `id`, as returned by the events read or by a claim. */
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The event's state after being marked done. Done is the only terminal state there is, and it is shared: once an event is done it leaves the unread set for every consumer under this tenant, not just for you. There is no failed state, because an event nothing can handle simply expires with the rest at 24 hours. Calling this twice is safe and keeps the first done_at. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "event_lease";
+                        /** @description The event's id. */
+                        id: string;
+                        /**
+                         * @description unread: claimable now. claimed: leased to someone until lease_until. done: handled, and it will never be handed out again. There is no failed state.
+                         * @enum {string}
+                         */
+                        state: "unread" | "claimed" | "done";
+                        /** @description The consumer name recorded by the last claim, or null. Free text, never verified, so treat it as a label rather than an identity. */
+                        claimed_by: string | null;
+                        /**
+                         * Format: date-time
+                         * @description When the current lease expires, or null when the event is not leased.
+                         */
+                        lease_until: string | null;
+                        /**
+                         * Format: date-time
+                         * @description When the event was marked done, or null. Set once and never moved.
+                         */
+                        done_at: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description No such event for this account, or it has already passed its 24 hour retention. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Internal error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable. */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -28614,6 +29585,7 @@ export interface operations {
                         }[];
                         /** @description Opaque next-page cursor. Null on the last page. */
                         cursor?: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -28796,6 +29768,7 @@ export interface operations {
                         secret_prefix?: string;
                         /** @description ISO-8601 creation timestamp. */
                         created_at?: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -28905,6 +29878,7 @@ export interface operations {
                                 availability?: "realtime" | "no_longer_realtime" | "not_realtime";
                             }[];
                         }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -28968,6 +29942,7 @@ export interface operations {
                         event?: "webhook.test";
                         /** @description When the test delivery was queued (ISO 8601). */
                         queued_at?: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -29068,6 +30043,7 @@ export interface operations {
                         secret_prefix?: string;
                         /** @description ISO-8601 creation timestamp. */
                         created_at?: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -29140,6 +30116,7 @@ export interface operations {
                         object?: "webhook_deleted";
                         /** @description The id of the deleted webhook. */
                         id?: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -29262,6 +30239,7 @@ export interface operations {
                         secret_prefix?: string;
                         /** @description ISO-8601 creation timestamp. */
                         created_at?: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
@@ -29303,6 +30281,585 @@ export interface operations {
             };
             /** @description Payload too large, the request body exceeds the size limit. */
             413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1AccountIdSafetyPolicy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The account ID (`acc_...`) whose safety policy to read. */
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The account's full safety policy: every configurable field for every budget row, in one response. Any row whose configured value is above the Curviate default carries an `over_default` entry naming the value, the default and the source class of that default. Two top-level fields are DERIVED rather than configured: `warm_up` says whether Curviate is currently holding this account below its configured ceilings and by how much, and `activity_window` says which timezone the window is read in and whether it is switched on at all. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object?: "safety_policy";
+                        /** @description The account this policy governs. */
+                        account_id?: string;
+                        /**
+                         * @description Which set of Curviate defaults every row below is resolved from. Each profile inherits the one before it and raises a few rows: `premium` adds a daily invitation band and open-profile InMail, `sales_navigator` raises profile views and search, `recruiter` raises profile views again. This is the platform product active on the account, not the Curviate seat entitlement. The two can disagree, and this is the one that governs the numbers. The elevated Sales Navigator and Recruiter figures apply only to calls made through the matching interface, the `/v1/{account_id}/sales-navigator/...` and `/v1/{account_id}/recruiter/...` operations. A standard-interface call still lives under the `basic` or `premium` figure for its row, and Curviate does not yet track that difference: on a non-`basic` profile the numbers here are the headroom of the elevated interface, not of every call, so read them as an upper bound rather than as your budget for a standard call.
+                         * @enum {string}
+                         */
+                        limit_profile?: "basic" | "premium" | "sales_navigator" | "recruiter";
+                        /**
+                         * @description The Curviate seat tier attached to this account when it disagrees with `limit_profile`, and null when the two agree or the account holds no seat. A seat records what you bought from Curviate; `limit_profile` records what LinkedIn currently grants, and a lapsed subscription moves one and not the other. The detected product always wins the numbers, so this is a report, not a refusal: a `recruiter` seat here means you are paying for Recruiter on an account LinkedIn does not currently grant it to. `core` alongside `basic` or `premium` is agreement, not a mismatch: Premium is a LinkedIn product, not a Curviate tier. A free-trial seat never reports here, because a trial is not a purchase, and neither does a seat whose entitlement has not started yet or has already lapsed.
+                         * @enum {string|null}
+                         */
+                        seat_tier_mismatch?: "core" | "sn" | "recruiter" | null;
+                        /**
+                         * @description The account's default posture, before any per-row override.
+                         * @enum {string}
+                         */
+                        posture?: "warn" | "enforce";
+                        /**
+                         * @description Whether that default is the account's own, the tenant's, or the built-in `warn`.
+                         * @enum {string}
+                         */
+                        posture_source?: "account" | "tenant" | "default";
+                        /**
+                         * @description The workspace-wide posture default every account in the tenant inherits, or null when none is set. Always present, and separate from `posture` on purpose: when this account overrides the tenant default, a change to the tenant default does not move `posture`, and this field is how you can still see it took effect.
+                         * @enum {string|null}
+                         */
+                        tenant_default_posture?: "warn" | "enforce" | null;
+                        /** @description The account's ACTIVE warm-up ramp, derived on every read. While an account is warming up, every row's effective ceiling is its configured ceiling multiplied by `factor`, so a `factor` of 0.15 means an account is being held to 15 percent of the numbers the rows below report. This is what Curviate currently believes about the account, and it is separate from the per-row `warm_up_state` and `warm_up_factor` fields, which report what is active on that row: set `warm_up_factor` on a row to pin it and ignore the derivation, and read `warm_up_state` as the label for whichever factor won. Every warm-up number is inferred, and none of them is published by LinkedIn. */
+                        warm_up?: {
+                            /**
+                             * @description `none` is an account at full speed. `ramping` is a new, thinly connected or dormant account climbing 0.15 to 0.35 to 0.60 to 0.85 to 1.00 by week. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: it holds at 0 for seven days after the restriction lifts, resumes at 0.40, then steps up 0.15 every four days.
+                             * @enum {string}
+                             */
+                            state?: "none" | "ramping" | "restriction_recovery";
+                            /** @description The multiplier applied to every row's ceiling. 1 is not ramping. */
+                            factor?: number;
+                            /** @description Which week of the ramp this account is in, counted from whichever is later of its creation and its last return from a dormancy. Null when the post-restriction schedule applies instead, which is not the weekly table. */
+                            week?: number | null;
+                            /** @description The conditions currently true of this account: `account_age` under 180 days, `connections` under 150, `dormant` for over 30 days, `post_restriction` under or recovering from a LinkedIn restriction. `dormant` stays reported until the ramp it started completes, because that is what explains the factor. */
+                            triggers?: ("account_age" | "connections" | "dormant" | "post_restriction")[];
+                            /** @description The conditions Curviate could not check because nothing supplies their input. Reported rather than assumed false: `connections` is here on every account today, because the connected-account record LinkedIn returns carries no connection count. An unevaluated trigger is not a trigger that was checked and found false. */
+                            unevaluated?: ("account_age" | "connections" | "dormant" | "post_restriction")[];
+                        };
+                        /** @description The account-level half of the activity window. Outside the window, a live write to LinkedIn is reported under `warn` posture and refused under `enforce`; reads and anything served from Curviate's own store are never affected, at any hour. */
+                        activity_window?: {
+                            /** @description The IANA zone this account's activity window is read in, or null when none is set. A row may override it with its own `activity_window_timezone`. */
+                            timezone?: string | null;
+                            /** @description True when no zone is set, which DISABLES the activity window for every row that has not set its own. Curviate never guesses a zone: a guess eight hours wrong inverts the window, refusing every daytime write and permitting every nocturnal one, which is worse than having no window at all. If you configured a window and it never fires, this is why. */
+                            timezone_unset?: boolean;
+                        };
+                        /** @description Every budget row, always. */
+                        rows?: {
+                            /** @description The counted-action row this policy governs. */
+                            budget_row?: string;
+                            /** @description What `enforce` refuses at and `warn` reports at, in the row's own unit. Null means the row is uncalibrated: Curviate has no figure for it. */
+                            ceiling?: number | null;
+                            /** @description Routine band. */
+                            green?: number | null;
+                            /** @description Warn-louder band. */
+                            amber?: number | null;
+                            /**
+                             * @description The calendar grain this row is counted in.
+                             * @enum {string}
+                             */
+                            window_kind?: "day" | "week" | "month";
+                            /** @description How many grain units one counting window spans. */
+                            window_span?: number;
+                            /** @description IANA zone name the counting window is aligned to. Null counts in UTC. */
+                            window_timezone?: string | null;
+                            /**
+                             * @description The posture in force for this row, after inheritance.
+                             * @enum {string}
+                             */
+                            posture?: "warn" | "enforce";
+                            /**
+                             * @description Where that posture came from, so an override is visible as one.
+                             * @enum {string}
+                             */
+                            posture_source?: "row" | "account" | "tenant" | "default";
+                            /** @description Local HH:MM the activity window opens. */
+                            activity_window_start?: string;
+                            /** @description Local HH:MM the activity window closes. */
+                            activity_window_end?: string;
+                            /** @description IANA zone name the activity window is read in. Null disables the window entirely. */
+                            activity_window_timezone?: string | null;
+                            /**
+                             * @description What the activity window governs. `writes` (the default) covers live writes to LinkedIn; `all` widens it to live reads as well, which is the setting for a persona that should not be seen browsing at 03:00. It is broader than it sounds: `all` covers every live read, including the ones about the account itself, so a nightly analytics or invitation-backlog poll is refused at 03:00 too. Stored reads and inbound events are never subject to the window under either setting, at any hour.
+                             * @enum {string}
+                             */
+                            activity_window_applies_to?: "writes" | "all";
+                            /**
+                             * @description The warm-up state ACTIVE on this row: the label for `warm_up_factor` beside it, so the two always agree. Read-only, so a value sent on a write is accepted and ignored; set `warm_up_factor` to pin this row's ramp.
+                             * @enum {string}
+                             */
+                            warm_up_state?: "none" | "ramping" | "restriction_recovery";
+                            /** @description The multiplier ACTIVE on this row, which is what `effective_ceiling` above was computed with. 1 is not ramping. Set it to pin this row and ignore the account's derived ramp; leave it unset to follow the derivation. */
+                            warm_up_factor?: number;
+                            /** @description Length cap on the row's free-text field, in characters. */
+                            character_cap?: number | null;
+                            /** @description Length cap on the row's subject line, in characters. */
+                            subject_character_cap?: number | null;
+                            /** @description Bound on a single query's result lines. Search rows only. */
+                            per_query_cap?: number | null;
+                            /**
+                             * @description How well calibrated this row's number is. `unseeded` means Curviate has no green, amber or ceiling figure for this row on this profile: the row is reported so nothing is silently missing, but nothing has calibrated it, so no value you set can be `over_default`.
+                             * @enum {string}
+                             */
+                            source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                            /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Read this one, not `ceiling`, to know where the next call will be stopped. On an account in warm-up the two differ, and on a five-day-old account they differ by a factor of about seven. Null when the row has no ceiling to ramp. `warm_up_state` and `warm_up_factor` beside it are the values ACTIVE on this row, not the seeded ones. */
+                            effective_ceiling?: number | null;
+                            /** @description Empty when nothing on this row is above default. */
+                            over_default?: {
+                                /**
+                                 * @description The field whose configured value is above default.
+                                 * @enum {string}
+                                 */
+                                field?: "ceiling" | "green" | "amber" | "character_cap" | "subject_character_cap" | "per_query_cap";
+                                /** @description The configured value. */
+                                value?: number;
+                                /** @description The Curviate default it exceeds. */
+                                default?: number;
+                                /**
+                                 * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                 * @enum {string}
+                                 */
+                                source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                            }[];
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description No such account for this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    patchV1AccountIdSafetyPolicy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The account ID (`acc_...`) whose safety policy to update. */
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description Which set of Curviate defaults this account's rows resolve from: `basic`, `premium`, `sales_navigator` or `recruiter`. Each inherits the one before it and raises a few rows. This is the platform product active on the account, NOT the Curviate seat entitlement, and the two can disagree: a lapsed subscription leaves the seat untouched. Automatic detection at connect is not built yet, so setting this is currently the only way an account leaves `basic`; set it back to `basic` to undo. The change is recorded in the ledger and it moves the defaults under every row at once, so any row you have configured explicitly keeps your value. The elevated Sales Navigator and Recruiter figures apply only to calls made through the matching interface, the `/v1/{account_id}/sales-navigator/...` and `/v1/{account_id}/recruiter/...` operations. A standard-interface call still lives under the `basic` or `premium` figure for its row, and Curviate does not yet track that difference: on a non-`basic` profile the numbers here are the headroom of the elevated interface, not of every call, so read them as an upper bound rather than as your budget for a standard call.
+                     * @enum {string}
+                     */
+                    limit_profile?: "basic" | "premium" | "sales_navigator" | "recruiter";
+                    /** @description The IANA zone this account's ACTIVITY window is read in, e.g. `Europe/Berlin`. Must be a real zone; anything else is a 400. Null clears it, which DISABLES the activity window for every row that has not set its own: a guessed zone inverts the window, which is worse than not having one. */
+                    timezone?: string | null;
+                    /**
+                     * @description The tenant-wide posture default, which every account inherits unless it overrides it. Set it once for a whole workspace of personas. Null clears it back to `warn`.
+                     * @enum {string|null}
+                     */
+                    tenant_default_posture?: "warn" | "enforce" | null;
+                    /**
+                     * @description This account's posture default, overriding the tenant default for this account only. Null clears the override.
+                     * @enum {string|null}
+                     */
+                    posture?: "warn" | "enforce" | null;
+                    /** @description Per-row configuration. Each entry names its `budget_row` and the fields to change. A row read back from the policy document may be sent here unchanged: its read-only fields (`effective_ceiling`, `posture_source`, `over_default`, `warm_up_state`) are accepted and ignored. */
+                    rows?: {
+                        /**
+                         * @description The budget row this patch configures.
+                         * @enum {string}
+                         */
+                        budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "total_actions" | "pending_invites";
+                        /** @description What `enforce` refuses at and `warn` reports at, in this row's own unit. Any value up to 9007199254740991 is accepted and stored verbatim; a value above the Curviate default is reported back, never clamped. */
+                        ceiling?: number | null;
+                        /** @description Routine band. Activity at or below it is unremarkable. */
+                        green?: number | null;
+                        /** @description Warn-louder band, between green and the ceiling. */
+                        amber?: number | null;
+                        /**
+                         * @description The calendar grain this row is counted in.
+                         * @enum {string|null}
+                         */
+                        window_kind?: "day" | "week" | "month" | null;
+                        /** @description How many `window_kind` units one counting window spans. */
+                        window_span?: number | null;
+                        /** @description IANA zone name the counting window is aligned to, e.g. `Europe/Berlin` or `UTC`. Must be a real zone; anything else is a 400. Null counts in UTC. */
+                        window_timezone?: string | null;
+                        /**
+                         * @description Posture for this row alone, overriding the account default. Null inherits the account default, which inherits the tenant default.
+                         * @enum {string|null}
+                         */
+                        posture?: "warn" | "enforce" | null;
+                        /** @description Local time the activity window opens, HH:MM. Outside the window, live write operations are reported or refused per posture. */
+                        activity_window_start?: string | null;
+                        /** @description Local time the activity window closes, HH:MM. */
+                        activity_window_end?: string | null;
+                        /** @description IANA zone name the activity window is read in, e.g. `Europe/Berlin`. Must be a real zone; anything else is a 400. Null DISABLES the activity window: a guessed zone inverts it, which is worse than not having one. */
+                        activity_window_timezone?: string | null;
+                        /**
+                         * @description What the activity window governs. `writes` (the default) covers live writes to LinkedIn; `all` widens it to live reads that Curviate cannot serve from its store; a read it may serve from the store (a profile by key, for one) stays exempt. Stored reads and inbound events are never subject to the window under either setting, at any hour.
+                         * @enum {string|null}
+                         */
+                        activity_window_applies_to?: "writes" | "all" | null;
+                        /**
+                         * @description READ-ONLY. The warm-up ramp state active on this row: the label for `warm_up_factor` beside it, derived from it, so the two always agree. A value sent here is still checked for being a state at all, and is then accepted and ignored: it is never stored and never recorded in the ledger. Set `warm_up_factor` to pin a row out of the ramp Curviate derives for the account.
+                         * @enum {string|null}
+                         */
+                        warm_up_state?: "none" | "ramping" | "restriction_recovery" | null;
+                        /** @description Multiplier applied to this row's ceiling while ramping. 1 is not ramping. */
+                        warm_up_factor?: number | null;
+                        /** @description Length cap on this row's free-text field, in characters (an invitation note, an InMail body). */
+                        character_cap?: number | null;
+                        /** @description Length cap on this row's subject line, in characters. */
+                        subject_character_cap?: number | null;
+                        /** @description Bound on a single query's result lines. Search rows only. */
+                        per_query_cap?: number | null;
+                        /**
+                         * @description How well calibrated this row's configured number is. Overriding it labels your own figure; the over-default warning always reports the class of the Curviate default.
+                         * @enum {string|null}
+                         */
+                        source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded" | null;
+                        /** @description READ-ONLY. `ceiling` with the account's warm-up ramp applied, which is what this row is actually held to. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                        effective_ceiling?: unknown;
+                        /** @description READ-ONLY. Which scope supplied this row's effective `posture`. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                        posture_source?: unknown;
+                        /** @description READ-ONLY. The fields on this row configured above the Curviate default. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                        over_default?: unknown;
+                    }[];
+                    /** @description READ-ONLY. The document's type discriminator. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                    object?: unknown;
+                    /** @description READ-ONLY. The account this document describes; the path names it. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                    account_id?: unknown;
+                    /** @description READ-ONLY. The Curviate seat tier that disagrees with `limit_profile`. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                    seat_tier_mismatch?: unknown;
+                    /** @description READ-ONLY. Which scope supplied this account's effective `posture`. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                    posture_source?: unknown;
+                    /** @description READ-ONLY. The account's DERIVED warm-up ramp, recomputed on every read. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                    warm_up?: unknown;
+                };
+            };
+        };
+        responses: {
+            /** @description The account's full safety policy: every configurable field for every budget row, in one response. Any row whose configured value is above the Curviate default carries an `over_default` entry naming the value, the default and the source class of that default. Two top-level fields are DERIVED rather than configured: `warm_up` says whether Curviate is currently holding this account below its configured ceilings and by how much, and `activity_window` says which timezone the window is read in and whether it is switched on at all. This is the same body the read returns, so a value set above default is reported on the write that set it. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object?: "safety_policy";
+                        /** @description The account this policy governs. */
+                        account_id?: string;
+                        /**
+                         * @description Which set of Curviate defaults every row below is resolved from. Each profile inherits the one before it and raises a few rows: `premium` adds a daily invitation band and open-profile InMail, `sales_navigator` raises profile views and search, `recruiter` raises profile views again. This is the platform product active on the account, not the Curviate seat entitlement. The two can disagree, and this is the one that governs the numbers. The elevated Sales Navigator and Recruiter figures apply only to calls made through the matching interface, the `/v1/{account_id}/sales-navigator/...` and `/v1/{account_id}/recruiter/...` operations. A standard-interface call still lives under the `basic` or `premium` figure for its row, and Curviate does not yet track that difference: on a non-`basic` profile the numbers here are the headroom of the elevated interface, not of every call, so read them as an upper bound rather than as your budget for a standard call.
+                         * @enum {string}
+                         */
+                        limit_profile?: "basic" | "premium" | "sales_navigator" | "recruiter";
+                        /**
+                         * @description The Curviate seat tier attached to this account when it disagrees with `limit_profile`, and null when the two agree or the account holds no seat. A seat records what you bought from Curviate; `limit_profile` records what LinkedIn currently grants, and a lapsed subscription moves one and not the other. The detected product always wins the numbers, so this is a report, not a refusal: a `recruiter` seat here means you are paying for Recruiter on an account LinkedIn does not currently grant it to. `core` alongside `basic` or `premium` is agreement, not a mismatch: Premium is a LinkedIn product, not a Curviate tier. A free-trial seat never reports here, because a trial is not a purchase, and neither does a seat whose entitlement has not started yet or has already lapsed.
+                         * @enum {string|null}
+                         */
+                        seat_tier_mismatch?: "core" | "sn" | "recruiter" | null;
+                        /**
+                         * @description The account's default posture, before any per-row override.
+                         * @enum {string}
+                         */
+                        posture?: "warn" | "enforce";
+                        /**
+                         * @description Whether that default is the account's own, the tenant's, or the built-in `warn`.
+                         * @enum {string}
+                         */
+                        posture_source?: "account" | "tenant" | "default";
+                        /**
+                         * @description The workspace-wide posture default every account in the tenant inherits, or null when none is set. Always present, and separate from `posture` on purpose: when this account overrides the tenant default, a change to the tenant default does not move `posture`, and this field is how you can still see it took effect.
+                         * @enum {string|null}
+                         */
+                        tenant_default_posture?: "warn" | "enforce" | null;
+                        /** @description The account's ACTIVE warm-up ramp, derived on every read. While an account is warming up, every row's effective ceiling is its configured ceiling multiplied by `factor`, so a `factor` of 0.15 means an account is being held to 15 percent of the numbers the rows below report. This is what Curviate currently believes about the account, and it is separate from the per-row `warm_up_state` and `warm_up_factor` fields, which report what is active on that row: set `warm_up_factor` on a row to pin it and ignore the derivation, and read `warm_up_state` as the label for whichever factor won. Every warm-up number is inferred, and none of them is published by LinkedIn. */
+                        warm_up?: {
+                            /**
+                             * @description `none` is an account at full speed. `ramping` is a new, thinly connected or dormant account climbing 0.15 to 0.35 to 0.60 to 0.85 to 1.00 by week. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: it holds at 0 for seven days after the restriction lifts, resumes at 0.40, then steps up 0.15 every four days.
+                             * @enum {string}
+                             */
+                            state?: "none" | "ramping" | "restriction_recovery";
+                            /** @description The multiplier applied to every row's ceiling. 1 is not ramping. */
+                            factor?: number;
+                            /** @description Which week of the ramp this account is in, counted from whichever is later of its creation and its last return from a dormancy. Null when the post-restriction schedule applies instead, which is not the weekly table. */
+                            week?: number | null;
+                            /** @description The conditions currently true of this account: `account_age` under 180 days, `connections` under 150, `dormant` for over 30 days, `post_restriction` under or recovering from a LinkedIn restriction. `dormant` stays reported until the ramp it started completes, because that is what explains the factor. */
+                            triggers?: ("account_age" | "connections" | "dormant" | "post_restriction")[];
+                            /** @description The conditions Curviate could not check because nothing supplies their input. Reported rather than assumed false: `connections` is here on every account today, because the connected-account record LinkedIn returns carries no connection count. An unevaluated trigger is not a trigger that was checked and found false. */
+                            unevaluated?: ("account_age" | "connections" | "dormant" | "post_restriction")[];
+                        };
+                        /** @description The account-level half of the activity window. Outside the window, a live write to LinkedIn is reported under `warn` posture and refused under `enforce`; reads and anything served from Curviate's own store are never affected, at any hour. */
+                        activity_window?: {
+                            /** @description The IANA zone this account's activity window is read in, or null when none is set. A row may override it with its own `activity_window_timezone`. */
+                            timezone?: string | null;
+                            /** @description True when no zone is set, which DISABLES the activity window for every row that has not set its own. Curviate never guesses a zone: a guess eight hours wrong inverts the window, refusing every daytime write and permitting every nocturnal one, which is worse than having no window at all. If you configured a window and it never fires, this is why. */
+                            timezone_unset?: boolean;
+                        };
+                        /** @description Every budget row, always. */
+                        rows?: {
+                            /** @description The counted-action row this policy governs. */
+                            budget_row?: string;
+                            /** @description What `enforce` refuses at and `warn` reports at, in the row's own unit. Null means the row is uncalibrated: Curviate has no figure for it. */
+                            ceiling?: number | null;
+                            /** @description Routine band. */
+                            green?: number | null;
+                            /** @description Warn-louder band. */
+                            amber?: number | null;
+                            /**
+                             * @description The calendar grain this row is counted in.
+                             * @enum {string}
+                             */
+                            window_kind?: "day" | "week" | "month";
+                            /** @description How many grain units one counting window spans. */
+                            window_span?: number;
+                            /** @description IANA zone name the counting window is aligned to. Null counts in UTC. */
+                            window_timezone?: string | null;
+                            /**
+                             * @description The posture in force for this row, after inheritance.
+                             * @enum {string}
+                             */
+                            posture?: "warn" | "enforce";
+                            /**
+                             * @description Where that posture came from, so an override is visible as one.
+                             * @enum {string}
+                             */
+                            posture_source?: "row" | "account" | "tenant" | "default";
+                            /** @description Local HH:MM the activity window opens. */
+                            activity_window_start?: string;
+                            /** @description Local HH:MM the activity window closes. */
+                            activity_window_end?: string;
+                            /** @description IANA zone name the activity window is read in. Null disables the window entirely. */
+                            activity_window_timezone?: string | null;
+                            /**
+                             * @description What the activity window governs. `writes` (the default) covers live writes to LinkedIn; `all` widens it to live reads as well, which is the setting for a persona that should not be seen browsing at 03:00. It is broader than it sounds: `all` covers every live read, including the ones about the account itself, so a nightly analytics or invitation-backlog poll is refused at 03:00 too. Stored reads and inbound events are never subject to the window under either setting, at any hour.
+                             * @enum {string}
+                             */
+                            activity_window_applies_to?: "writes" | "all";
+                            /**
+                             * @description The warm-up state ACTIVE on this row: the label for `warm_up_factor` beside it, so the two always agree. Read-only, so a value sent on a write is accepted and ignored; set `warm_up_factor` to pin this row's ramp.
+                             * @enum {string}
+                             */
+                            warm_up_state?: "none" | "ramping" | "restriction_recovery";
+                            /** @description The multiplier ACTIVE on this row, which is what `effective_ceiling` above was computed with. 1 is not ramping. Set it to pin this row and ignore the account's derived ramp; leave it unset to follow the derivation. */
+                            warm_up_factor?: number;
+                            /** @description Length cap on the row's free-text field, in characters. */
+                            character_cap?: number | null;
+                            /** @description Length cap on the row's subject line, in characters. */
+                            subject_character_cap?: number | null;
+                            /** @description Bound on a single query's result lines. Search rows only. */
+                            per_query_cap?: number | null;
+                            /**
+                             * @description How well calibrated this row's number is. `unseeded` means Curviate has no green, amber or ceiling figure for this row on this profile: the row is reported so nothing is silently missing, but nothing has calibrated it, so no value you set can be `over_default`.
+                             * @enum {string}
+                             */
+                            source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                            /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Read this one, not `ceiling`, to know where the next call will be stopped. On an account in warm-up the two differ, and on a five-day-old account they differ by a factor of about seven. Null when the row has no ceiling to ramp. `warm_up_state` and `warm_up_factor` beside it are the values ACTIVE on this row, not the seeded ones. */
+                            effective_ceiling?: number | null;
+                            /** @description Empty when nothing on this row is above default. */
+                            over_default?: {
+                                /**
+                                 * @description The field whose configured value is above default.
+                                 * @enum {string}
+                                 */
+                                field?: "ceiling" | "green" | "amber" | "character_cap" | "subject_character_cap" | "per_query_cap";
+                                /** @description The configured value. */
+                                value?: number;
+                                /** @description The Curviate default it exceeds. */
+                                default?: number;
+                                /**
+                                 * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                 * @enum {string}
+                                 */
+                                source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                            }[];
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST. The row name, posture or source class is not one of the accepted values, or a number is not a number (a negative ceiling). A value is never rejected for being unsafe: any limit may be set to any value, and a high one is reported rather than refused. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description No such account for this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1AccountIdSafetyEvents: {
+        parameters: {
+            query?: {
+                /** @description Pagination cursor from a previous response; decodable, pass it back verbatim. */
+                cursor?: string;
+                /** @description Return only events flagged against this budget row. Omit for every row. */
+                budget_row?: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "total_actions" | "pending_invites";
+                /** @description Only events at or after this instant (ISO-8601, e.g. 2026-09-01T00:00:00Z). */
+                since?: string;
+                /** @description Only events strictly before this instant (ISO-8601). */
+                until?: string;
+                /** @description How many events to return per page, 1 to 100. Defaults to 50. */
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                /** @description The account ID (`acc_...`) whose safety events to read. */
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description What Curviate refused or warned about on this account, newest first. Filter by `budget_row` to ask about one action type, and by `since` / `until` to ask about a period. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "safety_event_list";
+                        /** @description Flagged events, newest first. [] when this account has never breached a limit. */
+                        items: {
+                            /**
+                             * @description Item type discriminator.
+                             * @enum {string}
+                             */
+                            object: "safety_event";
+                            /** @description The event's id. Also the value encoded in the next page's cursor. */
+                            id: string;
+                            /**
+                             * @description The budget row that breached. It is not always a row the call itself spends: an invitation refused because the outstanding backlog is at its ceiling reports `pending_invites`, which is the thing that breached.
+                             * @enum {string}
+                             */
+                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "total_actions" | "pending_invites";
+                            /**
+                             * @description Why it was flagged. `budget_exhausted`: the account reached the ceiling configured for that row, which you can raise on the safety policy. `rate_limited`: the platform itself refused this account on that row recently and Curviate is holding the row until the pause expires, which no configuration change lifts.
+                             * @enum {string}
+                             */
+                            reason: "budget_exhausted" | "rate_limited";
+                            /** @description Whether the action was stopped. `false` is a warning: the action went through, and this record is the only lasting trace that it crossed a limit. Under the default `warn` posture every event is a warning, which is what makes reading this surface the point of running it. */
+                            blocked: boolean;
+                            /** @description The operation the caller was running when it breached. */
+                            method: string;
+                            /**
+                             * Format: date-time
+                             * @description When it happened.
+                             */
+                            occurred_at: string;
+                        }[];
+                        /** @description Cursor for the next page; null on the terminal page. Pass it back verbatim. Page until cursor is null. */
+                        cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Invalid request: an out-of-range `limit`, an unknown `budget_row`, a malformed `since` / `until`, or a corrupt `cursor`. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description No such account for this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
