@@ -17,7 +17,13 @@
  *
  * `searchChats` free-text searches the account's own inbox (participant
  * names and message content), distinct from `companies.searchChats`, which
- * searches a company page's admin inbox.
+ * searches a company page's admin inbox. It reads Curviate's OWN STORE, not
+ * LinkedIn: see the method's own note.
+ *
+ * `startChat`, `sendMessage` and `sendInMail` return a `message_id` that is
+ * `string | string[] | null`, not a bare string: `null` when no message was
+ * actually sent, and an array when the message was delivered as several, one
+ * per attachment. Confirm a send with `chat_id`, which is always present.
  */
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
@@ -249,6 +255,16 @@ export class MessagingResource {
   /**
    * Free-text search the account's own inbox; matches participant names
    * and message content. `GET /v1/{account_id}/chats/search`
+   *
+   * SERVED FROM CURVIATE'S STORE, not from LinkedIn: it costs no platform call
+   * and draws down no account-safety budget, and a chat that has never been
+   * retrieved for this account cannot match. Read `coverage` on the response to
+   * see how complete the searched corpus is before treating an empty result as
+   * "no such conversation".
+   *
+   * A result's `type` is `1to1`, `group` or `channel`. It used to be documented
+   * as never a channel; that is no longer true, so a caller switching on `type`
+   * needs the third arm.
    *
    * @param params - `query` (required free-text term) plus `limit` and an
    *   opaque `cursor` for pagination.

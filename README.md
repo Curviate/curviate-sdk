@@ -109,6 +109,14 @@ try {
       // err.retryAfterMs tells you exactly how long to wait
       await sleep(err.retryAfterMs ?? 5_000);
       break;
+    case "BUDGET_EXHAUSTED":
+      // Curviate's OWN account-safety ceiling, not a request-rate limit:
+      // nothing reached LinkedIn and nothing was spent, so backing off is the
+      // wrong move. Wait until err.resetAt, or raise the setting the hint
+      // names on PATCH /v1/{account_id}/safety-policy.
+      console.warn(`${err.budgetRow} is spent until ${err.resetAt ?? "the backlog clears"}`);
+      console.warn(`change ${err.safetyHint?.parameter} to lift it`);
+      break;
     case "ACCOUNT_NOT_FOUND":
       console.error("Account does not exist for this tenant.");
       break;

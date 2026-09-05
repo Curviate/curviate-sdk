@@ -11,6 +11,64 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ### Added
 
+- **`BUDGET_EXHAUSTED`, the account-safety refusal, and its payload.** A `429`
+  that is Curviate's own ceiling rather than a request-rate limit: nothing
+  reached LinkedIn and nothing was spent. `CurviateError` gains `budgetRow`
+  (wire `row`), `resetAt` (`reset_at`, and `null` on the `pending_invites`
+  gauge, which no clock frees), `safetyHint` (`hint`, the settable parameter
+  on `PATCH /v1/{account_id}/safety-policy`), `safetyReason` (`reason`:
+  `ceiling` or `activity_window`) and `blocked`. All six ride `toJSON()`.
+  The code is deliberately NOT retryable: a monthly row's reset can be weeks
+  out, so a backoff loop burns retries against a wall that will not move.
+  On a successful response the same payload arrives under `safety_warning`
+  with `blocked: false`, typed on the generated response types.
+- **`budgetRow` and `retryAfterSeconds` on a paused-row `PLATFORM_RATE_LIMIT`.**
+  Same wire `row`, different meaning: LinkedIn refused a recent call on that
+  row, so the next one is refused locally until the pause lifts. The pause is
+  scoped to `(account, row)`, so the recovery is to switch work rather than
+  back off across the account. `retry_after` is deliberately NOT folded into
+  `retryAfterMs`, which everything sleeps.
+- **A response carrying `row` is never auto-retried, on any method.**
+- **`LINKEDIN_SESSION_EVICTED`.** A 401 split from `LINKEDIN_AUTH_FAILED`
+  because the remedies differ: reconnecting does nothing while the other
+  session is open. Not retryable.
+
+### Changed
+
+- **Fixture regenerated against the deployed production document**
+  (`https://api.curviate.com`, `git_sha 33b42521...`), and the generated
+  types with it. Two shape changes are BREAKING for a consumer that pinned
+  the old declarations, and one enum widened. See "Regenerated types" below.
+
+### Regenerated types
+
+- **BREAKING - `quotas[]` on `GET /v1/accounts/{account_id}` is a different
+  array.** `quota_name`, `remaining`, `total`, `reset_time` and
+  `recommended_throttle_hint` are gone. Each row now carries `budget_row`,
+  `kind` (`debit` / `tally` / `gauge`), `window`, `window_start`, `resets_at`,
+  `used`, `ceiling`, `effective_ceiling`, `band`, `posture`, `over_default`,
+  `halt` and, on the gauge, `observed_at`. **Compare `used` against
+  `effective_ceiling`**, which is `ceiling` with the account's warm-up ramp
+  applied; on a new account the two differ by roughly a factor of seven.
+  `used` is `null` only on the gauge, and only before anything has observed
+  it. The per-minute REQUEST ceiling is deliberately not in this array.
+- **BREAKING - `message_id` is `string | string[] | null`** on `startChat`,
+  `sendMessage`, `sendInMail` and the company chat reply, where it was
+  `string`. `null` when no message was actually sent, an array when the
+  message was delivered as several, one per attachment. Confirm a send with
+  `chat_id`, which is always present.
+- Chat-search results: `type` gains `channel`. The generated comment used to
+  say search results are never channels; that is no longer true, so an
+  exhaustive `switch` over `type` needs a third arm.
+- Additive: `GET`/`PATCH /v1/{account_id}/safety-policy`,
+  `GET /v1/{account_id}/safety-events`, the four retained-event operations
+  under `/v1/{account_id}/events`, a `SafetyWarning` component reachable as
+  `safety_warning` on 149 success responses, six new optional fields on the
+  shared `Error` component, `coverage` on chat search, `mode` and `max_age`
+  query params on the store-served reads, `account_states[]` on the account
+  resource, and `observed_at` / `source` / `withdrawn` becoming REQUIRED on
+  four entity reads (a response gaining guarantees, not losing them).
+
 - **`postpublish` now notices a stale CLI pin.** After every `npm publish`,
   `scripts/check-cli-notice.mjs` compares the version just published
   against what `@curviate/cli` actually declares for `@curviate/sdk` on the
