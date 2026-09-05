@@ -7,7 +7,14 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
-## [Unreleased]
+## [0.25.0] - 2026-09-05
+
+**BREAKING** for a consumer that pinned the old type declarations: `quotas[]`
+on `GET /v1/accounts/{account_id}` is a different array, and `message_id` on
+`startChat`, `sendMessage`, `sendInMail` and the company chat reply is now
+`string | string[] | null` where it was `string`. Both are detailed under
+"Regenerated types" below. Pre-1.0 a breaking change ships as a minor, so a
+caret range on `0.24.x` will not pick this up.
 
 ### Added
 
