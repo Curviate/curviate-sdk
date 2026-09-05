@@ -18,6 +18,8 @@ import {
   type ErrorCode,
   type RequiredTier,
   type RetryHint,
+  type SafetyHint,
+  type SafetyReason,
 } from "./errors.js";
 
 /** HTTP methods the transport issues. */
@@ -55,6 +57,22 @@ interface WireErrorEnvelope {
   user_fixable?: boolean;
   retry_likely_to_succeed?: boolean;
   required_tier?: string;
+  /**
+   * The account-safety budget row. On `PLATFORM_RATE_LIMIT` it is the PAUSED
+   * row; on `BUDGET_EXHAUSTED` it is the row that hit its ceiling. Same wire
+   * field, two meanings, discriminated by `code`.
+   */
+  row?: string;
+  /** Seconds until a paused row is usable again. Mirrors the `Retry-After` header. */
+  retry_after?: number;
+  /** `BUDGET_EXHAUSTED`: when the row frees up. Null on the `pending_invites` gauge. */
+  reset_at?: string | null;
+  /** `BUDGET_EXHAUSTED`: the settable parameter that would lift the refusal. */
+  hint?: { parameter?: unknown; message?: unknown };
+  /** `BUDGET_EXHAUSTED`: which rule refused. */
+  reason?: string;
+  /** `BUDGET_EXHAUSTED`: always true on the error; false on the 2xx `safety_warning`. */
+  blocked?: boolean;
 }
 
 // Backoff defaults.
@@ -69,6 +87,11 @@ const RETRYABLE_CODES: ReadonlySet<string> = new Set([
   "RATE_LIMIT_ACCOUNT",
   "RATE_LIMIT_TENANT",
   "RATE_LIMITED",
+  // BUDGET_EXHAUSTED is deliberately NOT here, even though it is a 429. It is
+  // Curviate's own account-safety ceiling rather than a request-rate limit:
+  // nothing reached LinkedIn, nothing was spent, and a monthly row's reset can
+  // be weeks out, so a backoff loop burns retries against a wall that will not
+  // move. The recovery is `resetAt` / `safetyHint`, not a sleep.
 ]);
 
 const WRITE_METHODS: ReadonlySet<HttpMethod> = new Set(["POST", "PATCH", "PUT", "DELETE"]);
@@ -97,6 +120,19 @@ function toErrorCode(code: string | undefined): ErrorCode {
   return code && KNOWN_ERROR_CODES.has(code) ? (code as ErrorCode) : "INTERNAL";
 }
 
+/** Narrow a wire `hint` object, discarding anything not carrying both strings. */
+function toSafetyHint(hint: WireErrorEnvelope["hint"]): SafetyHint | undefined {
+  if (!hint || typeof hint !== "object") return undefined;
+  const { parameter, message } = hint;
+  if (typeof parameter !== "string" || typeof message !== "string") return undefined;
+  return { parameter, message };
+}
+
+/** Narrow a wire `reason`, discarding an unrecognized value rather than surfacing it. */
+function toSafetyReason(reason: string | undefined): SafetyReason | undefined {
+  return reason === "ceiling" || reason === "activity_window" ? reason : undefined;
+}
+
 function toRetryHint(hint: WireErrorEnvelope["retry_hint"]): RetryHint | null {
   if (!hint || typeof hint !== "object") return null;
   const kind = hint.kind;
@@ -119,6 +155,8 @@ async function errorFromResponse(res: Response): Promise<CurviateError> {
     env?.required_tier && KNOWN_REQUIRED_TIERS.has(env.required_tier)
       ? (env.required_tier as RequiredTier)
       : undefined;
+  const safetyHint = toSafetyHint(env?.hint);
+  const safetyReason = toSafetyReason(env?.reason);
 
   return new CurviateError({
     code: toErrorCode(env?.code),
@@ -129,6 +167,25 @@ async function errorFromResponse(res: Response): Promise<CurviateError> {
     retryLikelyToSucceed: env?.retry_likely_to_succeed ?? false,
     ...(requiredTier !== undefined ? { requiredTier } : {}),
     ...(retryAfterMs !== undefined ? { retryAfterMs } : {}),
+    ...(typeof env?.row === "string" ? { budgetRow: env.row } : {}),
+    // `retry_after` is DELIBERATELY NOT folded into `retryAfterMs`. Everything
+    // that reads `retryAfterMs` SLEEPS it, on reads and on writes; a paused
+    // budget row can be paused for an hour, and turning that into an hour-long
+    // sleep inside a client call would be a hang, not a backoff. It stays on
+    // `retryAfterSeconds` for the caller to decide about, next to `budgetRow`,
+    // which is the field that says what to do instead: switch work.
+    ...(typeof env?.retry_after === "number" && Number.isFinite(env.retry_after)
+      ? { retryAfterSeconds: env.retry_after }
+      : {}),
+    // `reset_at` is null-BEARING: null means "no instant frees this row" (the
+    // pending_invites gauge), which is a different fact from the field being
+    // absent, so both survive the round trip.
+    ...(typeof env?.reset_at === "string" || env?.reset_at === null
+      ? { resetAt: env.reset_at }
+      : {}),
+    ...(safetyHint !== undefined ? { safetyHint } : {}),
+    ...(safetyReason !== undefined ? { safetyReason } : {}),
+    ...(typeof env?.blocked === "boolean" ? { blocked: env.blocked } : {}),
   });
 }
 
@@ -240,7 +297,16 @@ export async function execute<T = unknown>(
     }
 
     const err = await errorFromResponse(res);
-    const retryable = !isWrite && RETRYABLE_CODES.has(err.code) && attempt < opts.maxRetries;
+    // A RESPONSE NAMING A BUDGET ROW IS NEVER RETRIED, on any method. Neither
+    // condition that carries `row` is a transient rate limit: on
+    // PLATFORM_RATE_LIMIT the row is paused because LinkedIn already refused it
+    // and retrying into that is what escalates it into an account restriction;
+    // on BUDGET_EXHAUSTED the ceiling is Curviate's own and no amount of
+    // waiting inside this call moves it. Surface it and let the caller switch
+    // work or reconfigure.
+    const namesBudgetRow = err.budgetRow !== undefined;
+    const retryable =
+      !isWrite && !namesBudgetRow && RETRYABLE_CODES.has(err.code) && attempt < opts.maxRetries;
     if (retryable) {
       await sleep(retryDelay(err, attempt + 1, jitterFn()));
       attempt += 1;

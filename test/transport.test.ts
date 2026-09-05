@@ -558,3 +558,195 @@ describe("timeout", () => {
     expect((err as CurviateError).message.toLowerCase()).toContain("timed out");
   });
 });
+
+// ── Account-safety refusals (BUDGET_EXHAUSTED) and paused rows ─────────────
+//
+// Two 429s that must not behave like a rate limit. `BUDGET_EXHAUSTED` is
+// Curviate's own ceiling and `PLATFORM_RATE_LIMIT` + `row` is a locally paused
+// row; neither is freed by backing off inside the call, and both used to be
+// retried (the first decoded to INTERNAL, which IS retryable on a GET).
+//
+// THE INSTRUMENT IS THE FETCH COUNT, not the decoded code: a decode assertion
+// alone stays green if the retry gate regresses. Every "not retried" arm below
+// has the ordinary-429 control beside it, so "never retries" cannot become
+// true by 429 quietly ceasing to be retryable at all.
+describe("account-safety refusals", () => {
+  const BREACH = {
+    code: "BUDGET_EXHAUSTED",
+    message: "The profile_views budget for this account is spent.",
+    user_fixable: true,
+    retry_likely_to_succeed: false,
+    row: "profile_views",
+    reset_at: "2026-09-06T00:00:00.000Z",
+    hint: {
+      parameter: "profile_views.ceiling",
+      message: "effective ceiling 15 = 100 x warm-up 0.15 (week 0, account_age).",
+    },
+    reason: "ceiling",
+    blocked: true,
+  } as const;
+
+  function serve(body: Record<string, unknown>, status = 429) {
+    let calls = 0;
+    server.use(
+      http.get(`${BASE}/v1/probe`, () => {
+        calls += 1;
+        return HttpResponse.json(body, { status });
+      }),
+    );
+    return () => calls;
+  }
+
+  it("decodes the whole BUDGET_EXHAUSTED payload onto the error", async () => {
+    serve({ ...BREACH });
+    const err = (await execute("GET", "/v1/probe", det()).catch((e) => e)) as CurviateError;
+    expect(err.code).toBe("BUDGET_EXHAUSTED");
+    expect(err.httpStatus).toBe(429);
+    expect(err.budgetRow).toBe("profile_views");
+    expect(err.resetAt).toBe("2026-09-06T00:00:00.000Z");
+    expect(err.safetyHint).toEqual({
+      parameter: "profile_views.ceiling",
+      message: "effective ceiling 15 = 100 x warm-up 0.15 (week 0, account_age).",
+    });
+    expect(err.safetyReason).toBe("ceiling");
+    expect(err.blocked).toBe(true);
+  });
+
+  it("carries the payload on toJSON()", async () => {
+    serve({ ...BREACH });
+    const err = (await execute("GET", "/v1/probe", det()).catch((e) => e)) as CurviateError;
+    expect(err.toJSON()).toMatchObject({
+      code: "BUDGET_EXHAUSTED",
+      budgetRow: "profile_views",
+      resetAt: "2026-09-06T00:00:00.000Z",
+      safetyReason: "ceiling",
+      blocked: true,
+    });
+  });
+
+  it("never retries a BUDGET_EXHAUSTED GET (1 fetch)", async () => {
+    const calls = serve({ ...BREACH });
+    await execute("GET", "/v1/probe", det()).catch((e) => e);
+    expect(calls()).toBe(1);
+  });
+
+  // CONTROL for the arm above. An ordinary 429 with no `row` is still retried
+  // to exhaustion, so "1 fetch" up there is a property of the safety payload
+  // rather than of 429 having stopped being retryable.
+  it("still retries an ordinary 429 with no row (4 fetches)", async () => {
+    const calls = serve({
+      code: "RATE_LIMIT_ACCOUNT",
+      message: "slow down",
+      user_fixable: false,
+      retry_likely_to_succeed: true,
+    });
+    await execute("GET", "/v1/probe", det()).catch((e) => e);
+    expect(calls()).toBe(4); // 1 initial + maxRetries 3
+  });
+
+  // The gate is belt-and-braces: `row` is absent here, so the ONLY thing
+  // stopping the retry is BUDGET_EXHAUSTED's absence from RETRYABLE_CODES.
+  // Without this arm, deleting that exclusion would stay green.
+  it("does not retry a BUDGET_EXHAUSTED that carries no row (1 fetch)", async () => {
+    const calls = serve({
+      code: "BUDGET_EXHAUSTED",
+      message: "spent",
+      user_fixable: true,
+      retry_likely_to_succeed: false,
+    });
+    await execute("GET", "/v1/probe", det()).catch((e) => e);
+    expect(calls()).toBe(1);
+  });
+
+  // reset_at is null-BEARING on the pending_invites gauge: "no instant frees
+  // this row" is a different fact from the field being absent, and both have to
+  // survive the round trip and toJSON().
+  it("keeps a null reset_at as null, and an absent one as undefined", async () => {
+    serve({ ...BREACH, row: "pending_invites", reset_at: null });
+    const gauge = (await execute("GET", "/v1/probe", det()).catch((e) => e)) as CurviateError;
+    expect(gauge.resetAt).toBeNull();
+    expect(gauge.toJSON()).toHaveProperty("resetAt", null);
+
+    const { reset_at: _drop, ...withoutResetAt } = BREACH;
+    serve(withoutResetAt);
+    const absent = (await execute("GET", "/v1/probe", det()).catch((e) => e)) as CurviateError;
+    expect(absent.resetAt).toBeUndefined();
+    expect(absent.toJSON()).not.toHaveProperty("resetAt");
+  });
+
+  it("discards a malformed hint and an unrecognised reason rather than surfacing them", async () => {
+    serve({ ...BREACH, hint: { parameter: "profile_views.ceiling" }, reason: "some_future_rule" });
+    const err = (await execute("GET", "/v1/probe", det()).catch((e) => e)) as CurviateError;
+    expect(err.safetyHint).toBeUndefined();
+    expect(err.safetyReason).toBeUndefined();
+    // The rest of the payload still decodes, so the narrowing is field-local.
+    expect(err.budgetRow).toBe("profile_views");
+    expect(err.blocked).toBe(true);
+  });
+
+  // A PAUSED row: same wire `row`, different code, different recovery.
+  it("surfaces a paused row on PLATFORM_RATE_LIMIT and never retries it", async () => {
+    const calls = serve({
+      code: "PLATFORM_RATE_LIMIT",
+      message: "paused",
+      user_fixable: false,
+      retry_likely_to_succeed: false,
+      row: "connection_requests_no_note",
+      retry_after: 3600,
+    });
+    const err = (await execute("GET", "/v1/probe", det()).catch((e) => e)) as CurviateError;
+    expect(err.budgetRow).toBe("connection_requests_no_note");
+    expect(err.retryAfterSeconds).toBe(3600);
+    // retry_after is NOT folded into retryAfterMs, which everything sleeps.
+    expect(err.retryAfterMs).toBeUndefined();
+    expect(calls()).toBe(1);
+  });
+
+  // A paused row on a WRITE must not sleep either: the write path sleeps
+  // retryAfterMs before throwing, and an hour there is a hang.
+  it("does not sleep on a paused-row write", async () => {
+    const sleeps: number[] = [];
+    server.use(
+      http.post(`${BASE}/v1/probe`, () =>
+        HttpResponse.json(
+          {
+            code: "PLATFORM_RATE_LIMIT",
+            message: "paused",
+            user_fixable: false,
+            retry_likely_to_succeed: false,
+            row: "profile_views",
+            retry_after: 3600,
+          },
+          { status: 429 },
+        ),
+      ),
+    );
+    await execute("POST", "/v1/probe", det({
+      body: {},
+      _sleepFn: async (ms: number) => {
+        sleeps.push(ms);
+      },
+    })).catch((e) => e);
+    expect(sleeps).toEqual([]);
+  });
+
+  // LINKEDIN_SESSION_EVICTED: driven on a GET on purpose. An INTERNAL fallback
+  // is retryable, so an undecoded code would re-fire up to maxRetries; the
+  // fetch count is the instrument, not the decoded code alone.
+  it("decodes LINKEDIN_SESSION_EVICTED and does not retry it (1 fetch)", async () => {
+    const calls = serve(
+      {
+        code: "LINKEDIN_SESSION_EVICTED",
+        message: "Signed in elsewhere.",
+        user_fixable: true,
+        retry_likely_to_succeed: false,
+        retry_hint: { kind: "never" },
+      },
+      401,
+    );
+    const err = (await execute("GET", "/v1/probe", det()).catch((e) => e)) as CurviateError;
+    expect(err.code).toBe("LINKEDIN_SESSION_EVICTED");
+    expect(err.code).not.toBe("LINKEDIN_AUTH_FAILED");
+    expect(calls()).toBe(1);
+  });
+});
