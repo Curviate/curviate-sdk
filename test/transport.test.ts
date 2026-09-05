@@ -658,9 +658,10 @@ describe("account-safety refusals", () => {
     expect(calls()).toBe(1);
   });
 
-  // reset_at is null-BEARING on the pending_invites gauge: "no instant frees
-  // this row" is a different fact from the field being absent, and both have to
-  // survive the round trip and toJSON().
+  // reset_at is null-BEARING wherever no clock frees the row (the
+  // pending_invites gauge, and an InMail credit exhaustion): that is a
+  // different fact from the field being absent, and both have to survive the
+  // round trip and toJSON().
   it("keeps a null reset_at as null, and an absent one as undefined", async () => {
     serve({ ...BREACH, row: "pending_invites", reset_at: null });
     const gauge = (await execute("GET", "/v1/probe", det()).catch((e) => e)) as CurviateError;

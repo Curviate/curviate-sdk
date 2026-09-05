@@ -14,8 +14,9 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 - **`BUDGET_EXHAUSTED`, the account-safety refusal, and its payload.** A `429`
   that is Curviate's own ceiling rather than a request-rate limit: nothing
   reached LinkedIn and nothing was spent. `CurviateError` gains `budgetRow`
-  (wire `row`), `resetAt` (`reset_at`, and `null` on the `pending_invites`
-  gauge, which no clock frees), `safetyHint` (`hint`, the settable parameter
+  (wire `row`), `resetAt` (`reset_at`, and `null` in the two cases no clock
+  frees: the `pending_invites` gauge and an InMail credit exhaustion),
+  `safetyHint` (`hint`, the settable parameter
   on `PATCH /v1/{account_id}/safety-policy`), `safetyReason` (`reason`:
   `ceiling` or `activity_window`) and `blocked`. All six ride `toJSON()`.
   The code is deliberately NOT retryable: a monthly row's reset can be weeks

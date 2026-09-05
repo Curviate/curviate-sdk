@@ -259,10 +259,14 @@ export interface CurviateErrorInit {
    * `BUDGET_EXHAUSTED`. Wire field `reset_at`.
    *
    * An absolute ISO-8601 instant rather than a duration, so it stays true
-   * however long you hold it. `null`, present rather than absent, is the
-   * `pending_invites` row: its backlog falls when invitations are accepted or
-   * withdrawn rather than at any window boundary, so there is no instant to
-   * name.
+   * however long you hold it. It is the window roll on a spent ceiling and the
+   * next window open on an activity-window refusal.
+   *
+   * `null`, present rather than absent, in exactly two cases where no clock
+   * frees the account: the `pending_invites` row, whose backlog falls when
+   * invitations are accepted or withdrawn rather than at any window boundary,
+   * and an InMail CREDIT exhaustion (`row: inmail`), which LinkedIn regrants on
+   * a schedule this product cannot read. Null-check it before scheduling on it.
    */
   resetAt?: string | null;
   /** The settable parameter that would lift a `BUDGET_EXHAUSTED`. Wire field `hint`. */
@@ -325,7 +329,7 @@ export class CurviateError extends Error {
   readonly budgetRow: string | undefined;
   /** Seconds until a paused row lifts. See {@link CurviateErrorInit.retryAfterSeconds}. */
   readonly retryAfterSeconds: number | undefined;
-  /** When an exhausted row frees up; `null` on the gauge. See {@link CurviateErrorInit.resetAt}. */
+  /** When the refusal lifts; `null` on the gauge and on InMail credits. See {@link CurviateErrorInit.resetAt}. */
   readonly resetAt: string | null | undefined;
   /** The settable parameter that would lift the refusal. See {@link CurviateErrorInit.safetyHint}. */
   readonly safetyHint: SafetyHint | undefined;
@@ -372,9 +376,10 @@ export class CurviateError extends Error {
     if (this.retryAfterMs !== undefined) json.retryAfterMs = this.retryAfterMs;
     if (this.budgetRow !== undefined) json.budgetRow = this.budgetRow;
     if (this.retryAfterSeconds !== undefined) json.retryAfterSeconds = this.retryAfterSeconds;
-    // `resetAt` is null-BEARING: null is the pending_invites gauge saying "no
-    // instant frees this", which is a different fact from the field being
-    // absent. Guard on undefined, not on falsiness.
+    // `resetAt` is null-BEARING: null says "no clock frees this" (the
+    // pending_invites gauge, or an InMail credit exhaustion), which is a
+    // different fact from the field being absent. Guard on undefined, not on
+    // falsiness.
     if (this.resetAt !== undefined) json.resetAt = this.resetAt;
     if (this.safetyHint !== undefined) json.safetyHint = this.safetyHint;
     if (this.safetyReason !== undefined) json.safetyReason = this.safetyReason;

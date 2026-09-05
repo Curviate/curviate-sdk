@@ -177,9 +177,10 @@ async function errorFromResponse(res: Response): Promise<CurviateError> {
     ...(typeof env?.retry_after === "number" && Number.isFinite(env.retry_after)
       ? { retryAfterSeconds: env.retry_after }
       : {}),
-    // `reset_at` is null-BEARING: null means "no instant frees this row" (the
-    // pending_invites gauge), which is a different fact from the field being
-    // absent, so both survive the round trip.
+    // `reset_at` is null-BEARING: null means "no clock frees this" (the
+    // pending_invites gauge, or an InMail credit exhaustion), which is a
+    // different fact from the field being absent, so both survive the round
+    // trip.
     ...(typeof env?.reset_at === "string" || env?.reset_at === null
       ? { resetAt: env.reset_at }
       : {}),
