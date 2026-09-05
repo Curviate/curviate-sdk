@@ -65,7 +65,7 @@ interface WireErrorEnvelope {
   row?: string;
   /** Seconds until a paused row is usable again. Mirrors the `Retry-After` header. */
   retry_after?: number;
-  /** `BUDGET_EXHAUSTED`: when the row frees up. Null on the `pending_invites` gauge. */
+  /** `BUDGET_EXHAUSTED`: when the refusal lifts. Null on the `pending_invites` gauge and on InMail credits. */
   reset_at?: string | null;
   /** `BUDGET_EXHAUSTED`: the settable parameter that would lift the refusal. */
   hint?: { parameter?: unknown; message?: unknown };

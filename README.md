@@ -114,7 +114,9 @@ try {
       // nothing reached LinkedIn and nothing was spent, so backing off is the
       // wrong move. Wait until err.resetAt, or raise the setting the hint
       // names on PATCH /v1/{account_id}/safety-policy.
-      console.warn(`${err.budgetRow} is spent until ${err.resetAt ?? "the backlog clears"}`);
+      // resetAt is null in the two cases no clock frees: the pending_invites
+      // backlog, and an InMail credit pool LinkedIn regrants on its own schedule.
+      console.warn(`${err.budgetRow} is spent until ${err.resetAt ?? "no fixed time"}`);
       console.warn(`change ${err.safetyHint?.parameter} to lift it`);
       break;
     case "ACCOUNT_NOT_FOUND":
