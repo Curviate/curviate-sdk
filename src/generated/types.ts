@@ -2513,7 +2513,7 @@ export interface paths {
         };
         /**
          * List webhook event types
-         * @description Returns the complete canonical event catalogue (28 events) grouped by source: messaging (8), user (2), account_status (15), plus 3 tier-gated events. A local catalogue read: no platform call is made.
+         * @description Returns the complete canonical event catalogue (27 events) grouped by source: messaging (7), user (2), account_status (15), plus 3 tier-gated events. A local catalogue read: no platform call is made.
          */
         get: operations["getV1WebhooksEvents"];
         put?: never;
@@ -2702,13 +2702,13 @@ export interface components {
             }[];
         };
         /**
-         * @description Present on a successful response when this account crossed an account-safety ceiling while the affected budget row is on the default warn posture. The action still happened. Field-identical to the BUDGET_EXHAUSTED error body except that blocked is false, so one branch handles both postures and switching the account to enforce is a configuration change rather than a client rewrite.
+         * @description Present on a successful response when this account crossed an account-safety ceiling while the affected budget row is on the default warn posture. The action still happened. Field-identical to the BUDGET_EXHAUSTED error body except that blocked is false and hint.message describes the outcome, so one branch handles both postures and switching the account to enforce is a configuration change rather than a client rewrite.
          * @example {
          *       "row": "profile_views",
          *       "reset_at": "2026-09-05T00:00:00.000Z",
          *       "hint": {
          *         "parameter": "profile_views.ceiling",
-         *         "message": "This account is at its configured ceiling for profile_views."
+         *         "message": "This account is at its ceiling for profile_views. This action went through because profile_views.posture is warn, and it counted: 101 of 100 this window. Raise profile_views.ceiling, or wait for the window to reset at 2026-09-05T00:00:00.000Z."
          *       },
          *       "reason": "ceiling",
          *       "blocked": false
@@ -2722,7 +2722,7 @@ export interface components {
             hint: {
                 /** @description The settable parameter on PATCH /v1/{account_id}/safety-policy. */
                 parameter: string;
-                /** @description What the condition is and what changing that parameter would do. */
+                /** @description What the condition is and what changing that parameter would do. This is the one field whose text differs from the BUDGET_EXHAUSTED refusal: here it says the action went through, and on a ceiling breach how far past the ceiling this row now stands, rather than telling you to set posture to warn when it already is. Branch on parameter, reason and blocked, never on this text. */
                 message: string;
             };
             /**
@@ -6710,13 +6710,13 @@ export interface operations {
                         }[];
                         /** @description Opaque cursor for the next page, or null at end-of-list. */
                         cursor: string | null;
-                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, or the account is outside its activity window at this hour and enforces it. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, the account is outside its activity window at this hour and enforces it, or the account's profile_views budget is at its configured ceiling and enforces that. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
                         notices?: {
                             /**
-                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy.
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy. EXPANSION_WITHHELD_CEILING: the profile lookups this page needed were refused because the account's profile_views budget is at its configured ceiling and it enforces that, so those people carry public_identifier null and their null does not mean they have no public profile either. Raise the profile_views ceiling on this account's safety policy, or ask for a smaller page.
                              * @enum {string}
                              */
-                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW";
+                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW" | "EXPANSION_WITHHELD_CEILING";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, here expand. */
@@ -6893,13 +6893,13 @@ export interface operations {
                             /** @description Message body (content pass-through, never stored). */
                             text?: string | null;
                         } | null;
-                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, or the account is outside its activity window at this hour and enforces it. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, the account is outside its activity window at this hour and enforces it, or the account's profile_views budget is at its configured ceiling and enforces that. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
                         notices?: {
                             /**
-                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy.
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy. EXPANSION_WITHHELD_CEILING: the profile lookups this page needed were refused because the account's profile_views budget is at its configured ceiling and it enforces that, so those people carry public_identifier null and their null does not mean they have no public profile either. Raise the profile_views ceiling on this account's safety policy, or ask for a smaller page.
                              * @enum {string}
                              */
-                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW";
+                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW" | "EXPANSION_WITHHELD_CEILING";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, here expand. */
@@ -7069,13 +7069,13 @@ export interface operations {
                         }[];
                         /** @description Opaque cursor for the next page, or null at end-of-list. */
                         cursor: string | null;
-                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, or the account is outside its activity window at this hour and enforces it. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, the account is outside its activity window at this hour and enforces it, or the account's profile_views budget is at its configured ceiling and enforces that. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
                         notices?: {
                             /**
-                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy.
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy. EXPANSION_WITHHELD_CEILING: the profile lookups this page needed were refused because the account's profile_views budget is at its configured ceiling and it enforces that, so those people carry public_identifier null and their null does not mean they have no public profile either. Raise the profile_views ceiling on this account's safety policy, or ask for a smaller page.
                              * @enum {string}
                              */
-                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW";
+                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW" | "EXPANSION_WITHHELD_CEILING";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, here expand. */
@@ -7412,13 +7412,13 @@ export interface operations {
                         sent_at: number;
                         /** @description Message body (content pass-through, never stored). */
                         text?: string | null;
-                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, or the account is outside its activity window at this hour and enforces it. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, the account is outside its activity window at this hour and enforces it, or the account's profile_views budget is at its configured ceiling and enforces that. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
                         notices?: {
                             /**
-                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy.
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy. EXPANSION_WITHHELD_CEILING: the profile lookups this page needed were refused because the account's profile_views budget is at its configured ceiling and it enforces that, so those people carry public_identifier null and their null does not mean they have no public profile either. Raise the profile_views ceiling on this account's safety policy, or ask for a smaller page.
                              * @enum {string}
                              */
-                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW";
+                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW" | "EXPANSION_WITHHELD_CEILING";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, here expand. */
@@ -7618,13 +7618,13 @@ export interface operations {
                          * @enum {boolean}
                          */
                         filter_effective?: true;
-                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, or the account is outside its activity window at this hour and enforces it. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, the account is outside its activity window at this hour and enforces it, or the account's profile_views budget is at its configured ceiling and enforces that. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
                         notices?: {
                             /**
-                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy.
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy. EXPANSION_WITHHELD_CEILING: the profile lookups this page needed were refused because the account's profile_views budget is at its configured ceiling and it enforces that, so those people carry public_identifier null and their null does not mean they have no public profile either. Raise the profile_views ceiling on this account's safety policy, or ask for a smaller page.
                              * @enum {string}
                              */
-                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW";
+                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW" | "EXPANSION_WITHHELD_CEILING";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, here expand. */
@@ -10265,13 +10265,13 @@ export interface operations {
                         }[];
                         /** @description Next-page cursor; follow until items is empty (presence is not a has-more guarantee). */
                         cursor?: string | null;
-                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, or the account is outside its activity window at this hour and enforces it. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, the account is outside its activity window at this hour and enforces it, or the account's profile_views budget is at its configured ceiling and enforces that. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
                         notices?: {
                             /**
-                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy.
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy. EXPANSION_WITHHELD_CEILING: the profile lookups this page needed were refused because the account's profile_views budget is at its configured ceiling and it enforces that, so those people carry public_identifier null and their null does not mean they have no public profile either. Raise the profile_views ceiling on this account's safety policy, or ask for a smaller page.
                              * @enum {string}
                              */
-                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW";
+                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW" | "EXPANSION_WITHHELD_CEILING";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, here expand. */
@@ -10687,13 +10687,13 @@ export interface operations {
                             /** @description The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person. */
                             public_identifier?: string | null;
                         };
-                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, or the account is outside its activity window at this hour and enforces it. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, the account is outside its activity window at this hour and enforces it, or the account's profile_views budget is at its configured ceiling and enforces that. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
                         notices?: {
                             /**
-                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy.
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy. EXPANSION_WITHHELD_CEILING: the profile lookups this page needed were refused because the account's profile_views budget is at its configured ceiling and it enforces that, so those people carry public_identifier null and their null does not mean they have no public profile either. Raise the profile_views ceiling on this account's safety policy, or ask for a smaller page.
                              * @enum {string}
                              */
-                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW";
+                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW" | "EXPANSION_WITHHELD_CEILING";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, here expand. */
@@ -11047,13 +11047,13 @@ export interface operations {
                         }[];
                         /** @description Next-page cursor; follow until items is empty. */
                         cursor?: string | null;
-                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, or the account is outside its activity window at this hour and enforces it. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, the account is outside its activity window at this hour and enforces it, or the account's profile_views budget is at its configured ceiling and enforces that. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
                         notices?: {
                             /**
-                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy.
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy. EXPANSION_WITHHELD_CEILING: the profile lookups this page needed were refused because the account's profile_views budget is at its configured ceiling and it enforces that, so those people carry public_identifier null and their null does not mean they have no public profile either. Raise the profile_views ceiling on this account's safety policy, or ask for a smaller page.
                              * @enum {string}
                              */
-                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW";
+                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW" | "EXPANSION_WITHHELD_CEILING";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, here expand. */
@@ -11423,13 +11423,13 @@ export interface operations {
                                 [key: string]: unknown;
                             };
                         };
-                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, or the account is outside its activity window at this hour and enforces it. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, the account is outside its activity window at this hour and enforces it, or the account's profile_views budget is at its configured ceiling and enforces that. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
                         notices?: {
                             /**
-                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy.
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy. EXPANSION_WITHHELD_CEILING: the profile lookups this page needed were refused because the account's profile_views budget is at its configured ceiling and it enforces that, so those people carry public_identifier null and their null does not mean they have no public profile either. Raise the profile_views ceiling on this account's safety policy, or ask for a smaller page.
                              * @enum {string}
                              */
-                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW";
+                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW" | "EXPANSION_WITHHELD_CEILING";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, here expand. */
@@ -12629,13 +12629,13 @@ export interface operations {
                         }[];
                         /** @description Next-page cursor. Follow until items is empty. */
                         cursor?: string | null;
-                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, or the account is outside its activity window at this hour and enforces it. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, the account is outside its activity window at this hour and enforces it, or the account's profile_views budget is at its configured ceiling and enforces that. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
                         notices?: {
                             /**
-                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy.
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy. EXPANSION_WITHHELD_CEILING: the profile lookups this page needed were refused because the account's profile_views budget is at its configured ceiling and it enforces that, so those people carry public_identifier null and their null does not mean they have no public profile either. Raise the profile_views ceiling on this account's safety policy, or ask for a smaller page.
                              * @enum {string}
                              */
-                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW";
+                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW" | "EXPANSION_WITHHELD_CEILING";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, here expand. */
@@ -12889,7 +12889,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -29657,7 +29657,7 @@ export interface operations {
                         value: string;
                     }[];
                     /** @description Messaging events to subscribe to (default: [message.received]) */
-                    events?: ("message.received" | "message.delivered" | "message.read" | "message.reaction" | "message.edited" | "message.deleted" | "chat.updated" | "chat.deleted")[];
+                    events?: ("message.received" | "message.read" | "message.reaction" | "message.edited" | "message.deleted" | "chat.updated" | "chat.deleted")[];
                     /**
                      * @description Field-remapping keys for the messaging delivery payload
                      * @default []

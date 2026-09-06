@@ -155,6 +155,10 @@ export interface CurviateEventEnvelope {
  * the generated create-events enum (see `test/webhooks.constructEvent.test.ts`);
  * it must never drift from the served catalogue again.
  *
+ * > Removed in 0.27.0 (BREAKING): `message.delivered`. The platform never
+ * > emitted it, so no `event.event === 'message.delivered'` branch has ever
+ * > run. The read-path replacement is `is_delivered` on the message resource.
+ *
  * @example
  * const event = await constructEvent(rawBody, header, secret);
  * if (event.event === 'message.received') {
@@ -164,7 +168,6 @@ export interface CurviateEventEnvelope {
 export type CurviateEvent = CurviateEventEnvelope &
   (
     | { event: "message.received"; data: MessagePayload }
-    | { event: "message.delivered"; data: MessagePayload }
     | { event: "message.read"; data: MessagePayload }
     | { event: "message.edited"; data: MessagePayload }
     | { event: "message.deleted"; data: MessagePayload }

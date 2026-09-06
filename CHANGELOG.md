@@ -7,6 +7,75 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [0.27.0] - 2026-09-06
+
+Fixture regenerated against the deployed production document
+(`https://api.curviate.com`, `server_git_sha 2a86542f...`, 125 paths).
+**BREAKING**: the `message.delivered` webhook event is gone from the catalogue,
+from `CurviateEvent`, and from the events a subscription can be created with.
+Everything else here is additive or description-only. Pre-1.0 a breaking change
+ships as a minor, so a caret range on `0.26.x` will not pick this up.
+
+### BREAKING
+
+- **`message.delivered` is removed from the webhook event catalogue.** The
+  platform never emitted it, so no `event.event === 'message.delivered'` branch
+  has ever run: the event was subscribable and undeliverable. Two surfaces lose
+  the member.
+  - `CurviateEvent` (hand-written, `src/webhooks.ts`) drops its
+    `{ event: "message.delivered"; data: MessagePayload }` arm, going from 25
+    arms to 24. A `switch` on `event.event` that still lists it stops
+    compiling, and that arm was dead code in every build it ever shipped in.
+  - The generated create-events enum, `events` on the `messaging` variant of
+    the `POST /v1/webhooks` request body
+    (`operations["postV1Webhooks"]["requestBody"]`), goes from 8 members to 7.
+    Passing `"message.delivered"` to a create call is now a type error, and the
+    server rejects the value.
+
+  The two are pinned to each other by an exact two-way type equality in
+  `test/webhooks.constructEvent.test.ts`, so they cannot drift apart: that pin
+  is what failed first on this regeneration.
+
+  `GET /v1/webhooks/events` now reports 27 events, messaging 7, where it
+  reported 28 and 8.
+
+  **The read path is untyped and deliberately unaffected.** `events` on a
+  webhook returned by `GET /v1/webhooks` or `GET /v1/webhooks/{id}` is
+  `string[]`, not the create enum. A subscription created before 2026-09-06 may
+  still echo `message.delivered` in its stored `events` until the server-side
+  cleanup migration lands; it was never delivered. Reading such a subscription
+  back therefore neither breaks a build nor throws, and no migration is
+  required of a consumer that only lists webhooks.
+
+  **The replacement is a read, not an event**: `is_delivered` on the message
+  resource.
+
+### Regenerated types
+
+- **BREAKING for an exhaustive `switch` - `notices[].code` gains
+  `EXPANSION_WITHHELD_CEILING`.** On the same ten chat and message reads that
+  accept `expand=public_identifier`, alongside `EXPANSION_LIMIT_REACHED` and
+  `EXPANSION_WITHHELD_ACTIVITY_WINDOW`. The expansion was withheld because the
+  account is at an account-safety ceiling, not because the page ran out of
+  lookup budget and not because the account is outside its activity window.
+  Same consequence for the reader as its two siblings, `public_identifier` is
+  `null` for a reason that is not "no public profile", and a different remedy,
+  which is why it is a separate code rather than a reuse. Additive on the wire:
+  only a `switch` with a `never`-typed default arm stops compiling.
+- Description-only, no type change:
+  - `SafetyWarning` now states that `hint.message` is the one field whose text
+    differs from the `BUDGET_EXHAUSTED` refusal. On a warn-posture ceiling
+    breach it says the action went through and how far past the ceiling the row
+    now stands, rather than telling the caller what was refused. The shape is
+    unchanged, so no branch moves; the string is longer and more specific.
+  - The `502` response documents that `retry_likely_to_succeed` is what
+    separates its two cases: a temporary upstream error is worth retrying, an
+    upstream response that could not be interpreted is not, and the latter
+    carries `retry_hint: {"kind": "never"}`. No new field, and the SDK's own
+    retry set is unchanged in this release.
+  - The `notices` description on the ten expansion reads now lists the ceiling
+    case as a third reason a person can go unresolved.
+
 ## [0.26.0] - 2026-09-06
 
 Fixture regenerated against the deployed production document
