@@ -33,6 +33,24 @@ describe("users.get", () => {
     expect(res.first_name).toBe("Alice");
   });
 
+  // The third read that accepts the retrieval pair (#30's audit; the two
+  // messaging ones are pinned in messaging.test.ts). Driven on BOTH identifier
+  // forms because `me` and a member id are two CLI surfaces over this one
+  // method, and the ladder has to reach the wire from either.
+  it("forwards mode/max_age as query params, on 'me' and on another user", async () => {
+    const seen: URLSearchParams[] = [];
+    server.use(
+      http.get(`${BASE}/v1/acc_1/users/:userId`, ({ request }) => {
+        seen.push(new URL(request.url).searchParams);
+        return HttpResponse.json({ object: "user_profile", id: "u_1", specifics: {} });
+      }),
+    );
+    await acc.users.get("me", { mode: "cache_only" });
+    await acc.users.get("ACoABC", { max_age: 0 });
+    expect(seen[0]?.get("mode")).toBe("cache_only");
+    expect(seen[1]?.get("max_age")).toBe("0");
+  });
+
   it("there is no standalone getMe method — folded into get('me')", () => {
     expect((acc.users as unknown as Record<string, unknown>)["getMe"]).toBeUndefined();
   });

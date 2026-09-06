@@ -47,6 +47,14 @@ export const ERROR_CODES = [
   // linking again. Not retryable.
   "ACCOUNT_ALREADY_LINKED",
   "RESOURCE_NOT_FOUND",
+  // A read found nothing in Curviate's store and its mode may not fetch, so it
+  // refused rather than reaching LinkedIn. 422, and NOT RESOURCE_NOT_FOUND: the
+  // resource may be perfectly real, so the fix is another mode, not another id.
+  // Absent from RETRYABLE_CODES on purpose, nothing about the answer changes
+  // until the caller picks one.
+  //
+  // `cache_only` is the mode that raises it; re-read with `refill` or `auto`.
+  "NOT_STORED",
   "RESOURCE_ACCESS_RESTRICTED",
   // Search filter resolution: a plain-string filter value matched several
   // LinkedIn taxonomy options and one has to be picked (422). The body carries

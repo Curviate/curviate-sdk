@@ -7,6 +7,35 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **`NOT_STORED` in the error taxonomy.** The `422` a read gets when
+  `mode=cache_only` (or `refill` on a resource that cannot be filled) finds
+  nothing in Curviate's store, so the API refuses rather than reaching
+  LinkedIn. It was missing from `ERROR_CODES`, so it decoded to `INTERNAL`:
+  a caller could not branch on it, and, the harmful half, `INTERNAL` is
+  retryable, so a `cache_only` miss was retried on a GET against an answer
+  that cannot change until the caller picks another mode. It is now decoded to
+  itself and is deliberately absent from the retryable set. Not the same as
+  `RESOURCE_NOT_FOUND`: the resource may exist and this API simply holds no
+  copy, so the fix is another mode, not another id. `cache_only` is the mode
+  that raises it on these reads, and `refill` or `auto` is the remedy.
+
+  **This reds `@curviate/cli`'s exit-code exhaustiveness guard, by design.**
+  That guard iterates the exported `ERROR_CODES` array rather than a copy of
+  it, which is the whole reason the array is exported, so a code added here
+  with no exit-code mapping is supposed to fail it. Map `NOT_STORED` there when
+  bumping the pin.
+- **`messaging.getChat(chatId, params?)` takes the retrieval query.**
+  `GET /v1/{account_id}/chats/{chat_id}` declares `expand`, `mode` and
+  `max_age`; the method sent no query at all, so a chat read was the one
+  store-servable read with no retrieval ladder. `ChatGetQuery` is derived from
+  the generated `paths` types, like every other query type here.
+  `users.get()` and `messaging.listMessages()` already carried the pair and
+  are unchanged; the README now documents all three.
+
 ## [0.25.0] - 2026-09-05
 
 **BREAKING** for a consumer that pinned the old type declarations: `quotas[]`

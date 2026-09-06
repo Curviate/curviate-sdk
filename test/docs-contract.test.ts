@@ -206,3 +206,143 @@ describe("no hand-typed catalogue size in customer-facing text", () => {
     });
   }
 });
+
+// ─── which reads accept the retrieval pair ───────────────────────────────────
+
+/**
+ * The README's "Retrieval modes" section tells a caller which reads take
+ * `mode` / `max_age`, and warns that passing them anywhere else is a 400. That
+ * is a claim programmed against in both directions, and it is exactly the
+ * shape of claim this file exists for: prose naming a set the server owns and
+ * grows. When the server declares the pair on a fourth read, the SDK method
+ * for it needs a typed query argument and this section needs a fourth bullet;
+ * nothing else in the suite would notice.
+ *
+ * So both sides are derived: the set from the vendored OpenAPI (the served
+ * document, whatever it says today), the claim from the shipped README bytes.
+ * Paths are matched rather than method names because a path is a fact both
+ * documents can state; a hand-written path-to-method map would be one more
+ * thing to go stale.
+ */
+describe("README names exactly the reads that accept mode / max_age", () => {
+  // ONE CLAIM IN THAT SECTION IS LOAD-BEARING AND NOT PINNED BY ANYTHING HERE.
+  // The README promises that `mode` / `max_age` sent to a read that does not
+  // declare them, or sent twice, is a 400 rather than a silent no-op. That is
+  // true of the deployed API and was verified against the server rather than
+  // against the document: a registry chokepoint loops over exactly these two
+  // keys and sits OUTSIDE the query-schema block, so it also covers endpoints
+  // declaring no schema. It reached production in server commit 6a7f7508,
+  // confirmed an ancestor of the `server_git_sha` in fixtures/PROVENANCE.json.
+  //
+  // The served document does NOT say this — it documents the duplicate case on
+  // the two chat reads only — so nothing in this package can check it, and the
+  // assertions below compare paths and never behaviour. If that chokepoint is
+  // ever narrowed back inside `if (querySchema)`, this suite stays green while
+  // the README keeps promising a refusal the API no longer makes. Re-verify
+  // against the server, not the fixture, before trusting the claim again.
+
+  interface FixtureParameter {
+    name?: string;
+    in?: string;
+  }
+  /** A path item: the operations, plus the parameters shared by all of them. */
+  interface FixturePathItem {
+    parameters?: FixtureParameter[];
+    get?: { parameters?: FixtureParameter[] };
+  }
+  interface FixtureDoc {
+    paths?: Record<string, FixturePathItem>;
+  }
+
+  /**
+   * GET paths whose served query declares EITHER retrieval parameter.
+   *
+   * EITHER, not both, and path-item parameters as well as the operation's own:
+   * every way this reader can under-count makes the guard go QUIET on a stale
+   * README rather than loud, so it errs towards over-collecting. A path that
+   * declared only `mode` is still a retrieval read the README owes a bullet.
+   */
+  function retrievalPaths(doc: FixtureDoc): string[] {
+    const out: string[] = [];
+    for (const [path, item] of Object.entries(doc.paths ?? {})) {
+      if (!item.get) continue;
+      const declared = [...(item.parameters ?? []), ...(item.get.parameters ?? [])]
+        .filter((p) => p.in === "query" || p.in === undefined)
+        .map((p) => p.name);
+      if (declared.some((n) => n === "mode" || n === "max_age")) out.push(path);
+    }
+    return out.sort();
+  }
+
+  const doc = JSON.parse(read("fixtures/openapi.json")) as FixtureDoc;
+  const served = retrievalPaths(doc);
+  const section =
+    passages("README.md", read("README.md")).find((p) => p.startsWith("## Retrieval modes")) ?? "";
+  /**
+   * The paths the section claims, EXACTLY as written. Matched whole rather
+   * than by substring: `/chats/{chat_id}` is a prefix of
+   * `/chats/{chat_id}/messages`, so a substring test reports the chat read as
+   * documented on the strength of the messages bullet alone, and the missing
+   * bullet this guard exists to catch reads as present.
+   */
+  const claimed = [...section.matchAll(/`GET (\/v1\/[^`]+)`/g)].map((m) => m[1]!);
+
+  // TWO SIGNALS ON ONE ASSERTION, both wanted, so read a red carefully:
+  //
+  //   FEWER than the three → the reader has gone blind to a path. That is the
+  //     dangerous direction: `unlisted` empties and the guard below passes on a
+  //     README missing that bullet. Fix `retrievalPaths`.
+  //   MORE than the three → the server declared the pair on a NEW read. Nothing
+  //     is broken; this is the tripwire firing. Give the README its bullet, give
+  //     the SDK method a query argument and a forwarding test, then add the path
+  //     here.
+  it("sees exactly the reads that declare the pair today, and reds either way", () => {
+    expect(served).toEqual([
+      "/v1/{account_id}/chats/{chat_id}",
+      "/v1/{account_id}/chats/{chat_id}/messages",
+      "/v1/{account_id}/users/{user_id}",
+    ]);
+  });
+
+  // The one remaining way the reader could go quiet: a parameter arriving as a
+  // `$ref` into `components/parameters` has no `name` here, so its path would
+  // never enter `served` and the pin above would stay green on a stale README.
+  // The served document inlines every parameter today; this fails the moment
+  // that stops being true, which is the moment `retrievalPaths` needs to
+  // resolve refs.
+  it("meets no parameter shape it cannot read", () => {
+    const refs = Object.entries(doc.paths ?? {})
+      .filter(([, item]) =>
+        [...(item.parameters ?? []), ...(item.get?.parameters ?? [])].some(
+          (p) => p.name === undefined,
+        ),
+      )
+      .map(([path]) => path);
+    expect(refs, "these GETs carry a parameter with no inline `name` (a $ref?)").toEqual([]);
+  });
+
+  it("the section exists and names every served retrieval read", () => {
+    expect(section, "README has no '## Retrieval modes' section").not.toBe("");
+    const unlisted = served.filter((p) => !claimed.includes(p));
+    expect(
+      unlisted,
+      "these reads accept mode / max_age in the served document but the README " +
+        "does not name them, so a caller cannot know the ladder is available " +
+        "there. This block checks the README against the document and nothing " +
+        "else: when you add the bullet, check by hand that the SDK method takes " +
+        "a query argument and add a forwarding test for it, the way getChat, " +
+        "listMessages and users.get each have one",
+    ).toEqual([]);
+  });
+
+  it("names no read that does not accept them", () => {
+    expect(claimed.length).toBeGreaterThan(0);
+    const overclaimed = claimed.filter((p) => !served.includes(p));
+    expect(
+      overclaimed,
+      "the README offers mode / max_age on reads that do not declare them; the " +
+        "API answers 400 for an undeclared query parameter, so this is not a " +
+        "harmless extra",
+    ).toEqual([]);
+  });
+});
