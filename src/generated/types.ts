@@ -2591,7 +2591,7 @@ export interface paths {
         head?: never;
         /**
          * Update an account's safety policy
-         * @description The single safety-policy write. Send only the fields you are changing: everything you omit is left byte-identical, and sending `null` for a field clears your override and restores the Curviate default. Any limit may be set to any value: Curviate does not clamp, cap or refuse a change on the grounds that the number is unsafe. A value above the Curviate default is reported back in the response, and on every later read, with the default and its source class attached; there is no way to acknowledge it away, and setting the value back to the default removes it. A value that is not a value, such as a negative ceiling or an unknown row name, is a 400. Every field whose value CHANGES is appended to the account's action ledger with the previous value, the new value, the Curviate default, the actor and the time; a field you send whose value already equals its current effective value is not ledgered and is not stored as an override, so reading the policy and sending the document back changes nothing. Four fields on the read are derived rather than configured: `effective_ceiling`, `posture_source`, `over_default` and each row's `warm_up_state`. Send them and they are accepted and ignored, never stored and never ledgered, so the document you read can go straight back. To pin a row's ramp, set `warm_up_factor`. `activity_window` is not accepted: send its settable subfields instead, which for the zone is the top-level `timezone`. And read `changes nothing` as `changes no limit`: the `posture` fields are OVERRIDES at every scope, so writing back a posture a scope merely inherits PINS it there and appends one ledger entry per pinned scope. That is what stops a later account- or tenant-wide change from moving it. A pin already in place is a no-op. An agent-authenticated write is accepted on exactly the same footing as an operator's. There is no bulk import, file upload or policy template: configuring many rows or many accounts is a loop over this operation. One field is not account-scoped: `tenant_default_posture` sets the default for EVERY account in the tenant, not just the one in the path, which is what makes it a one-call change for a whole workspace of personas. It is reported back at the top of every policy response, so a change to it is visible even on an account that overrides it. One other field is not row-scoped: `limit_profile` selects which of the four Curviate default sets this account's rows resolve from, so it moves the default under every row at once while leaving every value you have configured explicitly exactly as you set it. It is the platform product active on the account, not your Curviate seat entitlement, and the two can disagree: a lapsed subscription leaves the seat untouched. Curviate detects it when the account connects and re-detects it on every reconnect; setting it here is an operator override of that result, and it holds until the next connect. When the seat and the detected product disagree, the detected product wins the numbers and the read reports the disagreement as `seat_tier_mismatch`.
+         * @description The single safety-policy write. Send only the fields you are changing: everything you omit is left byte-identical, and sending `null` for a field clears your override and restores the Curviate default. Any limit may be set to any value: Curviate does not clamp, cap or refuse a change on the grounds that the number is unsafe. A value above the Curviate default is reported back in the response, and on every later read, with the default and its source class attached; there is no way to acknowledge it away, and setting the value back to the default removes it. A value that is not a value, such as a negative ceiling or an unknown row name, is a 400. Every field whose value CHANGES is appended to the account's action ledger with the previous value, the new value, the Curviate default, the actor and the time; a field you send whose value already equals its current effective value is not ledgered and is not stored as an override, so reading the policy and sending the document back changes nothing. Six fields on the read are derived rather than configured: `effective_ceiling`, `interface_ceiling`, `effective_interface_ceiling`, `posture_source`, `over_default` and each row's `warm_up_state`. Send them and they are accepted and ignored, never stored and never ledgered, so the document you read can go straight back. To pin a row's ramp, set `warm_up_factor`. `activity_window` is not accepted: send its settable subfields instead, the top-level `timezone` for the zone, and per row `activity_window_start`, `activity_window_end`, `activity_window_timezone` and `activity_window_applies_to`. The 400 this produces names those subfields, not just the refused object. And read `changes nothing` as `changes no limit`: the `posture` fields are OVERRIDES at every scope, so writing back a posture a scope merely inherits PINS it there and appends one ledger entry per pinned scope. That is what stops a later account- or tenant-wide change from moving it. A pin already in place is a no-op. An agent-authenticated write is accepted on exactly the same footing as an operator's. There is no bulk import, file upload or policy template: configuring many rows or many accounts is a loop over this operation. One field is not account-scoped: `tenant_default_posture` sets the default for EVERY account in the tenant, not just the one in the path, which is what makes it a one-call change for a whole workspace of personas. It is reported back at the top of every policy response, so a change to it is visible even on an account that overrides it. One other field is not row-scoped: `limit_profile` selects which of the four Curviate default sets this account's rows resolve from, so it moves the default under every row at once while leaving every value you have configured explicitly exactly as you set it. It is the platform product active on the account, not your Curviate seat entitlement, and the two can disagree: a lapsed subscription leaves the seat untouched. Curviate detects it when the account connects and re-detects it on every reconnect; setting it here is an operator override of that result, and it holds until the next connect. When the seat and the detected product disagree, the detected product wins the numbers and the read reports the disagreement as `seat_tier_mismatch`.
          */
         patch: operations["patchV1AccountIdSafetyPolicy"];
         trace?: never;
@@ -2650,9 +2650,9 @@ export interface components {
              * @enum {string}
              */
             required_tier?: "core" | "sales_nav" | "recruiter";
-            /** @description Present on a PLATFORM_RATE_LIMIT raised because one account-safety budget row is paused: LinkedIn refused a recent call on that row, so this one was refused locally without reaching LinkedIn. Names the paused row (for example profile_views, connection_requests_no_note). The pause is scoped to this row on this account; every other row keeps working. Absent on every other rate limit. Also present on BUDGET_EXHAUSTED, where it names the row that hit its CEILING rather than one LinkedIn paused: read the code to tell the two apart, because the recovery differs. */
-            row?: string;
-            /** @description Present on BUDGET_EXHAUSTED: when this row's budget frees up, as an absolute instant rather than a duration, so it stays true however long you hold it. Null for the pending_invites row, whose backlog falls when invitations are accepted or withdrawn rather than at any window boundary, so there is no instant to name. */
+            /** @description Present on a PLATFORM_RATE_LIMIT raised because one account-safety budget row is paused: LinkedIn refused a recent call on that row, so this one was refused locally without reaching LinkedIn. Names the paused row (for example profile_views, connection_requests_no_note). The pause is scoped to this row on this account; every other row keeps working. Absent on every other rate limit. Also present on BUDGET_EXHAUSTED, where it names the row that hit its CEILING rather than one LinkedIn paused: read the code to tell the two apart, because the recovery differs. Null on a BUDGET_EXHAUSTED whose reason is activity_window and whose action spends no budget of its own, because there is no row to name; hint.parameter still names the setting to change. Never null on a rate limit. */
+            row?: string | null;
+            /** @description Present on BUDGET_EXHAUSTED: the instant the refusal lifts, as an absolute instant rather than a duration, so it stays true however long you hold it. It is the window roll on a ceiling refusal and the next window open on an activity-window one. It is null in the two cases where no clock frees the account: the pending_invites gauge, whose backlog falls when invitations are accepted or withdrawn, and an InMail credit exhaustion (row inmail), which LinkedIn regrants on a schedule this product cannot read. */
             reset_at?: string | null;
             /** @description Present on BUDGET_EXHAUSTED: the exact setting to change, as a field rather than as prose. parameter is addressable on PATCH /v1/{account_id}/safety-policy, so an agent can decide between waiting until reset_at, escalating to a human, and reconfiguring, without parsing the message. */
             hint?: {
@@ -2715,9 +2715,9 @@ export interface components {
          *     }
          */
         SafetyWarning: {
-            /** @description The budget row that breached, for example profile_views or pending_invites. */
-            row: string;
-            /** @description When the row frees up, as an absolute instant. Null for the pending_invites gauge. */
+            /** @description The budget row that breached, for example profile_views or pending_invites. Null when the breach is not about a row: an activity_window warning on an action that spends no budget of its own (editing a message, dismissing a notification, a Recruiter or Sales Navigator admin action) is still governed by the hours the account works in. Read hint.parameter for what to change; whenever this is null it names posture, because the activity window edges are set per action type and this action has none, so the levers that reach it are the account timezone and posture. */
+            row: string | null;
+            /** @description The instant the refusal lifts: the window roll on a ceiling refusal, the next window open on an activity-window one. Null in the two cases no clock frees, the pending_invites gauge and InMail credits (row inmail). */
             reset_at: string | null;
             hint: {
                 /** @description The settable parameter on PATCH /v1/{account_id}/safety-policy. */
@@ -6710,13 +6710,13 @@ export interface operations {
                         }[];
                         /** @description Opaque cursor for the next page, or null at end-of-list. */
                         cursor: string | null;
-                        /** @description Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, or the account is outside its activity window at this hour and enforces it. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
                         notices?: {
                             /**
-                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone.
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy.
                              * @enum {string}
                              */
-                            code: "EXPANSION_LIMIT_REACHED";
+                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, here expand. */
@@ -6893,13 +6893,13 @@ export interface operations {
                             /** @description Message body (content pass-through, never stored). */
                             text?: string | null;
                         } | null;
-                        /** @description Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, or the account is outside its activity window at this hour and enforces it. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
                         notices?: {
                             /**
-                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone.
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy.
                              * @enum {string}
                              */
-                            code: "EXPANSION_LIMIT_REACHED";
+                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, here expand. */
@@ -7069,13 +7069,13 @@ export interface operations {
                         }[];
                         /** @description Opaque cursor for the next page, or null at end-of-list. */
                         cursor: string | null;
-                        /** @description Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, or the account is outside its activity window at this hour and enforces it. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
                         notices?: {
                             /**
-                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone.
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy.
                              * @enum {string}
                              */
-                            code: "EXPANSION_LIMIT_REACHED";
+                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, here expand. */
@@ -7412,13 +7412,13 @@ export interface operations {
                         sent_at: number;
                         /** @description Message body (content pass-through, never stored). */
                         text?: string | null;
-                        /** @description Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, or the account is outside its activity window at this hour and enforces it. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
                         notices?: {
                             /**
-                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone.
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy.
                              * @enum {string}
                              */
-                            code: "EXPANSION_LIMIT_REACHED";
+                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, here expand. */
@@ -7618,13 +7618,13 @@ export interface operations {
                          * @enum {boolean}
                          */
                         filter_effective?: true;
-                        /** @description Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, or the account is outside its activity window at this hour and enforces it. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
                         notices?: {
                             /**
-                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone.
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy.
                              * @enum {string}
                              */
-                            code: "EXPANSION_LIMIT_REACHED";
+                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, here expand. */
@@ -10265,13 +10265,13 @@ export interface operations {
                         }[];
                         /** @description Next-page cursor; follow until items is empty (presence is not a has-more guarantee). */
                         cursor?: string | null;
-                        /** @description Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, or the account is outside its activity window at this hour and enforces it. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
                         notices?: {
                             /**
-                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone.
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy.
                              * @enum {string}
                              */
-                            code: "EXPANSION_LIMIT_REACHED";
+                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, here expand. */
@@ -10687,13 +10687,13 @@ export interface operations {
                             /** @description The vanity slug from the profile URL, for example jane-smith. Present only when the request asks for it with expand=public_identifier, and then always present, carrying the slug or null when the platform surfaces none for this person. */
                             public_identifier?: string | null;
                         };
-                        /** @description Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, or the account is outside its activity window at this hour and enforces it. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
                         notices?: {
                             /**
-                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone.
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy.
                              * @enum {string}
                              */
-                            code: "EXPANSION_LIMIT_REACHED";
+                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, here expand. */
@@ -11047,13 +11047,13 @@ export interface operations {
                         }[];
                         /** @description Next-page cursor; follow until items is empty. */
                         cursor?: string | null;
-                        /** @description Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, or the account is outside its activity window at this hour and enforces it. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
                         notices?: {
                             /**
-                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone.
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy.
                              * @enum {string}
                              */
-                            code: "EXPANSION_LIMIT_REACHED";
+                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, here expand. */
@@ -11423,13 +11423,13 @@ export interface operations {
                                 [key: string]: unknown;
                             };
                         };
-                        /** @description Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, or the account is outside its activity window at this hour and enforces it. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
                         notices?: {
                             /**
-                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone.
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy.
                              * @enum {string}
                              */
-                            code: "EXPANSION_LIMIT_REACHED";
+                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, here expand. */
@@ -12000,7 +12000,7 @@ export interface operations {
     getV1AccountIdChatsSearch: {
         parameters: {
             query: {
-                /** @description The search term: matches both participant names and message content (e.g. 'sophie keller'). */
+                /** @description The search term: matches both participant names and message content (e.g. 'sophie keller'). Terms of 3 or more characters are fast; a 1-2 character term is slower. */
                 query: string;
                 /** @description Maximum chats to return per page (1-100, default 20). The server may walk a few internal pages to fill one page. */
                 limit?: number;
@@ -12629,13 +12629,13 @@ export interface operations {
                         }[];
                         /** @description Next-page cursor. Follow until items is empty. */
                         cursor?: string | null;
-                        /** @description Present only when expand=public_identifier was asked for and this page held more people needing a profile lookup than one request performs. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
+                        /** @description Present only when expand=public_identifier was asked for and some people on this page went unresolved for a reason the payload cannot show: more of them needed a profile lookup than one request performs, or the account is outside its activity window at this hour and enforces it. Absent whenever there is nothing to report, so a response that resolved everyone carries no such key. Branch on each entry's code, never on its message. */
                         notices?: {
                             /**
-                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone.
+                             * @description EXPANSION_LIMIT_REACHED: more people on this page needed a profile lookup than one request performs, so the ones past the budget carry public_identifier null without ever having been looked up. Their null therefore does not mean the person has no public profile. Ask for a smaller page to resolve everyone. EXPANSION_WITHHELD_ACTIVITY_WINDOW: the profile lookups this page needed were refused because the account is outside its activity window at this hour and enforces it, so those people carry public_identifier null and their null does not mean they have no public profile either. Ask again inside the window, or widen the window on this account's safety policy.
                              * @enum {string}
                              */
-                            code: "EXPANSION_LIMIT_REACHED";
+                            code: "EXPANSION_LIMIT_REACHED" | "EXPANSION_WITHHELD_ACTIVITY_WINDOW";
                             /** @description One sentence explaining the condition and how to resolve it. */
                             message: string;
                             /** @description The request field the notice is about, here expand. */
@@ -27860,6 +27860,10 @@ export interface operations {
                             ceiling: number | null;
                             /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While an account is new, thinly connected, dormant or recovering from a restriction the two differ, and on a five-day-old account they differ by a factor of about seven. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
                             effective_ceiling?: number | null;
+                            /** @description What a call through the matching ELEVATED interface is held to on this row: the `/v1/{account_id}/sales-navigator/...` and `/v1/{account_id}/recruiter/...` operations. Null when this row and limit profile have no such figure, which is every row on `basic` and `premium` and most rows everywhere. Everything else on this row (`ceiling`, `effective_ceiling`, `band` and `over_default`) is the STANDARD-interface figure, because one counter serves both interfaces and the standard side is the conservative one to band against. The consequence is worth reading: on a `sales_navigator` or `recruiter` account a row can report `band: "over"` with `posture: "enforce"` while a call through the elevated interface still succeeds; the refusal the band predicts is the one a standard call gets. */
+                            interface_ceiling?: number | null;
+                            /** @description `interface_ceiling` with the account's warm-up ramp applied, and null wherever `interface_ceiling` is null. Read THIS to know where an elevated-interface call stops, for the same reason `effective_ceiling` rather than `ceiling` answers that for a standard one. */
+                            effective_interface_ceiling?: number | null;
                             /**
                              * @description Where `used` sits against this row's own bands. `green` routine, `amber` at or past the routine band, `hard` at or past the warn-louder band, `over` at or past the ceiling. `over` is what `posture` acts on: `warn` reports it and lets the action through, `enforce` refuses. A row with no figures reports `green` at every value, because there is nothing to be past.
                              * @enum {string}
@@ -30331,7 +30335,7 @@ export interface operations {
                         /** @description The account this policy governs. */
                         account_id?: string;
                         /**
-                         * @description Which set of Curviate defaults every row below is resolved from. Each profile inherits the one before it and raises a few rows: `premium` adds a daily invitation band and open-profile InMail, `sales_navigator` raises profile views and search, `recruiter` raises profile views again. This is the platform product active on the account, not the Curviate seat entitlement. The two can disagree, and this is the one that governs the numbers. The elevated Sales Navigator and Recruiter figures apply only to calls made through the matching interface, the `/v1/{account_id}/sales-navigator/...` and `/v1/{account_id}/recruiter/...` operations. A standard-interface call still lives under the `basic` or `premium` figure for its row, and Curviate does not yet track that difference: on a non-`basic` profile the numbers here are the headroom of the elevated interface, not of every call, so read them as an upper bound rather than as your budget for a standard call.
+                         * @description Which set of Curviate defaults every row below is resolved from. Each profile inherits the one before it and raises a few rows: `premium` adds a daily invitation band and open-profile InMail, `sales_navigator` raises profile views and search, `recruiter` raises profile views again. This is the platform product active on the account, not the Curviate seat entitlement. The two can disagree, and this is the one that governs the numbers. The elevated Sales Navigator and Recruiter figures apply only to calls made through the matching interface, the `/v1/{account_id}/sales-navigator/...` and `/v1/{account_id}/recruiter/...` operations, and Curviate holds each call to the figure for the interface it goes through. The numbers here are therefore the ones a standard-interface call is held to, on every profile; a call through one of those operations resolves from the elevated set instead, and each row publishes that figure as `interface_ceiling`.
                          * @enum {string}
                          */
                         limit_profile?: "basic" | "premium" | "sales_navigator" | "recruiter";
@@ -30414,7 +30418,7 @@ export interface operations {
                             /** @description IANA zone name the activity window is read in. Null disables the window entirely. */
                             activity_window_timezone?: string | null;
                             /**
-                             * @description What the activity window governs. `writes` (the default) covers live writes to LinkedIn; `all` widens it to live reads as well, which is the setting for a persona that should not be seen browsing at 03:00. It is broader than it sounds: `all` covers every live read, including the ones about the account itself, so a nightly analytics or invitation-backlog poll is refused at 03:00 too. Stored reads and inbound events are never subject to the window under either setting, at any hour.
+                             * @description What the activity window governs. `writes` (the default) covers live writes to LinkedIn; `all` widens it to live reads as well, which is the setting for a persona that should not be seen browsing at 03:00. It is broader than it sounds: `all` covers every live read, including the ones about the account itself, so a nightly analytics or invitation-backlog poll is refused at 03:00 too. A read Curviate answers from its own store never reaches LinkedIn, so it is never subject to the window under either setting, at any hour; the same read IS covered when the store cannot answer it, or when you ask for it live. Inbound events are never subject to it either.
                              * @enum {string}
                              */
                             activity_window_applies_to?: "writes" | "all";
@@ -30438,7 +30442,11 @@ export interface operations {
                             source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
                             /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Read this one, not `ceiling`, to know where the next call will be stopped. On an account in warm-up the two differ, and on a five-day-old account they differ by a factor of about seven. Null when the row has no ceiling to ramp. `warm_up_state` and `warm_up_factor` beside it are the values ACTIVE on this row, not the seeded ones. */
                             effective_ceiling?: number | null;
-                            /** @description Empty when nothing on this row is above default. */
+                            /** @description What a call through the matching ELEVATED interface is held to on this row: the `/v1/{account_id}/sales-navigator/...` and `/v1/{account_id}/recruiter/...` operations. Null when this row and limit profile have no such figure, which is every row on `basic` and `premium` and most rows everywhere. Everything else on this row (`ceiling`, `effective_ceiling`, `band` and `over_default`) is the STANDARD-interface figure, because one counter serves both interfaces and the standard side is the conservative one to band against. The consequence is worth reading: on a `sales_navigator` or `recruiter` account a row can report `band: "over"` with `posture: "enforce"` while a call through the elevated interface still succeeds; the refusal the band predicts is the one a standard call gets. */
+                            interface_ceiling?: number | null;
+                            /** @description `interface_ceiling` with the account's warm-up ramp applied, and null wherever `interface_ceiling` is null. Read THIS to know where an elevated-interface call stops, for the same reason `effective_ceiling` rather than `ceiling` answers that for a standard one. */
+                            effective_interface_ceiling?: number | null;
+                            /** @description Empty when nothing on this row is above default. Computed against the STANDARD-interface default, like `band` and for the same reason. */
                             over_default?: {
                                 /**
                                  * @description The field whose configured value is above default.
@@ -30497,7 +30505,7 @@ export interface operations {
             content: {
                 "application/json": {
                     /**
-                     * @description Which set of Curviate defaults this account's rows resolve from: `basic`, `premium`, `sales_navigator` or `recruiter`. Each inherits the one before it and raises a few rows. This is the platform product active on the account, NOT the Curviate seat entitlement, and the two can disagree: a lapsed subscription leaves the seat untouched. Automatic detection at connect is not built yet, so setting this is currently the only way an account leaves `basic`; set it back to `basic` to undo. The change is recorded in the ledger and it moves the defaults under every row at once, so any row you have configured explicitly keeps your value. The elevated Sales Navigator and Recruiter figures apply only to calls made through the matching interface, the `/v1/{account_id}/sales-navigator/...` and `/v1/{account_id}/recruiter/...` operations. A standard-interface call still lives under the `basic` or `premium` figure for its row, and Curviate does not yet track that difference: on a non-`basic` profile the numbers here are the headroom of the elevated interface, not of every call, so read them as an upper bound rather than as your budget for a standard call.
+                     * @description Which set of Curviate defaults this account's rows resolve from: `basic`, `premium`, `sales_navigator` or `recruiter`. Each inherits the one before it and raises a few rows. This is the platform product active on the account, NOT the Curviate seat entitlement, and the two can disagree: a lapsed subscription leaves the seat untouched. Curviate detects it from the platform when the account connects and re-detects it on every reconnect; setting it here is an operator override of that result and holds until the next connect. Set it back to `basic` to undo. The change is recorded in the ledger and it moves the defaults under every row at once, so any row you have configured explicitly keeps your value. The elevated Sales Navigator and Recruiter figures apply only to calls made through the matching interface, the `/v1/{account_id}/sales-navigator/...` and `/v1/{account_id}/recruiter/...` operations, and Curviate holds each call to the figure for the interface it goes through. The numbers here are therefore the ones a standard-interface call is held to, on every profile; a call through one of those operations resolves from the elevated set instead, and each row publishes that figure as `interface_ceiling`.
                      * @enum {string}
                      */
                     limit_profile?: "basic" | "premium" | "sales_navigator" | "recruiter";
@@ -30547,7 +30555,7 @@ export interface operations {
                         /** @description IANA zone name the activity window is read in, e.g. `Europe/Berlin`. Must be a real zone; anything else is a 400. Null DISABLES the activity window: a guessed zone inverts it, which is worse than not having one. */
                         activity_window_timezone?: string | null;
                         /**
-                         * @description What the activity window governs. `writes` (the default) covers live writes to LinkedIn; `all` widens it to live reads that Curviate cannot serve from its store; a read it may serve from the store (a profile by key, for one) stays exempt. Stored reads and inbound events are never subject to the window under either setting, at any hour.
+                         * @description What the activity window governs. `writes` (the default) covers live writes to LinkedIn; `all` widens it to live reads. A read Curviate answers from its own store never reaches LinkedIn and so is never covered; the same read IS covered when the store cannot answer it, or when you ask for it live. Stored reads and inbound events are never subject to the window under either setting, at any hour.
                          * @enum {string|null}
                          */
                         activity_window_applies_to?: "writes" | "all" | null;
@@ -30571,6 +30579,10 @@ export interface operations {
                         source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded" | null;
                         /** @description READ-ONLY. `ceiling` with the account's warm-up ramp applied, which is what this row is actually held to. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                         effective_ceiling?: unknown;
+                        /** @description READ-ONLY. What a call through the matching elevated interface (`/v1/{account_id}/sales-navigator/...`, `/v1/{account_id}/recruiter/...`) is held to on this row, or null when this row and limit profile have no such figure. `ceiling`, `effective_ceiling`, `band` and `over_default` are all the STANDARD-interface figure, so on a `sales_navigator` or `recruiter` account a row can report `over` while a call through the elevated interface still succeeds. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                        interface_ceiling?: unknown;
+                        /** @description READ-ONLY. `interface_ceiling` with the account's warm-up ramp applied. Read THIS to know where an elevated-interface call stops, for the same reason `effective_ceiling` and not `ceiling` answers that for a standard one. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                        effective_interface_ceiling?: unknown;
                         /** @description READ-ONLY. Which scope supplied this row's effective `posture`. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                         posture_source?: unknown;
                         /** @description READ-ONLY. The fields on this row configured above the Curviate default. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
@@ -30586,6 +30598,8 @@ export interface operations {
                     posture_source?: unknown;
                     /** @description READ-ONLY. The account's DERIVED warm-up ramp, recomputed on every read. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                     warm_up?: unknown;
+                    /** @description NOT ACCEPTED. Send its settable subfields instead: the top-level `timezone`, and per row `activity_window_start`, `activity_window_end`, `activity_window_timezone`, `activity_window_applies_to`. */
+                    activity_window?: unknown;
                 };
             };
         };
@@ -30607,7 +30621,7 @@ export interface operations {
                         /** @description The account this policy governs. */
                         account_id?: string;
                         /**
-                         * @description Which set of Curviate defaults every row below is resolved from. Each profile inherits the one before it and raises a few rows: `premium` adds a daily invitation band and open-profile InMail, `sales_navigator` raises profile views and search, `recruiter` raises profile views again. This is the platform product active on the account, not the Curviate seat entitlement. The two can disagree, and this is the one that governs the numbers. The elevated Sales Navigator and Recruiter figures apply only to calls made through the matching interface, the `/v1/{account_id}/sales-navigator/...` and `/v1/{account_id}/recruiter/...` operations. A standard-interface call still lives under the `basic` or `premium` figure for its row, and Curviate does not yet track that difference: on a non-`basic` profile the numbers here are the headroom of the elevated interface, not of every call, so read them as an upper bound rather than as your budget for a standard call.
+                         * @description Which set of Curviate defaults every row below is resolved from. Each profile inherits the one before it and raises a few rows: `premium` adds a daily invitation band and open-profile InMail, `sales_navigator` raises profile views and search, `recruiter` raises profile views again. This is the platform product active on the account, not the Curviate seat entitlement. The two can disagree, and this is the one that governs the numbers. The elevated Sales Navigator and Recruiter figures apply only to calls made through the matching interface, the `/v1/{account_id}/sales-navigator/...` and `/v1/{account_id}/recruiter/...` operations, and Curviate holds each call to the figure for the interface it goes through. The numbers here are therefore the ones a standard-interface call is held to, on every profile; a call through one of those operations resolves from the elevated set instead, and each row publishes that figure as `interface_ceiling`.
                          * @enum {string}
                          */
                         limit_profile?: "basic" | "premium" | "sales_navigator" | "recruiter";
@@ -30690,7 +30704,7 @@ export interface operations {
                             /** @description IANA zone name the activity window is read in. Null disables the window entirely. */
                             activity_window_timezone?: string | null;
                             /**
-                             * @description What the activity window governs. `writes` (the default) covers live writes to LinkedIn; `all` widens it to live reads as well, which is the setting for a persona that should not be seen browsing at 03:00. It is broader than it sounds: `all` covers every live read, including the ones about the account itself, so a nightly analytics or invitation-backlog poll is refused at 03:00 too. Stored reads and inbound events are never subject to the window under either setting, at any hour.
+                             * @description What the activity window governs. `writes` (the default) covers live writes to LinkedIn; `all` widens it to live reads as well, which is the setting for a persona that should not be seen browsing at 03:00. It is broader than it sounds: `all` covers every live read, including the ones about the account itself, so a nightly analytics or invitation-backlog poll is refused at 03:00 too. A read Curviate answers from its own store never reaches LinkedIn, so it is never subject to the window under either setting, at any hour; the same read IS covered when the store cannot answer it, or when you ask for it live. Inbound events are never subject to it either.
                              * @enum {string}
                              */
                             activity_window_applies_to?: "writes" | "all";
@@ -30714,7 +30728,11 @@ export interface operations {
                             source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
                             /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Read this one, not `ceiling`, to know where the next call will be stopped. On an account in warm-up the two differ, and on a five-day-old account they differ by a factor of about seven. Null when the row has no ceiling to ramp. `warm_up_state` and `warm_up_factor` beside it are the values ACTIVE on this row, not the seeded ones. */
                             effective_ceiling?: number | null;
-                            /** @description Empty when nothing on this row is above default. */
+                            /** @description What a call through the matching ELEVATED interface is held to on this row: the `/v1/{account_id}/sales-navigator/...` and `/v1/{account_id}/recruiter/...` operations. Null when this row and limit profile have no such figure, which is every row on `basic` and `premium` and most rows everywhere. Everything else on this row (`ceiling`, `effective_ceiling`, `band` and `over_default`) is the STANDARD-interface figure, because one counter serves both interfaces and the standard side is the conservative one to band against. The consequence is worth reading: on a `sales_navigator` or `recruiter` account a row can report `band: "over"` with `posture: "enforce"` while a call through the elevated interface still succeeds; the refusal the band predicts is the one a standard call gets. */
+                            interface_ceiling?: number | null;
+                            /** @description `interface_ceiling` with the account's warm-up ramp applied, and null wherever `interface_ceiling` is null. Read THIS to know where an elevated-interface call stops, for the same reason `effective_ceiling` rather than `ceiling` answers that for a standard one. */
+                            effective_interface_ceiling?: number | null;
+                            /** @description Empty when nothing on this row is above default. Computed against the STANDARD-interface default, like `band` and for the same reason. */
                             over_default?: {
                                 /**
                                  * @description The field whose configured value is above default.
@@ -30824,15 +30842,15 @@ export interface operations {
                             /** @description The event's id. Also the value encoded in the next page's cursor. */
                             id: string;
                             /**
-                             * @description The budget row that breached. It is not always a row the call itself spends: an invitation refused because the outstanding backlog is at its ceiling reports `pending_invites`, which is the thing that breached.
+                             * @description The budget row that breached. It is not always a row the call itself spends: an invitation refused because the outstanding backlog is at its ceiling reports `pending_invites`, which is the thing that breached. `*` means the event was not about a row at all: the activity window closing on an action that spends no budget of its own, such as editing a message or a Recruiter admin action. The `budget_row` filter accepts real row names only, so page without it to see those.
                              * @enum {string}
                              */
-                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "total_actions" | "pending_invites";
+                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "total_actions" | "pending_invites" | "*";
                             /**
-                             * @description Why it was flagged. `budget_exhausted`: the account reached the ceiling configured for that row, which you can raise on the safety policy. `rate_limited`: the platform itself refused this account on that row recently and Curviate is holding the row until the pause expires, which no configuration change lifts.
+                             * @description Which rule flagged it, and each one calls for a different response. `budget_exhausted`: the account reached the ceiling configured for that row, which you can raise on the safety policy. `activity_window`: the account was acting outside its configured activity window, so no ceiling was the constraint. Wait for the window to open, move `activity_window_start` or `activity_window_end`, or check `activity_window_timezone` is the zone you meant. `rate_limited`: the platform itself refused this account on that row recently and Curviate is holding the row until the pause expires, which no configuration change lifts.
                              * @enum {string}
                              */
-                            reason: "budget_exhausted" | "rate_limited";
+                            reason: "budget_exhausted" | "activity_window" | "rate_limited";
                             /** @description Whether the action was stopped. `false` is a warning: the action went through, and this record is the only lasting trace that it crossed a limit. Under the default `warn` posture every event is a warning, which is what makes reading this surface the point of running it. */
                             blocked: boolean;
                             /** @description The operation the caller was running when it breached. */

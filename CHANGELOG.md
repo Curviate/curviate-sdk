@@ -7,7 +7,14 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
-## [Unreleased]
+## [0.26.0] - 2026-09-06
+
+Fixture regenerated against the deployed production document
+(`https://api.curviate.com`, `server_git_sha bd795601...`, 125 paths).
+**BREAKING at the type level** for a consumer that reads `row` off an error
+or a safety warning as a `string`: it is now `string | null` on both. Three
+response enums also widen, which reds an exhaustive `switch` with a `never`
+default. Everything else in this release is additive.
 
 ### Added
 
@@ -35,6 +42,62 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
   the generated `paths` types, like every other query type here.
   `users.get()` and `messaging.listMessages()` already carried the pair and
   are unchanged; the README now documents all three.
+
+### Regenerated types
+
+- **BREAKING - `row` is nullable on both `Error` and `SafetyWarning`.**
+  `Error.row` goes `string | undefined` to `string | null | undefined`, and
+  `SafetyWarning.row` - which is REQUIRED, so it is the one that will actually
+  break a build - goes `string` to `string | null`. `null` says the breach
+  names no row: an `activity_window` refusal on an action that spends no
+  budget of its own has an hour to answer for and no counter. Read
+  `hint.parameter` in that case; it names `posture`. A consumer that assigned
+  `.row` to a `string` or passed it somewhere non-null now has a type error,
+  and that error is correct - the runtime value was always going to be `null`
+  once the server started sending it. The SDK's own `CurviateError.budgetRow`
+  is UNCHANGED (`string | undefined`): `transport.ts` maps the wire field with
+  a `typeof === "string"` guard, so a `null` row arrives as an absent
+  `budgetRow`, which is what "no row to name" already meant on that surface.
+- **BREAKING for an exhaustive `switch` - three response enums widen.** Each
+  gains a member, so a `switch` with a `never`-typed default arm stops
+  compiling. None of them removes a member, so a `switch` with a real default
+  keeps working:
+  - `GET /v1/{account_id}/safety-events` `items[].reason` gains
+    `activity_window` alongside `budget_exhausted` and `rate_limited`.
+  - `GET /v1/{account_id}/safety-events` `items[].budget_row` gains `"*"`, the
+    wildcard for an event that is not scoped to one row.
+  - `notices[].code` on the ten chat and message reads that accept
+    `expand=public_identifier` gains `EXPANSION_WITHHELD_ACTIVITY_WINDOW`
+    alongside `EXPANSION_LIMIT_REACHED`: the expansion was refused because the
+    account is outside its activity window, not because the page ran out of
+    lookup budget. Same consequence for the reader either way -
+    `public_identifier` is `null` for reasons that are not "no public profile"
+    - but a different fix, so it is a separate code. The `notices` key itself
+    is not new.
+- **Additive - `interface_ceiling` and `effective_interface_ceiling` on every
+  budget row.** Optional, `number | null`. They appear on `quotas[]` from
+  `GET /v1/accounts/{account_id}` and on the policy rows from
+  `GET`/`PATCH /v1/{account_id}/safety-policy`. What a call through the
+  matching ELEVATED interface (`/sales-navigator/...`, `/recruiter/...`) is
+  held to on that row; `null` wherever the row and limit profile have no such
+  figure, which is every row on `basic` and `premium`. `ceiling`,
+  `effective_ceiling`, `band` and `over_default` all remain the STANDARD
+  figure, so a row can report `band: "over"` while an elevated call still
+  succeeds. Read `effective_interface_ceiling`, not `interface_ceiling`, for
+  the same reason `effective_ceiling` and not `ceiling` answers that on the
+  standard side. On the `PATCH` request body both are typed `unknown` and
+  documented READ-ONLY: sent back they are accepted and ignored, so a read can
+  round-trip unedited.
+- **Additive - `activity_window` on the `PATCH /v1/{account_id}/safety-policy`
+  request body**, typed `unknown` and documented NOT ACCEPTED. Send the
+  settable subfields instead: top-level `timezone`, and per row
+  `activity_window_start`, `activity_window_end`, `activity_window_timezone`,
+  `activity_window_applies_to`.
+- Description-only, no type change: `reset_at` on `Error` and `SafetyWarning`
+  now states that it is the window roll on a `ceiling` refusal and the next
+  window open on an `activity_window` one, and restates the two cases where no
+  clock frees the account (the `pending_invites` gauge, and InMail credits).
+  The chat-search `q` parameter documents that a 1-2 character term is slower.
 
 ## [0.25.0] - 2026-09-05
 
