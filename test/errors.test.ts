@@ -273,10 +273,10 @@ describe("fixture-documented codes (guard)", () => {
 
   // Same-path positive control for arm 2, and the discrimination it rests on.
   // The first response is shaped exactly like the three real 422s the arm was
-  // added for — the code lives only in the description, the example is the
-  // generic placeholder — so this MUST produce it; if it ever stops, the arm
-  // has gone quiet and the superset assertion below is vacuous for that whole
-  // class. The second is the false-positive it must not fire on.
+  // added for: the code lives only in the description, the example is the
+  // generic placeholder. So this MUST produce it; if it ever stops, the arm has
+  // gone quiet and the superset assertion below is vacuous for that whole
+  // class. The same description carries the false positive it must not fire on.
   it("harvests a code named only in the description, and not bare SCREAMING_CASE prose", () => {
     const harvested = extractFixtureErrorCodes({
       paths: {
@@ -284,15 +284,9 @@ describe("fixture-documented codes (guard)", () => {
           get: {
             responses: {
               "422": {
-                description: "Nothing is stored and `mode=cache_only` never fetches (SENTINEL_CODE).",
-                content: { "application/json": { examples: { error: { value: { code: "UNPROCESSABLE" } } } } },
-              },
-            },
-          },
-          post: {
-            responses: {
-              "400": {
-                description: "Validation failed (e.g. budget missing for PROMOTED/PROMOTED_PLUS).",
+                description:
+                  "Nothing is stored and `mode=cache_only` never fetches (SENTINEL_CODE). " +
+                  "Publishing spends money when mode is PROMOTED/PROMOTED_PLUS.",
                 content: { "application/json": { examples: { error: { value: { code: "UNPROCESSABLE" } } } } },
               },
             },

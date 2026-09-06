@@ -123,14 +123,10 @@ export class MessagingResource {
   /**
    * Get details of a single chat. `GET /v1/{account_id}/chats/{chat_id}`
    *
-   * A store-servable read: pass `{ mode, max_age }` to say how willing it is
-   * to reach LinkedIn. `auto` (the default) serves a stored copy inside the
-   * freshness threshold, `live` always fetches, `refill` serves a stored copy
-   * at any age and fetches only when there is none, and `cache_only` never
-   * fetches and throws `NOT_STORED` when nothing is stored. `max_age`
-   * (seconds) overrides the first three in both directions and cannot be
-   * combined with `cache_only`. The response's `source` and `observed_at` say
-   * which way the answer came.
+   * A store-servable read: `{ mode, max_age }` says how willing it is to reach
+   * LinkedIn, and the response's `source` says which way the answer came. See
+   * "Retrieval modes" in the README for the four modes and what `max_age`
+   * overrides.
    */
   getChat(chatId: string, params?: ChatGetQuery): Promise<ChatDetail> {
     return this.ctx.request<ChatDetail>({
