@@ -271,18 +271,38 @@ describe("README names exactly the reads that accept mode / max_age", () => {
    */
   const claimed = [...section.matchAll(/`GET (\/v1\/[^`]+)`/g)].map((m) => m[1]!);
 
-  // The extractor is live: the served document really does declare the pair
-  // somewhere, so an empty `served` below would be a broken reader rather than
-  // a server that dropped the feature.
-  it("finds the retrieval reads in the served document", () => {
-    // Every one of the three, not just a non-empty set: a reader that silently
-    // stopped seeing one path would leave `unlisted` empty and pass the guard
-    // below on a README missing that bullet.
+  // TWO SIGNALS ON ONE ASSERTION, both wanted, so read a red carefully:
+  //
+  //   FEWER than the three → the reader has gone blind to a path. That is the
+  //     dangerous direction: `unlisted` empties and the guard below passes on a
+  //     README missing that bullet. Fix `retrievalPaths`.
+  //   MORE than the three → the server declared the pair on a NEW read. Nothing
+  //     is broken; this is the tripwire firing. Give the README its bullet, give
+  //     the SDK method a query argument and a forwarding test, then add the path
+  //     here.
+  it("sees exactly the reads that declare the pair today, and reds either way", () => {
     expect(served).toEqual([
       "/v1/{account_id}/chats/{chat_id}",
       "/v1/{account_id}/chats/{chat_id}/messages",
       "/v1/{account_id}/users/{user_id}",
     ]);
+  });
+
+  // The one remaining way the reader could go quiet: a parameter arriving as a
+  // `$ref` into `components/parameters` has no `name` here, so its path would
+  // never enter `served` and the pin above would stay green on a stale README.
+  // The served document inlines every parameter today; this fails the moment
+  // that stops being true, which is the moment `retrievalPaths` needs to
+  // resolve refs.
+  it("meets no parameter shape it cannot read", () => {
+    const refs = Object.entries(doc.paths ?? {})
+      .filter(([, item]) =>
+        [...(item.parameters ?? []), ...(item.get?.parameters ?? [])].some(
+          (p) => p.name === undefined,
+        ),
+      )
+      .map(([path]) => path);
+    expect(refs, "these GETs carry a parameter with no inline `name` (a $ref?)").toEqual([]);
   });
 
   it("the section exists and names every served retrieval read", () => {

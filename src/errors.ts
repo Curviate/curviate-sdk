@@ -53,11 +53,7 @@ export const ERROR_CODES = [
   // Absent from RETRYABLE_CODES on purpose, nothing about the answer changes
   // until the caller picks one.
   //
-  // `cache_only` is the mode that raises it, and re-reading with `refill` or
-  // `auto` is the documented remedy. `refill` can raise it too, but only where
-  // there is nothing for it to fill: a listing with no stable order has no
-  // absent state, so "fetch once when nothing is stored" would fetch every
-  // time. None of the reads that take these parameters is such a listing.
+  // `cache_only` is the mode that raises it; re-read with `refill` or `auto`.
   "NOT_STORED",
   "RESOURCE_ACCESS_RESTRICTED",
   // Search filter resolution: a plain-string filter value matched several

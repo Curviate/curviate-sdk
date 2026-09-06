@@ -153,11 +153,11 @@ fetch. Those reads take the same two query parameters, `mode` and `max_age`:
 - `messaging.getChat()` (`GET /v1/{account_id}/chats/{chat_id}`)
 - `messaging.listMessages()` (`GET /v1/{account_id}/chats/{chat_id}/messages`)
 
-No other read accepts them. Passing them to a read that does not declare them
-is a `400`, not a silent no-op, and passing either key twice is a `400` too:
-a read that accepted `mode=cache_only` and then called LinkedIn anyway would
-break the one guarantee that parameter makes, so the API refuses rather than
-resolves. Do not pass them elsewhere.
+No other read accepts them, so do not pass them elsewhere. These two keys are
+refused rather than ignored: sending either to a read that does not declare it
+is a `400`, and so is sending either one twice. A read that accepted
+`mode=cache_only` and then called LinkedIn anyway would break the one guarantee
+that parameter makes, so neither case is resolved quietly.
 
 | `mode` | What the read does |
 | --- | --- |
@@ -184,7 +184,7 @@ const profile = await acc.users.get("me", { mode: "cache_only" });
 const page = await acc.messaging.listMessages("chat_1", { max_age: 300 });
 ```
 
-Every one of these responses carries three fields that say what you are holding:
+Every one of these responses carries fields that say what you are holding:
 
 - `source` is `"store"` or `"live"`, and `observed_at` is when the data was seen
   on LinkedIn. A stored answer can carry less than a live one, because some
