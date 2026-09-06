@@ -225,6 +225,22 @@ describe("no hand-typed catalogue size in customer-facing text", () => {
  * thing to go stale.
  */
 describe("README names exactly the reads that accept mode / max_age", () => {
+  // ONE CLAIM IN THAT SECTION IS LOAD-BEARING AND NOT PINNED BY ANYTHING HERE.
+  // The README promises that `mode` / `max_age` sent to a read that does not
+  // declare them, or sent twice, is a 400 rather than a silent no-op. That is
+  // true of the deployed API and was verified against the server rather than
+  // against the document: a registry chokepoint loops over exactly these two
+  // keys and sits OUTSIDE the query-schema block, so it also covers endpoints
+  // declaring no schema. It reached production in server commit 6a7f7508,
+  // confirmed an ancestor of the `server_git_sha` in fixtures/PROVENANCE.json.
+  //
+  // The served document does NOT say this — it documents the duplicate case on
+  // the two chat reads only — so nothing in this package can check it, and the
+  // assertions below compare paths and never behaviour. If that chokepoint is
+  // ever narrowed back inside `if (querySchema)`, this suite stays green while
+  // the README keeps promising a refusal the API no longer makes. Re-verify
+  // against the server, not the fixture, before trusting the claim again.
+
   interface FixtureParameter {
     name?: string;
     in?: string;
