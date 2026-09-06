@@ -751,11 +751,17 @@ describe("account-safety refusals", () => {
     expect(calls()).toBe(1);
   });
 
-  // NOT_STORED (#30): `mode=cache_only` found nothing in the store, so the API
-  // refused rather than reaching LinkedIn. Driven on a GET because the fetch
-  // count is what carries the harmful half of the gap: undecoded, this fell to
-  // INTERNAL, INTERNAL is retryable, and three retries were spent re-asking a
-  // question whose answer cannot change until the caller picks another mode.
+  // NOT_STORED (#30): a `mode=cache_only` read the store could not answer, so
+  // the API refused rather than reaching LinkedIn. Driven on a GET because the
+  // fetch count is what carries the harmful half of the gap: undecoded, this
+  // fell to INTERNAL, INTERNAL is retryable, and three retries were spent
+  // re-asking a question whose answer cannot change until the caller picks
+  // another mode.
+  //
+  // NO `retry_hint` in this body, unlike the sibling refusals above, and that
+  // is the wire being copied rather than an omission: the server mints this
+  // one through `makeError` with no hint at all, so a hint here would be a
+  // fixture asserting something the API does not send.
   it("decodes a 422 NOT_STORED and does not retry it (1 fetch)", async () => {
     const calls = serve(
       {
@@ -783,13 +789,22 @@ describe("account-safety refusals", () => {
   // entered the taxonomy — not of 422 or of this probe having stopped
   // retrying. Without this arm, a decode that quietly stopped working would
   // look identical to a decode that works.
+  //
+  // `retry_likely_to_succeed: TRUE` deliberately. The retry decision consults
+  // only RETRYABLE_CODES, never the envelope's own retry fields, so a body
+  // saying `false` here would still be fetched four times and this control
+  // would be pinning that as intended behaviour. It is not intended: it is a
+  // real transport defect, filed separately, and this control must not
+  // enshrine it. With `true` the control asserts only the uncontroversial
+  // half — an unknown code decodes to INTERNAL and INTERNAL retries — which is
+  // all it is here to prove.
   it("still downgrades an unknown 422 code to INTERNAL and retries it (4 fetches)", async () => {
     const calls = serve(
       {
         code: "SOME_FUTURE_UNMAPPED_CODE",
         message: "x",
         user_fixable: true,
-        retry_likely_to_succeed: false,
+        retry_likely_to_succeed: true,
       },
       422,
     );

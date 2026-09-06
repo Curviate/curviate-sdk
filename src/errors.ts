@@ -47,12 +47,17 @@ export const ERROR_CODES = [
   // linking again. Not retryable.
   "ACCOUNT_ALREADY_LINKED",
   "RESOURCE_NOT_FOUND",
-  // A `mode=cache_only` read (or `refill` on a resource that cannot be filled)
-  // found nothing in Curviate's store, so it refused rather than reaching
-  // LinkedIn. 422, and NOT RESOURCE_NOT_FOUND: the resource may be perfectly
-  // real, so the fix is another mode, not another id. Absent from
-  // RETRYABLE_CODES on purpose, nothing about the answer changes until the
-  // caller picks one.
+  // A read found nothing in Curviate's store and its mode may not fetch, so it
+  // refused rather than reaching LinkedIn. 422, and NOT RESOURCE_NOT_FOUND: the
+  // resource may be perfectly real, so the fix is another mode, not another id.
+  // Absent from RETRYABLE_CODES on purpose, nothing about the answer changes
+  // until the caller picks one.
+  //
+  // `cache_only` is the mode that raises it, and re-reading with `refill` or
+  // `auto` is the documented remedy. `refill` can raise it too, but only where
+  // there is nothing for it to fill: a listing with no stable order has no
+  // absent state, so "fetch once when nothing is stored" would fetch every
+  // time. None of the reads that take these parameters is such a listing.
   "NOT_STORED",
   "RESOURCE_ACCESS_RESTRICTED",
   // Search filter resolution: a plain-string filter value matched several

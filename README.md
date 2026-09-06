@@ -123,9 +123,10 @@ try {
       console.error("Account does not exist for this tenant.");
       break;
     case "NOT_STORED":
-      // A cache_only read found nothing stored, so nothing was fetched. The
-      // id may be perfectly good, so do not go looking for it again: re-read
-      // with mode "refill" or "auto". See "Retrieval modes" below.
+      // A cache_only read the store could not answer, so nothing was fetched.
+      // The id may be perfectly good, so do not go looking for it again:
+      // re-read with mode "refill" or "auto", and on a narrowed listing drop
+      // the narrowing parameters. See "Retrieval modes" below.
       console.warn("Nothing stored for that resource under this mode.");
       break;
     default:
@@ -152,15 +153,18 @@ fetch. Those reads take the same two query parameters, `mode` and `max_age`:
 - `messaging.getChat()` (`GET /v1/{account_id}/chats/{chat_id}`)
 - `messaging.listMessages()` (`GET /v1/{account_id}/chats/{chat_id}/messages`)
 
-No other read accepts them. The API rejects an undeclared parameter with a
-`400` rather than ignoring it, so do not pass them elsewhere.
+No other read accepts them. Passing them to a read that does not declare them
+is a `400`, not a silent no-op, and passing either key twice is a `400` too:
+a read that accepted `mode=cache_only` and then called LinkedIn anyway would
+break the one guarantee that parameter makes, so the API refuses rather than
+resolves. Do not pass them elsewhere.
 
 | `mode` | What the read does |
 | --- | --- |
 | `auto` (default) | serves a stored copy while it is inside the resource's freshness threshold, otherwise fetches |
 | `live` | always fetches |
 | `refill` | serves a stored copy at any age, and fetches once when this read has none |
-| `cache_only` | never fetches, and throws `NOT_STORED` when nothing is stored |
+| `cache_only` | never fetches, and throws `NOT_STORED` when the store cannot answer |
 
 `max_age` is the mechanism the first three are presets over: the oldest stored
 copy, in seconds, the read will accept. It overrides them in both directions,
@@ -180,11 +184,24 @@ const profile = await acc.users.get("me", { mode: "cache_only" });
 const page = await acc.messaging.listMessages("chat_1", { max_age: 300 });
 ```
 
-Every one of these responses says which way it came: `source` is `"store"` or
-`"live"`, and `observed_at` is when the data was seen on LinkedIn. A stored
-answer carries less than a live one by design, because message bodies and other
-content are never written to the store, so `source: "store"` is how you know to
-ask again with `mode: "live"` when you need them.
+Every one of these responses carries three fields that say what you are holding:
+
+- `source` is `"store"` or `"live"`, and `observed_at` is when the data was seen
+  on LinkedIn. A stored answer can carry less than a live one, because some
+  fields are dropped before anything is written, so `source: "store"` is how you
+  know to ask again with `mode: "live"` when a field you need is missing.
+- `withdrawn` is always present, never inferred from a missing field. `true`
+  means LinkedIn has said the resource is gone, such as a removed profile, and
+  the answer you are holding is the copy Curviate still has: do not act on it.
+  `withdrawn_at` rides along when it is `true`. This is the field to branch on
+  before messaging or acting on anything served from the store, and `refill`,
+  which serves a copy at any age, is the mode most likely to hand you one.
+
+`NOT_STORED` under `cache_only` does not always mean the resource is unknown.
+On `listMessages` it also fires when the request narrows the page in a way the
+stored copy cannot reproduce, so a fully stored chat can refuse a narrowed
+`cache_only` read. Re-read without the narrowing parameters, or with a mode that
+may fetch.
 
 ---
 

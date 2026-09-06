@@ -206,10 +206,22 @@ describe("fixture-documented codes (guard)", () => {
   // the auto-populated "UNPROCESSABLE", so the arm above could not see it and
   // it shipped in 0.25.0 decoding to INTERNAL — the exact gap this guard
   // exists to close. So a code is also counted when the description names it
-  // in the `(CODE)` form every authored error in this document uses. That
-  // parenthesised-and-alone shape is what keeps the arm exclusion-list free:
-  // PROMOTED_PLUS, the only other SCREAMING_CASE token anywhere in these
-  // descriptions, is only ever written bare or as `PROMOTED/PROMOTED_PLUS`.
+  // in the `(CODE)` form every authored error in this document uses.
+  //
+  // WHAT THE ARM ACTUALLY RESTS ON, measured rather than assumed: the token
+  // must fill the parentheses ALONE. These descriptions carry plenty of other
+  // capitalised tokens (APPLICANTS, CAPTCHA, FREE, PIPELINE, POST, PROMOTED,
+  // PROMOTED_PLUS), and the two nearest misses in the current document,
+  // `(PIPELINE, APPLICANTS)` and `(TIER_NOT_ACTIVE, carries required_tier...)`,
+  // are excluded by the comma alone. So the discrimination is thinner than
+  // "only error codes are written this way".
+  //
+  // ponytail: a bare `(CAPTCHA)`-style parenthetical, or a cross-reference to a
+  // deliberately-excluded internal code, would be harvested and would red the
+  // superset assertion against a change that is fine. That failure is LOUD and
+  // one line from a fix, which is why it is accepted over a hand-maintained
+  // exclusion list; if it ever fires on a non-code, gate the arm on the
+  // response also carrying no usable example rather than widening the taxonomy.
   interface FixtureResponse {
     description?: string;
     content?: {
@@ -286,7 +298,8 @@ describe("fixture-documented codes (guard)", () => {
               "422": {
                 description:
                   "Nothing is stored and `mode=cache_only` never fetches (SENTINEL_CODE). " +
-                  "Publishing spends money when mode is PROMOTED/PROMOTED_PLUS.",
+                  "Publishing spends money when mode is PROMOTED/PROMOTED_PLUS. " +
+                  "Filter by stage (PIPELINE, APPLICANTS).",
                 content: { "application/json": { examples: { error: { value: { code: "UNPROCESSABLE" } } } } },
               },
             },
@@ -304,7 +317,14 @@ describe("fixture-documented codes (guard)", () => {
   // CONNECTION_REQUEST_CONFLICT (and, this release, RATE_LIMITED) to INTERNAL.
   it("ERROR_CODES is a superset of every fixture-documented code", () => {
     const missing = [...fixtureCodes].filter((c) => !knownCodes.has(c)).sort();
-    expect(missing).toEqual([]);
+    expect(
+      missing,
+      "the public API reference documents these codes and the SDK taxonomy does " +
+        "not carry them, so they decode to INTERNAL. Add them to ERROR_CODES — " +
+        "unless one is not a returned code at all (an internal-only code named in " +
+        "a cross-reference, or prose the description arm mis-read), in which case " +
+        "tighten the arm. Never widen the public taxonomy to silence this.",
+    ).toEqual([]);
   });
 });
 

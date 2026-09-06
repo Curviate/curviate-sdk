@@ -229,20 +229,31 @@ describe("README names exactly the reads that accept mode / max_age", () => {
     name?: string;
     in?: string;
   }
+  /** A path item: the operations, plus the parameters shared by all of them. */
+  interface FixturePathItem {
+    parameters?: FixtureParameter[];
+    get?: { parameters?: FixtureParameter[] };
+  }
   interface FixtureDoc {
-    paths?: Record<string, Record<string, { parameters?: FixtureParameter[] } | undefined>>;
+    paths?: Record<string, FixturePathItem>;
   }
 
-  /** GET paths whose served query declares BOTH retrieval parameters. */
+  /**
+   * GET paths whose served query declares EITHER retrieval parameter.
+   *
+   * EITHER, not both, and path-item parameters as well as the operation's own:
+   * every way this reader can under-count makes the guard go QUIET on a stale
+   * README rather than loud, so it errs towards over-collecting. A path that
+   * declared only `mode` is still a retrieval read the README owes a bullet.
+   */
   function retrievalPaths(doc: FixtureDoc): string[] {
     const out: string[] = [];
-    for (const [path, methods] of Object.entries(doc.paths ?? {})) {
-      const query = new Set(
-        (methods["get"]?.parameters ?? [])
-          .filter((p) => p.in === "query" && typeof p.name === "string")
-          .map((p) => p.name as string),
-      );
-      if (query.has("mode") && query.has("max_age")) out.push(path);
+    for (const [path, item] of Object.entries(doc.paths ?? {})) {
+      if (!item.get) continue;
+      const declared = [...(item.parameters ?? []), ...(item.get.parameters ?? [])]
+        .filter((p) => p.in === "query" || p.in === undefined)
+        .map((p) => p.name);
+      if (declared.some((n) => n === "mode" || n === "max_age")) out.push(path);
     }
     return out.sort();
   }
@@ -264,8 +275,14 @@ describe("README names exactly the reads that accept mode / max_age", () => {
   // somewhere, so an empty `served` below would be a broken reader rather than
   // a server that dropped the feature.
   it("finds the retrieval reads in the served document", () => {
-    expect(served.length).toBeGreaterThan(0);
-    expect(served).toContain("/v1/{account_id}/chats/{chat_id}");
+    // Every one of the three, not just a non-empty set: a reader that silently
+    // stopped seeing one path would leave `unlisted` empty and pass the guard
+    // below on a README missing that bullet.
+    expect(served).toEqual([
+      "/v1/{account_id}/chats/{chat_id}",
+      "/v1/{account_id}/chats/{chat_id}/messages",
+      "/v1/{account_id}/users/{user_id}",
+    ]);
   });
 
   it("the section exists and names every served retrieval read", () => {
@@ -275,7 +292,10 @@ describe("README names exactly the reads that accept mode / max_age", () => {
       unlisted,
       "these reads accept mode / max_age in the served document but the README " +
         "does not name them, so a caller cannot know the ladder is available " +
-        "there (and the SDK method may still be missing its query argument)",
+        "there. This block checks the README against the document and nothing " +
+        "else: when you add the bullet, check by hand that the SDK method takes " +
+        "a query argument and add a forwarding test for it, the way getChat, " +
+        "listMessages and users.get each have one",
     ).toEqual([]);
   });
 
