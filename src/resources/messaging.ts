@@ -44,6 +44,9 @@ export type StartChatResult =
 
 export type ChatDetail =
   paths["/v1/{account_id}/chats/{chat_id}"]["get"]["responses"]["200"]["content"]["application/json"];
+export type ChatGetQuery = NonNullable<
+  paths["/v1/{account_id}/chats/{chat_id}"]["get"]["parameters"]["query"]
+>;
 
 export type MarkChatReadBody =
   paths["/v1/{account_id}/chats/{chat_id}"]["patch"]["requestBody"]["content"]["application/json"];
@@ -117,11 +120,23 @@ export class MessagingResource {
     });
   }
 
-  /** Get details of a single chat. `GET /v1/{account_id}/chats/{chat_id}` */
-  getChat(chatId: string): Promise<ChatDetail> {
+  /**
+   * Get details of a single chat. `GET /v1/{account_id}/chats/{chat_id}`
+   *
+   * A store-servable read: pass `{ mode, max_age }` to say how willing it is
+   * to reach LinkedIn. `auto` (the default) serves a stored copy inside the
+   * freshness threshold, `live` always fetches, `refill` serves a stored copy
+   * at any age and fetches only when there is none, and `cache_only` never
+   * fetches and throws `NOT_STORED` when nothing is stored. `max_age`
+   * (seconds) overrides the first three in both directions and cannot be
+   * combined with `cache_only`. The response's `source` and `observed_at` say
+   * which way the answer came.
+   */
+  getChat(chatId: string, params?: ChatGetQuery): Promise<ChatDetail> {
     return this.ctx.request<ChatDetail>({
       method: "GET",
       path: apiPath`/v1/{account_id}/chats/${chatId}`,
+      ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
     });
   }
 

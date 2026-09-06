@@ -206,3 +206,87 @@ describe("no hand-typed catalogue size in customer-facing text", () => {
     });
   }
 });
+
+// ─── which reads accept the retrieval pair ───────────────────────────────────
+
+/**
+ * The README's "Retrieval modes" section tells a caller which reads take
+ * `mode` / `max_age`, and warns that passing them anywhere else is a 400. That
+ * is a claim programmed against in both directions, and it is exactly the
+ * shape of claim this file exists for: prose naming a set the server owns and
+ * grows. When the server declares the pair on a fourth read, the SDK method
+ * for it needs a typed query argument and this section needs a fourth bullet;
+ * nothing else in the suite would notice.
+ *
+ * So both sides are derived: the set from the vendored OpenAPI (the served
+ * document, whatever it says today), the claim from the shipped README bytes.
+ * Paths are matched rather than method names because a path is a fact both
+ * documents can state; a hand-written path-to-method map would be one more
+ * thing to go stale.
+ */
+describe("README names exactly the reads that accept mode / max_age", () => {
+  interface FixtureParameter {
+    name?: string;
+    in?: string;
+  }
+  interface FixtureDoc {
+    paths?: Record<string, Record<string, { parameters?: FixtureParameter[] } | undefined>>;
+  }
+
+  /** GET paths whose served query declares BOTH retrieval parameters. */
+  function retrievalPaths(doc: FixtureDoc): string[] {
+    const out: string[] = [];
+    for (const [path, methods] of Object.entries(doc.paths ?? {})) {
+      const query = new Set(
+        (methods["get"]?.parameters ?? [])
+          .filter((p) => p.in === "query" && typeof p.name === "string")
+          .map((p) => p.name as string),
+      );
+      if (query.has("mode") && query.has("max_age")) out.push(path);
+    }
+    return out.sort();
+  }
+
+  const doc = JSON.parse(read("fixtures/openapi.json")) as FixtureDoc;
+  const served = retrievalPaths(doc);
+  const section =
+    passages("README.md", read("README.md")).find((p) => p.startsWith("## Retrieval modes")) ?? "";
+  /**
+   * The paths the section claims, EXACTLY as written. Matched whole rather
+   * than by substring: `/chats/{chat_id}` is a prefix of
+   * `/chats/{chat_id}/messages`, so a substring test reports the chat read as
+   * documented on the strength of the messages bullet alone, and the missing
+   * bullet this guard exists to catch reads as present.
+   */
+  const claimed = [...section.matchAll(/`GET (\/v1\/[^`]+)`/g)].map((m) => m[1]!);
+
+  // The extractor is live: the served document really does declare the pair
+  // somewhere, so an empty `served` below would be a broken reader rather than
+  // a server that dropped the feature.
+  it("finds the retrieval reads in the served document", () => {
+    expect(served.length).toBeGreaterThan(0);
+    expect(served).toContain("/v1/{account_id}/chats/{chat_id}");
+  });
+
+  it("the section exists and names every served retrieval read", () => {
+    expect(section, "README has no '## Retrieval modes' section").not.toBe("");
+    const unlisted = served.filter((p) => !claimed.includes(p));
+    expect(
+      unlisted,
+      "these reads accept mode / max_age in the served document but the README " +
+        "does not name them, so a caller cannot know the ladder is available " +
+        "there (and the SDK method may still be missing its query argument)",
+    ).toEqual([]);
+  });
+
+  it("names no read that does not accept them", () => {
+    expect(claimed.length).toBeGreaterThan(0);
+    const overclaimed = claimed.filter((p) => !served.includes(p));
+    expect(
+      overclaimed,
+      "the README offers mode / max_age on reads that do not declare them; the " +
+        "API answers 400 for an undeclared query parameter, so this is not a " +
+        "harmless extra",
+    ).toEqual([]);
+  });
+});

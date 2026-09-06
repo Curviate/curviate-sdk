@@ -198,6 +198,18 @@ describe("fixture-documented codes (guard)", () => {
   // RATE_LIMITED on the Recruiter / Sales Navigator surface, etc.). This
   // self-reference check is what separates signal from boilerplate without a
   // hand-maintained exclusion list.
+  //
+  // SECOND ARM (#30). The rule above needs the response to carry an example
+  // whose `code` is the real one, and a genuinely-authored error can be
+  // documented against the generic placeholder example instead: `NOT_STORED`
+  // is named verbatim in the description of three 422s whose only example is
+  // the auto-populated "UNPROCESSABLE", so the arm above could not see it and
+  // it shipped in 0.25.0 decoding to INTERNAL — the exact gap this guard
+  // exists to close. So a code is also counted when the description names it
+  // in the `(CODE)` form every authored error in this document uses. That
+  // parenthesised-and-alone shape is what keeps the arm exclusion-list free:
+  // PROMOTED_PLUS, the only other SCREAMING_CASE token anywhere in these
+  // descriptions, is only ever written bare or as `PROMOTED/PROMOTED_PLUS`.
   interface FixtureResponse {
     description?: string;
     content?: {
@@ -225,6 +237,12 @@ describe("fixture-documented codes (guard)", () => {
           const statusNum = Number(status);
           if (!(statusNum >= 300 && statusNum < 600)) continue;
           const description = typeof resp.description === "string" ? resp.description : "";
+          // Arm 2: `(CODE)` in the description. Runs BEFORE the examples guard
+          // below, because the responses this arm exists for are precisely the
+          // ones whose examples carry nothing usable.
+          for (const paren of description.match(/\([A-Z][A-Z0-9_]{3,}\)/g) ?? []) {
+            codes.add(paren.slice(1, -1));
+          }
           const examples = resp.content?.["application/json"]?.examples;
           if (!examples) continue;
           for (const ex of Object.values(examples)) {
@@ -251,6 +269,38 @@ describe("fixture-documented codes (guard)", () => {
     expect(fixtureCodes.size).toBeGreaterThan(5);
     expect(fixtureCodes.has("ACCOUNT_RESTRICTED")).toBe(true);
     expect(fixtureCodes.has("LINKEDIN_OPERATION_NOT_SUPPORTED")).toBe(true);
+  });
+
+  // Same-path positive control for arm 2, and the discrimination it rests on.
+  // The first response is shaped exactly like the three real 422s the arm was
+  // added for — the code lives only in the description, the example is the
+  // generic placeholder — so this MUST produce it; if it ever stops, the arm
+  // has gone quiet and the superset assertion below is vacuous for that whole
+  // class. The second is the false-positive it must not fire on.
+  it("harvests a code named only in the description, and not bare SCREAMING_CASE prose", () => {
+    const harvested = extractFixtureErrorCodes({
+      paths: {
+        "/v1/probe": {
+          get: {
+            responses: {
+              "422": {
+                description: "Nothing is stored and `mode=cache_only` never fetches (SENTINEL_CODE).",
+                content: { "application/json": { examples: { error: { value: { code: "UNPROCESSABLE" } } } } },
+              },
+            },
+          },
+          post: {
+            responses: {
+              "400": {
+                description: "Validation failed (e.g. budget missing for PROMOTED/PROMOTED_PLUS).",
+                content: { "application/json": { examples: { error: { value: { code: "UNPROCESSABLE" } } } } },
+              },
+            },
+          },
+        },
+      },
+    });
+    expect([...harvested]).toEqual(["SENTINEL_CODE"]);
   });
 
   // The actual guard: every code the public API reference documents (per the

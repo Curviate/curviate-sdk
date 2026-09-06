@@ -750,4 +750,51 @@ describe("account-safety refusals", () => {
     expect(err.code).not.toBe("LINKEDIN_AUTH_FAILED");
     expect(calls()).toBe(1);
   });
+
+  // NOT_STORED (#30): `mode=cache_only` found nothing in the store, so the API
+  // refused rather than reaching LinkedIn. Driven on a GET because the fetch
+  // count is what carries the harmful half of the gap: undecoded, this fell to
+  // INTERNAL, INTERNAL is retryable, and three retries were spent re-asking a
+  // question whose answer cannot change until the caller picks another mode.
+  it("decodes a 422 NOT_STORED and does not retry it (1 fetch)", async () => {
+    const calls = serve(
+      {
+        code: "NOT_STORED",
+        message: "Nothing is stored for this chat. Re-read with mode=refill or mode=auto.",
+        user_fixable: true,
+        retry_likely_to_succeed: false,
+      },
+      422,
+    );
+    const err = (await execute("GET", "/v1/probe", det()).catch((e) => e)) as CurviateError;
+    expect(err.code).toBe("NOT_STORED");
+    expect(err.code).not.toBe("INTERNAL");
+    expect(err.httpStatus).toBe(422);
+    // The taxonomy classification, as the wire states it: fixable by choosing
+    // another mode, and worth nothing on a retry.
+    expect(err.userFixable).toBe(true);
+    expect(err.retryLikelyToSucceed).toBe(false);
+    expect(calls()).toBe(1);
+  });
+
+  // CONTROL for the arm above, on the same path with the same status. An
+  // unrecognised code still falls to INTERNAL and is still retried to
+  // exhaustion, so "1 fetch" up there is a property of NOT_STORED having
+  // entered the taxonomy — not of 422 or of this probe having stopped
+  // retrying. Without this arm, a decode that quietly stopped working would
+  // look identical to a decode that works.
+  it("still downgrades an unknown 422 code to INTERNAL and retries it (4 fetches)", async () => {
+    const calls = serve(
+      {
+        code: "SOME_FUTURE_UNMAPPED_CODE",
+        message: "x",
+        user_fixable: true,
+        retry_likely_to_succeed: false,
+      },
+      422,
+    );
+    const err = (await execute("GET", "/v1/probe", det()).catch((e) => e)) as CurviateError;
+    expect(err.code).toBe("INTERNAL");
+    expect(calls()).toBe(4); // 1 initial + maxRetries 3
+  });
 });

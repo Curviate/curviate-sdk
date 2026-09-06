@@ -101,6 +101,41 @@ describe("messaging.getChat", () => {
     expect(new URL(capturedUrl!).pathname).toBe("/v1/acc_1/chats/chat_1");
     expect(res.id).toBe("chat_1");
   });
+
+  // #30. `GET /v1/{account_id}/chats/{chat_id}` declares `expand`, `mode` and
+  // `max_age`; the method sent no query at all, so a chat read had no
+  // retrieval ladder while the two sibling reads did.
+  it("forwards expand/mode/max_age as query params", async () => {
+    let url: string | undefined;
+    server.use(
+      http.get(`${BASE}/v1/acc_1/chats/chat_1`, ({ request }) => {
+        url = request.url;
+        return HttpResponse.json({ object: "chat", id: "chat_1", source: "store" });
+      }),
+    );
+    await acc.messaging.getChat("chat_1", { expand: "public_identifier", mode: "refill", max_age: 300 });
+    const params = new URL(url!).searchParams;
+    expect(params.get("expand")).toBe("public_identifier");
+    expect(params.get("mode")).toBe("refill");
+    expect(params.get("max_age")).toBe("300");
+  });
+
+  // `max_age: 0` is `mode=live`, and it is the value a falsy check drops. The
+  // API rejects an unknown query key, so an omitted argument must still send
+  // an EMPTY query string rather than an invented one.
+  it("sends max_age=0 rather than dropping it, and no query at all when omitted", async () => {
+    const seen: string[] = [];
+    server.use(
+      http.get(`${BASE}/v1/acc_1/chats/chat_1`, ({ request }) => {
+        seen.push(new URL(request.url).search);
+        return HttpResponse.json({ object: "chat", id: "chat_1" });
+      }),
+    );
+    await acc.messaging.getChat("chat_1", { max_age: 0 });
+    await acc.messaging.getChat("chat_1");
+    expect(seen[0]).toBe("?max_age=0");
+    expect(seen[1]).toBe("");
+  });
 });
 
 describe("messaging.markChatRead", () => {
@@ -133,6 +168,24 @@ describe("messaging.listMessages", () => {
     const res = await acc.messaging.listMessages("chat_1");
     expect(new URL(capturedUrl!).pathname).toBe("/v1/acc_1/chats/chat_1/messages");
     expect(res.items?.[0]?.id).toBe("msg_1");
+  });
+
+  // The second of the three reads that accept the retrieval pair (#30's audit;
+  // `users.get` is the third, pinned in users.test.ts). Its params type is
+  // already path-derived, so this is a regression pin rather than a new
+  // affordance — nothing else proves the pair reaches the wire from here.
+  it("forwards mode/max_age as query params", async () => {
+    let url: string | undefined;
+    server.use(
+      http.get(`${BASE}/v1/acc_1/chats/chat_1/messages`, ({ request }) => {
+        url = request.url;
+        return HttpResponse.json({ object: "message_list", items: [], cursor: null });
+      }),
+    );
+    await acc.messaging.listMessages("chat_1", { mode: "cache_only", limit: 5 });
+    const params = new URL(url!).searchParams;
+    expect(params.get("mode")).toBe("cache_only");
+    expect(params.get("limit")).toBe("5");
   });
 });
 

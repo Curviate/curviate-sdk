@@ -122,6 +122,12 @@ try {
     case "ACCOUNT_NOT_FOUND":
       console.error("Account does not exist for this tenant.");
       break;
+    case "NOT_STORED":
+      // A cache_only read found nothing stored, so nothing was fetched. The
+      // id may be perfectly good, so do not go looking for it again: re-read
+      // with mode "refill" or "auto". See "Retrieval modes" below.
+      console.warn("Nothing stored for that resource under this mode.");
+      break;
     default:
       if (err.retryLikelyToSucceed) {
         // Safe to retry: server-side transient error
@@ -134,6 +140,51 @@ try {
 Every error code is documented in the [API reference](https://docs.curviate.com). The
 exported `ErrorCode` type is the complete set, so `tsc` tells you when a `switch` over
 `err.code` has missed one.
+
+---
+
+## Retrieval modes
+
+Some reads can be answered from Curviate's own store instead of a live LinkedIn
+fetch. Those reads take the same two query parameters, `mode` and `max_age`:
+
+- `users.get()`, including `users.get("me")` (`GET /v1/{account_id}/users/{user_id}`)
+- `messaging.getChat()` (`GET /v1/{account_id}/chats/{chat_id}`)
+- `messaging.listMessages()` (`GET /v1/{account_id}/chats/{chat_id}/messages`)
+
+No other read accepts them. The API rejects an undeclared parameter with a
+`400` rather than ignoring it, so do not pass them elsewhere.
+
+| `mode` | What the read does |
+| --- | --- |
+| `auto` (default) | serves a stored copy while it is inside the resource's freshness threshold, otherwise fetches |
+| `live` | always fetches |
+| `refill` | serves a stored copy at any age, and fetches once when this read has none |
+| `cache_only` | never fetches, and throws `NOT_STORED` when nothing is stored |
+
+`max_age` is the mechanism the first three are presets over: the oldest stored
+copy, in seconds, the read will accept. It overrides them in both directions,
+and `max_age: 0` is the same as `mode: "live"`. It cannot be combined with
+`cache_only`, whose guarantee is not a freshness threshold; that pair is
+rejected with `INVALID_REQUEST` rather than one of the two being quietly
+dropped.
+
+```ts
+// Serve whatever is stored, at any age; reach LinkedIn only if nothing is.
+const chat = await acc.messaging.getChat("chat_1", { mode: "refill" });
+
+// Never reach LinkedIn. Throws NOT_STORED when the store holds nothing.
+const profile = await acc.users.get("me", { mode: "cache_only" });
+
+// Accept a stored copy up to five minutes old, fetch otherwise.
+const page = await acc.messaging.listMessages("chat_1", { max_age: 300 });
+```
+
+Every one of these responses says which way it came: `source` is `"store"` or
+`"live"`, and `observed_at` is when the data was seen on LinkedIn. A stored
+answer carries less than a live one by design, because message bodies and other
+content are never written to the store, so `source: "store"` is how you know to
+ask again with `mode: "live"` when you need them.
 
 ---
 
