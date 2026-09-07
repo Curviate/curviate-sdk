@@ -7,6 +7,51 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [0.29.0] - 2026-09-07
+
+Fixture and types regenerated against the deployed staging document
+(`https://api.staging.curviate.com`, `server_git_sha 1447ffd4...`, 125 paths).
+Additive only: `safety-policy` now says where `limit_profile` came from, and an
+operator override can be released without a reconnect.
+
+### Added
+
+- **`GET /v1/{account_id}/safety-policy` gains `limit_profile_source` and
+  `limit_profile_detected_at`.** `limit_profile_source` is `"default"`,
+  `"detected"` or `"operator"`: `default` means the value has never been
+  observed and is the seeded `basic`, so it says nothing about the account;
+  `detected` means Curviate read it from LinkedIn at `limit_profile_detected_at`,
+  whether or not the value changed; `operator` means it was set through the
+  PATCH. `limit_profile_detected_at` is an ISO date-time, or `null` until the
+  value has been read at least once. Both fields appear on the PATCH response
+  too.
+
+- **`PATCH /v1/{account_id}/safety-policy` accepts `limit_profile_source`.**
+  Sending `"default"` is a real write: it releases an operator override, and the
+  value is re-read from LinkedIn on the account's next account read or connect.
+  Sending `"detected"` or `"operator"` is accepted and ignored, so a document
+  read from the GET round-trips unchanged. `limit_profile_detected_at` is
+  read-only and likewise accepted and ignored on a write.
+
+### Changed
+
+- Description-only: the PATCH `limit_profile` description now states that
+  Curviate re-reads the profile at most once a day on an account read (not only
+  on connect and reconnect), and that the override is released by sending
+  `limit_profile_source: "default"` rather than by writing `basic` back.
+
+### Notes
+
+- The server also removed `POST /v1/billing/seats/:seat_id/tier` in the same
+  wave. `/v1/billing/*` has never been part of the served OpenAPI document, so
+  there is no SDK surface change from it: the path count is unchanged at 125 and
+  the generated types are untouched by that removal.
+- `safety-policy` has no hand-written resource method in this SDK; it is reached
+  through the generated `operations` types, which is where these two fields
+  land.
+
+---
+
 ## [0.28.0] - 2026-09-07
 
 Fixture regenerated against the deployed staging document

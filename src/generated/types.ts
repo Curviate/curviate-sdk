@@ -30354,6 +30354,16 @@ export interface operations {
                          */
                         seat_tier_mismatch?: "core" | "sn" | "recruiter" | null;
                         /**
+                         * @description Where `limit_profile` came from. `detected`: Curviate read it from LinkedIn, at `limit_profile_detected_at`. `operator`: it was set through this operation and holds until the account next connects, or until you send `limit_profile_source: "default"` on this operation, which releases it. `default`: it has never been observed, so the value is the seeded `basic` and says nothing about the account; Curviate detects it on the account's next read or connect.
+                         * @enum {string}
+                         */
+                        limit_profile_source?: "default" | "detected" | "operator";
+                        /**
+                         * Format: date-time
+                         * @description When Curviate last read `limit_profile` from LinkedIn, whether or not the value changed. Null until it has. Curviate re-reads it on connect and, at most once a day, on an account read, so a subscription change reaches the numbers without a reconnect.
+                         */
+                        limit_profile_detected_at?: string | null;
+                        /**
                          * @description The account's default posture, before any per-row override.
                          * @enum {string}
                          */
@@ -30514,7 +30524,7 @@ export interface operations {
             content: {
                 "application/json": {
                     /**
-                     * @description Which set of Curviate defaults this account's rows resolve from: `basic`, `premium`, `sales_navigator` or `recruiter`. Each inherits the one before it and raises a few rows. This is the platform product active on the account, NOT the Curviate seat entitlement, and the two can disagree: a lapsed subscription leaves the seat untouched. Curviate detects it from the platform when the account connects and re-detects it on every reconnect; setting it here is an operator override of that result and holds until the next connect. Set it back to `basic` to undo. The change is recorded in the ledger and it moves the defaults under every row at once, so any row you have configured explicitly keeps your value. The elevated Sales Navigator and Recruiter figures apply only to calls made through the matching interface, the `/v1/{account_id}/sales-navigator/...` and `/v1/{account_id}/recruiter/...` operations, and Curviate holds each call to the figure for the interface it goes through. The numbers here are therefore the ones a standard-interface call is held to, on every profile; a call through one of those operations resolves from the elevated set instead, and each row publishes that figure as `interface_ceiling`.
+                     * @description Which set of Curviate defaults this account's rows resolve from: `basic`, `premium`, `sales_navigator` or `recruiter`. Each inherits the one before it and raises a few rows. This is the platform product active on the account, NOT the Curviate seat entitlement, and the two can disagree: a lapsed subscription leaves the seat untouched. Curviate detects it from the platform when the account connects, re-detects it on every reconnect and, at most once a day, on an account read; setting it here is an operator override of that result and holds until the next connect. To undo the override, send `limit_profile_source: "default"`: the pin is released, and Curviate re-reads the value from LinkedIn on the account's next read or connect. Sending the value the account already holds changes nothing and pins nothing. The change is recorded in the ledger and it moves the defaults under every row at once, so any row you have configured explicitly keeps your value. The elevated Sales Navigator and Recruiter figures apply only to calls made through the matching interface, the `/v1/{account_id}/sales-navigator/...` and `/v1/{account_id}/recruiter/...` operations, and Curviate holds each call to the figure for the interface it goes through. The numbers here are therefore the ones a standard-interface call is held to, on every profile; a call through one of those operations resolves from the elevated set instead, and each row publishes that figure as `interface_ceiling`.
                      * @enum {string}
                      */
                     limit_profile?: "basic" | "premium" | "sales_navigator" | "recruiter";
@@ -30605,6 +30615,13 @@ export interface operations {
                     account_id?: unknown;
                     /** @description READ-ONLY. The Curviate seat tier that disagrees with `limit_profile`. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                     seat_tier_mismatch?: unknown;
+                    /**
+                     * @description Where `limit_profile` came from: `default` (never observed), `detected` (read from LinkedIn) or `operator` (set through this operation). Sending `default` releases an operator override: the value is re-read from LinkedIn on the account's next read or connect. Sending `detected` or `operator` is accepted and ignored, so the whole document round-trips.
+                     * @enum {string}
+                     */
+                    limit_profile_source?: "default" | "detected" | "operator";
+                    /** @description READ-ONLY. When `limit_profile` was last read from LinkedIn, or null if it never has been. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                    limit_profile_detected_at?: unknown;
                     /** @description READ-ONLY. Which scope supplied this account's effective `posture`. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                     posture_source?: unknown;
                     /** @description READ-ONLY. The account's DERIVED warm-up ramp, recomputed on every read. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
@@ -30641,6 +30658,16 @@ export interface operations {
                          * @enum {string|null}
                          */
                         seat_tier_mismatch?: "core" | "sn" | "recruiter" | null;
+                        /**
+                         * @description Where `limit_profile` came from. `detected`: Curviate read it from LinkedIn, at `limit_profile_detected_at`. `operator`: it was set through this operation and holds until the account next connects, or until you send `limit_profile_source: "default"` on this operation, which releases it. `default`: it has never been observed, so the value is the seeded `basic` and says nothing about the account; Curviate detects it on the account's next read or connect.
+                         * @enum {string}
+                         */
+                        limit_profile_source?: "default" | "detected" | "operator";
+                        /**
+                         * Format: date-time
+                         * @description When Curviate last read `limit_profile` from LinkedIn, whether or not the value changed. Null until it has. Curviate re-reads it on connect and, at most once a day, on an account read, so a subscription change reaches the numbers without a reconnect.
+                         */
+                        limit_profile_detected_at?: string | null;
                         /**
                          * @description The account's default posture, before any per-row override.
                          * @enum {string}
