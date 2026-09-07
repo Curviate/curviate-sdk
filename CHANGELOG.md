@@ -7,6 +7,48 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [0.28.0] - 2026-09-07
+
+Fixture regenerated against the deployed staging document
+(`https://api.staging.curviate.com`, `server_git_sha 14fa8234...`, 125 paths).
+**BREAKING**: `messaging.searchChats` now rejects a `query` shorter than 3
+characters server-side. Pre-1.0 a breaking change ships as a minor, so a caret
+range on `0.27.x` will not pick this up.
+
+### BREAKING
+
+- **`searchChats` requires a `query` of at least 3 characters.** A 1-2 character
+  term previously returned `200`; it now returns `400 INVALID_REQUEST` with a
+  message naming the minimum. The search is served from an index built out of
+  overlapping 3-character sequences, so a shorter term cannot use it at all and
+  falls back to a scan: measured at 238-292 ms against 4.5 ms for the same term
+  one character longer. Returning `200` after 60x the work, with no way for a
+  caller to learn why, was the worse contract.
+
+  The bound is now expressed in the OpenAPI schema (`minLength: 3`) and in the
+  generated parameter description. **TypeScript cannot express a string minimum
+  length**, so the generated type is still `string`: the constraint is
+  documented and enforced at the wire, not by the compiler. Debounce a
+  type-ahead to 3 characters rather than relying on types to catch it.
+
+  `companies.searchChats` is a different endpoint and is unaffected; its
+  `query` stays optional and unbounded.
+
+### Added
+
+- **`accounts.retrieve` gains `event_log`**: `{ retained, row_cap, at_row_cap }`.
+  Reports where the account stands against the retained event log's per-account
+  row budget. While `at_row_cap` is true, events are still delivered to any
+  registered webhook but are no longer retained, so the events resource has
+  stopped being a complete record of what arrived. Additive and always present.
+
+- Every string parameter and body field on the surface now publishes its real
+  length bounds (`minLength` / `maxLength`) where the server enforces one. This
+  was previously emitted only for numbers, so string constraints existed in
+  descriptions and nowhere a generated client could read them.
+
+---
+
 ## [0.27.0] - 2026-09-06
 
 Fixture regenerated against the deployed production document
