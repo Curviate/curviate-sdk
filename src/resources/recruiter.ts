@@ -1,5 +1,22 @@
 /**
- * Recruiter resource: 23 methods (tier: recruiter), project-centric rebuild.
+ * Recruiter resource, a project-centric rebuild.
+ *
+ * @beta Every operation in this namespace is beta. None of it has been
+ * exercised against a real LinkedIn Recruiter subscription yet, so response
+ * shapes may still move. While an operation is beta-GATED it refuses
+ * `BETA_NOT_ENABLED` (403) until a human enables beta for the tenant in
+ * Settings, or the request carries the `X-Curviate-Beta` header. The beta
+ * badge is a superset of the gate: a badged operation is not necessarily
+ * gated, so read the code on a refusal rather than inferring it from the
+ * badge.
+ *
+ * NO CURVIATE-SIDE ENTITLEMENT. There is no Recruiter product to buy from
+ * Curviate and no tier on a seat: one ordinary paid seat entitles every method
+ * here, and a tenant with no active seat covering the account refuses
+ * `NO_ACTIVE_SEAT` (403) exactly as it does on any other namespace. What this
+ * namespace does need is the LINKEDIN account's own Recruiter subscription; an
+ * account whose LinkedIn lacks it refuses `LINKEDIN_FEATURE_NOT_SUBSCRIBED`
+ * (403), and that remedy lives on LinkedIn, not in Curviate billing.
  *
  * Account-scoped: the bound context injects `account_id` as the leading
  * `/v1/` path segment on every request (account-first grammar), never a
@@ -164,6 +181,10 @@ export class RecruiterResource {
    * target's public identifier, or a member id. Request specific profile
    * sections via `with_sections` (repeatable query param).
    * `GET /v1/{account_id}/recruiter/profiles/{user_id}`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   getProfile(identifier: string, params?: Partial<RecruiterGetProfileQuery>): Promise<RecruiterGetProfileResult> {
     return this.ctx.request<RecruiterGetProfileResult>({
@@ -177,6 +198,10 @@ export class RecruiterResource {
    * Start a Recruiter chat (InMail). JSON-only, `subject` and `signature`
    * are REQUIRED; optional attachments ride the body as base64-encoded
    * objects (no multipart). `POST /v1/{account_id}/recruiter/chats`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   startChat(body: RecruiterStartChatBody): Promise<RecruiterStartChatResult> {
     return this.ctx.request<RecruiterStartChatResult>({
@@ -189,6 +214,10 @@ export class RecruiterResource {
   /**
    * Search LinkedIn members using Recruiter filters. `limit`/`cursor` stay
    * TOP-LEVEL query params. `POST /v1/{account_id}/recruiter/search/people`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   searchPeople(body: RecruiterSearchPeopleBody, params?: Partial<RecruiterSearchPeopleQuery>): Promise<RecruiterSearchPeopleResult> {
     return this.ctx.request<RecruiterSearchPeopleResult>({
@@ -203,6 +232,10 @@ export class RecruiterResource {
    * Resolve human-readable terms to opaque Recruiter filter ids. POST (was
    * GET): the body is a `source`-discriminated oneOf, `APPLICANTS`/`PIPELINE`
    * require `project_id`. `POST /v1/{account_id}/recruiter/search/parameters`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   searchParameters(body: RecruiterSearchParametersBody, params?: Partial<RecruiterSearchParametersQuery>): Promise<RecruiterSearchParametersResult> {
     return this.ctx.request<RecruiterSearchParametersResult>({
@@ -218,6 +251,10 @@ export class RecruiterResource {
    * `RECRUITER_SEARCH` talent-pool channel) is REQUIRED. `limit`/`cursor` stay
    * TOP-LEVEL query params.
    * `POST /v1/{account_id}/recruiter/projects/{project_id}/talent-pool/search`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   searchTalentPool(projectId: string, body: RecruiterSearchTalentPoolBody, params?: Partial<RecruiterSearchTalentPoolQuery>): Promise<RecruiterSearchTalentPoolResult> {
     return this.ctx.request<RecruiterSearchTalentPoolResult>({
@@ -233,6 +270,10 @@ export class RecruiterResource {
    * nothing else in the body. The response is a 3-way oneOf (people-search,
    * job-applicant list, or pipeline-candidate list) keyed by the URL kind.
    * `POST /v1/{account_id}/recruiter/search`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   searchFromUrl(body: RecruiterSearchFromUrlBody, params?: Partial<RecruiterSearchFromUrlQuery>): Promise<RecruiterSearchFromUrlResult> {
     return this.ctx.request<RecruiterSearchFromUrlResult>({
@@ -246,6 +287,10 @@ export class RecruiterResource {
   /**
    * List Recruiter hiring projects visible to the account.
    * `GET /v1/{account_id}/recruiter/projects`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   listProjects(params?: Partial<RecruiterListProjectsQuery>): Promise<RecruiterListProjectsResult> {
     return this.ctx.request<RecruiterListProjectsResult>({
@@ -258,6 +303,10 @@ export class RecruiterResource {
   /**
    * Get a single Recruiter hiring project (owner, metadata, talent_pool,
    * pipeline). `GET /v1/{account_id}/recruiter/projects/{project_id}`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   getProject(projectId: string): Promise<RecruiterGetProjectResult> {
     return this.ctx.request<RecruiterGetProjectResult>({
@@ -270,6 +319,10 @@ export class RecruiterResource {
    * Edit a Recruiter project's config: all fields optional; omitted fields
    * are left unchanged. Returns a thin acknowledgement only.
    * `PATCH /v1/{account_id}/recruiter/projects/{project_id}`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   updateProject(projectId: string, body: RecruiterUpdateProjectBody): Promise<RecruiterUpdateProjectResult> {
     return this.ctx.request<RecruiterUpdateProjectResult>({
@@ -284,6 +337,10 @@ export class RecruiterResource {
    * an all-optional filter set, no state mutates). `limit`/`cursor` stay
    * TOP-LEVEL query params.
    * `POST /v1/{account_id}/recruiter/projects/{project_id}/pipeline`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   listPipeline(projectId: string, body: RecruiterListPipelineBody = {}, params?: Partial<RecruiterListPipelineQuery>): Promise<RecruiterListPipelineResult> {
     return this.ctx.request<RecruiterListPipelineResult>({
@@ -298,6 +355,10 @@ export class RecruiterResource {
    * Get the single job posting attached to a Recruiter project (the surface
    * returns one posting, not a list; a project with no attached job 404s).
    * `GET /v1/{account_id}/recruiter/projects/{project_id}/jobs`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   getProjectJob(projectId: string): Promise<RecruiterProjectJob> {
     return this.ctx.request<RecruiterProjectJob>({
@@ -310,6 +371,10 @@ export class RecruiterResource {
    * Create a job-posting DRAFT attached to an EXISTING project, `project_name`
    * is not accepted (the project comes from the path). Never publishes, never
    * spends money. `POST /v1/{account_id}/recruiter/projects/{project_id}/jobs`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   createProjectJob(projectId: string, body: RecruiterCreateProjectJobBody): Promise<RecruiterCreateProjectJobResult> {
     return this.ctx.request<RecruiterCreateProjectJobResult>({
@@ -323,6 +388,10 @@ export class RecruiterResource {
    * Get pricing to publish a project's job posting; price a publish before
    * committing any money.
    * `GET /v1/{account_id}/recruiter/projects/{project_id}/jobs/{job_id}/budget`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   getProjectJobBudget(projectId: string, jobId: string): Promise<RecruiterProjectJobBudget> {
     return this.ctx.request<RecruiterProjectJobBudget>({
@@ -335,6 +404,10 @@ export class RecruiterResource {
    * Create a job-posting DRAFT together with a brand-new hiring project,
    * `project_name` is REQUIRED; `description` must be >= 200 characters. Never
    * publishes, never spends money. `POST /v1/{account_id}/recruiter/jobs`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   createJob(body: RecruiterCreateJobBody): Promise<RecruiterCreateJobResult> {
     return this.ctx.request<RecruiterCreateJobResult>({
@@ -347,6 +420,10 @@ export class RecruiterResource {
   /**
    * List Recruiter job postings. `limit`/`cursor` stay TOP-LEVEL query params.
    * `GET /v1/{account_id}/recruiter/jobs`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   listJobs(params?: Partial<RecruiterListJobsQuery>): Promise<RecruiterListJobsResult> {
     return this.ctx.request<RecruiterListJobsResult>({
@@ -366,6 +443,10 @@ export class RecruiterResource {
    * client-side; the wire request always carries the numeric id. Throws
    * `CurviateError({ code: 'INVALID_REQUEST' })` synchronously if neither
    * form can be recognized.
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   getJob(jobIdOrUrl: string): Promise<RecruiterJobDetail> {
     const jobId = resolveJobId(jobIdOrUrl);
@@ -380,6 +461,10 @@ export class RecruiterResource {
    * change. MONEY WARNING: editing an already-published (LISTED) posting
    * mutates a live, money-spending listing.
    * `PATCH /v1/{account_id}/recruiter/projects/{project_id}/jobs/{job_id}`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   updateProjectJob(projectId: string, jobId: string, body: RecruiterUpdateProjectJobBody): Promise<RecruiterUpdateProjectJobResult> {
     return this.ctx.request<RecruiterUpdateProjectJobResult>({
@@ -396,6 +481,10 @@ export class RecruiterResource {
    * the connected account's LinkedIn payment method; supplying `budget` IS the
    * explicit opt-in).
    * `POST /v1/{account_id}/recruiter/projects/{project_id}/jobs/{job_id}/publish`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   publishJob(projectId: string, jobId: string, body: RecruiterPublishJobBody): Promise<RecruiterPublishJobResult> {
     return this.ctx.request<RecruiterPublishJobResult>({
@@ -410,6 +499,10 @@ export class RecruiterResource {
    * (bodyless). Closing an already-published (LISTED) posting cannot be
    * undone; there is no re-open operation.
    * `POST /v1/{account_id}/recruiter/projects/{project_id}/jobs/{job_id}/close`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   closeJob(projectId: string, jobId: string): Promise<RecruiterCloseJobResult> {
     return this.ctx.request<RecruiterCloseJobResult>({
@@ -422,6 +515,10 @@ export class RecruiterResource {
    * Save a candidate (or user profile) to a project's pipeline at the given
    * stage, the sole surviving pipeline write.
    * `POST /v1/{account_id}/recruiter/projects/{project_id}/pipeline/candidate/save`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   saveCandidate(projectId: string, body: RecruiterSaveCandidateBody): Promise<RecruiterSaveCandidateResult> {
     return this.ctx.request<RecruiterSaveCandidateResult>({
@@ -436,6 +533,10 @@ export class RecruiterResource {
    * filters, no state mutates). `channel_id` (a `JOB_POSTING` talent-pool
    * channel) is REQUIRED. `limit`/`cursor` stay TOP-LEVEL query params.
    * `POST /v1/{account_id}/recruiter/projects/{project_id}/talent-pool/applicants`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   listApplicants(projectId: string, body: RecruiterListApplicantsBody, params?: Partial<RecruiterListApplicantsQuery>): Promise<RecruiterListApplicantsResult> {
     return this.ctx.request<RecruiterListApplicantsResult>({
@@ -449,6 +550,10 @@ export class RecruiterResource {
   /**
    * Get full detail for one talent-pool applicant (profile guaranteed full,
    * includes PII). `GET /v1/{account_id}/recruiter/projects/{project_id}/talent-pool/applicants/{applicant_id}`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   getApplicant(projectId: string, applicantId: string): Promise<RecruiterGetApplicantResult> {
     return this.ctx.request<RecruiterGetApplicantResult>({
@@ -461,6 +566,10 @@ export class RecruiterResource {
    * Download a talent-pool applicant's résumé as raw binary.
    * `GET /v1/{account_id}/recruiter/projects/{project_id}/talent-pool/applicants/{applicant_id}/resume`
    * Returns `ArrayBuffer`; the SDK does not cache or store it.
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   downloadResume(projectId: string, applicantId: string): Promise<ArrayBuffer> {
     return this.ctx.request<ArrayBuffer>({

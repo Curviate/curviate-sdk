@@ -28,11 +28,39 @@
  * This mirrors the server's error taxonomy (the customer-observable subset).
  * The string literals are copied here intentionally; the SDK has no dependency
  * on any private package. Internal-only codes that never reach a caller (e.g.
- * `BANNED_ENV_PREFIX`, `ADMIN_BYPASS`, protected-account and substrate-internal
- * codes) are deliberately excluded.
+ * `BANNED_ENV_PREFIX`, protected-account and substrate-internal codes) are
+ * deliberately excluded.
  *
- * The taxonomy is additive-only: new codes may be appended, existing ones are
- * never removed or renamed.
+ * The test for "does a caller ever see it" is the DECODE PATH, not intuition:
+ * a code returned by any `/v1` route, the `/v1` catch-all, or a shared handler
+ * one of them calls reaches this transport, and anything missing from this
+ * array is erased to `INTERNAL` on the way out. Twenty-one codes were in that
+ * position and are now carried (see the block at the end of the array).
+ * `ADMIN_BYPASS` was even cited here as an example of an unreachable code
+ * while being constructed at nine sites inside the versioned billing
+ * endpoints, which is exactly the mistake the decode-path test avoids.
+ *
+ * What remains excluded are codes with no request to answer at all: the
+ * boot-time environment refusal (`BANNED_ENV_PREFIX`, raised before the
+ * process serves anything) and the browser-approval exchange the CLI's own
+ * `setup` command consumes directly, which is not on the documented REST
+ * surface and no SDK method reaches.
+ *
+ * The taxonomy tracks what deployments can actually emit, which is not the same
+ * as what the newest one emits. A code the API has stopped returning is removed
+ * eventually, because a dead code in the union tells a caller to branch on
+ * something that cannot arrive, but not in the release that stops returning
+ * it, because a client is pointed at a deployment, not at a changelog. Removing
+ * a code the caller's deployment still sends is worse than carrying a dead one:
+ * the refusal arrives as `INTERNAL` and reads as a server fault.
+ *
+ * So a retirement is two steps. First `@deprecated`, kept exported, with the
+ * replacement named. Then removed, in the first release after every deployment
+ * carries the new contract. `TIER_NOT_ACTIVE` and `PREMIUM_CONFLICT` are at
+ * step one as of 0.30.0.
+ *
+ * A code the API NEVER emitted is a different case and goes immediately, since
+ * no deployment can be sending it: `RATE_LIMITED` went that way in 0.30.0.
  */
 export const ERROR_CODES = [
   // Authentication / authorization
@@ -62,18 +90,48 @@ export const ERROR_CODES = [
   // `next_action` sentence. user_fixable, never retryable as sent; re-send
   // with a chosen id.
   "FILTER_CANDIDATES_REQUIRED",
-  // Tier / subscription gating
-  "TIER_NOT_ACTIVE",
+  // Entitlement gating. THREE INDEPENDENT REFUSALS, three codes, three
+  // different remedies. Read the code, never the message, to tell them apart:
+  //
+  // - `NO_ACTIVE_SEAT`: this Curviate tenant has no active paid seat covering
+  //   the account. The remedy is billing, inside Curviate. There is no product
+  //   tier to buy: one paid seat entitles every operation, so nothing here
+  //   names a tier or asks for an upgrade.
+  // - `LINKEDIN_FEATURE_NOT_SUBSCRIBED`: the seat is fine, but the LinkedIn
+  //   account itself lacks the LinkedIn subscription the operation needs
+  //   (Sales Navigator, Recruiter). The remedy is on LinkedIn, not in
+  //   Curviate, and no amount of Curviate billing lifts it.
+  // - `BETA_NOT_ENABLED`: the operation is beta-gated and this tenant has not
+  //   consented to beta. The remedy is a human enabling beta in the dashboard,
+  //   or the per-request `X-Curviate-Beta` header. Nothing is wrong with the
+  //   seat or the LinkedIn subscription.
+  //
+  // All three are 403 and all three are user_fixable, which is exactly why the
+  // code has to carry the distinction: the messages read alike and the fixes
+  // are in three different systems.
+  "NO_ACTIVE_SEAT",
   "LINKEDIN_FEATURE_NOT_SUBSCRIBED",
+  "BETA_NOT_ENABLED",
+
+  /**
+   * @deprecated Replaced by {@link NO_ACTIVE_SEAT}. Product tiers are retired,
+   * so no refusal names one any more.
+   *
+   * STILL EXPORTED ON PURPOSE, and this is not a courtesy: API deployments
+   * that predate the seat-based entitlement rollout still emit this code, and
+   * a client that stopped recognising it would decode it to `INTERNAL`: a
+   * fixable billing refusal arriving as a server fault, against the very
+   * deployments most likely to send it. It is withdrawn in the first release
+   * after every deployment carries the new contract.
+   *
+   * Handle both while that is true: `NO_ACTIVE_SEAT` from a current
+   * deployment, this from an older one. They mean the same thing to a caller.
+   */
+  "TIER_NOT_ACTIVE",
   // Rate limits
   "RATE_LIMIT_ACCOUNT",
   "RATE_LIMIT_TENANT",
   "PLATFORM_RATE_LIMIT",
-  // LinkedIn-platform-level throttling on the Recruiter / Sales Navigator read
-  // surface (carries dedicated RateLimit-Policy / RateLimit / Retry-After
-  // response headers). Distinct from the account/tenant/platform trio above.
-  // Always retry-safe (retry_likely_to_succeed: true); see RETRYABLE_CODES.
-  "RATE_LIMITED",
   // Curviate's OWN account-safety ceiling, not a request-rate limit and not
   // LinkedIn refusing. A 429 that never reached LinkedIn and spent nothing:
   // the budget row named by `budgetRow` is at the ceiling configured on
@@ -97,13 +155,18 @@ export const ERROR_CODES = [
   "CHECKPOINT_ALREADY_RESOLVED",
   "CHECKPOINT_UNSUPPORTED",
   "CONNECTION_IN_PROGRESS",
-  // One-premium boundary rejection: LinkedIn permits only one individual
-  // Premium subscription per profile. Surfaces on connect/reconnect (a seat
-  // resolving to both premiums) and on the billing seat/tier endpoints (a
-  // "naked enable" of one premium while the seat already holds the other).
-  // user_fixable, never retryable; the remedy is two seats, or pairing
-  // enable with disable of the current premium in one call.
+  /**
+   * @deprecated Withdrawn with no replacement. The one-premium conflict it
+   * reported cannot be expressed on the current input, because
+   * `linkedin_premium` is single-valued.
+   *
+   * STILL EXPORTED for the same reason as {@link TIER_NOT_ACTIVE}: deployments
+   * that predate the connect rework can still emit it, and dropping it early
+   * would turn a fixable refusal into `INTERNAL` on exactly those. Withdrawn
+   * in the first release after every deployment carries the new contract.
+   */
   "PREMIUM_CONFLICT",
+
   // A reconnect whose seat-derived scope differs from the account's recorded
   // scope was attempted with cookie auth; a cookie replay cannot change
   // scope, so a full credentials re-authentication is required. user_fixable,
@@ -136,6 +199,62 @@ export const ERROR_CODES = [
   "SUBSCRIPTION_NOT_FOUND",
   "SEAT_NOT_FOUND",
   "SEAT_CANCELLED",
+  // ── Codes that used to collapse to INTERNAL ──────────────────────────────
+  //
+  // Every code below is returned by a `/v1` route, the `/v1` catch-all, or a
+  // shared handler one of them calls. Because this union did not carry them,
+  // the transport decoded each to `INTERNAL`: a refusal the caller could
+  // usually fix arrived looking like a server fault, with no `switch` arm
+  // possible and nothing but `retryLikelyToSucceed` left to branch on. They
+  // are grouped by what a caller does about them rather than by HTTP status.
+
+  // Routing. A path this API does not serve, which is also what a mistyped
+  // URL returns, so check the path shape before the ids.
+  "NOT_FOUND",
+
+  // The reaction you asked to remove is not on that post (422). Not a
+  // transport failure and not a bad id shape: re-read the post's reactions
+  // before retrying.
+  "REACTION_NOT_FOUND",
+
+  // Upstream failures on the connect and billing paths. All transient in the
+  // ordinary sense (502/503 from a dependency), so a retry is reasonable.
+  "SUBSTRATE_LINK_FAILED",
+  "SUBSTRATE_CAP_REACHED",
+  "BILLING_CHECKOUT_FAILED",
+  "BILLING_PORTAL_UNAVAILABLE",
+
+  // Tenant standing. The workspace's billing state forbids the operation
+  // (delinquent, disputed, linking switched off). The remedy is in billing,
+  // and none of these clears on retry.
+  "ACCOUNT_DISPUTED",
+  "ACCOUNT_LINKING_DISABLED",
+  "PERIOD_LOCKED",
+
+  // Seat and subscription state conflicts. The request is well formed and the
+  // target is in a state that refuses it, so read the state before resending.
+  "SEAT_NOT_EMPTY",
+  "SEAT_PROVISIONAL",
+  "SUBSCRIPTION_ALREADY_EXISTS",
+  "ALREADY_CANCELLED",
+  "CANCELLATION_ALREADY_EFFECTIVE",
+  "INVALID_CANCELLATION_SOURCE",
+
+  // Free-trial limits and the trial abuse gate. `TRIAL_EXPIRED` is the 402;
+  // the rest are 409/422 refusals on connect. All user_fixable, none
+  // retryable as sent.
+  "TRIAL_EXPIRED",
+  "TRIAL_SEAT_LIMIT",
+  "TRIAL_ACTIVE_SEAT_LIMIT",
+  "TRIAL_IDENTITY_ALREADY_USED",
+  "TRIAL_IDENTITY_UNRESOLVED",
+
+  // Admin-tenant refusal (400): an admin workspace has no Stripe billing, so
+  // the billing operations do not apply to it. Documented here because it is
+  // returned by `/v1` billing routes at nine sites; it was previously cited
+  // in this file as a code that never reaches a caller, which was wrong.
+  "ADMIN_BYPASS",
+
   // Generic
   "INTERNAL",
 ] as const;
@@ -155,34 +274,6 @@ export type ErrorCode = (typeof ERROR_CODES)[number];
  * the recognized-at-runtime set and the type can never diverge.
  */
 export const KNOWN_ERROR_CODES: ReadonlySet<string> = new Set(ERROR_CODES);
-
-/**
- * The tiers a caller can be asked to upgrade to, surfaced on `TIER_NOT_ACTIVE`.
- * `sn` and `sales_nav` are both emitted by the API (internal flag key vs.
- * product-facing label).
- *
- * Single source of truth, mirroring {@link ERROR_CODES}: both the
- * {@link RequiredTier} type and the runtime {@link KNOWN_REQUIRED_TIERS}
- * membership set are derived from this one array, so the type a caller
- * narrows on and the set the transport validates a wire value against can
- * never drift apart.
- */
-export const REQUIRED_TIERS = ["core", "sn", "sales_nav", "recruiter"] as const;
-
-/**
- * The product tier a caller needs, surfaced on `TIER_NOT_ACTIVE` so an agent
- * can route an upgrade without parsing the message. `sn` and `sales_nav` are
- * both emitted by the API (internal flag key vs. product-facing label).
- */
-export type RequiredTier = (typeof REQUIRED_TIERS)[number];
-
-/**
- * Runtime membership set for {@link REQUIRED_TIERS}. The transport uses it to
- * validate a wire `required_tier` value before narrowing it to
- * {@link RequiredTier}, discarding anything unrecognized rather than
- * surfacing a bogus tier.
- */
-export const KNOWN_REQUIRED_TIERS: ReadonlySet<string> = new Set(REQUIRED_TIERS);
 
 /** Structured retry guidance attached to retryable errors. */
 export interface RetryHint {
@@ -227,8 +318,6 @@ export interface CurviateErrorInit {
   retryHint?: RetryHint | null;
   userFixable: boolean;
   retryLikelyToSucceed: boolean;
-  /** Present on `TIER_NOT_ACTIVE` only. */
-  requiredTier?: RequiredTier;
   /** Milliseconds to wait before retry, parsed from the `Retry-After` response header. */
   retryAfterMs?: number;
   /**
@@ -302,7 +391,6 @@ export interface CurviateErrorJSON {
   retryHint: RetryHint | null;
   userFixable: boolean;
   retryLikelyToSucceed: boolean;
-  requiredTier?: RequiredTier;
   retryAfterMs?: number;
   budgetRow?: string;
   retryAfterSeconds?: number;
@@ -331,7 +419,6 @@ export class CurviateError extends Error {
   readonly retryHint: RetryHint | null;
   readonly userFixable: boolean;
   readonly retryLikelyToSucceed: boolean;
-  readonly requiredTier: RequiredTier | undefined;
   readonly retryAfterMs: number | undefined;
   /** The budget row this response names. See {@link CurviateErrorInit.budgetRow}. */
   readonly budgetRow: string | undefined;
@@ -353,7 +440,6 @@ export class CurviateError extends Error {
     this.retryHint = init.retryHint ?? null;
     this.userFixable = init.userFixable;
     this.retryLikelyToSucceed = init.retryLikelyToSucceed;
-    this.requiredTier = init.requiredTier;
     this.retryAfterMs = init.retryAfterMs;
     this.budgetRow = init.budgetRow;
     this.retryAfterSeconds = init.retryAfterSeconds;
@@ -380,7 +466,6 @@ export class CurviateError extends Error {
       retryLikelyToSucceed: this.retryLikelyToSucceed,
     };
     if (this.httpStatus !== undefined) json.httpStatus = this.httpStatus;
-    if (this.requiredTier !== undefined) json.requiredTier = this.requiredTier;
     if (this.retryAfterMs !== undefined) json.retryAfterMs = this.retryAfterMs;
     if (this.budgetRow !== undefined) json.budgetRow = this.budgetRow;
     if (this.retryAfterSeconds !== undefined) json.retryAfterSeconds = this.retryAfterSeconds;

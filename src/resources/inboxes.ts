@@ -1,5 +1,7 @@
 /**
- * Inboxes resource, 2 methods (Beta).
+ * Inboxes resource.
+ *
+ * @beta Every operation in this namespace is beta.
  *
  * Account-scoped: the bound context injects `account_id` as the leading
  * `/v1/` path segment on every request (account-first grammar), never a
@@ -72,6 +74,10 @@ export class InboxesResource {
    * const companyPage = (items ?? []).find((i) => i.kind === "company");
    * console.log(companyPage?.id, companyPage?.name, hint);
    * // companyPage?.id is what you pass to listChats(), e.g. "COMPANY_83734124_PRIMARY"
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   list(params?: InboxListQuery): Promise<InboxListPage> {
     return this.ctx.request<InboxListPage>({
@@ -109,6 +115,10 @@ export class InboxesResource {
    *   or `"COMPANY_83734124_PRIMARY"`).
    * @param params - optional `limit` (1-25, default 20) and an opaque
    *   `cursor` for pagination.
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   listChats(inboxId: string, params?: InboxChatListQuery): Promise<InboxChatListPage> {
     return this.ctx.request<InboxChatListPage>({

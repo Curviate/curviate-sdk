@@ -260,6 +260,11 @@ export class CompaniesResource {
    * never stored. Beta: single-page listing and termination are verified;
    * deep pagination (many pages / large cursor round-trips) is provisional
    * until validated against a busier inbox.
+   *
+   * @beta Beta operation. While beta-gated it refuses `BETA_NOT_ENABLED`
+   * (403) until a human enables beta in Settings, or the request carries the
+   * `X-Curviate-Beta` header. Sibling methods on this namespace are stable;
+   * the badge is per operation.
    */
   chats(identifier: string, params?: CompanyChatListQuery): Promise<CompanyChatListPage> {
     return this.ctx.request<CompanyChatListPage>({
@@ -322,6 +327,11 @@ export class CompaniesResource {
    * and message content), a `topic` card, or `unread`-only; the three are
    * mutually exclusive and enforced server-side. The connected account must
    * administer the page. Beta: see `chats()`.
+   *
+   * @beta Beta operation. While beta-gated it refuses `BETA_NOT_ENABLED`
+   * (403) until a human enables beta in Settings, or the request carries the
+   * `X-Curviate-Beta` header. Sibling methods on this namespace are stable;
+   * the badge is per operation.
    */
   searchChats(identifier: string, params?: CompanyChatSearchQuery): Promise<CompanyChatSearchPage> {
     return this.ctx.request<CompanyChatSearchPage>({

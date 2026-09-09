@@ -14,9 +14,7 @@
 import {
   CurviateError,
   KNOWN_ERROR_CODES,
-  KNOWN_REQUIRED_TIERS,
   type ErrorCode,
-  type RequiredTier,
   type RetryHint,
   type SafetyHint,
   type SafetyReason,
@@ -56,7 +54,6 @@ interface WireErrorEnvelope {
   retry_hint?: { kind?: string; delay_ms?: number } | null;
   user_fixable?: boolean;
   retry_likely_to_succeed?: boolean;
-  required_tier?: string;
   /**
    * The account-safety budget row. On `PLATFORM_RATE_LIMIT` it is the PAUSED
    * row; on `BUDGET_EXHAUSTED` it is the row that hit its ceiling. Same wire
@@ -86,7 +83,6 @@ const RETRYABLE_CODES: ReadonlySet<string> = new Set([
   "PLATFORM_RATE_LIMIT",
   "RATE_LIMIT_ACCOUNT",
   "RATE_LIMIT_TENANT",
-  "RATE_LIMITED",
   // BUDGET_EXHAUSTED is deliberately NOT here, even though it is a 429. It is
   // Curviate's own account-safety ceiling rather than a request-rate limit:
   // nothing reached LinkedIn, nothing was spent, and a monthly row's reset can
@@ -151,10 +147,6 @@ async function errorFromResponse(res: Response): Promise<CurviateError> {
   } catch {
     env = undefined;
   }
-  const requiredTier =
-    env?.required_tier && KNOWN_REQUIRED_TIERS.has(env.required_tier)
-      ? (env.required_tier as RequiredTier)
-      : undefined;
   const safetyHint = toSafetyHint(env?.hint);
   const safetyReason = toSafetyReason(env?.reason);
 
@@ -165,7 +157,6 @@ async function errorFromResponse(res: Response): Promise<CurviateError> {
     retryHint: toRetryHint(env?.retry_hint),
     userFixable: env?.user_fixable ?? false,
     retryLikelyToSucceed: env?.retry_likely_to_succeed ?? false,
-    ...(requiredTier !== undefined ? { requiredTier } : {}),
     ...(retryAfterMs !== undefined ? { retryAfterMs } : {}),
     ...(typeof env?.row === "string" ? { budgetRow: env.row } : {}),
     // `retry_after` is DELIBERATELY NOT folded into `retryAfterMs`. Everything

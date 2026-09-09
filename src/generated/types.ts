@@ -2311,7 +2311,7 @@ export interface paths {
         put?: never;
         /**
          * Start a credential/cookie authentication
-         * @description Authenticate a LinkedIn account directly with credentials or a session cookie. The credential fields are NESTED, not top level: `auth_method: "credentials"` reads `credentials: { email, password }`, and `auth_method: "cookie"` reads `cookie: { li_at }` plus a top-level `user_agent`. Omit `account_id` to connect a NEW account into an empty `seat_id` (every seat id is listed with click-to-copy in the seat table on your dashboard); include `account_id` (in the body) to re-authenticate an EXISTING account in place. Returns the account on success (201 new / 200 reconnect), or a checkpoint challenge (202) carrying the account_id when LinkedIn requires verification. Complete the challenge with POST /v1/auth/checkpoint/solve (codes) or POST /v1/auth/checkpoint/poll (mobile-app approval). Connection scope (which LinkedIn products are enabled) is derived from the account's seat, there is no products input; the recorded scope is readable as `requested_products` on the account. A reconnect that changes scope must use credentials (a saved cookie cannot change scope). Pin a managed proxy with the optional `country`/`ip` or supply a `proxy` to override it.
+         * @description Authenticate a LinkedIn account directly with credentials or a session cookie. The credential fields are NESTED, not top level: `auth_method: "credentials"` reads `credentials: { email, password }`, and `auth_method: "cookie"` reads `cookie: { li_at }` plus a top-level `user_agent`. Omit `account_id` to connect a NEW account into an empty `seat_id` (every seat id is listed with click-to-copy in the seat table on your dashboard); include `account_id` (in the body) to re-authenticate an EXISTING account in place. Returns the account on success (201 new / 200 reconnect), or a checkpoint challenge (202) carrying the account_id when LinkedIn requires verification. Complete the challenge with POST /v1/auth/checkpoint/solve (codes) or POST /v1/auth/checkpoint/poll (mobile-app approval). Connection scope (which LinkedIn products are enabled) is not something you list: the connection asks for every product and LinkedIn activates the ones the account actually has. The recorded scope is readable as `requested_products` on the account. One LinkedIn account can hold only one of the two premium surfaces, and when both are asked for Sales Navigator takes precedence, so pass the optional `linkedin_premium` (`sales_navigator` or `recruiter`) if the account holds both and you want the other one. Omit it and nothing is narrowed. It applies per connection and is not remembered, so state it on every connect and reconnect where Recruiter must win. A reconnect that changes scope must use credentials (a saved cookie cannot change scope), which includes any reconnect of an account connected before the full product set became the default. Pin a managed proxy with the optional `country`/`ip` or supply a `proxy` to override it.
          */
         post: operations["postV1AuthIntent"];
         delete?: never;
@@ -2513,7 +2513,7 @@ export interface paths {
         };
         /**
          * List webhook event types
-         * @description Returns the complete canonical event catalogue (27 events) grouped by source: messaging (7), user (2), account_status (15), plus 3 tier-gated events. A local catalogue read: no platform call is made.
+         * @description Returns the complete canonical event catalogue (27 events) grouped by source: messaging (7), user (2), account_status (15), plus 3 recruiter/sales_nav events. A local catalogue read: no platform call is made.
          */
         get: operations["getV1WebhooksEvents"];
         put?: never;
@@ -2645,11 +2645,6 @@ export interface components {
             user_fixable: boolean;
             /** @description True when an identical retry is likely to succeed. */
             retry_likely_to_succeed: boolean;
-            /**
-             * @description Present on tier-gated denials, the seat tier required to proceed.
-             * @enum {string}
-             */
-            required_tier?: "core" | "sales_nav" | "recruiter";
             /** @description Present on a PLATFORM_RATE_LIMIT raised because one account-safety budget row is paused: LinkedIn refused a recent call on that row, so this one was refused locally without reaching LinkedIn. Names the paused row (for example profile_views, connection_requests_no_note). The pause is scoped to this row on this account; every other row keeps working. Absent on every other rate limit. Also present on BUDGET_EXHAUSTED, where it names the row that hit its CEILING rather than one LinkedIn paused: read the code to tell the two apart, because the recovery differs. Null on a BUDGET_EXHAUSTED whose reason is activity_window and whose action spends no budget of its own, because there is no row to name; hint.parameter still names the setting to change. Never null on a rate limit. */
             row?: string | null;
             /** @description Present on BUDGET_EXHAUSTED: the instant the refusal lifts, as an absolute instant rather than a duration, so it stays true however long you hold it. It is the window roll on a ceiling refusal and the next window open on an activity-window one. It is null in the two cases where no clock frees the account: the pending_invites gauge, whose backlog falls when invitations are accepted or withdrawn, and an InMail credit exhaustion (row inmail), which LinkedIn regrants on a schedule this product cannot read. */
@@ -2877,8 +2872,12 @@ export interface operations {
                         public_picture_url_large?: string;
                         /** @description A private, time-limited picture download URL (present only in some responses). */
                         private_picture_download_url?: string;
-                        /** @description Profile summary/about section. Passes through verbatim, never stored. */
+                        /** @description Cover/background photo URL. */
+                        background_picture_url?: string;
+                        /** @description Mirrors the profile headline (the short line shown under the member's name). NOT the About/Summary section; see `bio` for that. */
                         description?: string;
+                        /** @description The profile's About/Summary section (free text). Distinct from `description`, which mirrors the headline, not this field. */
+                        bio?: string;
                         /** @description Geographic location string. */
                         location?: string;
                         /** @description ISO-8601 timestamp for when this profile record was created on the platform. */
@@ -2887,10 +2886,25 @@ export interface operations {
                         emails?: string[];
                         /** @description Phone numbers associated with the profile. */
                         phone_numbers?: string[];
+                        /** @description Self-declared social handles keyed by platform (e.g. 'github'), each an object naming the handle. Same sensitivity class as `emails`/`phone_numbers` (self-declared contact-class info). */
+                        social_handles?: {
+                            [key: string]: {
+                                /** @description The handle's display name. */
+                                name?: string;
+                            };
+                        };
+                        /** @description Personal/professional website URLs associated with the profile. */
+                        websites?: string[];
                         /** @description Whether the authenticated account has blocked this member. */
                         is_blocked?: boolean;
                         /** @description Whether the authenticated account follows this member. */
                         is_following?: boolean;
+                        /** @description Whether LinkedIn has verified this member. */
+                        is_verified?: boolean;
+                        /** @description Same value as specifics.is_premium; prefer the nested field. */
+                        is_premium?: boolean;
+                        /** @description The member's profile language. Distinct from specifics.default_locale/specifics.supported_locales. */
+                        language?: string;
                         /** @description Total follower count. */
                         followers_count?: number;
                         /** @description Total 1st-degree connection count. */
@@ -4145,7 +4159,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not have the required Core seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -4193,7 +4207,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -4338,7 +4352,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -4481,7 +4495,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -4624,7 +4638,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -4763,7 +4777,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -5513,7 +5527,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not have the required Core seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -5704,7 +5718,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not have the required Core seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -5898,7 +5912,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not have the required Core seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -6078,7 +6092,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not have the required Core seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -6236,7 +6250,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not administer this page with the invite-to-follow entitlement (fail-closed), or lacks the required Core seat. */
+            /** @description The account does not administer this page with the invite-to-follow entitlement (fail-closed), or lacks an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -6403,7 +6417,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not administer this page (follower analytics is admin-gated), or lacks the required Core seat. */
+            /** @description The account does not administer this page (follower analytics is admin-gated), or lacks an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -6451,7 +6465,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -6551,7 +6565,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not administer this page with the invite-to-follow entitlement, or lacks the required Core seat. */
+            /** @description The account does not administer this page with the invite-to-follow entitlement, or lacks an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -6599,7 +6613,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -6746,7 +6760,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not administer this page (the admin gate), or lacks the required Core seat. */
+            /** @description The account does not administer this page (the admin gate), or lacks an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -6794,7 +6808,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -6929,7 +6943,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not administer this page (the admin gate), or lacks the required Core seat. */
+            /** @description The account does not administer this page (the admin gate), or lacks an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -6977,7 +6991,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -7105,7 +7119,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not administer this page (the admin gate), or lacks the required Core seat. */
+            /** @description The account does not administer this page (the admin gate), or lacks an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -7153,7 +7167,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -7266,7 +7280,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not administer this page (fail-closed, the target company is absent from the account's administered pages), or the account lacks the required Core seat. */
+            /** @description The account does not administer this page (fail-closed, the target company is absent from the account's administered pages), or the account lacks an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -7332,7 +7346,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -7448,7 +7462,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not administer this page (the admin gate), or lacks the required Core seat. */
+            /** @description The account does not administer this page (the admin gate), or lacks an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -7496,7 +7510,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -7654,7 +7668,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not administer this page (the admin gate), or lacks the required Core seat. */
+            /** @description The account does not administer this page (the admin gate), or lacks an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -7702,7 +7716,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -7847,7 +7861,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description No active Core seat for this tenant. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -8023,7 +8037,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description No active Core seat for this tenant. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -8186,7 +8200,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description No active Core seat for this tenant. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -9734,7 +9748,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -13052,7 +13066,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -13176,7 +13190,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary upstream error occurred. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -13300,7 +13314,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary upstream error occurred. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -16003,7 +16017,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not have the required Core seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -16254,7 +16268,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not have the required Core seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -16479,7 +16493,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not have the required Core seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -16732,7 +16746,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not have the required Core seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -16902,7 +16916,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not have the required Core seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -17090,7 +17104,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either the account does not have the required Core seat (TIER_NOT_ACTIVE, carries required_tier:'core'; upgrade the Curviate subscription), or LINKEDIN_FEATURE_NOT_SUBSCRIBED, the connected LinkedIn account lacks the subscription/entitlement LinkedIn requires to publish job postings, even a FREE posting (activate it on LinkedIn; reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED, the connected LinkedIn account lacks the subscription/entitlement LinkedIn requires to publish job postings, even a FREE posting (activate it on LinkedIn; reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -17226,7 +17240,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either the account does not have the required Core seat (TIER_NOT_ACTIVE, carries required_tier:'core'; upgrade the Curviate subscription), or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the connected LinkedIn account lacks the subscription/entitlement LinkedIn requires to manage job postings (the same gate that blocks publish also blocks close; activate it on LinkedIn; reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the connected LinkedIn account lacks the subscription/entitlement LinkedIn requires to manage job postings (the same gate that blocks publish also blocks close; activate it on LinkedIn; reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -17449,7 +17463,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not have the required Core seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -17641,7 +17655,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not have the required Core seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -17763,7 +17777,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not have the required Core seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -19229,7 +19243,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description This account does not have an active Core seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -19268,7 +19282,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -19356,7 +19370,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description This account does not have an active Core seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -19404,7 +19418,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -19487,7 +19501,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description This account does not have an active Core seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -19526,7 +19540,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -19934,7 +19948,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either TIER_NOT_ACTIVE, the Curviate seat lacks the Recruiter add-on (carries required_tier:'recruiter'; upgrade the Curviate subscription), or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the connected LinkedIn account lacks an active Recruiter subscription. The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -20152,7 +20166,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either TIER_NOT_ACTIVE, the Curviate seat lacks the Recruiter add-on (carries required_tier:'recruiter'; upgrade the Curviate subscription), or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the connected LinkedIn account lacks the Recruiter subscription (activate it on LinkedIn; reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -20465,7 +20479,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. TIER_NOT_ACTIVE, the Curviate seat lacks the Recruiter add-on, or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the LinkedIn account does not have an active Recruiter subscription. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -20658,7 +20672,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either TIER_NOT_ACTIVE, the Curviate seat lacks the Recruiter add-on (carries required_tier:'recruiter'; upgrade the Curviate subscription), or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the connected LinkedIn account does not have an active Recruiter subscription. The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -20892,7 +20906,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. TIER_NOT_ACTIVE, the Curviate seat lacks the Recruiter add-on, or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the LinkedIn account does not have an active Recruiter subscription. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -21096,7 +21110,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. TIER_NOT_ACTIVE, the Curviate seat lacks the Recruiter add-on, or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the LinkedIn account does not have an active Recruiter subscription. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -21254,7 +21268,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. TIER_NOT_ACTIVE, the Curviate seat lacks the Recruiter add-on, or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the LinkedIn account does not have an active Recruiter subscription. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -21508,7 +21522,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. TIER_NOT_ACTIVE, the Curviate seat lacks the Recruiter add-on, or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the LinkedIn account does not have an active Recruiter subscription. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -21816,7 +21830,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. TIER_NOT_ACTIVE, the Curviate seat lacks the Recruiter add-on, or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the LinkedIn account does not have an active Recruiter subscription. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -22160,7 +22174,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. TIER_NOT_ACTIVE, the Curviate seat lacks the Recruiter add-on, or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the LinkedIn account does not have an active Recruiter subscription. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -22340,7 +22354,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. TIER_NOT_ACTIVE, the Curviate seat lacks the Recruiter add-on, or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the LinkedIn account does not have an active Recruiter subscription. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -22548,7 +22562,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. TIER_NOT_ACTIVE, the Curviate seat lacks the Recruiter add-on, or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the LinkedIn account does not have an active Recruiter subscription. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -22703,7 +22717,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. TIER_NOT_ACTIVE, the Curviate seat lacks the Recruiter add-on, or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the LinkedIn account does not have an active Recruiter subscription. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -22868,7 +22882,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. TIER_NOT_ACTIVE, the Curviate seat lacks the Recruiter add-on, or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the LinkedIn account does not have an active Recruiter subscription. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -23076,7 +23090,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. TIER_NOT_ACTIVE, the Curviate seat lacks the Recruiter add-on, or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the LinkedIn account does not have an active Recruiter subscription. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -23256,7 +23270,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. TIER_NOT_ACTIVE, the Curviate seat lacks the Recruiter add-on, or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the LinkedIn account does not have an active Recruiter subscription. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -23464,7 +23478,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. TIER_NOT_ACTIVE, the Curviate seat lacks the Recruiter add-on, or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the LinkedIn account does not have an active Recruiter subscription. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -23659,7 +23673,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. TIER_NOT_ACTIVE, the Curviate seat lacks the Recruiter add-on, or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the LinkedIn account does not have an active Recruiter subscription. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -23797,7 +23811,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. TIER_NOT_ACTIVE, the Curviate seat lacks the Recruiter add-on, or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the LinkedIn account does not have an active Recruiter subscription. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -23942,7 +23956,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. TIER_NOT_ACTIVE (no Recruiter seat) or LINKEDIN_FEATURE_NOT_SUBSCRIBED (no active LinkedIn Recruiter subscription). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -24274,7 +24288,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. TIER_NOT_ACTIVE, the Curviate seat lacks the Recruiter add-on, or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the LinkedIn account does not have an active Recruiter subscription. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -24482,7 +24496,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. TIER_NOT_ACTIVE, the Curviate seat lacks the Recruiter add-on, or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the LinkedIn account does not have an active Recruiter subscription. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -24604,7 +24618,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. TIER_NOT_ACTIVE, the Curviate seat lacks the Recruiter add-on, or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the LinkedIn account does not have an active Recruiter subscription. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -24764,7 +24778,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either TIER_NOT_ACTIVE, the Curviate seat lacks the Sales Navigator add-on (carries required_tier:'sales_nav'; upgrade the Curviate subscription), or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the connected LinkedIn account lacks the Sales Navigator subscription (activate it on LinkedIn; reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -25079,7 +25093,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either TIER_NOT_ACTIVE, the Curviate seat lacks the Sales Navigator add-on (carries required_tier:'sales_nav'; upgrade the Curviate subscription), or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the connected LinkedIn account lacks the Sales Navigator subscription (activate it on LinkedIn; reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -25227,7 +25241,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either TIER_NOT_ACTIVE, the Curviate seat lacks the Sales Navigator add-on (carries required_tier:'sales_nav'; upgrade the Curviate subscription), or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the connected LinkedIn account lacks the Sales Navigator subscription (activate it on LinkedIn; reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -25384,7 +25398,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either TIER_NOT_ACTIVE, the Curviate seat lacks the Sales Navigator add-on (carries required_tier:'sales_nav'; upgrade the Curviate subscription), or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the connected LinkedIn account lacks the Sales Navigator subscription (activate it on LinkedIn; reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -25596,7 +25610,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either TIER_NOT_ACTIVE, the Curviate seat lacks the Sales Navigator add-on (carries required_tier:'sales_nav'; upgrade the Curviate subscription), or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the connected LinkedIn account lacks the Sales Navigator subscription (activate it on LinkedIn; reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -25982,7 +25996,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either TIER_NOT_ACTIVE, the Curviate seat lacks the Sales Navigator add-on (carries required_tier:'sales_nav'; upgrade the Curviate subscription), or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the connected LinkedIn account lacks the Sales Navigator subscription (activate it on LinkedIn; reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -26129,7 +26143,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either TIER_NOT_ACTIVE, the Curviate seat lacks the Sales Navigator add-on (carries required_tier:'sales_nav'; upgrade the Curviate subscription), or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the connected LinkedIn account lacks the Sales Navigator subscription (activate it on LinkedIn; reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -26276,7 +26290,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either TIER_NOT_ACTIVE, the Curviate seat lacks the Sales Navigator add-on (carries required_tier:'sales_nav'; upgrade the Curviate subscription), or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the connected LinkedIn account lacks the Sales Navigator subscription (activate it on LinkedIn; reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -26437,7 +26451,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either TIER_NOT_ACTIVE, the Curviate seat lacks the Sales Navigator add-on (carries required_tier:'sales_nav'; upgrade the Curviate subscription), or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the connected LinkedIn account lacks the Sales Navigator subscription (activate it on LinkedIn; reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -26918,7 +26932,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either TIER_NOT_ACTIVE, the Curviate seat lacks the Sales Navigator add-on (carries required_tier:'sales_nav'; upgrade the Curviate subscription), or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the connected LinkedIn account lacks the Sales Navigator subscription (activate it on LinkedIn; reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -27190,7 +27204,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either TIER_NOT_ACTIVE, the Curviate seat lacks the Sales Navigator add-on (carries required_tier:'sales_nav'; upgrade the Curviate subscription), or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the connected LinkedIn account lacks the Sales Navigator subscription (activate it on LinkedIn; reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -27591,7 +27605,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either TIER_NOT_ACTIVE, the Curviate seat lacks the Sales Navigator add-on (carries required_tier:'sales_nav'; upgrade the Curviate subscription), or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the connected LinkedIn account lacks the Sales Navigator subscription (activate it on LinkedIn; reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -27721,7 +27735,7 @@ export interface operations {
                             seat_id?: string | null;
                             /** @description ISO-8601 UTC connection timestamp. */
                             connected_at?: string | null;
-                            /** @description The seat-derived connection scope this account was last connected with (e.g. ["classic","company","sales_navigator"]). Scope is derived from the account's seat; there is no products input. Null for accounts connected before this was recorded; not attachment truth for Company Pages. */
+                            /** @description The connection scope this account was last connected with (e.g. ["classic","company","sales_navigator","recruiter"]). A connect asks for every product and LinkedIn activates the ones the account actually has, so this is what was ASKED for, narrowed only by an explicit linkedin_premium on that connect. A linkedin_premium narrowing is not remembered between connects, so this shows what the LAST connect asked for and a reconnect that omits the field widens it again. Null for accounts connected before this was recorded; not attachment truth for Company Pages. */
                             requested_products?: ("classic" | "company" | "sales_navigator" | "recruiter")[] | null;
                             /** @description ISO-8601 UTC creation timestamp of the underlying LinkedIn account, distinct from connected_at. Null until the first background enrichment lands. */
                             substrate_created_at?: string | null;
@@ -27829,7 +27843,7 @@ export interface operations {
                         last_checked_at?: string;
                         /** @description The seat this account occupies (null for an admin seatless account). */
                         seat_id?: string | null;
-                        /** @description The seat-derived connection scope this account was last connected with (e.g. ["classic","company","sales_navigator"]). Scope is derived from the account's seat; there is no products input. Null for accounts connected before this was recorded; not attachment truth for Company Pages. */
+                        /** @description The connection scope this account was last connected with (e.g. ["classic","company","sales_navigator","recruiter"]). A connect asks for every product and LinkedIn activates the ones the account actually has, so this is what was ASKED for, narrowed only by an explicit linkedin_premium on that connect. A linkedin_premium narrowing is not remembered between connects, so this shows what the LAST connect asked for and a reconnect that omits the field widens it again. Null for accounts connected before this was recorded; not attachment truth for Company Pages. */
                         requested_products?: ("classic" | "company" | "sales_navigator" | "recruiter")[] | null;
                         /** @description ISO-8601 UTC creation timestamp of the underlying LinkedIn account, distinct from connected_at. Null until the first background enrichment lands. */
                         substrate_created_at?: string | null;
@@ -28257,10 +28271,10 @@ export interface operations {
                     /** @description Present = re-authenticate this existing account in place (reconnect); omit = connect a new account. */
                     account_id?: string;
                     /**
-                     * @description Free-trial seats only: which premium to enable for the trial (at most one). Ignored for paid seats. Defaults to none.
+                     * @description Optional. Which LinkedIn premium surface this connection should ask for: 'sales_navigator' or 'recruiter'. Omit it and the connection asks for every product, and LinkedIn activates whichever ones the account actually has. One LinkedIn account can hold only one of the two premium surfaces, and when both are asked for Sales Navigator takes precedence, so set this to 'recruiter' if the account holds both and you want the Recruiter surface. This applies per connection and is not remembered: state it on every connect and reconnect where Recruiter must win.
                      * @enum {string}
                      */
-                    trial_premium?: "none" | "sales_navigator" | "recruiter";
+                    linkedin_premium?: "sales_navigator" | "recruiter";
                     /** @description Managed proxy location hint as an ISO 3166-1 alpha-2 country code (e.g. US, DE). */
                     country?: string;
                     /** @description IPv4 address used to infer the managed proxy location. */
@@ -28412,7 +28426,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Either LINKEDIN_FEATURE_NOT_SUBSCRIBED (the seat requested a premium product, Sales Navigator or Recruiter, that this LinkedIn account is not subscribed to; match the seat tier to the account's actual plan, or use a different seat), or ACCOUNT_RESTRICTED (LinkedIn has restricted this account; sign in to LinkedIn to see what it needs, resolve it there, then connect again). The code field distinguishes the two. */
+            /** @description Either LINKEDIN_FEATURE_NOT_SUBSCRIBED (this LinkedIn account is not subscribed to a premium product the connection asked for, Sales Navigator or Recruiter; activate that subscription on LinkedIn and connect again, or set linkedin_premium to the premium the account actually holds), or ACCOUNT_RESTRICTED (LinkedIn has restricted this account; sign in to LinkedIn to see what it needs, resolve it there, then connect again). The code field distinguishes the two. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -29879,11 +29893,6 @@ export interface operations {
                                 description?: string;
                                 /** @description Present and true when the event carries LinkedIn-specific content. */
                                 linkedin_only?: boolean;
-                                /**
-                                 * @description Required add-on tier. Present only on tier-gated events.
-                                 * @enum {string}
-                                 */
-                                tier?: "recruiter" | "sales_nav";
                                 /**
                                  * @description Delivery timing. Omitted (equivalent to 'realtime') on every live-pushed event. 'no_longer_realtime' means no push exists for this event; 'not_realtime' means delivery is not guaranteed sub-second and may lag the underlying LinkedIn event, typically because it is detected by a poll rather than pushed, though a given event's own reference article may document an additional immediate path.
                                  * @enum {string}

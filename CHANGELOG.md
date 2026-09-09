@@ -7,10 +7,173 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [0.30.0] - 2026-09-09
+
+Fixture and types regenerated against the deployed staging document
+(`https://api.staging.curviate.com`, 125 paths); the exact source commit is
+recorded in `fixtures/PROVENANCE.json`.
+
+Product tiers are retired. Curviate no longer sells a Sales Navigator or
+Recruiter product, no seat carries a tier flag, and one ordinary paid seat now
+entitles the entire API surface.
+
+**What actually happens to the error-code union: 45 codes to 67. Twenty-three
+added, one removed, and the two retired tier codes KEPT.**
+
+- **Added (23).** `NO_ACTIVE_SEAT` and `BETA_NOT_ENABLED`, plus twenty-one codes
+  the API already returned that this SDK had been erasing to `INTERNAL`.
+- **Removed (1).** `RATE_LIMITED`, which the API never produced at all.
+- **Kept, deprecated (2).** `TIER_NOT_ACTIVE` and `PREMIUM_CONFLICT` are still
+  exported. They are *not* gone, and that is deliberate: a client talks to a
+  deployment rather than to a changelog, and an API that predates the
+  seat-based entitlement rollout still answers them. See **Deprecated** below
+  before you delete a `case`.
+- **Removed field (1).** `CurviateError.requiredTier`, with `RequiredTier`,
+  `REQUIRED_TIERS` and `KNOWN_REQUIRED_TIERS`. This one really is gone, so a
+  pre-rollout deployment gives you the code without the field. See **Removed**.
+
+**Breaking, and unusually so for a 0.x minor**, in two narrow places rather than
+across the union: the `requiredTier` field is gone, and `RATE_LIMITED` is gone.
+Everything else here is additive or a deprecation.
+
+Ripple: this release follows the server-side gate collapse, the connect rework
+and the beta consent gate, each already deployed. Nothing here is an SDK-only
+decision; the wire contract moved first and this release catches the typed
+client up to it, in one release rather than three.
+
+### Deprecated
+
+- **`TIER_NOT_ACTIVE` is replaced by `NO_ACTIVE_SEAT`, and `PREMIUM_CONFLICT`
+  is withdrawn with no replacement, but BOTH ARE STILL EXPORTED.**
+
+  Not a courtesy, and worth understanding before you delete a `case`: a client
+  talks to a DEPLOYMENT, not to a changelog. An API that has not taken the
+  seat-based entitlement rollout yet still answers `TIER_NOT_ACTIVE`, and a
+  union that had dropped the code would decode it to `INTERNAL` there, turning
+  a fixable billing refusal into what looks like a server fault, on exactly the
+  deployments most likely to send it. Carrying a dead code for one release is
+  the cheaper mistake.
+
+  So handle both for now: `NO_ACTIVE_SEAT` from a current deployment,
+  `TIER_NOT_ACTIVE` from an older one. They mean the same thing to a caller,
+  and both are `user_fixable` 403s whose remedy is a seat. Each is marked
+  `@deprecated` in its JSDoc with the replacement named, so your editor says so
+  at the call site.
+
+  They are removed in the first release after every deployment carries the new
+  contract. That removal will be breaking and will say so.
+
+  `CurviateError.requiredTier` is NOT kept, however: see Removed below. On a
+  pre-rollout deployment you get the code without the field, which is enough to
+  route on, since the message names the tier.
+
+### Removed
+
+- **`RATE_LIMITED` is gone: the API never produced it.** The substrate's own
+  `RATE_LIMITED` is translated to `PLATFORM_RATE_LIMIT` (429) before any
+  response is written, so no caller could ever receive the code this SDK was
+  exporting. A `case "RATE_LIMITED"` was dead code, and worse than dead: it
+  read as the handled branch for a throttle that actually arrives as
+  `PLATFORM_RATE_LIMIT`, so the real one fell through to `default`.
+
+  The codes to branch on for throttling are `RATE_LIMIT_ACCOUNT`,
+  `RATE_LIMIT_TENANT`, `PLATFORM_RATE_LIMIT` and `LINKEDIN_RATE_LIMITED`. If
+  you matched `RATE_LIMITED`, delete the arm; nothing was reaching it.
+
+- **`CurviateError.requiredTier` is gone**, along with the `RequiredTier` type,
+  the `REQUIRED_TIERS` array and the `KNOWN_REQUIRED_TIERS` set. There is no
+  tier to name on a refusal any more, so the field carried nothing. It is also
+  gone from `CurviateError.toJSON()`, so a serialized error no longer has the
+  key at all. Code reading `err.requiredTier` to route an upgrade should read
+  `err.code` instead and route on the three refusals described in the README.
+
+### Added
+
+- **Twenty-one codes previously collapsed to `INTERNAL` now surface.** Each is
+  returned by a `/v1` route, the `/v1` catch-all, or a shared handler one of
+  them calls, so each already reached this SDK's decoder, and because the
+  exported union did not carry them, the decoder erased every one to
+  `INTERNAL`. A refusal the caller could usually fix arrived looking like a
+  server fault, with no `switch` arm possible.
+
+  Routing and reads: `NOT_FOUND`, `REACTION_NOT_FOUND`. Upstream failures on
+  connect and billing: `SUBSTRATE_LINK_FAILED`, `SUBSTRATE_CAP_REACHED`,
+  `BILLING_CHECKOUT_FAILED`, `BILLING_PORTAL_UNAVAILABLE`. Tenant standing:
+  `ACCOUNT_DISPUTED`, `ACCOUNT_LINKING_DISABLED`, `PERIOD_LOCKED`. Seat and
+  subscription conflicts: `SEAT_NOT_EMPTY`, `SEAT_PROVISIONAL`,
+  `SUBSCRIPTION_ALREADY_EXISTS`, `ALREADY_CANCELLED`,
+  `CANCELLATION_ALREADY_EFFECTIVE`, `INVALID_CANCELLATION_SOURCE`. Free trial:
+  `TRIAL_EXPIRED`, `TRIAL_SEAT_LIMIT`, `TRIAL_ACTIVE_SEAT_LIMIT`,
+  `TRIAL_IDENTITY_ALREADY_USED`, `TRIAL_IDENTITY_UNRESOLVED`. Admin tenants:
+  `ADMIN_BYPASS`.
+
+  Additive for anyone who was already handling `INTERNAL` as their fallback:
+  those cases now arrive with their real code instead, so a `default` arm that
+  retried on `retryLikelyToSucceed` keeps working and can be narrowed. If you
+  match on `INTERNAL` specifically to detect one of these, that check needs
+  updating.
+
+  `ADMIN_BYPASS` is a correction as much as an addition: this file previously
+  named it as an example of a code that never reaches a caller, while the
+  server constructed it at nine sites inside its versioned billing endpoints.
+
+- **`BETA_NOT_ENABLED` (403).** A beta-gated operation refuses this until a
+  human enables beta operations for the workspace in Settings, or the request
+  carries the `X-Curviate-Beta` header. It is the third of three independent
+  403 entitlement refusals, and nothing about it involves the seat or the
+  LinkedIn subscription.
+
+- **`@beta` JSDoc markers on every operation the served document badges beta**,
+  which today is the whole Sales Navigator, Recruiter and inbox surface plus the
+  two company-inbox reads. Your editor now says so before you call one. The
+  badge is a superset of the gate: a badged operation is not necessarily gated,
+  so read the code on a refusal rather than inferring it from the badge. The
+  markers are derived from the served badge and checked in both directions, so
+  they cannot silently drift from it.
+
+- **README: "Three refusals, three codes"**, a table separating
+  `NO_ACTIVE_SEAT` (fix it in Curviate billing) from
+  `LINKEDIN_FEATURE_NOT_SUBSCRIBED` (fix it on LinkedIn) from
+  `BETA_NOT_ENABLED` (a human opts the workspace in), because all three are 403
+  and all three read alike in prose. It also states that request validation runs
+  before every entitlement check, so an `INVALID_REQUEST` says nothing about
+  entitlement, and a 403 from one of the three proves the request itself
+  validated cleanly.
+
+- **README: "Beta operations"**, on what the badge means and how it differs from
+  the gate.
+
+### Changed
+
+- **Sales Navigator and Recruiter JSDoc no longer describes a Curviate-side
+  entitlement.** Neither namespace has a product to buy and neither carries a
+  tier: one ordinary paid seat entitles every method. What they do need is the
+  LinkedIn account's own subscription, and an account whose LinkedIn lacks it
+  refuses `LINKEDIN_FEATURE_NOT_SUBSCRIBED` with a remedy on LinkedIn rather
+  than in Curviate billing. The namespace headers now say that instead of naming
+  a tier.
+
+- **`auth.intent()` connect scope is no longer seat-derived.** The connect asks
+  for every product (classic, company, sales_navigator, recruiter) and LinkedIn
+  activates whichever ones the account actually holds; `requested_products` on
+  the account reports what was ASKED for, not what is attached. The optional
+  `linkedin_premium` (`"sales_navigator"` | `"recruiter"`) narrows one
+  connection, and **is never remembered**: a later connect or reconnect that
+  omits it widens the scope back to every product, so it has to be restated on
+  every call where Recruiter must win. `trial_premium` is gone from the connect
+  surface.
+
+- **The taxonomy is no longer documented as additive-only.** It tracks the
+  served document: a code the API stops returning is removed and a renamed code
+  is renamed, because a dead code in the union is worse than a breaking change
+  a caller can see. Such changes are called out here, as this entry does.
+
+---
+
 ## [0.29.0] - 2026-09-07
 
 Fixture and types regenerated against the deployed staging document
-(`https://api.staging.curviate.com`, `server_git_sha 1447ffd4...`, 125 paths).
+(`https://api.staging.curviate.com`, 125 paths; source commit in `fixtures/PROVENANCE.json`).
 Additive only: `safety-policy` now says where `limit_profile` came from, and an
 operator override can be released without a reconnect.
 
@@ -55,7 +218,7 @@ operator override can be released without a reconnect.
 ## [0.28.0] - 2026-09-07
 
 Fixture regenerated against the deployed staging document
-(`https://api.staging.curviate.com`, `server_git_sha 14fa8234...`, 125 paths).
+(`https://api.staging.curviate.com`, 125 paths; source commit in `fixtures/PROVENANCE.json`).
 **BREAKING**: `messaging.searchChats` now rejects a `query` shorter than 3
 characters server-side. Pre-1.0 a breaking change ships as a minor, so a caret
 range on `0.27.x` will not pick this up.
@@ -97,7 +260,7 @@ range on `0.27.x` will not pick this up.
 ## [0.27.0] - 2026-09-06
 
 Fixture regenerated against the deployed production document
-(`https://api.curviate.com`, `server_git_sha 2a86542f...`, 125 paths).
+(`https://api.curviate.com`, 125 paths; source commit in `fixtures/PROVENANCE.json`).
 **BREAKING**: the `message.delivered` webhook event is gone from the catalogue,
 from `CurviateEvent`, and from the events a subscription can be created with.
 Everything else here is additive or description-only. Pre-1.0 a breaking change
@@ -166,7 +329,7 @@ ships as a minor, so a caret range on `0.26.x` will not pick this up.
 ## [0.26.0] - 2026-09-06
 
 Fixture regenerated against the deployed production document
-(`https://api.curviate.com`, `server_git_sha bd795601...`, 125 paths).
+(`https://api.curviate.com`, 125 paths; source commit in `fixtures/PROVENANCE.json`).
 **BREAKING at the type level** for a consumer that reads `row` off an error
 or a safety warning as a `string`: it is now `string | null` on both. Three
 response enums also widen, which reds an exhaustive `switch` with a `never`
@@ -559,7 +722,8 @@ version bump. A `0.21.0` would have reached nobody, because a caret on a `0.x`
 version never resolves the next minor.
 
 The generated types are a mirror of the served OpenAPI document. This release
-is a regeneration against that document at server commit `686b70f4`; nothing
+is a regeneration against that document, at the commit recorded in
+`fixtures/PROVENANCE.json`; nothing
 was hand-edited.
 
 ### Fixed
@@ -664,9 +828,10 @@ on the next install with no consumer-side version bump.
 
 Generated types are rebuilt from the **served** OpenAPI document rather than a
 hand-refreshed snapshot, and the snapshot itself now records where it came from.
-Source of this release: `https://api.staging.curviate.com` at server commit
-`1015999221a2dafc505cc565369a40b8ceca1888`, recorded in
-`fixtures/PROVENANCE.json`.
+Source of this release: `https://api.staging.curviate.com`. The exact source
+commit is recorded in `fixtures/PROVENANCE.json` rather than here, because this
+file ships inside the published package and an API commit id is not something a
+consumer of it can resolve.
 
 ### Changed
 
