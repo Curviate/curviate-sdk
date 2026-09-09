@@ -1,5 +1,23 @@
 /**
- * Sales Navigator resource: 12 methods (tier: sn).
+ * Sales Navigator resource.
+ *
+ * @beta Every operation in this namespace is beta. None of it has been
+ * exercised against a real LinkedIn Sales Navigator subscription yet, so
+ * response shapes may still move. While an operation is beta-GATED it refuses
+ * `BETA_NOT_ENABLED` (403) until a human enables beta for the tenant in
+ * Settings, or the request carries the `X-Curviate-Beta` header. The beta
+ * badge is a superset of the gate: a badged operation is not necessarily
+ * gated, so read the code on a refusal rather than inferring it from the
+ * badge.
+ *
+ * NO CURVIATE-SIDE ENTITLEMENT. There is no Sales Navigator product to buy
+ * from Curviate and no tier on a seat: one ordinary paid seat entitles every
+ * method here, and a tenant with no active seat covering the account refuses
+ * `NO_ACTIVE_SEAT` (403) exactly as it does on any other namespace. What this
+ * namespace does need is the LINKEDIN account's own Sales Navigator
+ * subscription; an account whose LinkedIn lacks it refuses
+ * `LINKEDIN_FEATURE_NOT_SUBSCRIBED` (403), and that remedy lives on LinkedIn,
+ * not in Curviate billing.
  *
  * Account-scoped: the bound context injects `account_id` as the leading
  * `/v1/` path segment on every request (account-first grammar), never a
@@ -113,7 +131,10 @@ export class SalesNavigatorResource {
   /**
    * Search LinkedIn members using the full Sales Navigator filter set.
    * `POST /v1/{account_id}/sales-navigator/search/people`
-   * Requires tier `sn`. Returns `TIER_NOT_ACTIVE` (403) when the seat lacks it.
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   searchPeople(body: SNSearchPeopleBody, query?: Partial<SNSearchPeopleQuery>): Promise<SNSearchPeopleResult> {
     return this.ctx.request<SNSearchPeopleResult>({
@@ -127,6 +148,10 @@ export class SalesNavigatorResource {
   /**
    * Search LinkedIn companies using the full Sales Navigator company filter set.
    * `POST /v1/{account_id}/sales-navigator/search/companies`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   searchCompanies(
     body: SNSearchCompaniesBody,
@@ -143,6 +168,10 @@ export class SalesNavigatorResource {
   /**
    * Resolve human-readable terms to opaque Sales Navigator filter IDs.
    * `GET /v1/{account_id}/sales-navigator/search/parameters`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   getParameters(query: SNGetParametersQuery): Promise<SNGetParametersResult> {
     return this.ctx.request<SNGetParametersResult>({
@@ -156,6 +185,10 @@ export class SalesNavigatorResource {
    * Start a new Sales Navigator chat. `attachments[]`, when supplied, carry
    * base64-encoded file bytes, always sent as JSON, never multipart.
    * `POST /v1/{account_id}/sales-navigator/chats`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   startChat(body: SNStartChatBody): Promise<SNStartChatResult> {
     return this.ctx.request<SNStartChatResult>({
@@ -168,6 +201,10 @@ export class SalesNavigatorResource {
   /**
    * Retrieve a LinkedIn profile with Sales Navigator enrichment.
    * `GET /v1/{account_id}/sales-navigator/profiles/{identifier}`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   getProfile(identifier: string, query?: Partial<SNGetProfileQuery>): Promise<SNGetProfileResult> {
     return this.ctx.request<SNGetProfileResult>({
@@ -181,6 +218,10 @@ export class SalesNavigatorResource {
   /**
    * List the saved-account (company) lists on the operator's Sales Navigator seat.
    * `GET /v1/{account_id}/sales-navigator/account-lists`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   accountLists(query?: Partial<SNAccountListsQuery>): Promise<SNAccountListsResult> {
     return this.ctx.request<SNAccountListsResult>({
@@ -193,6 +234,10 @@ export class SalesNavigatorResource {
   /**
    * List the saved-lead (member) lists on the operator's Sales Navigator seat.
    * `GET /v1/{account_id}/sales-navigator/lead-lists`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   leadLists(query?: Partial<SNLeadListsQuery>): Promise<SNLeadListsResult> {
     return this.ctx.request<SNLeadListsResult>({
@@ -206,6 +251,10 @@ export class SalesNavigatorResource {
    * Browse the saved accounts (companies) in one account list. Pass optional
    * `persona` / `filter` / `sort_by` / `sort_order` filters in the body.
    * `POST /v1/{account_id}/sales-navigator/account-lists/{list_id}`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   browseAccountList(
     listId: string,
@@ -224,6 +273,10 @@ export class SalesNavigatorResource {
    * Browse the saved leads (members) in one lead list. Pass optional
    * `spotlight` / `sort_by` / `sort_order` filters in the body.
    * `POST /v1/{account_id}/sales-navigator/lead-lists/{list_id}`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   browseLeadList(
     listId: string,
@@ -245,6 +298,10 @@ export class SalesNavigatorResource {
    *
    * No `saved` boolean is invented; a `2xx` response body is the success
    * signal (the substrate returns no success flag).
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   saveAccount(input: SNSaveAccountInput): Promise<SNSaveAccountResult> {
     const { list_id, ...body } = input;
@@ -259,6 +316,10 @@ export class SalesNavigatorResource {
    * Save a Sales Navigator member into a lead list. Body is just `{user_id}`;
    * `account_id` lives in the path, not the body.
    * `POST /v1/{account_id}/sales-navigator/lead-lists/{list_id}/save`
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   saveLead(input: SNSaveLeadInput): Promise<SNSaveLeadResult> {
     const { list_id, ...body } = input;
@@ -274,6 +335,10 @@ export class SalesNavigatorResource {
    * `POST /v1/{account_id}/sales-navigator/search`
    * `url` is the only accepted body field. Response items are polymorphic,
    * each discriminated individually by its own `object`.
+   *
+   * @beta Beta operation. See the namespace note above: while beta-gated it
+   * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
+   * or the request carries the `X-Curviate-Beta` header.
    */
   searchFromUrl(body: SNSearchFromUrlBody, query?: Partial<SNSearchFromUrlQuery>): Promise<SNSearchFromUrlResult> {
     return this.ctx.request<SNSearchFromUrlResult>({

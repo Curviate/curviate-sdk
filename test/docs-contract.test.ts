@@ -346,3 +346,121 @@ describe("README names exactly the reads that accept mode / max_age", () => {
     ).toEqual([]);
   });
 });
+
+// ─── beta markers track the served badge ─────────────────────────────────────
+
+/**
+ * The SDK must tell a caller, in the editor, which operations are beta. Both
+ * sides of that claim are DERIVED rather than listed: the beta set from the
+ * served document's own `x-curviate-stability` marker, and the markers from
+ * the shipped source bytes. A hand-maintained list of beta namespaces was the
+ * obvious alternative and is exactly the thing that goes stale, silently, the
+ * next time the server badges or graduates an operation.
+ *
+ * Operations are joined to methods by the `` `METHOD /path` `` line every
+ * resource JSDoc block already carries, because a path is a fact both
+ * representations state independently. A name-to-path map would be a third
+ * representation to keep in sync.
+ *
+ * BOTH directions are asserted. Under-marking is the customer-visible defect
+ * (a caller treats a moving surface as stable). Over-marking is the one that
+ * rots: a stale `@beta` on a graduated operation trains callers to ignore the
+ * tag, which costs the marker its meaning everywhere else.
+ */
+describe("every beta operation carries an @beta marker, and only those", () => {
+  interface StabilityOperation {
+    "x-curviate-stability"?: string;
+  }
+  interface StabilityDoc {
+    paths?: Record<string, Record<string, StabilityOperation | undefined>>;
+  }
+
+  const HTTP_METHODS = ["get", "post", "put", "patch", "delete"] as const;
+  const key = (method: string, path: string): string => `${method.toUpperCase()} ${path}`;
+
+  /** Operations the served document badges beta. */
+  function badgedBeta(doc: StabilityDoc): Set<string> {
+    const out = new Set<string>();
+    for (const [path, item] of Object.entries(doc.paths ?? {})) {
+      for (const method of HTTP_METHODS) {
+        const op = item[method];
+        if (op && op["x-curviate-stability"] === "beta") out.add(key(method, path));
+      }
+    }
+    return out;
+  }
+
+  const doc = JSON.parse(read("fixtures/openapi.json")) as StabilityDoc;
+  const beta = badgedBeta(doc);
+
+  /**
+   * Every JSDoc block in every resource file that names at least one `/v1/`
+   * operation, with the operations it names and whether it is tagged `@beta`.
+   * File-level header blocks name no path, so they drop out here and are not
+   * mistaken for a method.
+   */
+  const blocks = handAuthoredSources()
+    .filter((f) => f.startsWith("src/resources/"))
+    .flatMap((file) => {
+      const text = read(file);
+      return (text.match(/\/\*\*[\s\S]*?\*\//g) ?? []).flatMap((block) => {
+        const ops = [...block.matchAll(/`(GET|POST|PUT|PATCH|DELETE) (\/v1\/[^`]+)`/g)].map((m) =>
+          key(m[1]!, m[2]!),
+        );
+        if (ops.length === 0) return [];
+        return [{ file, ops, tagged: /@beta\b/.test(block) }];
+      });
+    });
+
+  // POSITIVE CONTROL, and the assertion that keeps every claim below honest.
+  // All three checks that follow are "the offending set is empty" shapes, and
+  // a reader that harvested nothing satisfies all three at once — a changed
+  // JSDoc convention, a moved resources directory, a regex that stopped
+  // matching. Pinning that the document badges some operations AND that the
+  // source names some operations makes a blind reader fail loudly here rather
+  // than pass quietly there.
+  it("reads a non-empty badge set from the document and a non-empty method set from source", () => {
+    expect(beta.size, "the served document badges no operation beta at all").toBeGreaterThan(0);
+    expect(blocks.length, "no resource JSDoc block names a /v1/ operation").toBeGreaterThan(100);
+  });
+
+  it("every badged operation is reachable from a resource JSDoc block", () => {
+    // Without this, an operation whose method JSDoc lost its path line drops
+    // out of `blocks` entirely and the under-marking check below goes quiet
+    // about it instead of red.
+    const documented = new Set(blocks.flatMap((b) => b.ops));
+    expect(
+      [...beta].filter((op) => !documented.has(op)).sort(),
+      "the document badges these operations beta but no resource JSDoc names " +
+        "the path, so nothing here can check their marker. Either the SDK is " +
+        "missing the method, or its JSDoc lost the `METHOD /path` line this " +
+        "guard joins on.",
+    ).toEqual([]);
+  });
+
+  it("marks every beta operation", () => {
+    const unmarked = blocks
+      .filter((b) => !b.tagged && b.ops.some((op) => beta.has(op)))
+      .flatMap((b) => b.ops.filter((op) => beta.has(op)).map((op) => `${b.file}: ${op}`))
+      .sort();
+    expect(
+      unmarked,
+      "the served document badges these operations beta and the SDK method " +
+        "documenting each one carries no @beta tag, so a caller reads a moving " +
+        "surface as stable.",
+    ).toEqual([]);
+  });
+
+  it("marks nothing that is not beta", () => {
+    const overmarked = blocks
+      .filter((b) => b.tagged && b.ops.some((op) => !beta.has(op)))
+      .flatMap((b) => b.ops.filter((op) => !beta.has(op)).map((op) => `${b.file}: ${op}`))
+      .sort();
+    expect(
+      overmarked,
+      "these operations carry an @beta tag but the served document does not " +
+        "badge them beta. If one graduated, drop the tag: a stale @beta teaches " +
+        "callers to ignore the marker everywhere.",
+    ).toEqual([]);
+  });
+});

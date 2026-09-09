@@ -10,10 +10,7 @@ import {
   isCurviateError,
   ERROR_CODES,
   KNOWN_ERROR_CODES,
-  REQUIRED_TIERS,
-  KNOWN_REQUIRED_TIERS,
   type ErrorCode,
-  type RequiredTier,
 } from "../src/errors.js";
 
 describe("CurviateError", () => {
@@ -36,17 +33,15 @@ describe("CurviateError", () => {
   // full field surface.
   it("exposes the documented field surface", () => {
     const e = new CurviateError({
-      code: "TIER_NOT_ACTIVE",
-      message: "needs sales nav",
+      code: "NO_ACTIVE_SEAT",
+      message: "no active seat covers this account",
       httpStatus: 403,
       userFixable: true,
       retryLikelyToSucceed: false,
-      requiredTier: "sales_nav",
       retryHint: { kind: "never" },
     });
     expect(e.userFixable).toBe(true);
     expect(e.retryLikelyToSucceed).toBe(false);
-    expect(e.requiredTier).toBe("sales_nav");
     expect(e.retryHint).toEqual({ kind: "never" });
   });
 
@@ -140,15 +135,24 @@ describe("ErrorCode union", () => {
       }).code).toBe(code);
     }
 
+    // Still excluded: the boot-time environment refusal answers no request, so
+    // no caller can receive it.
     // @ts-expect-error — internal-only code is excluded from the public union.
     const banned1: ErrorCode = "BANNED_ENV_PREFIX";
-    // @ts-expect-error — internal-only code is excluded from the public union.
-    const banned2: ErrorCode = "ADMIN_BYPASS";
     // @ts-expect-error — fabricated code is not in the union.
-    const banned3: ErrorCode = "BANISHED_CODE";
+    const banned2: ErrorCode = "BANISHED_CODE";
     void banned1;
     void banned2;
-    void banned3;
+
+    // NO LONGER excluded, and the reversal is the point: `ADMIN_BYPASS` is
+    // constructed at nine sites inside the versioned billing endpoints, so an
+    // admin workspace really does receive it and it used to arrive as
+    // `INTERNAL`. It was previously asserted here as unassignable, on the
+    // strength of a comment in the source that called it unreachable. This is
+    // a plain assignment rather than a `@ts-expect-error`, so if it is ever
+    // dropped from the union again the compiler says so.
+    const admin: ErrorCode = "ADMIN_BYPASS";
+    expect(admin).toBe("ADMIN_BYPASS");
   });
 
   // The connect-request conflict code is part of the public taxonomy — a caller
@@ -195,7 +199,7 @@ describe("fixture-documented codes (guard)", () => {
   // the response's OWN description names that exact code verbatim — the same
   // "CODE — explanation" convention used for every deliberately-authored
   // error in this spec (ACCOUNT_RESTRICTED, LINKEDIN_OPERATION_NOT_SUPPORTED,
-  // RATE_LIMITED on the Recruiter / Sales Navigator surface, etc.). This
+  // LINKEDIN_SESSION_EVICTED, etc.). This
   // self-reference check is what separates signal from boilerplate without a
   // hand-maintained exclusion list.
   //
@@ -212,8 +216,8 @@ describe("fixture-documented codes (guard)", () => {
   // must fill the parentheses ALONE. These descriptions carry plenty of other
   // capitalised tokens (APPLICANTS, CAPTCHA, FREE, PIPELINE, POST, PROMOTED,
   // PROMOTED_PLUS), and the two nearest misses in the current document,
-  // `(PIPELINE, APPLICANTS)` and `(TIER_NOT_ACTIVE, carries required_tier...)`,
-  // are excluded by the comma alone. So the discrimination is thinner than
+  // `(PIPELINE, APPLICANTS)` and `(FREE, PROMOTED or PROMOTED_PLUS)`, are
+  // excluded by the comma alone. So the discrimination is thinner than
   // "only error codes are written this way".
   //
   // ponytail: a bare `(CAPTCHA)`-style parenthetical, or a cross-reference to a
@@ -314,7 +318,7 @@ describe("fixture-documented codes (guard)", () => {
   // extraction rule above) must be in the SDK's taxonomy. A future server
   // change that reaches the public docs with a new code fails this test until
   // ERROR_CODES learns it — the same class of gap that silently downgraded
-  // CONNECTION_REQUEST_CONFLICT (and, this release, RATE_LIMITED) to INTERNAL.
+  // CONNECTION_REQUEST_CONFLICT to INTERNAL.
   it("ERROR_CODES is a superset of every fixture-documented code", () => {
     const missing = [...fixtureCodes].filter((c) => !knownCodes.has(c)).sort();
     expect(
@@ -328,23 +332,161 @@ describe("fixture-documented codes (guard)", () => {
   });
 });
 
-describe("RequiredTier single source of truth", () => {
-  // Mirrors the ERROR_CODES / KNOWN_ERROR_CODES pattern: KNOWN_REQUIRED_TIERS
-  // and RequiredTier are both derived from REQUIRED_TIERS, so the type a
-  // caller narrows on and the set the transport validates a wire value
-  // against can never drift apart.
-  it("KNOWN_REQUIRED_TIERS contains exactly the REQUIRED_TIERS entries", () => {
-    expect(new Set(KNOWN_REQUIRED_TIERS)).toEqual(new Set(REQUIRED_TIERS));
+describe("entitlement taxonomy after the tier retirement", () => {
+  // The existing "fixture-documented codes (guard)" block above checks ONE
+  // direction: document -> SDK, so a code the API documents and the SDK lacks
+  // reds. It is a SUPERSET assertion, which by construction cannot see the
+  // other direction: a code the SDK still exports after the API stopped
+  // returning it stays green there forever, and a caller keeps a `case` arm
+  // for a refusal that can no longer arrive. That is exactly what the tier
+  // retirement produced, so this block asserts the retired direction.
+  //
+  // Scope is deliberately the ENTITLEMENT FAMILY, not the whole taxonomy. A
+  // full SDK -> document equality would be wrong: the SDK carries codes the
+  // served document never documents (transport-minted `INTERNAL`, and codes
+  // whose only 403/409 response is described in prose), so equality over the
+  // whole union would fail on correct code. Over this family the two sides
+  // really are meant to agree, and the family is small enough to name.
+
+  /**
+   * Retired by the tier retirement and NOT yet withdrawn from the union: a
+   * deployment predating the rollout still emits them. Step one of a two-step
+   * retirement, so they are exported and marked `@deprecated`.
+   */
+  const RETIRED = ["TIER_NOT_ACTIVE", "PREMIUM_CONFLICT"] as const;
+  /** The three live 403 entitlement refusals. */
+  const LIVE = ["NO_ACTIVE_SEAT", "LINKEDIN_FEATURE_NOT_SUBSCRIBED", "BETA_NOT_ENABLED"] as const;
+
+  const exported: ReadonlySet<string> = new Set(ERROR_CODES);
+
+  it("exports all three live entitlement codes", () => {
+    expect(LIVE.filter((c) => !exported.has(c))).toEqual([]);
   });
 
-  it("has no duplicate entries in REQUIRED_TIERS", () => {
-    expect(KNOWN_REQUIRED_TIERS.size).toBe(REQUIRED_TIERS.length);
+  /**
+   * The comment region belonging to one array entry: everything between the
+   * PREVIOUS entry and this one, with JSDoc gutters flattened.
+   *
+   * Bounded on purpose. A plain `lastIndexOf("/**")` walks past a `//`-commented
+   * entry all the way to the file header, so a positive control asking "does
+   * this current code carry @deprecated" read the whole file and answered yes.
+   * Flattening the gutters matters for the same class of reason: a sentence
+   * wrapped across two ` * ` lines matches no regex written for one line.
+   */
+  function commentFor(src: string, code: string): string {
+    const at = src.indexOf(`"${code}",`);
+    if (at < 0) return "";
+    const prev = src.lastIndexOf('",\n', at - 1);
+    const region = src.slice(prev < 0 ? 0 : prev + 3, at);
+    return region.replace(/\n\s*\*\s?/g, " ").replace(/\s+/g, " ");
+  }
+
+  it("still exports both retired codes, because older deployments emit them", () => {
+    // NOT an oversight, and this case used to assert the opposite. A client is
+    // pointed at a DEPLOYMENT, not at a changelog: an API that has not taken
+    // the seat-based entitlement rollout yet still answers `TIER_NOT_ACTIVE`,
+    // and a union that dropped the code would decode it to `INTERNAL` there, so
+    // a fixable billing refusal would arrive as a server fault on exactly the
+    // deployments most likely to send it. Carrying a dead code is the cheaper
+    // error, so the retirement is two steps and this is step one.
+    expect(RETIRED.filter((c) => !exported.has(c))).toEqual([]);
   });
 
-  it("recognizes every tier at runtime", () => {
-    for (const tier of REQUIRED_TIERS) {
-      expect(KNOWN_REQUIRED_TIERS.has(tier)).toBe(true);
+  it("marks both as @deprecated, next to the code itself", () => {
+    // Exporting them without the marker is the failure mode this guards: the
+    // union would read as though both were current, and the two-step
+    // retirement would quietly become a permanent carry. Read from the shipped
+    // source so the marker is in the bytes a consumer's editor sees.
+    const src = readFileSync(
+      resolve(dirname(fileURLToPath(import.meta.url)), "../src/errors.ts"),
+      "utf8",
+    );
+    for (const code of RETIRED) {
+      const comment = commentFor(src, code);
+      expect(comment.length, `${code} has no comment region`).toBeGreaterThan(40);
+      expect(comment, `${code} must carry @deprecated`).toContain("@deprecated");
+      // And a stated removal trigger, so step two is not left to memory.
+      expect(comment, `${code} must say when it goes`).toContain(
+        "first release after",
+      );
     }
+    // The replacement has to be named for the code that HAS one.
+    expect(commentFor(src, "TIER_NOT_ACTIVE")).toContain("NO_ACTIVE_SEAT");
+  });
+
+  it("POSITIVE CONTROL: a current code carries no deprecation marker", () => {
+    // Otherwise "both are deprecated" could pass on a file where every entry
+    // is, or on a reader that returns the whole file for any lookup.
+    const src = readFileSync(
+      resolve(dirname(fileURLToPath(import.meta.url)), "../src/errors.ts"),
+      "utf8",
+    );
+    // The reader finds a real comment region for this code, and it is not a
+    // deprecation. Both halves matter: an empty region would satisfy the
+    // absence claim on its own.
+    const comment = commentFor(src, "NO_ACTIVE_SEAT");
+    expect(comment.length).toBeGreaterThan(40);
+    expect(comment).toContain("Curviate tenant has no active paid seat");
+    expect(comment).not.toContain("@deprecated");
+  });
+
+  // POSITIVE CONTROL for the two assertions above. Both are absence claims
+  // against the same membership probe, and a probe that answers "absent" for
+  // everything satisfies them trivially — a typo'd import, an `exported` set
+  // built from the wrong array, an ERROR_CODES that parsed to []. This runs
+  // the SAME probe over a code that is unambiguously present and demands a
+  // hit, so "not found" above means absent rather than blind.
+  it("the same membership probe finds a code that IS present", () => {
+    expect(exported.has("UNAUTHORIZED")).toBe(true);
+    expect(exported.size).toBeGreaterThan(20);
+  });
+
+  // ── the served-document side of the same three codes ──────────────────────
+  //
+  // Read as raw bytes rather than through the parsed structure on purpose: a
+  // retired code can survive anywhere in the document (an example value, a
+  // hand-authored 403 description, an enum), and the claim is that it survives
+  // NOWHERE. A structural walk would need to know every place to look.
+  const documentBytes = readFileSync(
+    resolve(dirname(fileURLToPath(import.meta.url)), "../fixtures/openapi.json"),
+    "utf8",
+  );
+
+  it("the served document names NO_ACTIVE_SEAT", () => {
+    // Positive control for the two document assertions below, which are both
+    // absence claims over these same bytes: if the fixture were empty,
+    // truncated, or read from the wrong path, every "absent" claim would pass
+    // and this one would fail.
+    expect(documentBytes).toContain("NO_ACTIVE_SEAT");
+  });
+
+  it("the served document names neither retired code", () => {
+    expect(
+      RETIRED.filter((c) => documentBytes.includes(c)),
+      "the deployed OpenAPI document still names a retired code. Either the " +
+        "fixture predates the deploy that retired it (refresh it with " +
+        "`pnpm gen:fixture` against the deployed base URL) or the server did " +
+        "not finish its own sweep.",
+    ).toEqual([]);
+  });
+
+  // TRIPWIRE, not an invariant. `BETA_NOT_ENABLED` is absent from the served
+  // document BY DESIGN today: the beta BADGE is live on 39 operations, but the
+  // beta GATE is still empty, and only a gated operation's 403 description
+  // names the code. So the SDK exports a code the document does not mention,
+  // which is correct and is the one place the two sides legitimately disagree.
+  //
+  // A RED HERE IS NOT A BUG — it means the gate has opened and the document
+  // now documents the refusal. When that happens: refresh the fixture, confirm
+  // the code the document names matches the one exported here, and delete this
+  // test (the superset guard above then covers it for free).
+  it("does not yet document BETA_NOT_ENABLED, because the gate is still empty", () => {
+    expect(
+      documentBytes.includes("BETA_NOT_ENABLED"),
+      "the deployed document now names BETA_NOT_ENABLED, so at least one " +
+        "operation is beta-GATED rather than merely beta-badged. Nothing is " +
+        "broken: re-read the note above this assertion and retire it.",
+    ).toBe(false);
   });
 });
 
@@ -355,7 +497,3 @@ describe("RequiredTier single source of truth", () => {
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 const _errorCodeMatchesArray: Same<ErrorCode, (typeof ERROR_CODES)[number]> = true;
 void _errorCodeMatchesArray;
-
-// Same lock for RequiredTier / REQUIRED_TIERS.
-const _requiredTierMatchesArray: Same<RequiredTier, (typeof REQUIRED_TIERS)[number]> = true;
-void _requiredTierMatchesArray;

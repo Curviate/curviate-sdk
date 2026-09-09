@@ -19,7 +19,6 @@ export {
   // alone could not be that instrument.
   ERROR_CODES,
   type ErrorCode,
-  type RequiredTier,
   type RetryHint,
   type SafetyHint,
   type SafetyReason,

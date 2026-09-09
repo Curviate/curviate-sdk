@@ -87,16 +87,31 @@ export class AuthResource {
    * account) rather than connecting a brand-new one; it is absent on a normal
    * connect.
    *
-   * Connection scope (which LinkedIn products are enabled: classic, company,
-   * a premium tier) is **seat-derived**: there is no products input on this
-   * body, and the recorded scope is readable back as `requested_products` on
-   * the account (`accounts.list()` / `accounts.get()`). A reconnect that
-   * would change scope must use `auth_method: "credentials"`, since a cookie
-   * replay cannot change scope and throws `CurviateError(code:
-   * "REAUTH_REQUIRED")` instead. A seat resolving to both individual-Premium
-   * tiers at once throws `CurviateError(code: "PREMIUM_CONFLICT")` (LinkedIn
-   * permits only one per profile). Pin a managed proxy with the optional
-   * `country`/`ip`, or supply `proxy` to override it entirely.
+   * Connection scope (which LinkedIn products are enabled) is not something
+   * you enumerate and it is NOT derived from the seat: the connect asks for
+   * every product (classic, company, sales_navigator, recruiter) and LinkedIn
+   * activates whichever ones the account actually holds. The recorded scope is
+   * readable back as `requested_products` on the account
+   * (`accounts.list()` / `accounts.get()`), and it is what was ASKED for, not
+   * proof of attachment.
+   *
+   * `linkedin_premium` (`"sales_navigator"` | `"recruiter"`) is the one
+   * optional narrowing. A LinkedIn account can hold only one of the two
+   * premium surfaces, and when both are asked for Sales Navigator wins, so set
+   * it to `"recruiter"` for an account that holds both and needs the Recruiter
+   * surface. **It applies to this connection only and is never remembered**:
+   * a later connect or reconnect that omits it widens the scope back to every
+   * product, so state it on every call where Recruiter must win. There is no
+   * account-level premium preference to set once.
+   *
+   * A reconnect that would change scope must use `auth_method: "credentials"`,
+   * since a cookie replay cannot change scope and throws
+   * `CurviateError(code: "REAUTH_REQUIRED")` instead. Asking for a premium the
+   * LinkedIn account does not hold throws
+   * `CurviateError(code: "LINKEDIN_FEATURE_NOT_SUBSCRIBED")` (403); the remedy
+   * is to activate the subscription on LinkedIn or to point `linkedin_premium`
+   * at the premium the account really has. Pin a managed proxy with the
+   * optional `country`/`ip`, or supply `proxy` to override it entirely.
    */
   intent(body: AuthIntentBody): Promise<AuthIntentResult> {
     return this.ctx.request<AuthIntentResult>({

@@ -144,6 +144,76 @@ exported `ErrorCode` type is the complete set, so `tsc` tells you when a `switch
 
 ---
 
+## Three refusals, three codes
+
+A `403` from this API is one of three completely separate refusals. They read alike
+in prose and they are fixed in three different places, so branch on `err.code` and
+never on the message.
+
+| Code | What is missing | Who fixes it, and where |
+|---|---|---|
+| `NO_ACTIVE_SEAT` | Your Curviate workspace has no active paid seat covering the account. | You, in Curviate billing. Buy or attach a seat, then retry. |
+| `LINKEDIN_FEATURE_NOT_SUBSCRIBED` | The LinkedIn account itself lacks the LinkedIn subscription the operation needs, such as Sales Navigator or Recruiter. | The account owner, on LinkedIn. No amount of Curviate billing lifts this one. |
+| `BETA_NOT_ENABLED` | The operation is beta-gated and your workspace has not opted into beta operations. | A human, in Settings ("Allow beta operations"), or per request with the `X-Curviate-Beta` header. |
+
+**There is no product tier.** One ordinary paid seat entitles the whole API surface,
+Sales Navigator and Recruiter included. Nothing on a seat names a product, no refusal
+asks you to upgrade a plan, and there is no field on the error saying which tier to
+buy, because there are no tiers to buy. What a premium namespace still needs is the
+LinkedIn account's own subscription, which is the second row above.
+
+```ts
+try {
+  await acc.salesNavigator.searchPeople({ keywords: "cto" });
+} catch (err) {
+  if (!isCurviateError(err)) throw err;
+  switch (err.code) {
+    case "NO_ACTIVE_SEAT":
+      // Curviate-side. Attach a seat in Billing.
+      break;
+    case "LINKEDIN_FEATURE_NOT_SUBSCRIBED":
+      // LinkedIn-side. The account needs its own Sales Navigator subscription.
+      break;
+    case "BETA_NOT_ENABLED":
+      // Consent-side. A human enables beta in Settings for this workspace.
+      break;
+  }
+}
+```
+
+**Request validation runs before every entitlement check, so `INVALID_REQUEST` tells
+you nothing about entitlement.** A malformed body is rejected with `400
+INVALID_REQUEST` while the seat, the LinkedIn subscription and beta consent are all
+still unexamined. A caller that reads a `400` as "my request was fine, my entitlement
+is not" has it backwards: fix the request, send it again, and only then does a `403`
+mean anything about what you are entitled to. The reverse holds too, and is the more
+useful half: a `403` from one of the three codes above proves the request itself
+parsed and validated cleanly.
+
+---
+
+## Beta operations
+
+Some operations are marked beta, because they have not been exercised against a real
+LinkedIn subscription yet and their response shapes may still move. Every beta method
+in this SDK carries an `@beta` tag in its JSDoc, so your editor tells you before you
+call it; whole namespaces that are beta say so on the namespace as well.
+
+The Sales Navigator, Recruiter and `inboxes` surfaces are beta in full today. Beta is
+per operation, not per namespace, so a mostly-stable namespace can carry a beta method:
+`companies.chats()` and `companies.searchChats()` are beta while the rest of
+`companies` is not. Read the tag on the method you are calling rather than inferring it
+from its neighbours.
+
+The badge is a superset of the gate: an operation can be badged beta and still be
+callable by anyone. A beta-GATED operation is the narrower set that actually refuses
+`BETA_NOT_ENABLED` until a human enables beta operations for the workspace in
+Settings, or the individual request carries `X-Curviate-Beta: true`. Because the two
+move independently, read the code on a refusal rather than inferring the gate from
+the badge.
+
+---
+
 ## Retrieval modes
 
 Some reads can be answered from Curviate's own store instead of a live LinkedIn
