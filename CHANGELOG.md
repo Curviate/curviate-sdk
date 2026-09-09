@@ -10,16 +10,31 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 ## [0.30.0] - 2026-09-09
 
 Fixture and types regenerated against the deployed staging document
-(`https://api.staging.curviate.com`, `server_git_sha ebddaea7...`, 125 paths).
+(`https://api.staging.curviate.com`, 125 paths); the exact source commit is
+recorded in `fixtures/PROVENANCE.json`.
 
-**Breaking, and unusually so for a 0.x minor: two error codes leave the public
-union.** Product tiers are retired. Curviate no longer sells a Sales Navigator
-or Recruiter product, no seat carries a tier flag, and one ordinary paid seat
-now entitles the entire API surface. The refusal that used to say "your seat
-lacks this tier" no longer exists, so the code that named it and the field that
-carried the tier name are both gone rather than deprecated in place: a code
-left in the union tells a caller to keep a `switch` arm for a refusal that can
-never arrive again.
+Product tiers are retired. Curviate no longer sells a Sales Navigator or
+Recruiter product, no seat carries a tier flag, and one ordinary paid seat now
+entitles the entire API surface.
+
+**What actually happens to the error-code union: 45 codes to 67. Twenty-three
+added, one removed, and the two retired tier codes KEPT.**
+
+- **Added (23).** `NO_ACTIVE_SEAT` and `BETA_NOT_ENABLED`, plus twenty-one codes
+  the API already returned that this SDK had been erasing to `INTERNAL`.
+- **Removed (1).** `RATE_LIMITED`, which the API never produced at all.
+- **Kept, deprecated (2).** `TIER_NOT_ACTIVE` and `PREMIUM_CONFLICT` are still
+  exported. They are *not* gone, and that is deliberate: a client talks to a
+  deployment rather than to a changelog, and an API that predates the
+  seat-based entitlement rollout still answers them. See **Deprecated** below
+  before you delete a `case`.
+- **Removed field (1).** `CurviateError.requiredTier`, with `RequiredTier`,
+  `REQUIRED_TIERS` and `KNOWN_REQUIRED_TIERS`. This one really is gone, so a
+  pre-rollout deployment gives you the code without the field. See **Removed**.
+
+**Breaking, and unusually so for a 0.x minor**, in two narrow places rather than
+across the union: the `requiredTier` field is gone, and `RATE_LIMITED` is gone.
+Everything else here is additive or a deprecation.
 
 Ripple: this release follows the server-side gate collapse, the connect rework
 and the beta consent gate, each already deployed. Nothing here is an SDK-only
@@ -158,7 +173,7 @@ client up to it, in one release rather than three.
 ## [0.29.0] - 2026-09-07
 
 Fixture and types regenerated against the deployed staging document
-(`https://api.staging.curviate.com`, `server_git_sha 1447ffd4...`, 125 paths).
+(`https://api.staging.curviate.com`, 125 paths; source commit in `fixtures/PROVENANCE.json`).
 Additive only: `safety-policy` now says where `limit_profile` came from, and an
 operator override can be released without a reconnect.
 
@@ -203,7 +218,7 @@ operator override can be released without a reconnect.
 ## [0.28.0] - 2026-09-07
 
 Fixture regenerated against the deployed staging document
-(`https://api.staging.curviate.com`, `server_git_sha 14fa8234...`, 125 paths).
+(`https://api.staging.curviate.com`, 125 paths; source commit in `fixtures/PROVENANCE.json`).
 **BREAKING**: `messaging.searchChats` now rejects a `query` shorter than 3
 characters server-side. Pre-1.0 a breaking change ships as a minor, so a caret
 range on `0.27.x` will not pick this up.
@@ -245,7 +260,7 @@ range on `0.27.x` will not pick this up.
 ## [0.27.0] - 2026-09-06
 
 Fixture regenerated against the deployed production document
-(`https://api.curviate.com`, `server_git_sha 2a86542f...`, 125 paths).
+(`https://api.curviate.com`, 125 paths; source commit in `fixtures/PROVENANCE.json`).
 **BREAKING**: the `message.delivered` webhook event is gone from the catalogue,
 from `CurviateEvent`, and from the events a subscription can be created with.
 Everything else here is additive or description-only. Pre-1.0 a breaking change
@@ -314,7 +329,7 @@ ships as a minor, so a caret range on `0.26.x` will not pick this up.
 ## [0.26.0] - 2026-09-06
 
 Fixture regenerated against the deployed production document
-(`https://api.curviate.com`, `server_git_sha bd795601...`, 125 paths).
+(`https://api.curviate.com`, 125 paths; source commit in `fixtures/PROVENANCE.json`).
 **BREAKING at the type level** for a consumer that reads `row` off an error
 or a safety warning as a `string`: it is now `string | null` on both. Three
 response enums also widen, which reds an exhaustive `switch` with a `never`
@@ -707,7 +722,8 @@ version bump. A `0.21.0` would have reached nobody, because a caret on a `0.x`
 version never resolves the next minor.
 
 The generated types are a mirror of the served OpenAPI document. This release
-is a regeneration against that document at server commit `686b70f4`; nothing
+is a regeneration against that document, at the commit recorded in
+`fixtures/PROVENANCE.json`; nothing
 was hand-edited.
 
 ### Fixed
@@ -812,9 +828,10 @@ on the next install with no consumer-side version bump.
 
 Generated types are rebuilt from the **served** OpenAPI document rather than a
 hand-refreshed snapshot, and the snapshot itself now records where it came from.
-Source of this release: `https://api.staging.curviate.com` at server commit
-`1015999221a2dafc505cc565369a40b8ceca1888`, recorded in
-`fixtures/PROVENANCE.json`.
+Source of this release: `https://api.staging.curviate.com`. The exact source
+commit is recorded in `fixtures/PROVENANCE.json` rather than here, because this
+file ships inside the published package and an API commit id is not something a
+consumer of it can resolve.
 
 ### Changed
 
