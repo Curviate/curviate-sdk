@@ -16,6 +16,10 @@ retired codes; additive otherwise.
 The trigger 0.30.0 named for the removal is met: every deployment now carries
 the seat-based entitlement contract, so neither retired code can arrive.
 
+Fixture and types regenerated against the deployed staging document
+(`https://api.staging.curviate.com`, 125 paths); the exact source commit is
+recorded in `fixtures/PROVENANCE.json`.
+
 ### Removed
 
 - **`TIER_NOT_ACTIVE` and `PREMIUM_CONFLICT` are gone from `ErrorCode`,
@@ -28,6 +32,18 @@ the seat-based entitlement contract, so neither retired code can arrive.
 
   Should a wire body ever carry either code, it decodes to `INTERNAL` like any
   unknown code.
+
+- **`seat_tier_mismatch` is gone from the safety-policy types**, on the read
+  response, the write response and the write body. Seats no longer carry a
+  tier, so there is nothing for it to disagree with, and the API has stopped
+  returning it. Read `limit_profile` for what LinkedIn grants the account.
+
+### Changed
+
+- Two regenerated descriptions: job search `paging.total_count` now says it
+  counts matching job postings and is `0` on an empty page, and the connect
+  body's `recruiter_contract_id` is described by the LinkedIn Recruiter
+  subscription rather than a Curviate tier. Documentation only; no type moved.
 
 ### Added
 
