@@ -786,4 +786,38 @@ describe("account-safety refusals", () => {
     expect(err.code).toBe("INTERNAL");
     expect(calls()).toBe(4); // 1 initial + maxRetries 3
   });
+
+  // STRIPE_DRIFT_DETECTED: checkout refuses closed (503) when the operator's
+  // configured seat price disagrees with what Curviate displays. Undecoded it
+  // reads as INTERNAL, "something broke", and INTERNAL is retried, so the
+  // fetch count carries the harm here too. The body is the one the server
+  // mints: `makeError` with both booleans false and no retry_hint. Its control
+  // is the same path at the same status with an unknown code, directly below.
+  it("decodes a 503 STRIPE_DRIFT_DETECTED and does not retry it (1 fetch)", async () => {
+    const calls = serve(
+      {
+        code: "STRIPE_DRIFT_DETECTED",
+        message: "Checkout is temporarily unavailable while we resolve a pricing configuration issue.",
+        user_fixable: false,
+        retry_likely_to_succeed: false,
+      },
+      503,
+    );
+    const err = (await execute("GET", "/v1/probe", det()).catch((e) => e)) as CurviateError;
+    expect(err.code).toBe("STRIPE_DRIFT_DETECTED");
+    expect(err.httpStatus).toBe(503);
+    expect(err.userFixable).toBe(false);
+    expect(err.retryLikelyToSucceed).toBe(false);
+    expect(calls()).toBe(1);
+  });
+
+  it("CONTROL: an unknown 503 code still downgrades to INTERNAL and retries (4 fetches)", async () => {
+    const calls = serve(
+      { code: "SOME_FUTURE_UNMAPPED_CODE", message: "x", user_fixable: false, retry_likely_to_succeed: true },
+      503,
+    );
+    const err = (await execute("GET", "/v1/probe", det()).catch((e) => e)) as CurviateError;
+    expect(err.code).toBe("INTERNAL");
+    expect(calls()).toBe(4);
+  });
 });

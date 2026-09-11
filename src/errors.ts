@@ -56,8 +56,8 @@
  *
  * So a retirement is two steps. First `@deprecated`, kept exported, with the
  * replacement named. Then removed, in the first release after every deployment
- * carries the new contract. `TIER_NOT_ACTIVE` and `PREMIUM_CONFLICT` are at
- * step one as of 0.30.0.
+ * carries the new contract. `TIER_NOT_ACTIVE` and `PREMIUM_CONFLICT` took step
+ * one in 0.30.0 and step two in 0.31.0.
  *
  * A code the API NEVER emitted is a different case and goes immediately, since
  * no deployment can be sending it: `RATE_LIMITED` went that way in 0.30.0.
@@ -113,21 +113,6 @@ export const ERROR_CODES = [
   "LINKEDIN_FEATURE_NOT_SUBSCRIBED",
   "BETA_NOT_ENABLED",
 
-  /**
-   * @deprecated Replaced by {@link NO_ACTIVE_SEAT}. Product tiers are retired,
-   * so no refusal names one any more.
-   *
-   * STILL EXPORTED ON PURPOSE, and this is not a courtesy: API deployments
-   * that predate the seat-based entitlement rollout still emit this code, and
-   * a client that stopped recognising it would decode it to `INTERNAL`: a
-   * fixable billing refusal arriving as a server fault, against the very
-   * deployments most likely to send it. It is withdrawn in the first release
-   * after every deployment carries the new contract.
-   *
-   * Handle both while that is true: `NO_ACTIVE_SEAT` from a current
-   * deployment, this from an older one. They mean the same thing to a caller.
-   */
-  "TIER_NOT_ACTIVE",
   // Rate limits
   "RATE_LIMIT_ACCOUNT",
   "RATE_LIMIT_TENANT",
@@ -155,18 +140,6 @@ export const ERROR_CODES = [
   "CHECKPOINT_ALREADY_RESOLVED",
   "CHECKPOINT_UNSUPPORTED",
   "CONNECTION_IN_PROGRESS",
-  /**
-   * @deprecated Withdrawn with no replacement. The one-premium conflict it
-   * reported cannot be expressed on the current input, because
-   * `linkedin_premium` is single-valued.
-   *
-   * STILL EXPORTED for the same reason as {@link TIER_NOT_ACTIVE}: deployments
-   * that predate the connect rework can still emit it, and dropping it early
-   * would turn a fixable refusal into `INTERNAL` on exactly those. Withdrawn
-   * in the first release after every deployment carries the new contract.
-   */
-  "PREMIUM_CONFLICT",
-
   // A reconnect whose seat-derived scope differs from the account's recorded
   // scope was attempted with cookie auth; a cookie replay cannot change
   // scope, so a full credentials re-authentication is required. user_fixable,
@@ -254,6 +227,15 @@ export const ERROR_CODES = [
   // returned by `/v1` billing routes at nine sites; it was previously cited
   // in this file as a code that never reaches a caller, which was wrong.
   "ADMIN_BYPASS",
+
+  // Checkout refused closed (503): Curviate's own seat-price configuration
+  // disagrees with the price it displays, so completing checkout would charge
+  // an amount you were never shown. A misconfiguration on Curviate's side, not
+  // a mistake in the request and not a transient fault: user_fixable false,
+  // and a retry fails the same way until Curviate corrects the price. Nothing
+  // was charged. Stop and surface it to a human (or support) rather than
+  // backing off.
+  "STRIPE_DRIFT_DETECTED",
 
   // Generic
   "INTERNAL",

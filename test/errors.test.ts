@@ -349,9 +349,10 @@ describe("entitlement taxonomy after the tier retirement", () => {
   // really are meant to agree, and the family is small enough to name.
 
   /**
-   * Retired by the tier retirement and NOT yet withdrawn from the union: a
-   * deployment predating the rollout still emits them. Step one of a two-step
-   * retirement, so they are exported and marked `@deprecated`.
+   * Retired by the tier retirement. Step one (0.30.0) kept them exported and
+   * `@deprecated`, because a deployment predating the seat-based rollout could
+   * still emit them. Step two (0.31.0) withdraws them: every deployment now
+   * carries the new contract, so a `case` arm for either is dead code.
    */
   const RETIRED = ["TIER_NOT_ACTIVE", "PREMIUM_CONFLICT"] as const;
   /** The three live 403 entitlement refusals. */
@@ -363,75 +364,20 @@ describe("entitlement taxonomy after the tier retirement", () => {
     expect(LIVE.filter((c) => !exported.has(c))).toEqual([]);
   });
 
-  /**
-   * The comment region belonging to one array entry: everything between the
-   * PREVIOUS entry and this one, with JSDoc gutters flattened.
-   *
-   * Bounded on purpose. A plain `lastIndexOf("/**")` walks past a `//`-commented
-   * entry all the way to the file header, so a positive control asking "does
-   * this current code carry @deprecated" read the whole file and answered yes.
-   * Flattening the gutters matters for the same class of reason: a sentence
-   * wrapped across two ` * ` lines matches no regex written for one line.
-   */
-  function commentFor(src: string, code: string): string {
-    const at = src.indexOf(`"${code}",`);
-    if (at < 0) return "";
-    const prev = src.lastIndexOf('",\n', at - 1);
-    const region = src.slice(prev < 0 ? 0 : prev + 3, at);
-    return region.replace(/\n\s*\*\s?/g, " ").replace(/\s+/g, " ");
-  }
-
-  it("still exports both retired codes, because older deployments emit them", () => {
-    // NOT an oversight, and this case used to assert the opposite. A client is
-    // pointed at a DEPLOYMENT, not at a changelog: an API that has not taken
-    // the seat-based entitlement rollout yet still answers `TIER_NOT_ACTIVE`,
-    // and a union that dropped the code would decode it to `INTERNAL` there, so
-    // a fixable billing refusal would arrive as a server fault on exactly the
-    // deployments most likely to send it. Carrying a dead code is the cheaper
-    // error, so the retirement is two steps and this is step one.
-    expect(RETIRED.filter((c) => !exported.has(c))).toEqual([]);
+  it("no longer exports either retired code", () => {
+    expect(RETIRED.filter((c) => exported.has(c))).toEqual([]);
+    // Compile-time half: the union refuses them, so a stale `case` arm in a
+    // caller's switch stops type-checking instead of silently never matching.
+    // @ts-expect-error — withdrawn in 0.31.0.
+    const tier: ErrorCode = "TIER_NOT_ACTIVE";
+    // @ts-expect-error — withdrawn in 0.31.0.
+    const premium: ErrorCode = "PREMIUM_CONFLICT";
+    void tier;
+    void premium;
   });
 
-  it("marks both as @deprecated, next to the code itself", () => {
-    // Exporting them without the marker is the failure mode this guards: the
-    // union would read as though both were current, and the two-step
-    // retirement would quietly become a permanent carry. Read from the shipped
-    // source so the marker is in the bytes a consumer's editor sees.
-    const src = readFileSync(
-      resolve(dirname(fileURLToPath(import.meta.url)), "../src/errors.ts"),
-      "utf8",
-    );
-    for (const code of RETIRED) {
-      const comment = commentFor(src, code);
-      expect(comment.length, `${code} has no comment region`).toBeGreaterThan(40);
-      expect(comment, `${code} must carry @deprecated`).toContain("@deprecated");
-      // And a stated removal trigger, so step two is not left to memory.
-      expect(comment, `${code} must say when it goes`).toContain(
-        "first release after",
-      );
-    }
-    // The replacement has to be named for the code that HAS one.
-    expect(commentFor(src, "TIER_NOT_ACTIVE")).toContain("NO_ACTIVE_SEAT");
-  });
-
-  it("POSITIVE CONTROL: a current code carries no deprecation marker", () => {
-    // Otherwise "both are deprecated" could pass on a file where every entry
-    // is, or on a reader that returns the whole file for any lookup.
-    const src = readFileSync(
-      resolve(dirname(fileURLToPath(import.meta.url)), "../src/errors.ts"),
-      "utf8",
-    );
-    // The reader finds a real comment region for this code, and it is not a
-    // deprecation. Both halves matter: an empty region would satisfy the
-    // absence claim on its own.
-    const comment = commentFor(src, "NO_ACTIVE_SEAT");
-    expect(comment.length).toBeGreaterThan(40);
-    expect(comment).toContain("Curviate tenant has no active paid seat");
-    expect(comment).not.toContain("@deprecated");
-  });
-
-  // POSITIVE CONTROL for the two assertions above. Both are absence claims
-  // against the same membership probe, and a probe that answers "absent" for
+  // POSITIVE CONTROL for the absence claim above. It runs against the same
+  // membership probe, and a probe that answers "absent" for
   // everything satisfies them trivially — a typo'd import, an `exported` set
   // built from the wrong array, an ERROR_CODES that parsed to []. This runs
   // the SAME probe over a code that is unambiguously present and demands a
