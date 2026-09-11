@@ -7,6 +7,59 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [0.31.0] - 2026-09-11
+
+Step two of the tier retirement, plus one billing refusal this SDK was about to
+erase to `INTERNAL`. **Breaking** for any caller still branching on the two
+retired codes; additive otherwise.
+
+The trigger 0.30.0 named for the removal is met: every deployment now carries
+the seat-based entitlement contract, so neither retired code can arrive.
+
+Fixture and types regenerated against the deployed staging document
+(`https://api.staging.curviate.com`, 125 paths); the exact source commit is
+recorded in `fixtures/PROVENANCE.json`.
+
+### Removed
+
+- **`TIER_NOT_ACTIVE` and `PREMIUM_CONFLICT` are gone from `ErrorCode`,
+  `ERROR_CODES` and `KNOWN_ERROR_CODES`.** Deprecated in 0.30.0; no deployment
+  emits either any more. A `case "TIER_NOT_ACTIVE"` or
+  `case "PREMIUM_CONFLICT"` now fails to type-check, which is the point: it was
+  a branch that could never be taken. Handle `NO_ACTIVE_SEAT` for the seat
+  refusal; `PREMIUM_CONFLICT` has no replacement, because the current connect
+  input cannot express the conflict it reported.
+
+  Should a wire body ever carry either code, it decodes to `INTERNAL` like any
+  unknown code.
+
+- **`seat_tier_mismatch` is gone from the safety-policy types**, on the read
+  response, the write response and the write body. Seats no longer carry a
+  tier, so there is nothing for it to disagree with, and the API has stopped
+  returning it. Read `limit_profile` for what LinkedIn grants the account.
+
+### Changed
+
+- Two regenerated descriptions: job search `paging.total_count` now says it
+  counts matching job postings and is `0` on an empty page, and the connect
+  body's `recruiter_contract_id` is described by the LinkedIn Recruiter
+  subscription rather than a Curviate tier. Documentation only; no type moved.
+
+### Added
+
+- **`STRIPE_DRIFT_DETECTED` (503).** Checkout refuses closed when Curviate's
+  own seat-price configuration disagrees with the price it displays, so no one
+  is charged an amount they were never shown. It is a Curviate-side
+  misconfiguration: `userFixable` is `false`, a retry fails the same way until
+  Curviate corrects the price, and nothing was charged. Surface it to a human
+  or to support instead of backing off. Not in the transport's retryable set,
+  so a GET carrying it is fetched once.
+
+  Without this entry the refusal would have decoded to `INTERNAL`, reading as
+  a generic server fault and being retried as one.
+
+---
+
 ## [0.30.0] - 2026-09-09
 
 Fixture and types regenerated against the deployed staging document
