@@ -85,7 +85,8 @@ const SKIP_DIRS = new Set(["node_modules", "dist"]);
 // File extensions to scan. .cjs/.mts/.cts and .map are here for dist coverage:
 // tsup currently emits esm + .d.ts only, but a format or sourcemap change must
 // not silently drop the emitted artifact out of the scanned set.
-const SCAN_EXTS = new Set([".ts", ".mts", ".cts", ".mjs", ".cjs", ".js", ".md", ".json", ".map"]);
+// .yml/.yaml: CI workflow files in a public repository are public too.
+const SCAN_EXTS = new Set([".ts", ".mts", ".cts", ".mjs", ".cjs", ".js", ".md", ".json", ".map", ".yml", ".yaml"]);
 
 // Extensionless dotfiles to scan explicitly, matched by exact basename
 // (SCAN_EXTS can't catch these — see the module header comment).

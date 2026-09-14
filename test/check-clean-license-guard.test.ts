@@ -72,3 +72,28 @@ describe("check:clean — LICENSE is scanned (security-auditor F2)", () => {
     ).not.toThrow();
   });
 });
+
+describe("check:clean — YAML (CI workflow files) is scanned", () => {
+  const run = (cwd: string) =>
+    execFileSync(process.execPath, ["scripts/check-clean.mjs"], { cwd, encoding: "utf8", stdio: "pipe" });
+
+  it.each([".yml", ".yaml"])("a planted leak in .github/workflows/gate%s fails; removed, passes", async (ext) => {
+    const dir = await makeFixturePackage("MIT License\n\nCopyright (c) Example.\n");
+    const wf = join(dir, ".github", "workflows", `gate${ext}`);
+    await mkdir(dirname(wf), { recursive: true });
+    await writeFile(wf, `name: gate\n# calls ${VENDOR_FRAGMENT}\n`, "utf8");
+    let output = "";
+    let threw = false;
+    try {
+      run(dir);
+    } catch (err) {
+      threw = true;
+      output = String((err as { stderr?: string }).stderr ?? "");
+    }
+    expect(threw).toBe(true);
+    expect(output).toContain(join(".github", "workflows", `gate${ext}`));
+
+    await writeFile(wf, "name: gate\n", "utf8");
+    expect(() => run(dir)).not.toThrow();
+  });
+});
