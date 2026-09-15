@@ -77,7 +77,7 @@ describe("check:clean — YAML (CI workflow files) is scanned", () => {
   const run = (cwd: string) =>
     execFileSync(process.execPath, ["scripts/check-clean.mjs"], { cwd, encoding: "utf8", stdio: "pipe" });
 
-  it.each([".yml", ".yaml"])("a planted leak in .github/workflows/gate%s fails; removed, passes", async (ext) => {
+  it.each([".yml", ".yaml", ".YML", ".Yaml"])("a planted leak in .github/workflows/gate%s fails; removed, passes", async (ext) => {
     const dir = await makeFixturePackage("MIT License\n\nCopyright (c) Example.\n");
     const wf = join(dir, ".github", "workflows", `gate${ext}`);
     await mkdir(dirname(wf), { recursive: true });

@@ -192,7 +192,7 @@ async function collectFiles(dir) {
       results.push(...(await collectFiles(abs)));
     } else if (
       entry.isFile() &&
-      (SCAN_EXTS.has(extname(entry.name)) || SCAN_DOTFILES.has(entry.name))
+      (SCAN_EXTS.has(extname(entry.name).toLowerCase()) || SCAN_DOTFILES.has(entry.name))
     ) {
       results.push(abs);
     }
