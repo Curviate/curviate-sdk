@@ -148,7 +148,7 @@ export async function collectFiles(dir, root = pkgRoot) {
       results.push(...(await collectFiles(abs, root)));
     } else if (
       entry.isFile() &&
-      (SCAN_EXTS.has(extname(entry.name)) || SCAN_BASENAMES.has(entry.name))
+      (SCAN_EXTS.has(extname(entry.name).toLowerCase()) || SCAN_BASENAMES.has(entry.name))
     ) {
       results.push(abs);
     }

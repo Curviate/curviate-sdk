@@ -1,5 +1,5 @@
 /**
- * Accounts resource: connected-account management (4 methods, root-scoped).
+ * Accounts resource: connected-account management (5 methods, root-scoped).
  *
  * Pattern followed by all resource namespaces:
  *   - take a {@link RequestContext} in the constructor,
@@ -28,6 +28,10 @@ export type AccountListPage =
 export type AccountListParams = NonNullable<
   paths["/v1/accounts"]["get"]["parameters"]["query"]
 >;
+
+/** `GET /v1/accounts/seats` 200 body, the workspace's live seats with their occupancy. */
+export type SeatList =
+  paths["/v1/accounts/seats"]["get"]["responses"]["200"]["content"]["application/json"];
 
 /** `GET /v1/accounts/{account_id}` 200 body. */
 export type AccountDetail =
@@ -69,6 +73,29 @@ export class AccountsResource {
       path: "/v1/accounts",
       ...(params !== undefined ? { query: params } : {}),
     });
+  }
+
+  /**
+   * List the workspace's live seats: each `seat_id`, whether an account
+   * `occupied` it, and that `account_id` (`null` when free). Not paginated.
+   *
+   * Only live seats are listed, and an empty seat is listed only when
+   * connecting an account to it would be accepted right now. So an empty seat
+   * that is provisional, cancelling, on an ended trial, or blocked by billing
+   * does not appear, and `items` can be `[]` even though the workspace has
+   * seats. Any seat with `occupied: false` is a valid `seat_id` for connecting
+   * a new account with `auth.intent`. Carries no billing fields.
+   *
+   * @returns `{ object: "seat_list", items: { seat_id, occupied, account_id }[] }`.
+   *
+   * @example
+   * const { items } = await curviate.accounts.listSeats();
+   * const free = items.find((seat) => !seat.occupied);
+   * if (!free) throw new Error("No seat is free to connect to right now (add a seat, or check billing).");
+   * await curviate.auth.intent({ seat_id: free.seat_id, auth_method: "cookie", cookie: { li_at }, user_agent });
+   */
+  listSeats(): Promise<SeatList> {
+    return this.ctx.request<SeatList>({ method: "GET", path: "/v1/accounts/seats" });
   }
 
   /**

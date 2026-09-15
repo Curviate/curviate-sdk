@@ -7,6 +7,44 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [0.32.0] - 2026-09-15
+
+Seat discovery for connecting an account. Additive; nothing removed or renamed.
+
+Fixture and types regenerated against the deployed staging document
+(`https://api.staging.curviate.com`, 127 paths); the exact source commit is
+recorded in `fixtures/PROVENANCE.json`.
+
+### Added
+
+- **`accounts.listSeats()`** (`GET /v1/accounts/seats`). Returns
+  `{ object: "seat_list", items: { seat_id, occupied, account_id }[] }`: the
+  workspace's live seats, whether an account occupies each, and that account
+  (`null` when free). Not paginated. An empty seat is listed only when
+  connecting an account to it would be accepted right now, so an empty seat
+  that is provisional, cancelling, on an ended trial or blocked by billing is
+  left out, and `items` can be `[]` while the workspace still has seats. Any seat with `occupied: false` is a valid `seat_id` for connecting a new
+  account with `auth.intent`, so a connect no longer needs a seat id copied
+  from the dashboard. Carries no billing fields. The response type is
+  exported as `SeatList`.
+
+- **Types only: `GET` and `PATCH /v1/safety-policy`** (tenant-wide safety
+  defaults per limit profile and budget row). The generated `paths` type now
+  describes them; there is no resource method yet, so call them through your
+  own request if you need them today.
+
+### Changed
+
+- `auth.intent` documentation now points to `accounts.listSeats()` for finding
+  a free seat, matching the regenerated `seat_id` description.
+- Regenerated descriptions on `GET` and `PATCH /v1/{account_id}/safety-policy`:
+  an account's values now resolve from its own setting, then the tenant
+  default for its `limit_profile`, then the Curviate default, and `null` on the
+  account write restores the tenant default where one is set. Documentation
+  only; no type moved.
+
+---
+
 ## [0.31.0] - 2026-09-11
 
 Step two of the tier retirement, plus one billing refusal this SDK was about to

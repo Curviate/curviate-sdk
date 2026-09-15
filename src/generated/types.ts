@@ -2300,6 +2300,26 @@ export interface paths {
         patch: operations["patchV1AccountsAccountId"];
         trace?: never;
     };
+    "/v1/accounts/seats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List seats
+         * @description List the workspace's seats: each `seat_id`, whether an account occupies it, and that `account_id`. Pass an unoccupied `seat_id` to POST /v1/auth/intent to connect a new account. Every unoccupied seat listed is a valid connect target. Not paginated.
+         */
+        get: operations["getV1AccountsSeats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/auth/intent": {
         parameters: {
             query?: never;
@@ -2311,7 +2331,7 @@ export interface paths {
         put?: never;
         /**
          * Start a credential/cookie authentication
-         * @description Authenticate a LinkedIn account directly with credentials or a session cookie. The credential fields are NESTED, not top level: `auth_method: "credentials"` reads `credentials: { email, password }`, and `auth_method: "cookie"` reads `cookie: { li_at }` plus a top-level `user_agent`. Omit `account_id` to connect a NEW account into an empty `seat_id` (every seat id is listed with click-to-copy in the seat table on your dashboard); include `account_id` (in the body) to re-authenticate an EXISTING account in place. Returns the account on success (201 new / 200 reconnect), or a checkpoint challenge (202) carrying the account_id when LinkedIn requires verification. Complete the challenge with POST /v1/auth/checkpoint/solve (codes) or POST /v1/auth/checkpoint/poll (mobile-app approval). Connection scope (which LinkedIn products are enabled) is not something you list: the connection asks for every product and LinkedIn activates the ones the account actually has. The recorded scope is readable as `requested_products` on the account. One LinkedIn account can hold only one of the two premium surfaces, and when both are asked for Sales Navigator takes precedence, so pass the optional `linkedin_premium` (`sales_navigator` or `recruiter`) if the account holds both and you want the other one. Omit it and nothing is narrowed. It applies per connection and is not remembered, so state it on every connect and reconnect where Recruiter must win. A reconnect that changes scope must use credentials (a saved cookie cannot change scope), which includes any reconnect of an account connected before the full product set became the default. Pin a managed proxy with the optional `country`/`ip` or supply a `proxy` to override it.
+         * @description Authenticate a LinkedIn account directly with credentials or a session cookie. The credential fields are NESTED, not top level: `auth_method: "credentials"` reads `credentials: { email, password }`, and `auth_method: "cookie"` reads `cookie: { li_at }` plus a top-level `user_agent`. Omit `account_id` to connect a NEW account into an empty `seat_id` (list your seats with GET /v1/accounts/seats, or copy a seat id from the seat table on your dashboard); include `account_id` (in the body) to re-authenticate an EXISTING account in place. Returns the account on success (201 new / 200 reconnect), or a checkpoint challenge (202) carrying the account_id when LinkedIn requires verification. Complete the challenge with POST /v1/auth/checkpoint/solve (codes) or POST /v1/auth/checkpoint/poll (mobile-app approval). Connection scope (which LinkedIn products are enabled) is not something you list: the connection asks for every product and LinkedIn activates the ones the account actually has. The recorded scope is readable as `requested_products` on the account. One LinkedIn account can hold only one of the two premium surfaces, and when both are asked for Sales Navigator takes precedence, so pass the optional `linkedin_premium` (`sales_navigator` or `recruiter`) if the account holds both and you want the other one. Omit it and nothing is narrowed. It applies per connection and is not remembered, so state it on every connect and reconnect where Recruiter must win. A reconnect that changes scope must use credentials (a saved cookie cannot change scope), which includes any reconnect of an account connected before the full product set became the default. Pin a managed proxy with the optional `country`/`ip` or supply a `proxy` to override it.
          */
         post: operations["postV1AuthIntent"];
         delete?: never;
@@ -2581,7 +2601,7 @@ export interface paths {
         };
         /**
          * Read an account's safety policy
-         * @description Returns every configurable safety field for every budget row of one account, in a single response: the ceiling, the green and amber bands, the counting window, the enforcement posture and where it was inherited from, the activity window, warm-up state, the per-row character caps and search per-query cap, and how well calibrated each row's number is. Every value is seeded configuration and every one of them is settable. Where a configured value is above the Curviate default, the row carries an `over_default` entry naming the value, the default and the source class of that default. The response also carries `tenant_default_posture`, the workspace-wide default every account inherits, separately from this account's own effective `posture`, and `limit_profile`, which says which of the four Curviate default sets (`basic`, `premium`, `sales_navigator`, `recruiter`) every row below was resolved from, detected from the platform when the account connected.
+         * @description Returns every configurable safety field for every budget row of one account, in a single response: the ceiling, the green and amber bands, the counting window, the enforcement posture and where it was inherited from, the activity window, warm-up state, the per-row character caps and search per-query cap, and how well calibrated each row's number is. Every value is seeded configuration and every one of them is settable. Each value is this account's own where it set one, otherwise the tenant default for its `limit_profile` (`GET /v1/safety-policy`), otherwise the Curviate default. Where a configured value is above the Curviate default, the row carries an `over_default` entry naming the value, the default and the source class of that default. The response also carries `tenant_default_posture`, the workspace-wide default every account inherits, separately from this account's own effective `posture`, and `limit_profile`, which says which of the four Curviate default sets (`basic`, `premium`, `sales_navigator`, `recruiter`) every row below was resolved from, detected from the platform when the account connected.
          */
         get: operations["getV1AccountIdSafetyPolicy"];
         put?: never;
@@ -2591,7 +2611,7 @@ export interface paths {
         head?: never;
         /**
          * Update an account's safety policy
-         * @description The single safety-policy write. Send only the fields you are changing: everything you omit is left byte-identical, and sending `null` for a field clears your override and restores the Curviate default. Any limit may be set to any value: Curviate does not clamp, cap or refuse a change on the grounds that the number is unsafe. A value above the Curviate default is reported back in the response, and on every later read, with the default and its source class attached; there is no way to acknowledge it away, and setting the value back to the default removes it. A value that is not a value, such as a negative ceiling or an unknown row name, is a 400. Every field whose value CHANGES is appended to the account's action ledger with the previous value, the new value, the Curviate default, the actor and the time; a field you send whose value already equals its current effective value is not ledgered and is not stored as an override, so reading the policy and sending the document back changes nothing. Six fields on the read are derived rather than configured: `effective_ceiling`, `interface_ceiling`, `effective_interface_ceiling`, `posture_source`, `over_default` and each row's `warm_up_state`. Send them and they are accepted and ignored, never stored and never ledgered, so the document you read can go straight back. To pin a row's ramp, set `warm_up_factor`. `activity_window` is not accepted: send its settable subfields instead, the top-level `timezone` for the zone, and per row `activity_window_start`, `activity_window_end`, `activity_window_timezone` and `activity_window_applies_to`. The 400 this produces names those subfields, not just the refused object. And read `changes nothing` as `changes no limit`: the `posture` fields are OVERRIDES at every scope, so writing back a posture a scope merely inherits PINS it there and appends one ledger entry per pinned scope. That is what stops a later account- or tenant-wide change from moving it. A pin already in place is a no-op. An agent-authenticated write is accepted on exactly the same footing as an operator's. There is no bulk import, file upload or policy template: configuring many rows or many accounts is a loop over this operation. One field is not account-scoped: `tenant_default_posture` sets the default for EVERY account in the tenant, not just the one in the path, which is what makes it a one-call change for a whole workspace of personas. It is reported back at the top of every policy response, so a change to it is visible even on an account that overrides it. One other field is not row-scoped: `limit_profile` selects which of the four Curviate default sets this account's rows resolve from, so it moves the default under every row at once while leaving every value you have configured explicitly exactly as you set it. It is the platform product active on the account, not your Curviate seat entitlement, and the two can disagree: a lapsed subscription leaves the seat untouched. Curviate detects it when the account connects and re-detects it on every reconnect; setting it here is an operator override of that result, and it holds until the next connect. One field on this operation does not configure anything: `clear_halts` lifts the platform pause on the action types you name. When the platform refuses a call on an account, Curviate pauses that action type for the platform's own retry-after or a seeded cooldown, and every later call on it is refused locally without reaching the platform; the account resource reports the live pauses as `quotas[].halt`. Naming an action type here lifts its pause immediately, so the next call goes out. An action type with no active pause is accepted and does nothing, which makes it safe to send for a set you have not checked, and only the ones actually lifted are ledgered, each with the expiry it cut short, the actor and the time, readable afterwards on `GET /v1/{account_id}/safety-events` with `reason: "halt_cleared"`. Clearing disarms nothing: if the platform refuses the account again the pause returns, and a 429 or a refused write returns it for the full cooldown. Clear one when you have reason to believe the refusal was a transient upstream fault rather than the platform pushing back on this account.
+         * @description The account-level safety-policy write (tenant-wide defaults are set on `PATCH /v1/safety-policy`). Send only the fields you are changing: everything you omit is left byte-identical, and sending `null` for a field clears your override and restores the tenant default where one is set, the Curviate default otherwise. Any limit may be set to any value: Curviate does not clamp, cap or refuse a change on the grounds that the number is unsafe. A value above the Curviate default is reported back in the response, and on every later read, with the default and its source class attached; there is no way to acknowledge it away, and setting the value back to the default removes it. A value that is not a value, such as a negative ceiling or an unknown row name, is a 400. Every field whose value CHANGES is appended to the account's action ledger with the previous value, the new value, the Curviate default, the actor and the time; a field you send whose value already equals its current effective value is not ledgered and is not stored as an override, so reading the policy and sending the document back changes nothing. Six fields on the read are derived rather than configured: `effective_ceiling`, `interface_ceiling`, `effective_interface_ceiling`, `posture_source`, `over_default` and each row's `warm_up_state`. Send them and they are accepted and ignored, never stored and never ledgered, so the document you read can go straight back. To pin a row's ramp, set `warm_up_factor`. `activity_window` is not accepted: send its settable subfields instead, the top-level `timezone` for the zone, and per row `activity_window_start`, `activity_window_end`, `activity_window_timezone` and `activity_window_applies_to`. The 400 this produces names those subfields, not just the refused object. And read `changes nothing` as `changes no limit`: the `posture` fields are OVERRIDES at every scope, so writing back a posture a scope merely inherits PINS it there and appends one ledger entry per pinned scope. That is what stops a later account- or tenant-wide change from moving it. A pin already in place is a no-op. An agent-authenticated write is accepted on exactly the same footing as an operator's. There is no bulk import, file upload or policy template: configuring many rows or many accounts is a loop over this operation. One field is not account-scoped: `tenant_default_posture` sets the default for EVERY account in the tenant, not just the one in the path, which is what makes it a one-call change for a whole workspace of personas. It is reported back at the top of every policy response, so a change to it is visible even on an account that overrides it. One other field is not row-scoped: `limit_profile` selects which of the four Curviate default sets this account's rows resolve from, so it moves the default under every row at once while leaving every value you have configured explicitly exactly as you set it. It is the platform product active on the account, not your Curviate seat entitlement, and the two can disagree: a lapsed subscription leaves the seat untouched. Curviate detects it when the account connects and re-detects it on every reconnect; setting it here is an operator override of that result, and it holds until the next connect. One field on this operation does not configure anything: `clear_halts` lifts the platform pause on the action types you name. When the platform refuses a call on an account, Curviate pauses that action type for the platform's own retry-after or a seeded cooldown, and every later call on it is refused locally without reaching the platform; the account resource reports the live pauses as `quotas[].halt`. Naming an action type here lifts its pause immediately, so the next call goes out. An action type with no active pause is accepted and does nothing, which makes it safe to send for a set you have not checked, and only the ones actually lifted are ledgered, each with the expiry it cut short, the actor and the time, readable afterwards on `GET /v1/{account_id}/safety-events` with `reason: "halt_cleared"`. Clearing disarms nothing: if the platform refuses the account again the pause returns, and a 429 or a refused write returns it for the full cooldown. Clear one when you have reason to believe the refusal was a transient upstream fault rather than the platform pushing back on this account.
          */
         patch: operations["patchV1AccountIdSafetyPolicy"];
         trace?: never;
@@ -2614,6 +2634,30 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/v1/safety-policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read the tenant safety defaults
+         * @description Returns the tenant-wide safety defaults, per limit profile and per budget row: the values every account on that profile resolves from unless it sets its own. A value nobody has set here is the Curviate default, and a value set above the Curviate default carries an `over_default` entry naming the value, the default and its source class. Also carries `tenant_default_posture`. Works with no accounts connected, so defaults can be in place before the first one is.
+         */
+        get: operations["getV1SafetyPolicy"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update the tenant safety defaults
+         * @description The tenant-level safety-policy write. Sets defaults per limit profile and per budget row; every account on that profile resolves from them unless it overrides the same field itself, including accounts connected later. THIS CHANGES EVERY ACCOUNT IN THE TENANT THAT HAS NOT OVERRIDDEN THE FIELD, and it applies immediately: under `enforce` posture, lowering a default can start refusing actions across the tenant in one request. The response carries `impact`: how many accounts had a ceiling change, and how many moved into `over`, measured on those accounts before and after the write. Send only what you are changing; `null` clears a default back to the Curviate default. A value equal to the one already in force is not stored and not recorded. Any limit may be set to any value, and a value above the Curviate default is reported rather than refused. Every change is appended to the ledger with the previous value, the new value, the Curviate default, the actor and the time. Per-row posture is not a tenant default: use `tenant_default_posture` here, or `posture` on an account's own policy. Per-account values are set on `PATCH /v1/{account_id}/safety-policy`.
+         */
+        patch: operations["patchV1SafetyPolicy"];
         trace?: never;
     };
 }
@@ -28237,6 +28281,91 @@ export interface operations {
             };
         };
     };
+    getV1AccountsSeats: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Every live seat in the workspace with its occupancy. Empty list when the workspace has no seats. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "seat_list";
+                        items: {
+                            /** @description The seat ID (`seat_...`). Pass an unoccupied one as `seat_id` when connecting a new account. */
+                            seat_id: string;
+                            /** @description True when an account is connected on this seat. */
+                            occupied: boolean;
+                            /** @description The account on this seat, or null when unoccupied. */
+                            account_id: string | null;
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Internal error. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Service unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Gateway timeout. */
+            504: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     postV1AuthIntent: {
         parameters: {
             query?: never;
@@ -28247,7 +28376,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description The empty seat this NEW account will occupy. Required on a new connect; omit it and the call returns 400 INVALID_REQUEST with 'seat_id is required'. Seat ids look like seat_01H..., and every seat you own is listed with click-to-copy in the seat table on your dashboard; any seat showing no attached account is free to use. Ignored when account_id is present, because a reconnect keeps the account on its current seat. */
+                    /** @description The empty seat this NEW account will occupy. Required on a new connect; omit it and the call returns 400 INVALID_REQUEST with 'seat_id is required'. Seat ids look like seat_01H..., and every seat you own is listed by GET /v1/accounts/seats (any item with occupied false is free to use) and with click-to-copy in the seat table on your dashboard. Ignored when account_id is present, because a reconnect keeps the account on its current seat. */
                     seat_id?: string;
                     /**
                      * @description How to authenticate. 'credentials' reads the nested `credentials` object (email + password). 'cookie' reads the nested `cookie` object (li_at) and also requires a top-level `user_agent`. Neither set of fields is accepted at the top level.
@@ -30913,6 +31042,338 @@ export interface operations {
             };
             /** @description No such account for this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1SafetyPolicy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The tenant safety defaults, every limit profile and every budget row. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object?: "tenant_safety_policy";
+                        /**
+                         * @description The workspace-wide posture default every account in the tenant inherits, or null when none is set. Always present, and separate from `posture` on purpose: when this account overrides the tenant default, a change to the tenant default does not move `posture`, and this field is how you can still see it took effect.
+                         * @enum {string|null}
+                         */
+                        tenant_default_posture?: "warn" | "enforce" | null;
+                        /** @description One entry per limit profile, always all of them. */
+                        profiles?: {
+                            /**
+                             * @description The limit profile these defaults apply to. An account resolves from its own profile's defaults.
+                             * @enum {string}
+                             */
+                            limit_profile?: "basic" | "premium" | "sales_navigator" | "recruiter";
+                            /** @description Every budget row, always: the tenant default where one is set, the Curviate default otherwise. */
+                            rows?: {
+                                /** @description The counted-action row this policy governs. */
+                                budget_row?: string;
+                                /** @description What `enforce` refuses at and `warn` reports at, in the row's own unit. Null means the row is uncalibrated: Curviate has no figure for it. */
+                                ceiling?: number | null;
+                                /** @description Routine band. */
+                                green?: number | null;
+                                /** @description Warn-louder band. */
+                                amber?: number | null;
+                                /**
+                                 * @description The calendar grain this row is counted in.
+                                 * @enum {string}
+                                 */
+                                window_kind?: "day" | "week" | "month";
+                                /** @description How many grain units one counting window spans. */
+                                window_span?: number;
+                                /** @description IANA zone name the counting window is aligned to. Null counts in UTC. */
+                                window_timezone?: string | null;
+                                /** @description Local HH:MM the activity window opens. */
+                                activity_window_start?: string;
+                                /** @description Local HH:MM the activity window closes. */
+                                activity_window_end?: string;
+                                /** @description IANA zone name the activity window is read in. Null disables the window entirely. */
+                                activity_window_timezone?: string | null;
+                                /**
+                                 * @description What the activity window governs. `writes` (the default) covers live writes to LinkedIn; `all` widens it to live reads as well, which is the setting for a persona that should not be seen browsing at 03:00. It is broader than it sounds: `all` covers every live read, including the ones about the account itself, so a nightly analytics or invitation-backlog poll is refused at 03:00 too. A read Curviate answers from its own store never reaches LinkedIn, so it is never subject to the window under either setting, at any hour; the same read IS covered when the store cannot answer it, or when you ask for it live. Inbound events are never subject to it either. One action set to `all` reaches the whole account's live reads that spend no budget of their own (notifications, profile analytics, SSI, profile visitors, the invitation and saved-list listings): those calls debit no action type, so they have none to read this setting from and take the account-wide answer instead. Reads that DO debit an action type read that action type's own setting.
+                                 * @enum {string}
+                                 */
+                                activity_window_applies_to?: "writes" | "all";
+                                /** @description The tenant default multiplier for this row, or null when none is set. Null means each account follows its own derived warm-up ramp; 1 pins every account on this profile out of it. */
+                                warm_up_factor?: number | null;
+                                /** @description Length cap on the row's free-text field, in characters. */
+                                character_cap?: number | null;
+                                /** @description Length cap on the row's subject line, in characters. */
+                                subject_character_cap?: number | null;
+                                /** @description Bound on a single query's result lines. Search rows only. */
+                                per_query_cap?: number | null;
+                                /**
+                                 * @description How well calibrated this row's number is. `unseeded` means Curviate has no green, amber or ceiling figure for this row on this profile: the row is reported so nothing is silently missing, but nothing has calibrated it, so no value you set can be `over_default`.
+                                 * @enum {string}
+                                 */
+                                source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                /** @description What a call through the matching ELEVATED interface is held to on this row: the `/v1/{account_id}/sales-navigator/...` and `/v1/{account_id}/recruiter/...` operations. Null when this row and limit profile have no such figure, which is every row on `basic` and `premium` and most rows everywhere. Everything else on this row (`ceiling`, `effective_ceiling`, `band` and `over_default`) is the STANDARD-interface figure, because one counter serves both interfaces and the standard side is the conservative one to band against. The consequence is worth reading: on a `sales_navigator` or `recruiter` account a row can report `band: "over"` with `posture: "enforce"` while a call through the elevated interface still succeeds; the refusal the band predicts is the one a standard call gets. */
+                                interface_ceiling?: number | null;
+                                /** @description Empty when nothing on this row is above default. Computed against the STANDARD-interface default, like `band` and for the same reason. */
+                                over_default?: {
+                                    /**
+                                     * @description The field whose configured value is above default.
+                                     * @enum {string}
+                                     */
+                                    field?: "ceiling" | "green" | "amber" | "character_cap" | "subject_character_cap" | "per_query_cap";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            }[];
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    patchV1SafetyPolicy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description The tenant-wide posture default every account inherits unless it overrides it. Null clears it back to `warn`.
+                     * @enum {string|null}
+                     */
+                    tenant_default_posture?: "warn" | "enforce" | null;
+                    /** @description Tenant defaults, per limit profile. */
+                    profiles?: {
+                        /**
+                         * @description The limit profile these defaults apply to. An account resolves from the defaults of its own `limit_profile` only.
+                         * @enum {string}
+                         */
+                        limit_profile: "basic" | "premium" | "sales_navigator" | "recruiter";
+                        /** @description Per-row defaults for this profile. Omit a field to leave it; `null` clears the tenant default back to the Curviate default. A row read back from this document may be sent unchanged. */
+                        rows: {
+                            /**
+                             * @description The budget row this patch configures.
+                             * @enum {string}
+                             */
+                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "total_actions" | "pending_invites";
+                            /** @description What `enforce` refuses at and `warn` reports at, in this row's own unit. Any value up to 9007199254740991 is accepted and stored verbatim; a value above the Curviate default is reported back, never clamped. */
+                            ceiling?: number | null;
+                            /** @description Routine band. Activity at or below it is unremarkable. */
+                            green?: number | null;
+                            /** @description Warn-louder band, between green and the ceiling. */
+                            amber?: number | null;
+                            /**
+                             * @description The calendar grain this row is counted in.
+                             * @enum {string|null}
+                             */
+                            window_kind?: "day" | "week" | "month" | null;
+                            /** @description How many `window_kind` units one counting window spans. */
+                            window_span?: number | null;
+                            /** @description IANA zone name the counting window is aligned to, e.g. `Europe/Berlin` or `UTC`. Must be a real zone; anything else is a 400. Null counts in UTC. */
+                            window_timezone?: string | null;
+                            /** @description Local time the activity window opens, HH:MM. Outside the window, live write operations are reported or refused per posture. */
+                            activity_window_start?: string | null;
+                            /** @description Local time the activity window closes, HH:MM. */
+                            activity_window_end?: string | null;
+                            /** @description IANA zone name the activity window is read in, e.g. `Europe/Berlin`. Must be a real zone; anything else is a 400. Null DISABLES the activity window: a guessed zone inverts it, which is worse than not having one. */
+                            activity_window_timezone?: string | null;
+                            /**
+                             * @description What the activity window governs. `writes` (the default) covers live writes to LinkedIn; `all` widens it to live reads. A read Curviate answers from its own store never reaches LinkedIn and so is never covered; the same read IS covered when the store cannot answer it, or when you ask for it live. Stored reads and inbound events are never subject to the window under either setting, at any hour. One action set to `all` reaches the whole account's live reads that spend no budget of their own (notifications, profile analytics, SSI, profile visitors, the invitation and saved-list listings): those calls debit no action type, so they have none to read this setting from and take the account-wide answer instead. Reads that DO debit an action type read that action type's own setting.
+                             * @enum {string|null}
+                             */
+                            activity_window_applies_to?: "writes" | "all" | null;
+                            /** @description Multiplier applied to this row's ceiling while ramping. 1 is not ramping. */
+                            warm_up_factor?: number | null;
+                            /** @description Length cap on this row's free-text field, in characters (an invitation note, an InMail body). */
+                            character_cap?: number | null;
+                            /** @description Length cap on this row's subject line, in characters. */
+                            subject_character_cap?: number | null;
+                            /** @description Bound on a single query's result lines. Search rows only. */
+                            per_query_cap?: number | null;
+                            /**
+                             * @description How well calibrated this row's configured number is. Overriding it labels your own figure; the over-default warning always reports the class of the Curviate default.
+                             * @enum {string|null}
+                             */
+                            source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded" | null;
+                            /** @description READ-ONLY. What a call through the matching elevated interface (`/v1/{account_id}/sales-navigator/...`, `/v1/{account_id}/recruiter/...`) is held to on this row, or null when this row and limit profile have no such figure. `ceiling`, `effective_ceiling`, `band` and `over_default` are all the STANDARD-interface figure, so on a `sales_navigator` or `recruiter` account a row can report `over` while a call through the elevated interface still succeeds. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                            interface_ceiling?: unknown;
+                            /** @description READ-ONLY. The fields on this row configured above the Curviate default. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                            over_default?: unknown;
+                        }[];
+                    }[];
+                    /** @description READ-ONLY. The document's type discriminator. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                    object?: unknown;
+                    /** @description READ-ONLY. What the last write changed across the tenant's accounts. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                    impact?: unknown;
+                };
+            };
+        };
+        responses: {
+            /** @description The tenant safety defaults as they now read, plus the `impact` of this write. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object?: "tenant_safety_policy";
+                        /**
+                         * @description The workspace-wide posture default every account in the tenant inherits, or null when none is set. Always present, and separate from `posture` on purpose: when this account overrides the tenant default, a change to the tenant default does not move `posture`, and this field is how you can still see it took effect.
+                         * @enum {string|null}
+                         */
+                        tenant_default_posture?: "warn" | "enforce" | null;
+                        /** @description One entry per limit profile, always all of them. */
+                        profiles?: {
+                            /**
+                             * @description The limit profile these defaults apply to. An account resolves from its own profile's defaults.
+                             * @enum {string}
+                             */
+                            limit_profile?: "basic" | "premium" | "sales_navigator" | "recruiter";
+                            /** @description Every budget row, always: the tenant default where one is set, the Curviate default otherwise. */
+                            rows?: {
+                                /** @description The counted-action row this policy governs. */
+                                budget_row?: string;
+                                /** @description What `enforce` refuses at and `warn` reports at, in the row's own unit. Null means the row is uncalibrated: Curviate has no figure for it. */
+                                ceiling?: number | null;
+                                /** @description Routine band. */
+                                green?: number | null;
+                                /** @description Warn-louder band. */
+                                amber?: number | null;
+                                /**
+                                 * @description The calendar grain this row is counted in.
+                                 * @enum {string}
+                                 */
+                                window_kind?: "day" | "week" | "month";
+                                /** @description How many grain units one counting window spans. */
+                                window_span?: number;
+                                /** @description IANA zone name the counting window is aligned to. Null counts in UTC. */
+                                window_timezone?: string | null;
+                                /** @description Local HH:MM the activity window opens. */
+                                activity_window_start?: string;
+                                /** @description Local HH:MM the activity window closes. */
+                                activity_window_end?: string;
+                                /** @description IANA zone name the activity window is read in. Null disables the window entirely. */
+                                activity_window_timezone?: string | null;
+                                /**
+                                 * @description What the activity window governs. `writes` (the default) covers live writes to LinkedIn; `all` widens it to live reads as well, which is the setting for a persona that should not be seen browsing at 03:00. It is broader than it sounds: `all` covers every live read, including the ones about the account itself, so a nightly analytics or invitation-backlog poll is refused at 03:00 too. A read Curviate answers from its own store never reaches LinkedIn, so it is never subject to the window under either setting, at any hour; the same read IS covered when the store cannot answer it, or when you ask for it live. Inbound events are never subject to it either. One action set to `all` reaches the whole account's live reads that spend no budget of their own (notifications, profile analytics, SSI, profile visitors, the invitation and saved-list listings): those calls debit no action type, so they have none to read this setting from and take the account-wide answer instead. Reads that DO debit an action type read that action type's own setting.
+                                 * @enum {string}
+                                 */
+                                activity_window_applies_to?: "writes" | "all";
+                                /** @description The tenant default multiplier for this row, or null when none is set. Null means each account follows its own derived warm-up ramp; 1 pins every account on this profile out of it. */
+                                warm_up_factor?: number | null;
+                                /** @description Length cap on the row's free-text field, in characters. */
+                                character_cap?: number | null;
+                                /** @description Length cap on the row's subject line, in characters. */
+                                subject_character_cap?: number | null;
+                                /** @description Bound on a single query's result lines. Search rows only. */
+                                per_query_cap?: number | null;
+                                /**
+                                 * @description How well calibrated this row's number is. `unseeded` means Curviate has no green, amber or ceiling figure for this row on this profile: the row is reported so nothing is silently missing, but nothing has calibrated it, so no value you set can be `over_default`.
+                                 * @enum {string}
+                                 */
+                                source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                /** @description What a call through the matching ELEVATED interface is held to on this row: the `/v1/{account_id}/sales-navigator/...` and `/v1/{account_id}/recruiter/...` operations. Null when this row and limit profile have no such figure, which is every row on `basic` and `premium` and most rows everywhere. Everything else on this row (`ceiling`, `effective_ceiling`, `band` and `over_default`) is the STANDARD-interface figure, because one counter serves both interfaces and the standard side is the conservative one to band against. The consequence is worth reading: on a `sales_navigator` or `recruiter` account a row can report `band: "over"` with `posture: "enforce"` while a call through the elevated interface still succeeds; the refusal the band predicts is the one a standard call gets. */
+                                interface_ceiling?: number | null;
+                                /** @description Empty when nothing on this row is above default. Computed against the STANDARD-interface default, like `band` and for the same reason. */
+                                over_default?: {
+                                    /**
+                                     * @description The field whose configured value is above default.
+                                     * @enum {string}
+                                     */
+                                    field?: "ceiling" | "green" | "amber" | "character_cap" | "subject_character_cap" | "per_query_cap";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            }[];
+                        }[];
+                        /** @description What this write changed across the tenant's accounts, measured on them before and after it applied. */
+                        impact?: {
+                            /** @description Accounts on which at least one budget row's resolved ceiling changed. */
+                            accounts_affected?: number;
+                            /** @description Accounts on which at least one budget row moved into `band: "over"`. */
+                            accounts_moved_into_over?: number;
+                        };
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST. An unknown limit profile, row name or field, or a value that is not a value (a negative ceiling). A value is never rejected for being unsafe. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
