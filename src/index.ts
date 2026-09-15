@@ -29,6 +29,7 @@ export {
 export type {
   AccountListPage,
   AccountListParams,
+  SeatList,
 } from "./resources/accounts.js";
 
 export type {

@@ -1,4 +1,4 @@
-// accounts namespace methods (4, root-scoped: list/get/update/disconnect).
+// accounts namespace methods (5, root-scoped: list/listSeats/get/update/disconnect).
 // The connect/checkpoint ops moved to `auth` (test/resources/auth.test.ts);
 // createConnectLink/createReconnectLink/reconnect have no served op and were
 // removed.
@@ -39,6 +39,57 @@ describe("accounts.list", () => {
     const parsed = new URL(url!);
     expect(parsed.searchParams.get("limit")).toBe("10");
     expect(parsed.searchParams.get("cursor")).toBe("c_abc");
+  });
+});
+
+// ─── accounts.listSeats (GET /v1/accounts/seats) ─────────────────────────────
+describe("accounts.listSeats", () => {
+  it("GET /v1/accounts/seats, no query, returns every seat with occupancy", async () => {
+    let url: string | undefined;
+    let method: string | undefined;
+    server.use(
+      http.get(`${BASE}/v1/accounts/seats`, ({ request }) => {
+        url = request.url;
+        method = request.method;
+        return HttpResponse.json({
+          object: "seat_list",
+          items: [
+            { seat_id: "seat_1", occupied: true, account_id: "acc_1" },
+            { seat_id: "seat_2", occupied: false, account_id: null },
+          ],
+        });
+      }),
+    );
+    const res = await client.accounts.listSeats();
+    expect(method).toBe("GET");
+    expect(new URL(url!).search).toBe("");
+    expect(res).toEqual({
+      object: "seat_list",
+      items: [
+        { seat_id: "seat_1", occupied: true, account_id: "acc_1" },
+        { seat_id: "seat_2", occupied: false, account_id: null },
+      ],
+    });
+    expect(res.items.filter((s) => !s.occupied).map((s) => s.seat_id)).toEqual(["seat_2"]);
+  });
+
+  it("an empty workspace returns an empty items list", async () => {
+    server.use(
+      http.get(`${BASE}/v1/accounts/seats`, () => HttpResponse.json({ object: "seat_list", items: [] })),
+    );
+    expect(await client.accounts.listSeats()).toEqual({ object: "seat_list", items: [] });
+  });
+
+  it("a 401 surfaces as a typed error, not a seat list", async () => {
+    server.use(
+      http.get(`${BASE}/v1/accounts/seats`, () =>
+        HttpResponse.json(
+          { error: { code: "UNAUTHORIZED", message: "Authentication required.", user_fixable: true, retry_likely_to_succeed: false } },
+          { status: 401 },
+        ),
+      ),
+    );
+    await expect(client.accounts.listSeats()).rejects.toMatchObject({ httpStatus: 401 });
   });
 });
 

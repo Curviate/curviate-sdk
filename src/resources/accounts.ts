@@ -1,5 +1,5 @@
 /**
- * Accounts resource: connected-account management (4 methods, root-scoped).
+ * Accounts resource: connected-account management (5 methods, root-scoped).
  *
  * Pattern followed by all resource namespaces:
  *   - take a {@link RequestContext} in the constructor,
@@ -28,6 +28,10 @@ export type AccountListPage =
 export type AccountListParams = NonNullable<
   paths["/v1/accounts"]["get"]["parameters"]["query"]
 >;
+
+/** `GET /v1/accounts/seats` 200 body, every seat in the workspace with its occupancy. */
+export type SeatList =
+  paths["/v1/accounts/seats"]["get"]["responses"]["200"]["content"]["application/json"];
 
 /** `GET /v1/accounts/{account_id}` 200 body. */
 export type AccountDetail =
@@ -69,6 +73,27 @@ export class AccountsResource {
       path: "/v1/accounts",
       ...(params !== undefined ? { query: params } : {}),
     });
+  }
+
+  /**
+   * List every seat in the workspace: its `seat_id`, whether an account
+   * `occupied` it, and that `account_id` (`null` when free). Not paginated;
+   * an empty workspace returns `items: []`.
+   *
+   * Use it to find a connect target: any seat with `occupied: false` is a
+   * valid `seat_id` for connecting a new account with `auth.intent`. Carries
+   * no billing fields.
+   *
+   * @returns `{ object: "seat_list", items: { seat_id, occupied, account_id }[] }`.
+   *
+   * @example
+   * const { items } = await curviate.accounts.listSeats();
+   * const free = items.find((seat) => !seat.occupied);
+   * if (!free) throw new Error("No free seat; add one before connecting.");
+   * await curviate.auth.intent({ seat_id: free.seat_id, auth_method: "cookie", cookie: { li_at }, user_agent });
+   */
+  listSeats(): Promise<SeatList> {
+    return this.ctx.request<SeatList>({ method: "GET", path: "/v1/accounts/seats" });
   }
 
   /**

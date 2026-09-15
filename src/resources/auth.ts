@@ -71,7 +71,8 @@ export class AuthResource {
   /**
    * Authenticate a LinkedIn account with credentials or a session cookie.
    *
-   * Omit `account_id` to connect a NEW account into an empty seat; include it
+   * Omit `account_id` to connect a NEW account into an empty seat (find one
+   * with `accounts.listSeats()`: any seat with `occupied: false`); include it
    * to re-authenticate an EXISTING account in place. Returns the account on
    * success (200 re-authenticated in place / 201 new), or a checkpoint
    * challenge (202) when LinkedIn requires verification; resolve it with
