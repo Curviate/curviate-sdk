@@ -18,10 +18,12 @@ recorded in `fixtures/PROVENANCE.json`.
 ### Added
 
 - **`accounts.listSeats()`** (`GET /v1/accounts/seats`). Returns
-  `{ object: "seat_list", items: { seat_id, occupied, account_id }[] }`: every
-  seat in the workspace, whether an account occupies it, and that account
-  (`null` when free). Not paginated; an empty workspace returns `items: []`.
-  Any seat with `occupied: false` is a valid `seat_id` for connecting a new
+  `{ object: "seat_list", items: { seat_id, occupied, account_id }[] }`: the
+  workspace's live seats, whether an account occupies each, and that account
+  (`null` when free). Not paginated. An empty seat is listed only when
+  connecting an account to it would be accepted right now, so an empty seat
+  that is provisional, cancelling, on an ended trial or blocked by billing is
+  left out, and `items` can be `[]` while the workspace still has seats. Any seat with `occupied: false` is a valid `seat_id` for connecting a new
   account with `auth.intent`, so a connect no longer needs a seat id copied
   from the dashboard. Carries no billing fields. The response type is
   exported as `SeatList`.

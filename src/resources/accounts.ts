@@ -29,7 +29,7 @@ export type AccountListParams = NonNullable<
   paths["/v1/accounts"]["get"]["parameters"]["query"]
 >;
 
-/** `GET /v1/accounts/seats` 200 body, every seat in the workspace with its occupancy. */
+/** `GET /v1/accounts/seats` 200 body, the workspace's live seats with their occupancy. */
 export type SeatList =
   paths["/v1/accounts/seats"]["get"]["responses"]["200"]["content"]["application/json"];
 
@@ -76,20 +76,22 @@ export class AccountsResource {
   }
 
   /**
-   * List every seat in the workspace: its `seat_id`, whether an account
-   * `occupied` it, and that `account_id` (`null` when free). Not paginated;
-   * an empty workspace returns `items: []`.
+   * List the workspace's live seats: each `seat_id`, whether an account
+   * `occupied` it, and that `account_id` (`null` when free). Not paginated.
    *
-   * Use it to find a connect target: any seat with `occupied: false` is a
-   * valid `seat_id` for connecting a new account with `auth.intent`. Carries
-   * no billing fields.
+   * Only live seats are listed, and an empty seat is listed only when
+   * connecting an account to it would be accepted right now. So an empty seat
+   * that is provisional, cancelling, on an ended trial, or blocked by billing
+   * does not appear, and `items` can be `[]` even though the workspace has
+   * seats. Any seat with `occupied: false` is a valid `seat_id` for connecting
+   * a new account with `auth.intent`. Carries no billing fields.
    *
    * @returns `{ object: "seat_list", items: { seat_id, occupied, account_id }[] }`.
    *
    * @example
    * const { items } = await curviate.accounts.listSeats();
    * const free = items.find((seat) => !seat.occupied);
-   * if (!free) throw new Error("No free seat; add one before connecting.");
+   * if (!free) throw new Error("No seat is free to connect to right now (add a seat, or check billing).");
    * await curviate.auth.intent({ seat_id: free.seat_id, auth_method: "cookie", cookie: { li_at }, user_agent });
    */
   listSeats(): Promise<SeatList> {
