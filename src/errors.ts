@@ -121,9 +121,9 @@ export const ERROR_CODES = [
   // LinkedIn refusing. A 429 that never reached LinkedIn and spent nothing:
   // the budget row named by `budgetRow` is at its ceiling, set by the account's
   // safety policy or else the tenant default (`GET`/`PATCH /v1/safety-policy`),
-  // or the account is outside its
-  // activity window. Deliberately absent from RETRYABLE_CODES: a monthly
-  // row's reset can be weeks out, so backing off is the wrong recovery.
+  // or the account is outside its activity window. Deliberately absent from
+  // RETRYABLE_CODES: a monthly row's reset can be weeks out, so backing off
+  // is the wrong recovery.
   // Read `resetAt`, `safetyReason` and `safetyHint` instead.
   "BUDGET_EXHAUSTED",
   // Platform errors
