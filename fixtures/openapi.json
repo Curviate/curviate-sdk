@@ -45917,7 +45917,7 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 8000,
-                    "description": "Opening message text (1-8000 chars). Passed to the platform and discarded; never stored or logged."
+                    "description": "Opening message text (1-8000 chars). This call keeps nothing and logs nothing. Once sent it is a message in the account's InMail inbox, so reading that chat back through Curviate stores its body in your tenant's inbox records, with no expiry."
                   },
                   "subject": {
                     "type": "string",
@@ -45928,7 +45928,7 @@
                   "signature": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "Sender signature; REQUIRED for Recruiter. Not stored or logged."
+                    "description": "Sender signature; REQUIRED for Recruiter. Kept as a field by neither this call nor the log. The platform renders it into the sent message body, which is stored if that chat is later read back through Curviate."
                   },
                   "visibility": {
                     "type": "string",
@@ -45966,12 +45966,12 @@
                       "subject": {
                         "type": "string",
                         "minLength": 1,
-                        "description": "Follow-up message subject. Not stored or logged."
+                        "description": "Follow-up message subject. Never stored and never logged, on any path."
                       },
                       "text": {
                         "type": "string",
                         "minLength": 1,
-                        "description": "Follow-up message body. Not stored or logged."
+                        "description": "Follow-up message body. This call keeps nothing and logs nothing. Once sent it is a message in the account's InMail inbox, so reading that chat back through Curviate stores its body in your tenant's inbox records, with no expiry."
                       },
                       "attachments": {
                         "type": "array",
@@ -59950,7 +59950,7 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 8000,
-                    "description": "Opening message text (1-8000 chars). Not stored or logged."
+                    "description": "Opening message text (1-8000 chars). This call keeps nothing and logs nothing. Once sent it is a message in the account's InMail inbox, so reading that chat back through Curviate stores its body in your tenant's inbox records, with no expiry."
                   },
                   "subject": {
                     "type": "string",

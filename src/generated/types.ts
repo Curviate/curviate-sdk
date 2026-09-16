@@ -20084,11 +20084,11 @@ export interface operations {
                 "application/json": {
                     /** @description One or more Recruiter member IDs (AE... format) to include in the chat. */
                     attendees_ids: string[];
-                    /** @description Opening message text (1-8000 chars). Passed to the platform and discarded; never stored or logged. */
+                    /** @description Opening message text (1-8000 chars). This call keeps nothing and logs nothing. Once sent it is a message in the account's InMail inbox, so reading that chat back through Curviate stores its body in your tenant's inbox records, with no expiry. */
                     text: string;
                     /** @description Subject line; REQUIRED for Recruiter (InMail-based messaging), unlike the classic surface (<= 200 chars). */
                     subject: string;
-                    /** @description Sender signature; REQUIRED for Recruiter. Not stored or logged. */
+                    /** @description Sender signature; REQUIRED for Recruiter. Kept as a field by neither this call nor the log. The platform renders it into the sent message body, which is stored if that chat is later read back through Curviate. */
                     signature: string;
                     /**
                      * @description Visibility of the recruiter chat.
@@ -20109,9 +20109,9 @@ export interface operations {
                     channel_type?: string;
                     /** @description Recruiter PRO only: schedule a follow-up message. subject/text are not stored or logged. */
                     follow_up?: {
-                        /** @description Follow-up message subject. Not stored or logged. */
+                        /** @description Follow-up message subject. Never stored and never logged, on any path. */
                         subject: string;
-                        /** @description Follow-up message body. Not stored or logged. */
+                        /** @description Follow-up message body. This call keeps nothing and logs nothing. Once sent it is a message in the account's InMail inbox, so reading that chat back through Curviate stores its body in your tenant's inbox records, with no expiry. */
                         text: string;
                         /** @description Optional follow-up attachments. */
                         attachments?: {
@@ -24754,7 +24754,7 @@ export interface operations {
                 "application/json": {
                     /** @description Sales Navigator member IDs for the chat recipients (>= 1, e.g. ACw...). */
                     attendees_ids: string[];
-                    /** @description Opening message text (1-8000 chars). Not stored or logged. */
+                    /** @description Opening message text (1-8000 chars). This call keeps nothing and logs nothing. Once sent it is a message in the account's InMail inbox, so reading that chat back through Curviate stores its body in your tenant's inbox records, with no expiry. */
                     text: string;
                     /** @description Subject line; REQUIRED for Sales Navigator (InMail-based messaging), unlike the classic surface where it is optional (<= 200 chars). Maps into the SN-only specifics branch. */
                     subject: string;
