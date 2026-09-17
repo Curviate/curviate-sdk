@@ -7,10 +7,30 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
-## [Unreleased]
+## [0.33.0] - 2026-09-17
 
-Documents the InMail subject on the message reads. **Types and fixture are NOT
-regenerated in this change, deliberately** - see below.
+The InMail subject on the message reads, now typed. Fixture and types
+regenerated against the deployed production document
+(`https://api.curviate.com`, 127 paths, server `a38f685e`); the exact source
+commit is recorded in `fixtures/PROVENANCE.json`.
+
+### Added
+
+- **`MessageDetail["specifics"]`** types as `{ subject?: string | null }`, on
+  `messaging.getMessage()` and each item of `messaging.listMessages()`. The
+  served object is narrowed to `subject` alone (`additionalProperties: false`).
+  `getChat()`, `listChats()` and `inboxes.listChats()` carry no `specifics` on
+  their embedded `last_message`.
+
+### Changed
+
+- **`recruiter.startChat()` `follow_up.subject` retention copy corrected.** It
+  previously read "Never stored and never logged, on any path", which is not
+  supportable: a Recruiter follow-up is an InMail, so once sent it lands in the
+  classic InMail inbox that the chat reads harvest. The served document now
+  states the conditional, and the regenerated types and fixture carry it.
+- **`messages.sendInmail()` `text`** and the `last_message` descriptions on the
+  chat reads carry the same corrected retention wording.
 
 ### Documented
 
@@ -26,24 +46,22 @@ regenerated in this change, deliberately** - see below.
   same fields whether it was answered live or from Curviate's stored copy. Read
   the chat's messages to get a subject.
 
-### Pending the server deploy
+### Fixture drift swept in by the refresh
 
-`fixtures/openapi.json` and `src/generated/types.ts` still describe the message
-shape without `specifics`, so `MessageDetail["specifics"]` does not type yet. The
-fixture is refreshed from the **deployed** document only (`scripts/refresh-fixture.mjs`
-header: a fixture captured from a local server can encode local-only state that
-never shipped, and nothing downstream catches it), and the server change is not
-deployed. Once it is:
+The refresh also picked up already-deployed drift the previous fixture lagged
+(it was captured from staging `c98d526`, 2026-09-15). All of it is real served
+state, verified against both `api.curviate.com` and `api.staging.curviate.com`:
 
-```
-CURVIATE_BASE_URL=https://api.curviate.com pnpm gen:fixture
-pnpm gen:types:fixture
-```
-
-That refresh will also pick up unrelated already-deployed drift the current
-fixture lags - error-response `examples` blocks on ~38 operations and a set of
-500/422 example values - which is expected per the same header, not a sign the
-deployed document is wrong.
+- Error-response `examples` blocks removed on **144** operations (343 response
+  slots), on status codes 409, 422, 503 and 504 only. This is server commit
+  `57afde5c5`, "error examples use only codes the API emits", which landed
+  immediately after the previous fixture's base. The earlier estimate of ~38
+  operations undercounted.
+- Prose corrections to a handful of already-served descriptions: the 503 on the
+  applicant-résumé read now names its code, the Sales Navigator chat 422 names
+  only the code it emits, the auth-intent 402 describes both codes it can
+  carry, and the safety-policy descriptions drop raw path templates and say
+  "tenant" rather than "workspace".
 
 ---
 
