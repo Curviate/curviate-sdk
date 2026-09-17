@@ -158,6 +158,12 @@ export class MessagingResource {
    * display name rather than a folded-in subject, so read the subject from the
    * first message rather than from the chat. Ordinary (non-InMail) messages
    * return `specifics: {}`.
+   *
+   * A CHAT READ CARRIES NO SUBJECT AT ALL, including on its embedded
+   * `last_message`: the preview is deliberately narrower than a message read, so
+   * that a chat read returns the same fields whether it was answered from
+   * LinkedIn or from Curviate's stored copy. Getting a subject means reading the
+   * chat's messages.
    */
   listMessages(chatId: string, params?: MessageListQuery): Promise<MessageListPage> {
     return this.ctx.request<MessageListPage>({

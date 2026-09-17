@@ -20,6 +20,11 @@ regenerated in this change, deliberately** - see below.
   the counterpart's display name, so the subject is read off the first message
   and not off the chat. An ordinary message returns `specifics: {}`. The served
   `specifics` object is narrowed to `subject` alone.
+- **`messaging.getChat()` / `listChats()` / `inboxes.listChats()`**: a chat read
+  carries no subject anywhere, its embedded `last_message` included. The preview
+  is deliberately narrower than a message read so that a chat read returns the
+  same fields whether it was answered live or from Curviate's stored copy. Read
+  the chat's messages to get a subject.
 
 ### Pending the server deploy
 
