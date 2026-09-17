@@ -524,7 +524,7 @@
               "string",
               "null"
             ],
-            "description": "Full message text (content pass-through, never stored)."
+            "description": "Full message text. Curviate does not keep it on the way out; reading a conversation back stores its message bodies in your tenant's inbox records, with no expiry."
           },
           "attachments": {
             "type": "array",
@@ -20396,7 +20396,7 @@
                                   "string",
                                   "null"
                                 ],
-                                "description": "Full message text (content pass-through, never stored)."
+                                "description": "Full message text. Curviate does not keep it on the way out; reading a conversation back stores its message bodies in your tenant's inbox records, with no expiry."
                               },
                               "attachments": {
                                 "type": "array",
@@ -21226,7 +21226,7 @@
             }
           }
         },
-        "description": "Starts a new chat with one or more members from a connected account. Send application/json; attach files as base64-encoded attachments (max 5 MiB per file, and 9 MiB for the whole request body; base64 makes a file about a third larger in the body than on disk). Message content passes through to the platform and is never stored. Company pages are reply-only and cannot start a conversation; reply using a `COMPANY_` chat id from GET /v1/{account_id}/inboxes/{inbox_id}/chats instead.",
+        "description": "Starts a new chat with one or more members from a connected account. Send application/json; attach files as base64-encoded attachments (max 5 MiB per file, and 9 MiB for the whole request body; base64 makes a file about a third larger in the body than on disk). This call keeps nothing and logs nothing. Once sent it is a message in the account's inbox, so reading that conversation back through Curviate stores its body in your tenant's inbox records, with no expiry. Company pages are reply-only and cannot start a conversation; reply using a `COMPANY_` chat id from GET /v1/{account_id}/inboxes/{inbox_id}/chats instead.",
         "requestBody": {
           "required": true,
           "content": {
@@ -21557,7 +21557,7 @@
                             "string",
                             "null"
                           ],
-                          "description": "Full message text (content pass-through, never stored)."
+                          "description": "Full message text. Curviate does not keep it on the way out; reading a conversation back stores its message bodies in your tenant's inbox records, with no expiry."
                         },
                         "attachments": {
                           "type": "array",
@@ -22539,7 +22539,7 @@
                               "string",
                               "null"
                             ],
-                            "description": "Full message text (content pass-through, never stored)."
+                            "description": "Full message text. Curviate does not keep it on the way out; reading a conversation back stores its message bodies in your tenant's inbox records, with no expiry."
                           },
                           "attachments": {
                             "type": "array",
@@ -23383,7 +23383,7 @@
             }
           }
         },
-        "description": "Sends a message into an existing chat. Send application/json with text, base64 attachments (max 5 MiB per file, and 9 MiB for the whole request body; base64 makes a file about a third larger in the body than on disk), or both; at least one of text or attachments is required. Message content passes through to the platform and is never stored. Sending on behalf of a company page: use a COMPANY_ chat id (from GET /v1/{account_id}/inboxes/{inbox_id}/chats) and the message sends AS THE PAGE, no separate parameter needed. The response's sent_as field names the acting identity that was actually used. Company pages are reply-only: this endpoint can answer an existing conversation on a page's behalf, but a page can never start a new one.",
+        "description": "Sends a message into an existing chat. Send application/json with text, base64 attachments (max 5 MiB per file, and 9 MiB for the whole request body; base64 makes a file about a third larger in the body than on disk), or both; at least one of text or attachments is required. This call keeps nothing and logs nothing. Once sent it is a message in the account's inbox, so reading that conversation back through Curviate stores its body in your tenant's inbox records, with no expiry. Sending on behalf of a company page: use a COMPANY_ chat id (from GET /v1/{account_id}/inboxes/{inbox_id}/chats) and the message sends AS THE PAGE, no separate parameter needed. The response's sent_as field names the acting identity that was actually used. Company pages are reply-only: this endpoint can answer an existing conversation on a page's behalf, but a page can never start a new one.",
         "requestBody": {
           "required": true,
           "content": {
@@ -23557,7 +23557,7 @@
                         "string",
                         "null"
                       ],
-                      "description": "Full message text (content pass-through, never stored)."
+                      "description": "Full message text. Curviate does not keep it on the way out; reading a conversation back stores its message bodies in your tenant's inbox records, with no expiry."
                     },
                     "attachments": {
                       "type": "array",
@@ -25253,7 +25253,7 @@
                                   "string",
                                   "null"
                                 ],
-                                "description": "Full message text (content pass-through, never stored)."
+                                "description": "Full message text. Curviate does not keep it on the way out; reading a conversation back stores its message bodies in your tenant's inbox records, with no expiry."
                               },
                               "sender_id": {
                                 "type": "string",
@@ -26559,7 +26559,7 @@
                                   "string",
                                   "null"
                                 ],
-                                "description": "Full message text (content pass-through, never stored)."
+                                "description": "Full message text. Curviate does not keep it on the way out; reading a conversation back stores its message bodies in your tenant's inbox records, with no expiry."
                               },
                               "attachments": {
                                 "type": "array",
@@ -46076,7 +46076,7 @@
                       "scheduled_for"
                     ],
                     "additionalProperties": false,
-                    "description": "Recruiter PRO only: schedule a follow-up message. subject/text are not stored or logged."
+                    "description": "Recruiter PRO only: schedule a follow-up message. subject is never stored or logged; text is kept by neither this call nor the log, but once sent it is a message in the account's InMail inbox, so reading that chat back through Curviate stores its body in your tenant's inbox records, with no expiry."
                   },
                   "attachments": {
                     "type": "array",
