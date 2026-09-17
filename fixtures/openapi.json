@@ -46076,7 +46076,7 @@
                       "scheduled_for"
                     ],
                     "additionalProperties": false,
-                    "description": "Recruiter PRO only: schedule a follow-up message. subject is never stored or logged; text is kept by neither this call nor the log, but once sent it is a message in the account's InMail inbox, so reading that chat back through Curviate stores its body in your tenant's inbox records, with no expiry."
+                    "description": "Recruiter PRO only: schedule a follow-up message. subject: Never stored and never logged, on any path. text: This call keeps nothing and logs nothing. Once sent it is a message in the account's InMail inbox, so reading that chat back through Curviate stores its body in your tenant's inbox records, with no expiry."
                   },
                   "attachments": {
                     "type": "array",

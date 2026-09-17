@@ -20107,7 +20107,7 @@ export interface operations {
                     send_as?: "INMAIL" | "EMAIL";
                     /** @description Sourcing channel for tracking purposes (e.g. CAREER_SITE, MANUAL_IMPORT, INTERNAL_CANDIDATES, RECRUITER_SEARCH, REFERRAL; the vendor's own vocabulary is broader than this illustrative set, so any non-empty value is accepted rather than a closed enum). */
                     channel_type?: string;
-                    /** @description Recruiter PRO only: schedule a follow-up message. subject is never stored or logged; text is kept by neither this call nor the log, but once sent it is a message in the account's InMail inbox, so reading that chat back through Curviate stores its body in your tenant's inbox records, with no expiry. */
+                    /** @description Recruiter PRO only: schedule a follow-up message. subject: Never stored and never logged, on any path. text: This call keeps nothing and logs nothing. Once sent it is a message in the account's InMail inbox, so reading that chat back through Curviate stores its body in your tenant's inbox records, with no expiry. */
                     follow_up?: {
                         /** @description Follow-up message subject. Never stored and never logged, on any path. */
                         subject: string;
