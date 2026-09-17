@@ -749,7 +749,7 @@ export interface paths {
         put?: never;
         /**
          * Start a chat
-         * @description Starts a new chat with one or more members from a connected account. Send application/json; attach files as base64-encoded attachments (max 5 MiB per file, and 9 MiB for the whole request body; base64 makes a file about a third larger in the body than on disk). Message content passes through to the platform and is never stored. Company pages are reply-only and cannot start a conversation; reply using a `COMPANY_` chat id from GET /v1/{account_id}/inboxes/{inbox_id}/chats instead.
+         * @description Starts a new chat with one or more members from a connected account. Send application/json; attach files as base64-encoded attachments (max 5 MiB per file, and 9 MiB for the whole request body; base64 makes a file about a third larger in the body than on disk). This call keeps nothing and logs nothing. Once sent it is a message in the account's inbox, so reading that conversation back through Curviate stores its body in your tenant's inbox records, with no expiry. Company pages are reply-only and cannot start a conversation; reply using a `COMPANY_` chat id from GET /v1/{account_id}/inboxes/{inbox_id}/chats instead.
          */
         post: operations["postV1AccountIdChats"];
         delete?: never;
@@ -797,7 +797,7 @@ export interface paths {
         put?: never;
         /**
          * Send a message
-         * @description Sends a message into an existing chat. Send application/json with text, base64 attachments (max 5 MiB per file, and 9 MiB for the whole request body; base64 makes a file about a third larger in the body than on disk), or both; at least one of text or attachments is required. Message content passes through to the platform and is never stored. Sending on behalf of a company page: use a COMPANY_ chat id (from GET /v1/{account_id}/inboxes/{inbox_id}/chats) and the message sends AS THE PAGE, no separate parameter needed. The response's sent_as field names the acting identity that was actually used. Company pages are reply-only: this endpoint can answer an existing conversation on a page's behalf, but a page can never start a new one.
+         * @description Sends a message into an existing chat. Send application/json with text, base64 attachments (max 5 MiB per file, and 9 MiB for the whole request body; base64 makes a file about a third larger in the body than on disk), or both; at least one of text or attachments is required. This call keeps nothing and logs nothing. Once sent it is a message in the account's inbox, so reading that conversation back through Curviate stores its body in your tenant's inbox records, with no expiry. Sending on behalf of a company page: use a COMPANY_ chat id (from GET /v1/{account_id}/inboxes/{inbox_id}/chats) and the message sends AS THE PAGE, no separate parameter needed. The response's sent_as field names the acting identity that was actually used. Company pages are reply-only: this endpoint can answer an existing conversation on a page's behalf, but a page can never start a new one.
          */
         post: operations["postV1AccountIdChatsChatIdMessages"];
         delete?: never;
@@ -2788,7 +2788,7 @@ export interface components {
             chat_id?: string;
             /** @description Identifier of the sender. */
             sender_id?: string;
-            /** @description Full message text (content pass-through, never stored). */
+            /** @description Full message text. Curviate does not keep it on the way out; reading a conversation back stores its message bodies in your tenant's inbox records, with no expiry. */
             text?: string | null;
             /** @description Attachment descriptors (no bytes, use the attachment endpoint to download). */
             attachments?: {
@@ -10256,7 +10256,7 @@ export interface operations {
                                 chat_id?: string;
                                 /** @description Identifier of the sender. */
                                 sender_id?: string;
-                                /** @description Full message text (content pass-through, never stored). */
+                                /** @description Full message text. Curviate does not keep it on the way out; reading a conversation back stores its message bodies in your tenant's inbox records, with no expiry. */
                                 text?: string | null;
                                 /** @description Attachment descriptors (no bytes, use the attachment endpoint to download). */
                                 attachments?: {
@@ -10681,7 +10681,7 @@ export interface operations {
                             chat_id?: string;
                             /** @description Identifier of the sender. */
                             sender_id?: string;
-                            /** @description Full message text (content pass-through, never stored). */
+                            /** @description Full message text. Curviate does not keep it on the way out; reading a conversation back stores its message bodies in your tenant's inbox records, with no expiry. */
                             text?: string | null;
                             /** @description Attachment descriptors (no bytes, use the attachment endpoint to download). */
                             attachments?: {
@@ -11051,7 +11051,7 @@ export interface operations {
                             chat_id?: string;
                             /** @description Identifier of the sender. */
                             sender_id?: string;
-                            /** @description Full message text (content pass-through, never stored). */
+                            /** @description Full message text. Curviate does not keep it on the way out; reading a conversation back stores its message bodies in your tenant's inbox records, with no expiry. */
                             text?: string | null;
                             /** @description Attachment descriptors (no bytes, use the attachment endpoint to download). */
                             attachments?: {
@@ -11430,7 +11430,7 @@ export interface operations {
                         chat_id?: string;
                         /** @description Identifier of the sender. */
                         sender_id?: string;
-                        /** @description Full message text (content pass-through, never stored). */
+                        /** @description Full message text. Curviate does not keep it on the way out; reading a conversation back stores its message bodies in your tenant's inbox records, with no expiry. */
                         text?: string | null;
                         /** @description Attachment descriptors (no bytes, use the attachment endpoint to download). */
                         attachments?: {
@@ -12122,7 +12122,7 @@ export interface operations {
                                 id?: string;
                                 /** @description Account id that owns this message. */
                                 account_id?: string;
-                                /** @description Full message text (content pass-through, never stored). */
+                                /** @description Full message text. Curviate does not keep it on the way out; reading a conversation back stores its message bodies in your tenant's inbox records, with no expiry. */
                                 text?: string | null;
                                 /** @description Identifier of the sender. */
                                 sender_id?: string;
@@ -12620,7 +12620,7 @@ export interface operations {
                                 chat_id?: string;
                                 /** @description Identifier of the sender. */
                                 sender_id?: string;
-                                /** @description Full message text (content pass-through, never stored). */
+                                /** @description Full message text. Curviate does not keep it on the way out; reading a conversation back stores its message bodies in your tenant's inbox records, with no expiry. */
                                 text?: string | null;
                                 /** @description Attachment descriptors (no bytes, use the attachment endpoint to download). */
                                 attachments?: {
@@ -20084,11 +20084,11 @@ export interface operations {
                 "application/json": {
                     /** @description One or more Recruiter member IDs (AE... format) to include in the chat. */
                     attendees_ids: string[];
-                    /** @description Opening message text (1-8000 chars). Passed to the platform and discarded; never stored or logged. */
+                    /** @description Opening message text (1-8000 chars). This call keeps nothing and logs nothing. Once sent it is a message in the account's InMail inbox, so reading that chat back through Curviate stores its body in your tenant's inbox records, with no expiry. */
                     text: string;
                     /** @description Subject line; REQUIRED for Recruiter (InMail-based messaging), unlike the classic surface (<= 200 chars). */
                     subject: string;
-                    /** @description Sender signature; REQUIRED for Recruiter. Not stored or logged. */
+                    /** @description Sender signature; REQUIRED for Recruiter. Kept as a field by neither this call nor the log. The platform renders it into the sent message body, which is stored if that chat is later read back through Curviate. */
                     signature: string;
                     /**
                      * @description Visibility of the recruiter chat.
@@ -20107,11 +20107,11 @@ export interface operations {
                     send_as?: "INMAIL" | "EMAIL";
                     /** @description Sourcing channel for tracking purposes (e.g. CAREER_SITE, MANUAL_IMPORT, INTERNAL_CANDIDATES, RECRUITER_SEARCH, REFERRAL; the vendor's own vocabulary is broader than this illustrative set, so any non-empty value is accepted rather than a closed enum). */
                     channel_type?: string;
-                    /** @description Recruiter PRO only: schedule a follow-up message. subject/text are not stored or logged. */
+                    /** @description Recruiter PRO only: schedule a follow-up message. subject: Never stored and never logged, on any path. text: This call keeps nothing and logs nothing. Once sent it is a message in the account's InMail inbox, so reading that chat back through Curviate stores its body in your tenant's inbox records, with no expiry. */
                     follow_up?: {
-                        /** @description Follow-up message subject. Not stored or logged. */
+                        /** @description Follow-up message subject. Never stored and never logged, on any path. */
                         subject: string;
-                        /** @description Follow-up message body. Not stored or logged. */
+                        /** @description Follow-up message body. This call keeps nothing and logs nothing. Once sent it is a message in the account's InMail inbox, so reading that chat back through Curviate stores its body in your tenant's inbox records, with no expiry. */
                         text: string;
                         /** @description Optional follow-up attachments. */
                         attachments?: {
@@ -24754,7 +24754,7 @@ export interface operations {
                 "application/json": {
                     /** @description Sales Navigator member IDs for the chat recipients (>= 1, e.g. ACw...). */
                     attendees_ids: string[];
-                    /** @description Opening message text (1-8000 chars). Not stored or logged. */
+                    /** @description Opening message text (1-8000 chars). This call keeps nothing and logs nothing. Once sent it is a message in the account's InMail inbox, so reading that chat back through Curviate stores its body in your tenant's inbox records, with no expiry. */
                     text: string;
                     /** @description Subject line; REQUIRED for Sales Navigator (InMail-based messaging), unlike the classic surface where it is optional (<= 200 chars). Maps into the SN-only specifics branch. */
                     subject: string;
