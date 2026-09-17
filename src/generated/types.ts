@@ -2823,6 +2823,11 @@ export interface components {
             reaction_count?: number;
             /** @description The platform this message originates from. */
             provider?: string;
+            /** @description Platform-specific detail on the message. Carries `subject` for an InMail, which is set on the thread's opening message; absent or empty for an ordinary message. */
+            specifics?: {
+                /** @description The InMail subject line, when the platform carries one on this message. Ordinary messages have none. Reading a conversation back stores the subject in your tenant's inbox records alongside the body, with no expiry. */
+                subject?: string | null;
+            };
             /** @description The sender's profile, when the platform returned one alongside the message. sender_id always carries the identifier; this object carries the rest of what is known about that person. */
             sender?: {
                 /** @description Identifier of the counterpart. */
@@ -10240,7 +10245,7 @@ export interface operations {
                             last_message_timestamp?: string;
                             /** @description Identifier of the 1:1 counterpart. */
                             user_id?: string;
-                            /** @description The most recent message in the chat. */
+                            /** @description The most recent message in the chat. Subjects are not previewed here, read the chat's messages for one. */
                             last_message?: {
                                 /**
                                  * @description Response type discriminator.
@@ -10665,7 +10670,7 @@ export interface operations {
                         last_message_timestamp?: string;
                         /** @description Identifier of the 1:1 counterpart. */
                         user_id?: string;
-                        /** @description The most recent message in the chat. */
+                        /** @description The most recent message in the chat. Subjects are not previewed here, read the chat's messages for one. */
                         last_message?: {
                             /**
                              * @description Response type discriminator.
@@ -11086,6 +11091,11 @@ export interface operations {
                             reaction_count?: number;
                             /** @description The platform this message originates from. */
                             provider?: string;
+                            /** @description Platform-specific detail on the message. Carries `subject` for an InMail, which is set on the thread's opening message; absent or empty for an ordinary message. */
+                            specifics?: {
+                                /** @description The InMail subject line, when the platform carries one on this message. Ordinary messages have none. Reading a conversation back stores the subject in your tenant's inbox records alongside the body, with no expiry. */
+                                subject?: string | null;
+                            };
                             /** @description The sender's profile, when the platform returned one alongside the message. sender_id always carries the identifier; this object carries the rest of what is known about that person. */
                             sender?: {
                                 /** @description Identifier of the counterpart. */
@@ -11465,6 +11475,11 @@ export interface operations {
                         reaction_count?: number;
                         /** @description The platform this message originates from. */
                         provider?: string;
+                        /** @description Platform-specific detail on the message. Carries `subject` for an InMail, which is set on the thread's opening message; absent or empty for an ordinary message. */
+                        specifics?: {
+                            /** @description The InMail subject line, when the platform carries one on this message. Ordinary messages have none. Reading a conversation back stores the subject in your tenant's inbox records alongside the body, with no expiry. */
+                            subject?: string | null;
+                        };
                         /** @description The sender's profile, when the platform returned one alongside the message. sender_id always carries the identifier; this object carries the rest of what is known about that person. */
                         sender?: {
                             /** @description Identifier of the counterpart. */
@@ -12261,7 +12276,7 @@ export interface operations {
                     recipient_urn: string;
                     /** @description InMail subject line (1-200 chars). */
                     subject: string;
-                    /** @description InMail body text (1-8000 chars). */
+                    /** @description InMail body text (1-8000 chars). This call keeps nothing and logs nothing. Once sent it is a message in the account's InMail inbox, so reading that chat back through Curviate stores its body in your tenant's inbox records, with no expiry. */
                     text: string;
                 };
             };
@@ -12604,7 +12619,7 @@ export interface operations {
                             last_message_timestamp?: string;
                             /** @description Identifier of the 1:1 counterpart. */
                             user_id?: string;
-                            /** @description The most recent message in the chat. */
+                            /** @description The most recent message in the chat. Subjects are not previewed here, read the chat's messages for one. */
                             last_message?: {
                                 /**
                                  * @description Response type discriminator.
@@ -17878,7 +17893,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The résumé is still being generated and was not ready in time. Retry the request shortly. */
+            /** @description LINKEDIN_SERVICE_UNAVAILABLE, the résumé is still being generated and was not ready in time. Retry the request shortly. */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -20107,9 +20122,9 @@ export interface operations {
                     send_as?: "INMAIL" | "EMAIL";
                     /** @description Sourcing channel for tracking purposes (e.g. CAREER_SITE, MANUAL_IMPORT, INTERNAL_CANDIDATES, RECRUITER_SEARCH, REFERRAL; the vendor's own vocabulary is broader than this illustrative set, so any non-empty value is accepted rather than a closed enum). */
                     channel_type?: string;
-                    /** @description Recruiter PRO only: schedule a follow-up message. subject: Never stored and never logged, on any path. text: This call keeps nothing and logs nothing. Once sent it is a message in the account's InMail inbox, so reading that chat back through Curviate stores its body in your tenant's inbox records, with no expiry. */
+                    /** @description Recruiter PRO only: schedule a follow-up message. subject: This call keeps nothing and logs nothing, and unlike the message body the platform does not render it into what is sent. Once sent it is an InMail in the account's inbox: if a message read surfaces this subject, reading that chat back stores it in your tenant's inbox records like a body, with no expiry. text: This call keeps nothing and logs nothing. Once sent it is a message in the account's InMail inbox, so reading that chat back through Curviate stores its body in your tenant's inbox records, with no expiry. */
                     follow_up?: {
-                        /** @description Follow-up message subject. Never stored and never logged, on any path. */
+                        /** @description Follow-up message subject. This call keeps nothing and logs nothing, and unlike the message body the platform does not render it into what is sent. Once sent it is an InMail in the account's inbox: if a message read surfaces this subject, reading that chat back stores it in your tenant's inbox records like a body, with no expiry. */
                         subject: string;
                         /** @description Follow-up message body. This call keeps nothing and logs nothing. Once sent it is a message in the account's InMail inbox, so reading that chat back through Curviate stores its body in your tenant's inbox records, with no expiry. */
                         text: string;
@@ -24858,7 +24873,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RECIPIENT_UNREACHABLE or ACCOUNT_RESTRICTED, the recipient cannot be messaged or the account is restricted. */
+            /** @description ACCOUNT_RESTRICTED, the connected LinkedIn account cannot perform this operation. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -28546,7 +28561,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Payment required, an active subscription / seat is needed. */
+            /** @description Either PAYMENT_REQUIRED (an active subscription / seat is needed; update your payment method or purchase a seat) or ACCOUNT_DISPUTED (the tenant's account is under dispute review; contact support). The code field distinguishes the two. */
             402: {
                 headers: {
                     [name: string]: unknown;
@@ -30657,14 +30672,14 @@ export interface operations {
             content: {
                 "application/json": {
                     /**
-                     * @description Which set of Curviate defaults this account's rows resolve from: `basic`, `premium`, `sales_navigator` or `recruiter`. Each inherits the one before it and raises a few rows. This is the platform product active on the account, NOT the Curviate seat entitlement, and the two can disagree: a lapsed subscription leaves the seat untouched. Curviate detects it from the platform when the account connects, re-detects it on every reconnect and, at most once a day, on an account read; setting it here is an operator override of that result and holds until the next connect. To undo the override, send `limit_profile_source: "default"`: the pin is released, and Curviate re-reads the value from LinkedIn on the account's next read or connect. Sending the value the account already holds changes nothing and pins nothing. The change is recorded in the ledger and it moves the defaults under every row at once, so any row you have configured explicitly keeps your value. The elevated Sales Navigator and Recruiter figures apply only to calls made through the matching interface, the `/v1/{account_id}/sales-navigator/...` and `/v1/{account_id}/recruiter/...` operations, and Curviate holds each call to the figure for the interface it goes through. The numbers here are therefore the ones a standard-interface call is held to, on every profile; a call through one of those operations resolves from the elevated set instead, and each row publishes that figure as `interface_ceiling`.
+                     * @description Which set of Curviate defaults this account's rows resolve from: `basic`, `premium`, `sales_navigator` or `recruiter`. Each inherits the one before it and raises a few rows. This is the platform product active on the account, NOT the Curviate seat entitlement, and the two can disagree: a lapsed subscription leaves the seat untouched. Curviate detects it from the platform when the account connects, re-detects it on every reconnect and, at most once a day, on an account read; setting it here is an operator override of that result and holds until the next connect. To undo the override, send `limit_profile_source: "default"`: the pin is released, and Curviate re-reads the value from LinkedIn on the account's next read or connect. Sending the value the account already holds changes nothing and pins nothing. The change is recorded in the ledger and it moves the defaults under every row at once, so any row you have configured explicitly keeps your value. The elevated Sales Navigator and Recruiter figures apply only to calls made through the matching interface, the Sales Navigator and Recruiter operations, and Curviate holds each call to the figure for the interface it goes through. The numbers here are therefore the ones a standard-interface call is held to, on every profile; a call through one of those operations resolves from the elevated set instead, and each row publishes that figure as `interface_ceiling`.
                      * @enum {string}
                      */
                     limit_profile?: "basic" | "premium" | "sales_navigator" | "recruiter";
                     /** @description The IANA zone this account's ACTIVITY window is read in, e.g. `Europe/Berlin`. Must be a real zone; anything else is a 400. Null clears it, which DISABLES the activity window for every row that has not set its own: a guessed zone inverts the window, which is worse than not having one. */
                     timezone?: string | null;
                     /**
-                     * @description The tenant-wide posture default, which every account inherits unless it overrides it. Set it once for a whole workspace of personas. Null clears it back to `warn`.
+                     * @description The tenant-wide posture default, which every account inherits unless it overrides it. Set it once for a whole tenant of personas. Null clears it back to `warn`.
                      * @enum {string|null}
                      */
                     tenant_default_posture?: "warn" | "enforce" | null;
@@ -30733,7 +30748,7 @@ export interface operations {
                         source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded" | null;
                         /** @description READ-ONLY. `ceiling` with the account's warm-up ramp applied, which is what this row is actually held to. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                         effective_ceiling?: unknown;
-                        /** @description READ-ONLY. What a call through the matching elevated interface (`/v1/{account_id}/sales-navigator/...`, `/v1/{account_id}/recruiter/...`) is held to on this row, or null when this row and limit profile have no such figure. `ceiling`, `effective_ceiling`, `band` and `over_default` are all the STANDARD-interface figure, so on a `sales_navigator` or `recruiter` account a row can report `over` while a call through the elevated interface still succeeds. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                        /** @description READ-ONLY. What a call through the matching elevated interface (the Sales Navigator and Recruiter operations) is held to on this row, or null when this row and limit profile have no such figure. `ceiling`, `effective_ceiling`, `band` and `over_default` are all the STANDARD-interface figure, so on a `sales_navigator` or `recruiter` account a row can report `over` while a call through the elevated interface still succeeds. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                         interface_ceiling?: unknown;
                         /** @description READ-ONLY. `interface_ceiling` with the account's warm-up ramp applied. Read THIS to know where an elevated-interface call stops, for the same reason `effective_ceiling` and not `ceiling` answers that for a standard one. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                         effective_interface_ceiling?: unknown;
@@ -31248,7 +31263,7 @@ export interface operations {
                              * @enum {string|null}
                              */
                             source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded" | null;
-                            /** @description READ-ONLY. What a call through the matching elevated interface (`/v1/{account_id}/sales-navigator/...`, `/v1/{account_id}/recruiter/...`) is held to on this row, or null when this row and limit profile have no such figure. `ceiling`, `effective_ceiling`, `band` and `over_default` are all the STANDARD-interface figure, so on a `sales_navigator` or `recruiter` account a row can report `over` while a call through the elevated interface still succeeds. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                            /** @description READ-ONLY. What a call through the matching elevated interface (the Sales Navigator and Recruiter operations) is held to on this row, or null when this row and limit profile have no such figure. `ceiling`, `effective_ceiling`, `band` and `over_default` are all the STANDARD-interface figure, so on a `sales_navigator` or `recruiter` account a row can report `over` while a call through the elevated interface still succeeds. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                             interface_ceiling?: unknown;
                             /** @description READ-ONLY. The fields on this row configured above the Curviate default. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                             over_default?: unknown;
