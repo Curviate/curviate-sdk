@@ -151,6 +151,19 @@ export class MessagingResource {
   /**
    * List messages in a chat, cursor-paginated.
    * `GET /v1/{account_id}/chats/{chat_id}/messages`
+   *
+   * An InMail thread's subject line arrives on a MESSAGE, as
+   * `message.specifics.subject`, carried by the thread's opening message. The
+   * chat object has no subject of its own, and `chat.name` is the counterpart's
+   * display name rather than a folded-in subject, so read the subject from the
+   * first message rather than from the chat. Ordinary (non-InMail) messages
+   * return `specifics: {}`.
+   *
+   * A CHAT READ CARRIES NO SUBJECT AT ALL, including on its embedded
+   * `last_message`: the preview is deliberately narrower than a message read, so
+   * that a chat read returns the same fields whether it was answered from
+   * LinkedIn or from Curviate's stored copy. Getting a subject means reading the
+   * chat's messages.
    */
   listMessages(chatId: string, params?: MessageListQuery): Promise<MessageListPage> {
     return this.ctx.request<MessageListPage>({
@@ -199,6 +212,11 @@ export class MessagingResource {
   /**
    * Get a single message by ID, re-homed under its chat.
    * `GET /v1/{account_id}/chats/{chat_id}/messages/{message_id}`
+   *
+   * `specifics` carries the InMail subject when the platform set one on this
+   * message (`specifics.subject`), and is `{}` otherwise. It is narrowed to
+   * that one field on purpose: the platform's other `specifics` keys are not
+   * part of the published surface.
    */
   getMessage(chatId: string, messageId: string): Promise<MessageDetail> {
     return this.ctx.request<MessageDetail>({

@@ -7,6 +7,46 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [Unreleased]
+
+Documents the InMail subject on the message reads. **Types and fixture are NOT
+regenerated in this change, deliberately** - see below.
+
+### Documented
+
+- **`messaging.listMessages()` / `messaging.getMessage()`**: an InMail thread's
+  subject line arrives on a message as `specifics.subject`, set on the thread's
+  opening message. The chat object carries no subject at all, and `chat.name` is
+  the counterpart's display name, so the subject is read off the first message
+  and not off the chat. An ordinary message returns `specifics: {}`. The served
+  `specifics` object is narrowed to `subject` alone.
+- **`messaging.getChat()` / `listChats()` / `inboxes.listChats()`**: a chat read
+  carries no subject anywhere, its embedded `last_message` included. The preview
+  is deliberately narrower than a message read so that a chat read returns the
+  same fields whether it was answered live or from Curviate's stored copy. Read
+  the chat's messages to get a subject.
+
+### Pending the server deploy
+
+`fixtures/openapi.json` and `src/generated/types.ts` still describe the message
+shape without `specifics`, so `MessageDetail["specifics"]` does not type yet. The
+fixture is refreshed from the **deployed** document only (`scripts/refresh-fixture.mjs`
+header: a fixture captured from a local server can encode local-only state that
+never shipped, and nothing downstream catches it), and the server change is not
+deployed. Once it is:
+
+```
+CURVIATE_BASE_URL=https://api.curviate.com pnpm gen:fixture
+pnpm gen:types:fixture
+```
+
+That refresh will also pick up unrelated already-deployed drift the current
+fixture lags - error-response `examples` blocks on ~38 operations and a set of
+500/422 example values - which is expected per the same header, not a sign the
+deployed document is wrong.
+
+---
+
 ## [0.32.0] - 2026-09-15
 
 Seat discovery for connecting an account. Additive; nothing removed or renamed.
