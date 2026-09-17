@@ -151,6 +151,13 @@ export class MessagingResource {
   /**
    * List messages in a chat, cursor-paginated.
    * `GET /v1/{account_id}/chats/{chat_id}/messages`
+   *
+   * An InMail thread's subject line arrives on a MESSAGE, as
+   * `message.specifics.subject`, carried by the thread's opening message. The
+   * chat object has no subject of its own, and `chat.name` is the counterpart's
+   * display name rather than a folded-in subject, so read the subject from the
+   * first message rather than from the chat. Ordinary (non-InMail) messages
+   * return `specifics: {}`.
    */
   listMessages(chatId: string, params?: MessageListQuery): Promise<MessageListPage> {
     return this.ctx.request<MessageListPage>({
@@ -199,6 +206,11 @@ export class MessagingResource {
   /**
    * Get a single message by ID, re-homed under its chat.
    * `GET /v1/{account_id}/chats/{chat_id}/messages/{message_id}`
+   *
+   * `specifics` carries the InMail subject when the platform set one on this
+   * message (`specifics.subject`), and is `{}` otherwise. It is narrowed to
+   * that one field on purpose: the platform's other `specifics` keys are not
+   * part of the published surface.
    */
   getMessage(chatId: string, messageId: string): Promise<MessageDetail> {
     return this.ctx.request<MessageDetail>({
