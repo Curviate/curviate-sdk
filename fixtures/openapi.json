@@ -11253,7 +11253,7 @@
                       "sent_as": {
                         "kind": "company",
                         "company_id": "112013061",
-                        "name": "RedHire"
+                        "name": "Northwind Talent"
                       }
                     }
                   }
@@ -21856,7 +21856,7 @@
                       "sent_as": {
                         "kind": "company",
                         "company_id": "112013061",
-                        "name": "RedHire"
+                        "name": "Northwind Talent"
                       }
                     }
                   },
@@ -24659,7 +24659,7 @@
                           "id": "COMPANY_83734124_PRIMARY",
                           "kind": "company",
                           "folder": "primary",
-                          "name": "RedHire",
+                          "name": "Northwind Talent",
                           "company_id": "112013061",
                           "mailbox_id": "83734124",
                           "reply_only": true

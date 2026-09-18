@@ -369,7 +369,7 @@ export class CompaniesResource {
    * const result = await acc.companies.sendMessage("112013061", chats[0]!.id, {
    *   text: "Thanks for reaching out, happy to help!",
    * });
-   * console.log(result.sent_as); // { kind: "company", company_id: "112013061", name: "RedHire" }
+   * console.log(result.sent_as); // { kind: "company", company_id: "112013061", name: "Northwind Talent" }
    */
   sendMessage(
     identifier: string,
