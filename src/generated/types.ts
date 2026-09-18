@@ -2825,7 +2825,7 @@ export interface components {
             provider?: string;
             /** @description Platform-specific detail on the message. Carries `subject` for an InMail, which is set on the thread's opening message; absent or empty for an ordinary message. */
             specifics?: {
-                /** @description The InMail subject line, when the platform carries one on this message. Ordinary messages have none. Reading a conversation back stores the subject in your tenant's inbox records alongside the body, with no expiry. */
+                /** @description The message's subject line, when the platform carries one on this message. Typically an InMail opener, but an ordinary message sent with a subject carries one too. Reading a conversation back stores the subject in your tenant's inbox records alongside the body, with no expiry. */
                 subject?: string | null;
             };
             /** @description The sender's profile, when the platform returned one alongside the message. sender_id always carries the identifier; this object carries the rest of what is known about that person. */
@@ -11093,7 +11093,7 @@ export interface operations {
                             provider?: string;
                             /** @description Platform-specific detail on the message. Carries `subject` for an InMail, which is set on the thread's opening message; absent or empty for an ordinary message. */
                             specifics?: {
-                                /** @description The InMail subject line, when the platform carries one on this message. Ordinary messages have none. Reading a conversation back stores the subject in your tenant's inbox records alongside the body, with no expiry. */
+                                /** @description The message's subject line, when the platform carries one on this message. Typically an InMail opener, but an ordinary message sent with a subject carries one too. Reading a conversation back stores the subject in your tenant's inbox records alongside the body, with no expiry. */
                                 subject?: string | null;
                             };
                             /** @description The sender's profile, when the platform returned one alongside the message. sender_id always carries the identifier; this object carries the rest of what is known about that person. */
@@ -11477,7 +11477,7 @@ export interface operations {
                         provider?: string;
                         /** @description Platform-specific detail on the message. Carries `subject` for an InMail, which is set on the thread's opening message; absent or empty for an ordinary message. */
                         specifics?: {
-                            /** @description The InMail subject line, when the platform carries one on this message. Ordinary messages have none. Reading a conversation back stores the subject in your tenant's inbox records alongside the body, with no expiry. */
+                            /** @description The message's subject line, when the platform carries one on this message. Typically an InMail opener, but an ordinary message sent with a subject carries one too. Reading a conversation back stores the subject in your tenant's inbox records alongside the body, with no expiry. */
                             subject?: string | null;
                         };
                         /** @description The sender's profile, when the platform returned one alongside the message. sender_id always carries the identifier; this object carries the rest of what is known about that person. */
