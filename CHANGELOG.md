@@ -7,6 +7,24 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [0.34.0] - 2026-09-18
+
+Fixture and types regenerated against the deployed production document
+(`https://api.curviate.com`, 127 paths, server `dc4d3d9f0cce8159d7b6685a93291d71eec488c8`).
+
+### Fixed
+
+- **Ordinary-message subject retention copy corrected.** The served subject
+  description previously read "...The InMail subject line, when the platform
+  carries one on this message. Ordinary messages have none. ...", which a live
+  round-trip disproved: a classic `start_chat` to a FIRST_DEGREE contact, sent
+  with a subject, reads it back on `message.specifics.subject` and stores it
+  on both sides. The description now reads "The message's subject line, when
+  the platform carries one on this message. Typically an InMail opener, but an
+  ordinary message sent with a subject carries one too. ...". No type shape
+  change: description string only, at the three sites the served document
+  carries it.
+
 ## [0.33.0] - 2026-09-17
 
 The InMail subject on the message reads, now typed. Fixture and types

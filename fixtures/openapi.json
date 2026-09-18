@@ -615,7 +615,7 @@
                   "string",
                   "null"
                 ],
-                "description": "The InMail subject line, when the platform carries one on this message. Ordinary messages have none. Reading a conversation back stores the subject in your tenant's inbox records alongside the body, with no expiry."
+                "description": "The message's subject line, when the platform carries one on this message. Typically an InMail opener, but an ordinary message sent with a subject carries one too. Reading a conversation back stores the subject in your tenant's inbox records alongside the body, with no expiry."
               }
             },
             "additionalProperties": false
@@ -11253,7 +11253,7 @@
                       "sent_as": {
                         "kind": "company",
                         "company_id": "112013061",
-                        "name": "Northwind Talent"
+                        "name": "RedHire"
                       }
                     }
                   }
@@ -21390,7 +21390,7 @@
                                   "string",
                                   "null"
                                 ],
-                                "description": "The InMail subject line, when the platform carries one on this message. Ordinary messages have none. Reading a conversation back stores the subject in your tenant's inbox records alongside the body, with no expiry."
+                                "description": "The message's subject line, when the platform carries one on this message. Typically an InMail opener, but an ordinary message sent with a subject carries one too. Reading a conversation back stores the subject in your tenant's inbox records alongside the body, with no expiry."
                               }
                             },
                             "additionalProperties": false
@@ -21856,7 +21856,7 @@
                       "sent_as": {
                         "kind": "company",
                         "company_id": "112013061",
-                        "name": "Northwind Talent"
+                        "name": "RedHire"
                       }
                     }
                   },
@@ -22359,7 +22359,7 @@
                             "string",
                             "null"
                           ],
-                          "description": "The InMail subject line, when the platform carries one on this message. Ordinary messages have none. Reading a conversation back stores the subject in your tenant's inbox records alongside the body, with no expiry."
+                          "description": "The message's subject line, when the platform carries one on this message. Typically an InMail opener, but an ordinary message sent with a subject carries one too. Reading a conversation back stores the subject in your tenant's inbox records alongside the body, with no expiry."
                         }
                       },
                       "additionalProperties": false
@@ -24659,7 +24659,7 @@
                           "id": "COMPANY_83734124_PRIMARY",
                           "kind": "company",
                           "folder": "primary",
-                          "name": "Northwind Talent",
+                          "name": "RedHire",
                           "company_id": "112013061",
                           "mailbox_id": "83734124",
                           "reply_only": true
