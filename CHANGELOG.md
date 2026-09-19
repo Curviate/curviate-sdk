@@ -9,10 +9,22 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
-Fixture and types regenerated against the deployed production document
-(`https://api.curviate.com`, 127 paths, server
-`00a1388d42b09db54424de12ecf1c7cbebe2ec12`). No type shape change: 23
-description strings and 3 example values, nothing added, removed or retyped.
+Fixture and types regenerated a second time against the deployed production
+document, now at server `40e112c409a65334a48d8d1ab78ca40e464d3de1` (127
+paths). No type shape change: one further description string changed,
+nothing added, removed or retyped.
+
+### Fixed
+
+- **Recruiter profile `description` relabelled**, the Sales Navigator
+  headline correction that had already shipped to staging: was
+  "About/summary text. Present when populated.", now "Professional headline.
+  Present when populated. Reading it back through Curviate stores it in your
+  tenant's entity records, with no expiry."
+
+First refresh in this Unreleased batch, against production server
+`00a1388d42b09db54424de12ecf1c7cbebe2ec12`: 23 description strings and 3
+example values changed, nothing added, removed or retyped.
 
 ### Fixed
 

@@ -24989,7 +24989,7 @@ export interface operations {
                         public_picture_url?: string;
                         /** @description Large variant of the profile picture URL. Present when available. */
                         public_picture_url_large?: string;
-                        /** @description About/summary text. Present when populated. */
+                        /** @description Professional headline. Present when populated. Reading it back through Curviate stores it in your tenant's entity records, with no expiry. */
                         description?: string;
                         /** @description Location as set on the profile. Present when available. */
                         location?: string;
