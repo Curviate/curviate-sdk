@@ -7,6 +7,34 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [Unreleased]
+
+Fixture and types regenerated against the deployed production document
+(`https://api.curviate.com`, 127 paths, server
+`00a1388d42b09db54424de12ecf1c7cbebe2ec12`). No type shape change: 23
+description strings and 3 example values, nothing added, removed or retyped.
+
+### Fixed
+
+- **Content-retention copy corrected on the paths that do store content.** The
+  company-page admin list, the company-page follower list and several Recruiter
+  person fields described names and headlines as "content pass-through, never
+  stored". Reading those responses back through Curviate does store them, in
+  your tenant's entity records, with no expiry, so the claim was false. The
+  descriptions now say what is kept. The Recruiter person shape is shared by
+  routes that disagree, so its `display_name` and `headline` carry the
+  conditional form: a people search or a talent-pool search stores them, a
+  pipeline read, an applicant read and a pasted-URL search store nothing.
+  Claims that were checked and found true are unchanged, including the
+  company-page inbox family and every post, comment and job body.
+- **A Recruiter profile field was mislabelled.** The top-level `description` on
+  `recruiter.profile()` was documented as the profile summary or About section.
+  It carries the member's professional headline. Relabelled.
+
+### Changed
+
+- **Neutral company name in the messaging examples**, replacing a real one.
+
 ## [0.34.0] - 2026-09-18
 
 Fixture and types regenerated against the deployed production document
