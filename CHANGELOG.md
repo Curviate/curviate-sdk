@@ -16,8 +16,9 @@ nothing added, removed or retyped.
 
 ### Fixed
 
-- **Recruiter profile `description` relabelled**, the Sales Navigator
-  headline correction that had already shipped to staging: was
+- **Sales Navigator profile `description` relabelled**
+  (`salesNavigator.profile()`), a correction that had already shipped to
+  staging: was
   "About/summary text. Present when populated.", now "Professional headline.
   Present when populated. Reading it back through Curviate stores it in your
   tenant's entity records, with no expiry."
