@@ -4114,7 +4114,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The company pages the account administers, each with its per-page admin capability matrix. An account that administers no pages returns an empty list; never a 403. Page names are returned verbatim and are never stored. */
+            /** @description The company pages the account administers, each with its per-page admin capability matrix. An account that administers no pages returns an empty list; never a 403. Page names are returned verbatim and are stored in your tenant's entity records, with no expiry. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -4144,7 +4144,7 @@ export interface operations {
                             id: string | null;
                             /** @description Native company urn. */
                             entity_urn?: string | null;
-                            /** @description Page display name (content pass-through, never stored). */
+                            /** @description Page display name. Reading it back through Curviate stores it in your tenant's entity records, with no expiry. */
                             name?: string | null;
                             /** @description Vanity slug (the `/company/<slug>/` segment). */
                             universal_name?: string | null;
@@ -6404,7 +6404,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description A page of the company page's followers; the admin analytics follower list. Follower names and headlines are returned verbatim and are never stored. Page until cursor is null. */
+            /** @description A page of the company page's followers; the admin analytics follower list. Follower names and headlines are returned verbatim and are stored in your tenant's entity records, with no expiry. Page until cursor is null. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -6427,9 +6427,9 @@ export interface operations {
                             object: "company_follower";
                             /** @description The follower's member id. */
                             id: string;
-                            /** @description Follower display name (content pass-through, never stored). */
+                            /** @description Follower display name. Reading it back through Curviate stores it in your tenant's entity records, with no expiry. */
                             name?: string | null;
-                            /** @description Follower headline (content pass-through, never stored). */
+                            /** @description Follower headline. Reading it back through Curviate stores it in your tenant's entity records, with no expiry. */
                             headline?: string | null;
                             /** @description Vanity slug. */
                             public_identifier?: string | null;
@@ -19685,7 +19685,7 @@ export interface operations {
                         public_picture_url?: string;
                         /** @description Large profile picture URL. */
                         public_picture_url_large?: string;
-                        /** @description Profile summary/about section. Passes through verbatim, never stored. */
+                        /** @description The member's professional headline. Reading it back through Curviate stores it in your tenant's entity records, with no expiry. */
                         description?: string;
                         /** @description Geographic location string. */
                         location?: string;
@@ -19967,7 +19967,7 @@ export interface operations {
                             /** @description Section names that were requested but throttled by LinkedIn. */
                             throttled_sections?: string[];
                         };
-                        /** @description Recruiter-only enrichment: notes, tags, and message-activity events. Passes through verbatim; never stored. */
+                        /** @description Recruiter-only enrichment: notes, tags, and message-activity events. The notes, the tags and each event's message text are removed before anything is written, on every path. The rest of this object is stored in your tenant's entity records, with no expiry. */
                         recruiting_profile: {
                             /** @description Recruiter notes on this candidate. Passes through, never stored. */
                             notes?: string | null;
@@ -20469,7 +20469,7 @@ export interface operations {
                             id: string;
                             /** @description SCREAMING_CASE network-distance enum. */
                             network_distance: string;
-                            /** @description Content, not stored. */
+                            /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                             headline?: string;
                             location?: string;
                             can_send_inmail?: boolean;
@@ -20491,7 +20491,7 @@ export interface operations {
                                 employment_type?: string;
                                 workplace_type?: string;
                             }[];
-                            /** @description Content, not stored. */
+                            /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                             display_name?: string;
                             public_identifier?: string;
                             profile_url?: string;
@@ -21511,7 +21511,7 @@ export interface operations {
                                 id: string;
                                 /** @description SCREAMING_CASE network-distance enum. */
                                 network_distance: string;
-                                /** @description Content, not stored. */
+                                /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                                 headline?: string;
                                 location?: string;
                                 can_send_inmail?: boolean;
@@ -21533,7 +21533,7 @@ export interface operations {
                                     employment_type?: string;
                                     workplace_type?: string;
                                 }[];
-                                /** @description Content, not stored. */
+                                /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                                 display_name?: string;
                                 public_identifier?: string;
                                 profile_url?: string;
@@ -21820,7 +21820,7 @@ export interface operations {
                             id: string;
                             /** @description SCREAMING_CASE network-distance enum. */
                             network_distance: string;
-                            /** @description Content, not stored. */
+                            /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                             headline?: string;
                             location?: string;
                             can_send_inmail?: boolean;
@@ -21842,7 +21842,7 @@ export interface operations {
                                 employment_type?: string;
                                 workplace_type?: string;
                             }[];
-                            /** @description Content, not stored. */
+                            /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                             display_name?: string;
                             public_identifier?: string;
                             profile_url?: string;
@@ -22020,7 +22020,7 @@ export interface operations {
                             id: string;
                             /** @description SCREAMING_CASE network-distance enum. */
                             network_distance: string;
-                            /** @description Content, not stored. */
+                            /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                             headline?: string;
                             location?: string;
                             can_send_inmail?: boolean;
@@ -22042,7 +22042,7 @@ export interface operations {
                                 employment_type?: string;
                                 workplace_type?: string;
                             }[];
-                            /** @description Content, not stored. */
+                            /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                             display_name?: string;
                             public_identifier?: string;
                             profile_url?: string;
@@ -22092,7 +22092,7 @@ export interface operations {
                                 id: string;
                                 /** @description SCREAMING_CASE network-distance enum. */
                                 network_distance: string;
-                                /** @description Content, not stored. */
+                                /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                                 headline?: string;
                                 location?: string;
                                 can_send_inmail?: boolean;
@@ -22114,7 +22114,7 @@ export interface operations {
                                     employment_type?: string;
                                     workplace_type?: string;
                                 }[];
-                                /** @description Content, not stored. */
+                                /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                                 display_name?: string;
                                 public_identifier?: string;
                                 profile_url?: string;
@@ -22165,7 +22165,7 @@ export interface operations {
                                 id: string;
                                 /** @description SCREAMING_CASE network-distance enum. */
                                 network_distance: string;
-                                /** @description Content, not stored. */
+                                /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                                 headline?: string;
                                 location?: string;
                                 can_send_inmail?: boolean;
@@ -22187,7 +22187,7 @@ export interface operations {
                                     employment_type?: string;
                                     workplace_type?: string;
                                 }[];
-                                /** @description Content, not stored. */
+                                /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                                 display_name?: string;
                                 public_identifier?: string;
                                 profile_url?: string;
@@ -24277,7 +24277,7 @@ export interface operations {
                                 id: string;
                                 /** @description SCREAMING_CASE network-distance enum. */
                                 network_distance: string;
-                                /** @description Content, not stored. */
+                                /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                                 headline?: string;
                                 location?: string;
                                 can_send_inmail?: boolean;
@@ -24299,7 +24299,7 @@ export interface operations {
                                     employment_type?: string;
                                     workplace_type?: string;
                                 }[];
-                                /** @description Content, not stored. */
+                                /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                                 display_name?: string;
                                 public_identifier?: string;
                                 profile_url?: string;
@@ -24490,7 +24490,7 @@ export interface operations {
                             id: string;
                             /** @description SCREAMING_CASE network-distance enum. */
                             network_distance: string;
-                            /** @description Content, not stored. */
+                            /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                             headline?: string;
                             location?: string;
                             can_send_inmail?: boolean;
@@ -24512,7 +24512,7 @@ export interface operations {
                                 employment_type?: string;
                                 workplace_type?: string;
                             }[];
-                            /** @description Content, not stored. */
+                            /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                             display_name?: string;
                             public_identifier?: string;
                             profile_url?: string;
