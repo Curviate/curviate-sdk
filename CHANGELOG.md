@@ -9,6 +9,8 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+## [0.35.0] - 2026-09-19
+
 Fixture and types regenerated a second time against the deployed production
 document, now at server `40e112c409a65334a48d8d1ab78ca40e464d3de1` (127
 paths). No type shape change: one further description string changed,
