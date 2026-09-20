@@ -9,6 +9,10 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+### Fixed
+
+- `search.getParameters` JSDoc example follows the convention of every other example (no code fence, a fully qualified `curviate.account(...)` call), so generated reference pages render it as one runnable snippet. Documentation only.
+
 ## [0.36.0] - 2026-09-20
 
 Fixture and types regenerated against the deployed production document
