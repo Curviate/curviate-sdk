@@ -9,6 +9,30 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+## [0.36.0] - 2026-09-20
+
+Fixture and types regenerated against the deployed production document
+(`https://api.curviate.com`, 127 paths, server
+`41d48ed451280c29b0fb6b4b15c44ca70b76af98`). One additive shape change.
+
+### Added
+
+- **`search.getParameters()` accepts `cursor`.** The filter-ID resolver
+  paginates: `SearchParametersQuery` gains an optional `cursor`, and the
+  response's `cursor` field is the token to send back for the next page. Walk
+  until it comes back `null`. `offset` still works and is now described as the
+  numeric fallback for `cursor`. A malformed cursor is a `400`. Additive and
+  backward compatible: a call that passes no `cursor` behaves exactly as
+  before.
+
+### Changed
+
+- Regenerated descriptions on `GET /v1/{account_id}/search/parameters`: the
+  operation description now states how the pages are walked, `offset` names
+  itself the numeric fallback, and the `400` description names a malformed
+  cursor among its causes.
+- `search.getParameters()` carries a paging `@example` in its JSDoc.
+
 ## [0.35.0] - 2026-09-19
 
 Fixture and types regenerated a second time against the deployed production
@@ -25,7 +49,7 @@ nothing added, removed or retyped.
   Present when populated. Reading it back through Curviate stores it in your
   tenant's entity records, with no expiry."
 
-First refresh in this Unreleased batch, against production server
+First refresh in this release, against production server
 `00a1388d42b09db54424de12ecf1c7cbebe2ec12`: 23 description strings and 3
 example values changed, nothing added, removed or retyped.
 

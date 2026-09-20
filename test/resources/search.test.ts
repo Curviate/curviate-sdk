@@ -34,6 +34,54 @@ describe("search.getParameters", () => {
     expect(params.get("limit")).toBe("5");
     expect(res.items[0]?.id).toBe("id_1");
   });
+
+  // Pagination: the resolver takes a cursor as of the 0.36.0 snapshot. The
+  // method forwards the query verbatim, so these pin the wire, not a helper.
+  it("forwards cursor on the query string", async () => {
+    let url: string | undefined;
+    server.use(
+      http.get(`${BASE}/v1/acc_se1/search/parameters`, ({ request }) => {
+        url = request.url;
+        return HttpResponse.json({ object: "search_parameter_list", items: [], cursor: "cur_2" });
+      }),
+    );
+    const res = await search().getParameters({ type: "SKILL", keywords: "eng", cursor: "cur_1" });
+    expect(new URL(url!).searchParams.get("cursor")).toBe("cur_1");
+    // The next cursor comes back on the page, so a caller can walk it.
+    expect(res.cursor).toBe("cur_2");
+  });
+
+  it("omits cursor entirely when it is not passed", async () => {
+    let url: string | undefined;
+    server.use(
+      http.get(`${BASE}/v1/acc_se1/search/parameters`, ({ request }) => {
+        url = request.url;
+        return HttpResponse.json({ object: "search_parameter_list", items: [], cursor: null });
+      }),
+    );
+    await search().getParameters({ type: "SKILL", keywords: "eng" });
+    const params = new URL(url!).searchParams;
+    expect(params.has("cursor")).toBe(false);
+    // Positive control on the same path: the params that WERE passed are there,
+    // so "absent" is a real absence and not a URL that was never captured.
+    expect(params.get("keywords")).toBe("eng");
+  });
+
+  it("sends an empty cursor as an empty value rather than dropping it", async () => {
+    // The served schema is minLength 1, so an empty cursor must reach the API
+    // and earn its 400; silently dropping it would page from the start instead.
+    let url: string | undefined;
+    server.use(
+      http.get(`${BASE}/v1/acc_se1/search/parameters`, ({ request }) => {
+        url = request.url;
+        return HttpResponse.json({ object: "search_parameter_list", items: [], cursor: null });
+      }),
+    );
+    await search().getParameters({ type: "SKILL", keywords: "eng", cursor: "" });
+    const params = new URL(url!).searchParams;
+    expect(params.has("cursor")).toBe(true);
+    expect(params.get("cursor")).toBe("");
+  });
 });
 
 describe("search.people", () => {

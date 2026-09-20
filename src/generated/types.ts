@@ -563,7 +563,7 @@ export interface paths {
         };
         /**
          * Resolve search filter IDs
-         * @description Resolves human-readable terms (e.g. 'software development') to opaque filter IDs for use in structured search filters. The type parameter selects the filter category; keywords is required for every type, including EMPLOYMENT_TYPE.
+         * @description Resolves human-readable terms (e.g. 'software development') to opaque filter IDs for use in structured search filters. The type parameter selects the filter category; keywords is required for every type, including EMPLOYMENT_TYPE. Results paginate: send the cursor from the previous response to get the next page, and stop when it comes back null.
          */
         get: operations["getV1AccountIdSearchParameters"];
         put?: never;
@@ -8324,10 +8324,12 @@ export interface operations {
                 type: "LOCATION" | "PEOPLE" | "RELATION" | "COMPANY" | "SCHOOL" | "INDUSTRY" | "SERVICE" | "JOB_FUNCTION" | "JOB_TITLE" | "EMPLOYMENT_TYPE" | "SKILL";
                 /** @description Human term to resolve to opaque filter IDs (e.g. 'software development'). Required for every type, including EMPLOYMENT_TYPE. */
                 keywords: string;
-                /** @description Zero-based pagination offset (default 0). */
+                /** @description Zero-based pagination offset; a numeric fallback for cursor (default 0). */
                 offset?: number;
                 /** @description Number of parameters to return (1-100, default 10). */
                 limit?: number;
+                /** @description Opaque pagination cursor returned from a previous response. */
+                cursor?: string;
             };
             header?: never;
             path: {
@@ -8365,7 +8367,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Missing or empty account_id, missing or empty type, missing keywords, or type not in the classic allowlist. */
+            /** @description Missing or empty account_id, missing or empty type, missing keywords, type not in the classic allowlist, or malformed cursor. */
             400: {
                 headers: {
                     [name: string]: unknown;
