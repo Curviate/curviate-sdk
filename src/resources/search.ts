@@ -118,6 +118,24 @@ export class SearchResource {
   /**
    * Resolve human-readable terms to opaque filter IDs for structured search.
    * `GET /v1/{account_id}/search/parameters`
+   *
+   * Paginated: the response carries a `cursor`, and sending it back as
+   * `cursor` returns the next page. Stop when it comes back `null`. `offset`
+   * stays available as the numeric fallback. A malformed cursor is a `400`.
+   *
+   * @example
+   * ```ts
+   * let cursor: string | null | undefined;
+   * do {
+   *   const page = await acc.search.getParameters({
+   *     type: "SKILL",
+   *     keywords: "software development",
+   *     ...(cursor ? { cursor } : {}),
+   *   });
+   *   for (const item of page.items) console.log(item.id, item.name);
+   *   cursor = page.cursor;
+   * } while (cursor);
+   * ```
    */
   getParameters(query: SearchParametersQuery): Promise<SearchParametersResult> {
     return this.ctx.request<SearchParametersResult>({
