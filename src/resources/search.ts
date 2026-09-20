@@ -124,10 +124,9 @@ export class SearchResource {
    * stays available as the numeric fallback. A malformed cursor is a `400`.
    *
    * @example
-   * ```ts
    * let cursor: string | null | undefined;
    * do {
-   *   const page = await acc.search.getParameters({
+   *   const page = await curviate.account("acc_123").search.getParameters({
    *     type: "SKILL",
    *     keywords: "software development",
    *     ...(cursor ? { cursor } : {}),
@@ -135,7 +134,6 @@ export class SearchResource {
    *   for (const item of page.items) console.log(item.id, item.name);
    *   cursor = page.cursor;
    * } while (cursor);
-   * ```
    */
   getParameters(query: SearchParametersQuery): Promise<SearchParametersResult> {
     return this.ctx.request<SearchParametersResult>({
