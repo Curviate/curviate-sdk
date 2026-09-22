@@ -96,12 +96,24 @@ function defaultSleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/** Parse `Retry-After` (seconds form). HTTP-date form falls back to 30s. */
+/**
+ * Parse `Retry-After` (seconds form). HTTP-date form, and an empty-but-present
+ * header, fall back to 30s.
+ *
+ * Found in code review while touching this file for #32: `Number("")` and
+ * `Number("  ")` both evaluate to `0`, which passed the old `isFinite && >= 0`
+ * check unguarded and turned a header with no usable value into "wait 0ms",
+ * the opposite of a pause. Trimmed and checked for emptiness first so it
+ * shares the same conservative fallback as the unparseable HTTP-date form.
+ */
 function parseRetryAfterMs(header: string | null): number | undefined {
   if (header == null) return undefined;
-  const seconds = Number(header);
-  if (Number.isFinite(seconds) && seconds >= 0) return seconds * 1000;
-  // HTTP-date form is not parsed precisely; use a conservative fallback.
+  const trimmed = header.trim();
+  if (trimmed !== "") {
+    const seconds = Number(trimmed);
+    if (Number.isFinite(seconds) && seconds >= 0) return seconds * 1000;
+  }
+  // Empty, or HTTP-date form (not parsed precisely): a conservative fallback.
   return 30_000;
 }
 
@@ -297,8 +309,29 @@ export async function execute<T = unknown>(
     // waiting inside this call moves it. Surface it and let the caller switch
     // work or reconfigure.
     const namesBudgetRow = err.budgetRow !== undefined;
+    // #32: `retry_hint: { kind: "never" }` is an explicit server instruction
+    // that this exact refusal will not change (e.g. UPSTREAM_SHAPE_DRIFT: the
+    // upstream answered, just unreadably: asking again gets the same shape).
+    // It is absent by default, so honouring it cannot silently change any
+    // response that doesn't send it.
+    //
+    // `retry_likely_to_succeed === false` is DELIBERATELY NOT consulted here.
+    // Verified server-side (#32): the two most common "we don't know what
+    // happened" server error paths both degrade ANY unresolved error on a
+    // RETRYABLE_CODES code (INTERNAL, PLATFORM_ERROR) to
+    // `retry_likely_to_succeed: false` with no retry_hint, a generic default
+    // for "we don't know", not a per-cause verdict that retrying is futile.
+    // Honouring it here would silently stop the client retrying most
+    // undecoded server errors, which is exactly the transient class
+    // RETRYABLE_CODES exists to retry. Filed back for the server side; this
+    // fix stops at the hint, which has no such false-by-default source.
+    const neverRetry = err.retryHint?.kind === "never";
     const retryable =
-      !isWrite && !namesBudgetRow && RETRYABLE_CODES.has(err.code) && attempt < opts.maxRetries;
+      !isWrite &&
+      !namesBudgetRow &&
+      !neverRetry &&
+      RETRYABLE_CODES.has(err.code) &&
+      attempt < opts.maxRetries;
     if (retryable) {
       await sleep(retryDelay(err, attempt + 1, jitterFn()));
       attempt += 1;

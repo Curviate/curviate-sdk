@@ -9,6 +9,32 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+### Fixed
+
+- **The retry decision now honours `retry_hint.kind: "never"`.** A retryable
+  code (`INTERNAL`, `PLATFORM_ERROR`, `PLATFORM_RATE_LIMIT`,
+  `RATE_LIMIT_ACCOUNT`, `RATE_LIMIT_TENANT`) whose envelope carries
+  `retry_hint: { kind: "never" }`, an explicit server instruction that this
+  exact refusal will not change on a retry (for example, an upstream response
+  in a shape this API cannot read), is no longer retried on GETs. Previously
+  the retry gate consulted only the code table, so a structural-drift 502
+  (`PLATFORM_ERROR` with `retry_likely_to_succeed: false` and
+  `retry_hint.kind: "never"`) was retried up to three times against an answer
+  that could not change.
+
+  `retry_likely_to_succeed` is still not consulted by the retry decision. The
+  server currently defaults it to `false` on several generic
+  "unresolved error" paths that are not a per-cause verdict, and honouring it
+  as written would have silently stopped retrying most undecoded server
+  errors. Filed back rather than shipped; unaffected callers see no
+  behaviour change.
+
+- **An empty but present `Retry-After` header no longer reads as "retry in
+  0ms".** `Number("")` is `0`, which is finite and non-negative, so it passed
+  the same check a real delay does; it now falls back to the same
+  conservative 30s the unparseable HTTP-date form already gets. Found in
+  passing while touching this file for the fix above; unrelated to it.
+
 ## [0.37.0] - 2026-09-22
 
 Fixture and types regenerated against the deployed production document
