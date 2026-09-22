@@ -468,6 +468,23 @@ describe("rate-limit surfacing", () => {
     const err = await execute("GET", "/v1/accounts", det({ maxRetries: 0 })).catch((e) => e);
     expect((err as CurviateError).retryAfterMs).toBe(10_000);
   });
+
+  // Code-review finding on #32 (pre-existing, unrelated to the retry_hint
+  // fix): `Number("")` is `0`, which is finite and >= 0, so an empty-but-sent
+  // header used to parse as "retry in 0ms" instead of falling back to the
+  // same 30s conservative delay the unparseable HTTP-date form already gets.
+  it("falls back to the 30s conservative delay on an empty Retry-After header, not 0ms", async () => {
+    server.use(
+      http.get(`${BASE}/v1/accounts`, () =>
+        HttpResponse.json(
+          { code: "RATE_LIMIT_ACCOUNT", message: "slow", user_fixable: false, retry_likely_to_succeed: true },
+          { status: 429, headers: { "Retry-After": "" } },
+        ),
+      ),
+    );
+    const err = await execute("GET", "/v1/accounts", det({ maxRetries: 0 })).catch((e) => e);
+    expect((err as CurviateError).retryAfterMs).toBe(30_000);
+  });
 });
 
 describe("error-code decode coverage", () => {
@@ -764,14 +781,20 @@ describe("account-safety refusals", () => {
   // retrying. Without this arm, a decode that quietly stopped working would
   // look identical to a decode that works.
   //
-  // `retry_likely_to_succeed: TRUE` deliberately. The retry decision consults
-  // only RETRYABLE_CODES, never the envelope's own retry fields, so a body
-  // saying `false` here would still be fetched four times and this control
-  // would be pinning that as intended behaviour. It is not intended: it is a
-  // real transport defect, filed separately, and this control must not
-  // enshrine it. With `true` the control asserts only the uncontroversial
-  // half — an unknown code decodes to INTERNAL and INTERNAL retries — which is
-  // all it is here to prove.
+  // `retry_likely_to_succeed: TRUE`, no `retry_hint`, deliberately (#32,
+  // revisited). As of #32 the retry decision DOES consult one envelope field:
+  // `retry_hint.kind === "never"` suppresses a retry outright. It still does
+  // NOT consult `retry_likely_to_succeed` — that half was investigated and
+  // deliberately deferred: the server's own registry catch-all and its
+  // substrate-error-map default arm both degrade an unresolved error on a
+  // RETRYABLE_CODES code to `retry_likely_to_succeed: false` with no
+  // `retry_hint`, as a generic "we don't know" default rather than a per-cause
+  // verdict, so honouring it would silently stop retrying most undecoded
+  // server errors. This body carries `retry_likely_to_succeed: true` (not the
+  // deferred `false` case) and no `retry_hint` at all, so it isolates the one
+  // thing this control is here to prove: an unknown code still decodes to
+  // INTERNAL and INTERNAL still retries. The sibling arm below
+  // (`retry_hint.kind: "never"`) proves the part that DID change.
   it("still downgrades an unknown 422 code to INTERNAL and retries it (4 fetches)", async () => {
     const calls = serve(
       {
@@ -819,5 +842,125 @@ describe("account-safety refusals", () => {
     const err = (await execute("GET", "/v1/probe", det()).catch((e) => e)) as CurviateError;
     expect(err.code).toBe("INTERNAL");
     expect(calls()).toBe(4);
+  });
+});
+
+// #32: the retry decision now honours `retry_hint.kind === "never"` as an
+// explicit server instruction, ahead of the RETRYABLE_CODES table. It
+// deliberately does NOT act on `retry_likely_to_succeed` alone — see the
+// `neverRetry` comment in transport.ts. Verified server-side: the two most
+// common "we don't know what happened" server error paths both degrade an
+// unresolved error on a RETRYABLE_CODES code (INTERNAL, PLATFORM_ERROR) to
+// `retry_likely_to_succeed: false` with NO `retry_hint`, as a generic
+// "unresolved" default rather than a per-cause verdict that a retry is
+// futile — honouring that field here would have silently stopped retrying
+// most undecoded server errors, the exact class RETRYABLE_CODES exists for.
+// That half is filed back to the server rather than shipped.
+describe("retry_hint honouring (#32)", () => {
+  // Same call-counting JSON-envelope handler as the sibling describe block's
+  // `serve()` above; redeclared here because that one is scoped to its own
+  // describe and JS closures don't reach across siblings.
+  function serve(body: Record<string, unknown>, status: number) {
+    let calls = 0;
+    server.use(
+      http.get(`${BASE}/v1/probe`, () => {
+        calls += 1;
+        return HttpResponse.json(body, { status });
+      }),
+    );
+    return () => calls;
+  }
+
+  // The issue's own root cause: PLATFORM_ERROR (RETRYABLE) with
+  // `retry_hint.kind: "never"` (e.g. UPSTREAM_SHAPE_DRIFT — the upstream
+  // answered, in a shape that will not become readable by asking again).
+  it("does not retry a GET whose envelope says retry_hint.kind: never, even though the code is retryable (1 fetch)", async () => {
+    const calls = serve(
+      {
+        code: "PLATFORM_ERROR",
+        message: "The upstream answered in a shape we could not read.",
+        user_fixable: false,
+        retry_likely_to_succeed: false,
+        retry_hint: { kind: "never" },
+      },
+      502,
+    );
+    const err = (await execute("GET", "/v1/probe", det()).catch((e) => e)) as CurviateError;
+    expect(err.code).toBe("PLATFORM_ERROR");
+    expect(err.retryHint).toEqual({ kind: "never" });
+    expect(calls()).toBe(1);
+  });
+
+  // Same-path positive control: identical code and status with no
+  // `retry_hint` at all retries to exhaustion, so "1 fetch" above is a
+  // property of the hint, not of PLATFORM_ERROR having quietly left
+  // RETRYABLE_CODES.
+  it("CONTROL: retries the same PLATFORM_ERROR/502 to exhaustion when no retry_hint is sent (4 fetches)", async () => {
+    const calls = serve(
+      {
+        code: "PLATFORM_ERROR",
+        message: "Upstream hiccup.",
+        user_fixable: false,
+        retry_likely_to_succeed: true,
+      },
+      502,
+    );
+    const err = (await execute("GET", "/v1/probe", det()).catch((e) => e)) as CurviateError;
+    expect(err.code).toBe("PLATFORM_ERROR");
+    expect(calls()).toBe(4); // 1 initial + maxRetries 3
+  });
+
+  // `retry_hint.kind: "delay"` is NOT "never" — guards against an overbroad
+  // `if (err.retryHint)` truthiness check standing in for `.kind === "never"`.
+  it("still retries a GET whose retry_hint.kind is 'delay', not 'never' (4 fetches)", async () => {
+    const calls = serve(
+      {
+        code: "INTERNAL",
+        message: "x",
+        user_fixable: false,
+        retry_likely_to_succeed: true,
+        retry_hint: { kind: "delay", delay_ms: 1 },
+      },
+      500,
+    );
+    await execute("GET", "/v1/probe", det()).catch((e) => e);
+    expect(calls()).toBe(4);
+  });
+
+  // Deferred half of #32 (server-side finding above): `retry_likely_to_succeed:
+  // false` with NO `retry_hint` must NOT suppress a retry — today's
+  // code-based behaviour is unchanged for this exact shape, because the
+  // server's own catch-alls emit it as a generic default, not a verdict.
+  it("still retries a GET when retry_likely_to_succeed is false but retry_hint is absent (4 fetches)", async () => {
+    const calls = serve(
+      {
+        code: "INTERNAL",
+        message: "An unexpected error occurred.",
+        user_fixable: false,
+        retry_likely_to_succeed: false,
+      },
+      500,
+    );
+    await execute("GET", "/v1/probe", det()).catch((e) => e);
+    expect(calls()).toBe(4); // 1 initial + maxRetries 3 — unchanged by #32
+  });
+
+  // No envelope at all (non-JSON body): the issue's own "obvious fix" trap.
+  // #32 never reads `retry_likely_to_succeed` for the retry decision, so this
+  // stays exactly as before — retried to exhaustion on the code table alone.
+  it("still retries a GET on a non-JSON 500 body (no envelope) to exhaustion (4 fetches)", async () => {
+    let calls = 0;
+    server.use(
+      http.get(`${BASE}/v1/probe`, () => {
+        calls += 1;
+        return new HttpResponse("upstream blew up", {
+          status: 500,
+          headers: { "Content-Type": "text/plain" },
+        });
+      }),
+    );
+    const err = (await execute("GET", "/v1/probe", det()).catch((e) => e)) as CurviateError;
+    expect(err.code).toBe("INTERNAL");
+    expect(calls).toBe(4);
   });
 });
