@@ -9,6 +9,62 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+## [0.37.0] - 2026-09-22
+
+Fixture and types regenerated against the deployed production document
+(`https://api.curviate.com`, 127 paths, server
+`9d5eb6583e24928eca0c3c8b162ad664e869af99`).
+**BREAKING**: the webhook read summaries no longer carry `headers[].value_prefix`;
+a keyed `headers[].value_fingerprint` takes its place. Pre-1.0 a breaking change
+ships as a minor (as `0.27.0` did), so a caret range on `0.36.x` will not pick
+this up.
+
+### BREAKING
+
+- **`headers[].value_prefix` is removed from every webhook read; `headers[].value_fingerprint` replaces it.**
+  The old field was a masked preview of the configured value: the first 8
+  characters plus `...` for values of 24 characters or more, a fixed `********`
+  below that. It disclosed a leading slice of a credential and leaked the
+  value's length class. The replacement is an 8-character keyed fingerprint that
+  carries no part of the value and no indication of its length.
+
+  It is deterministic **within an account**, which is what makes it useful: two
+  headers with the same fingerprint hold the same value, and a changed
+  fingerprint means a rotation took effect. Fingerprints are not comparable
+  across accounts. It is `string | null`, `null` for a header configured before
+  fingerprints existed, so the member is nullable where `value_prefix` was not.
+
+  Affects `webhooks.create` (201), `webhooks.list` (200), `webhooks.get` (200)
+  and `webhooks.update` (200).
+
+  ```diff
+  - const configured = webhook.headers?.[0]?.value_prefix;   // masked preview, gone
+  + const configured = webhook.headers?.[0]?.value_fingerprint; // 8-char keyed fingerprint, nullable
+  ```
+
+  Any code that read `value_prefix` stops compiling, which is the intended
+  outcome: a masked preview and a fingerprint are not interchangeable, and a
+  silent rename would have left comparisons across accounts looking correct
+  while meaning nothing.
+
+### Changed
+
+- Every `cursor` query parameter in the document now declares `minLength: 1`:
+  all 61 of them, the last 4 landing in this release (`GET /profile/visitors`,
+  `GET /posts/{post_id}/comments`, `GET /posts/{post_id}/reactions`,
+  `GET /saved-posts`). An empty-string cursor is a `400` rather than a silently
+  ignored parameter. No TypeScript type changes: `minLength` is a validation
+  constraint, not a shape, so this reaches callers as server behaviour and as a
+  documented constraint in the generated reference.
+- Regenerated descriptions for `limit_profile`, `limit_profile_source` and
+  `limit_profile_detected_at` on the account and safety-policy surfaces. An
+  operator-set `limit_profile` is now a **pin**: it is no longer released by the
+  account's next connect, and neither a connect, a reconnect nor an account read
+  moves it or advances `limit_profile_detected_at`. Releasing it means sending
+  `limit_profile_source: "default"` **on its own**: changing `limit_profile`
+  and releasing the pin in the same request is refused with `INVALID_REQUEST`.
+  Description-only in this package; the behaviour is the deployed server's.
+
 ### Fixed
 
 - `search.getParameters` JSDoc example follows the convention of every other example (no code fence, a fully qualified `curviate.account(...)` call), so generated reference pages render it as one runnable snippet. Documentation only.
