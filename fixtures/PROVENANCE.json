@@ -1,7 +1,7 @@
 {
   "source_base_url": "https://api.curviate.com",
-  "server_git_sha": "9d5eb6583e24928eca0c3c8b162ad664e869af99",
-  "fetched_at": "2026-09-22T14:15:04.737Z",
+  "server_git_sha": "0b33680536a45681ed5ffe420006cb05c85fe683",
+  "fetched_at": "2026-09-23T07:41:58.917Z",
   "paths": 127,
   "servers_canonicalized": false,
   "note": "Written by scripts/refresh-fixture.mjs (pnpm gen:fixture). Do not hand-edit; refresh instead."

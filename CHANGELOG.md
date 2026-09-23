@@ -9,6 +9,22 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+## [0.37.1] - 2026-09-23
+
+Fixture and types regenerated against the deployed production document
+(`https://api.curviate.com`, 127 paths, server
+`0b33680536a45681ed5ffe420006cb05c85fe683`). Description changes only; no type
+shape changed.
+
+### Changed
+
+- **Generated type descriptions follow the served document.** `is_sender` on
+  chat messages now documents that it is omitted when the connected account
+  cannot yet be identified (treat a missing value as unknown, not as received).
+  Recruiter search and project filters, and the job read's `sections`
+  parameter, are documented as trimmed before use rather than forwarded
+  verbatim.
+
 ### Fixed
 
 - **The retry decision now honours `retry_hint.kind: "never"`.** A retryable
