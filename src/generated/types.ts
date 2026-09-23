@@ -2807,7 +2807,7 @@ export interface components {
             }[];
             /** @description ISO-8601 UTC send timestamp. */
             timestamp?: string;
-            /** @description True if the connected account sent this message. */
+            /** @description True if the connected account sent this message. Omitted when Curviate cannot yet identify the connected account; treat a missing value as unknown, not as received. */
             is_sender?: boolean;
             is_seen?: boolean;
             is_delivered?: boolean;
@@ -10282,7 +10282,7 @@ export interface operations {
                                 }[];
                                 /** @description ISO-8601 UTC send timestamp. */
                                 timestamp?: string;
-                                /** @description True if the connected account sent this message. */
+                                /** @description True if the connected account sent this message. Omitted when Curviate cannot yet identify the connected account; treat a missing value as unknown, not as received. */
                                 is_sender?: boolean;
                                 is_seen?: boolean;
                                 is_delivered?: boolean;
@@ -10707,7 +10707,7 @@ export interface operations {
                             }[];
                             /** @description ISO-8601 UTC send timestamp. */
                             timestamp?: string;
-                            /** @description True if the connected account sent this message. */
+                            /** @description True if the connected account sent this message. Omitted when Curviate cannot yet identify the connected account; treat a missing value as unknown, not as received. */
                             is_sender?: boolean;
                             is_seen?: boolean;
                             is_delivered?: boolean;
@@ -11077,7 +11077,7 @@ export interface operations {
                             }[];
                             /** @description ISO-8601 UTC send timestamp. */
                             timestamp?: string;
-                            /** @description True if the connected account sent this message. */
+                            /** @description True if the connected account sent this message. Omitted when Curviate cannot yet identify the connected account; treat a missing value as unknown, not as received. */
                             is_sender?: boolean;
                             is_seen?: boolean;
                             is_delivered?: boolean;
@@ -11461,7 +11461,7 @@ export interface operations {
                         }[];
                         /** @description ISO-8601 UTC send timestamp. */
                         timestamp?: string;
-                        /** @description True if the connected account sent this message. */
+                        /** @description True if the connected account sent this message. Omitted when Curviate cannot yet identify the connected account; treat a missing value as unknown, not as received. */
                         is_sender?: boolean;
                         is_seen?: boolean;
                         is_delivered?: boolean;
@@ -12656,7 +12656,7 @@ export interface operations {
                                 }[];
                                 /** @description ISO-8601 UTC send timestamp. */
                                 timestamp?: string;
-                                /** @description True if the connected account sent this message. */
+                                /** @description True if the connected account sent this message. Omitted when Curviate cannot yet identify the connected account; treat a missing value as unknown, not as received. */
                                 is_sender?: boolean;
                                 is_seen?: boolean;
                                 is_delivered?: boolean;
@@ -16418,7 +16418,7 @@ export interface operations {
     getV1AccountIdJobsJobId: {
         parameters: {
             query?: {
-                /** @description Which additional sections to include on the response (e.g. hiring_team, salary, benefits). The exact set of accepted values is not finalized, supply the section names you need, comma-separated for more than one, and they are forwarded verbatim. Omit for the base fields only. */
+                /** @description Which additional sections to include on the response (e.g. hiring_team, salary, benefits). The exact set of accepted values is not finalized, supply the section names you need, comma-separated for more than one; each name is trimmed before use. Omit for the base fields only. */
                 with_sections?: string[];
             };
             header?: never;
@@ -20340,7 +20340,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description Free-text keyword search. Content, forwarded verbatim, never persisted. */
+                    /** @description Free-text keyword search. Trimmed before use; never persisted. */
                     keywords?: string;
                     /** @description Filter by candidate spotlight tags. */
                     spotlights?: string[];
@@ -20413,9 +20413,9 @@ export interface operations {
                     project?: string;
                     /** @description Resolved JOB_FUNCTION parameter ids. */
                     job_function?: string[];
-                    /** @description Content, forwarded verbatim, never persisted. */
+                    /** @description Filter by first name (trimmed before use; never persisted). */
                     first_name?: string;
-                    /** @description Content, forwarded verbatim, never persisted. */
+                    /** @description Filter by last name (trimmed before use; never persisted). */
                     last_name?: string;
                     /** @description Filter to members who recently joined LinkedIn. */
                     recently_joined?: boolean;
@@ -20438,7 +20438,7 @@ export interface operations {
                     group?: string[];
                     /** @description Filter to members who previously applied. */
                     is_past_applicant?: boolean;
-                    /** @description Content, forwarded verbatim, never persisted. */
+                    /** @description Filter by an existing note's content (trimmed before use; never persisted). */
                     notes?: string;
                     /** @description Resolved TAG parameter ids. */
                     tags?: string[];
@@ -20826,7 +20826,7 @@ export interface operations {
                 status?: ("ACTIVE" | "CLOSED" | "DRAFT" | "REVIEW")[];
                 /** @description Field to sort results by. Defaults to LAST_USED_BY_ME. */
                 sort_by?: "LAST_USED_BY_ME" | "MOST_USED_BY_ME" | "LAST_VIEWED_BY_ME" | "NEWEST_TO_OLDEST" | "OLDEST_TO_NEWEST" | "ALPHABETICAL" | "REVERSE_ALPHABETICAL";
-                /** @description Filter by project name (content, forwarded verbatim, never persisted). */
+                /** @description Filter by project name (trimmed before use; never persisted). */
                 keywords?: string;
                 /** @description Number of projects to return (1-100). Defaults to 10. */
                 limit?: number;
@@ -21689,7 +21689,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description Free-text keyword search. Content, forwarded verbatim, never persisted. */
+                    /** @description Free-text keyword search. Trimmed before use; never persisted. */
                     keywords?: string;
                     /** @description Filter by candidate spotlight tags. */
                     spotlights?: string[];
@@ -21762,9 +21762,9 @@ export interface operations {
                     project?: string;
                     /** @description Resolved JOB_FUNCTION parameter ids. */
                     job_function?: string[];
-                    /** @description Content, forwarded verbatim, never persisted. */
+                    /** @description Filter by first name (trimmed before use; never persisted). */
                     first_name?: string;
-                    /** @description Content, forwarded verbatim, never persisted. */
+                    /** @description Filter by last name (trimmed before use; never persisted). */
                     last_name?: string;
                     /** @description Filter to members who recently joined LinkedIn. */
                     recently_joined?: boolean;
@@ -21787,7 +21787,7 @@ export interface operations {
                     group?: string[];
                     /** @description Filter to members who previously applied. */
                     is_past_applicant?: boolean;
-                    /** @description Content, forwarded verbatim, never persisted. */
+                    /** @description Filter by an existing note's content (trimmed before use; never persisted). */
                     notes?: string;
                     /** @description Resolved TAG parameter ids. */
                     tags?: string[];
@@ -23107,7 +23107,7 @@ export interface operations {
                         reject_unqualified_applicants?: boolean;
                         reject_out_of_country_applicants?: boolean;
                     };
-                    /** @description Content; the new project's name, forwarded verbatim, never persisted. */
+                    /** @description The new project's name (trimmed before use); never persisted. */
                     project_name: string;
                 };
             };
@@ -24125,7 +24125,7 @@ export interface operations {
                 "application/json": {
                     /** @description The ID of the JOB_POSTING channel from the Talent Pool. SDK-confirmed REQUIRED. */
                     channel_id: string;
-                    /** @description Free-text keyword search. Content, forwarded verbatim, never persisted. */
+                    /** @description Free-text keyword search. Trimmed before use; never persisted. */
                     keywords?: string;
                     /**
                      * @description Sort order for the applicant list.
