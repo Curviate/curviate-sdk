@@ -100,8 +100,20 @@ export type ConnectionPayload = EventPayloadBase;
 
 /**
  * Payload carried by account-state events.
+ *
+ * `account.restricted` (`status: "restricted"`) means the account is still
+ * connected but some actions on it fail: LinkedIn restricted it, or one
+ * LinkedIn product on it (Sales Navigator, Recruiter) needs re-authentication
+ * or is failing. Surface it to a human; for a single failing product a
+ * reconnect may restore it.
  */
-export type AccountPayload = EventPayloadBase;
+export interface AccountPayload extends EventPayloadBase {
+  /**
+   * Your own id for the account's end user, as passed on connect or update;
+   * `null` when none is set.
+   */
+  external_id?: string | null;
+}
 
 /**
  * Delivery metadata that accompanies every Curviate webhook event.

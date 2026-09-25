@@ -5,7 +5,7 @@
 // table (namespace -> exact method set), enumerates the real prototype methods
 // on a constructed client, and asserts set-equality per namespace. A phantom
 // (extra) public method fails by name; a missing method fails by name; the
-// total must be 146 methods across 18 namespaces. A separate compile-time block
+// total must be 149 methods across 18 namespaces. A separate compile-time block
 // proves every removed method is gone at the type level.
 import { describe, expect, it } from "vitest";
 import { Curviate } from "../src/index.js";
@@ -15,7 +15,16 @@ const acc = client.account("acc_test");
 
 // Root-scoped namespaces (hang off the root client only).
 const ROOT_SURFACE: Record<string, readonly string[]> = {
-  accounts: ["list", "listSeats", "get", "update", "disconnect"],
+  accounts: [
+    "list",
+    "listSeats",
+    "get",
+    "update",
+    "disconnect",
+    "addSeats",
+    "cancelSeat",
+    "revertSeatCancellation",
+  ],
   auth: [
     "intent",
     "solveCheckpoint",
@@ -237,17 +246,17 @@ describe("per-namespace method bijection", () => {
 });
 
 describe("total mapped surface", () => {
-  it("the intended table sums to 146 methods across 18 namespaces", () => {
+  it("the intended table sums to 149 methods across 18 namespaces", () => {
     const namespaces = [
       ...Object.values(ROOT_SURFACE),
       ...Object.values(ACCOUNT_SURFACE),
     ];
     expect(namespaces.length).toBe(18);
     const total = namespaces.reduce((n, methods) => n + methods.length, 0);
-    expect(total).toBe(146);
+    expect(total).toBe(149);
   });
 
-  it("the real runtime surface also sums to exactly 146", () => {
+  it("the real runtime surface also sums to exactly 149", () => {
     const roots = Object.values(rootInstances).reduce(
       (n, inst) => n + ownMethods(inst).size,
       0,
@@ -256,7 +265,7 @@ describe("total mapped surface", () => {
       (n, inst) => n + ownMethods(inst).size,
       0,
     );
-    expect(roots + accounts).toBe(146);
+    expect(roots + accounts).toBe(149);
   });
 });
 
