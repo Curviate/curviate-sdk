@@ -50,7 +50,8 @@ challenge selection on checkpoints, and seat purchase over the API.
 - **`auth.requestCheckpoint` returns `200 | 202`.** Without a body it still
   re-sends and returns `{ resent }`; with `{ challenge }` it returns the next
   checkpoint. Code reading `result.resent` must narrow first
-  (`"resent" in result`).
+  (`"status" in result` for the 202 checkpoint, `"resent" in result` for the
+  200 re-send; each narrows only its true branch).
 - **Webhook `account_ids` is `string[] | null` on reads.** `null` means a
   tenant-wide `account_status` webhook.
 - **`account.restricted` documented as "connected, some actions fail".** The

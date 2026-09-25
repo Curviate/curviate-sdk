@@ -63,7 +63,9 @@ export type AuthRequestCheckpointBody = Omit<
 /**
  * `POST /v1/auth/checkpoint/request` result: 200 `{ resent }` for a re-send, or
  * 202 (the next checkpoint) after switching to a `challenge`. Narrow with
- * `"resent" in result`.
+ * `"status" in result` for the 202 checkpoint and `"resent" in result` for
+ * the 200 re-send. Each check narrows only its true branch (every field on
+ * both shapes is optional), so test for the shape you want, not its else.
  */
 export type AuthRequestCheckpointResult =
   | paths["/v1/auth/checkpoint/request"]["post"]["responses"]["200"]["content"]["application/json"]
