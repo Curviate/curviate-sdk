@@ -77,7 +77,7 @@ export interface paths {
         put?: never;
         /**
          * Endorse a member's skill
-         * @description Endorses one specific skill on a target member's profile. You can only endorse the skills of your 1st-degree connections. To obtain the endorsement_id: (1) GET /v1/{account_id}/users/{user_id}?linkedin_sections=linkedin_skills, (2) read the target skill's endorsement_id from the skills section, this field is present ONLY for connections you are eligible to endorse (it is omitted for users outside your network and on your own profile, so this workflow requires the target to be a 1st-degree connection), (3) call this endpoint with that value. user_id must be the LinkedIn member ID (ACo... format); a public identifier does not resolve on this endpoint.
+         * @description Endorses one skill on a target member's profile. Only skills of your 1st-degree connections can be endorsed, using the endorsement_id from their profile's skills section (GET users/{user_id}?linkedin_sections=linkedin_skills).
          */
         post: operations["postV1AccountIdUsersUserIdEndorseSkill"];
         delete?: never;
@@ -155,7 +155,7 @@ export interface paths {
         };
         /**
          * List the account's profile viewers
-         * @description Returns a cursor-paginated list of the account's recent profile viewers, each classified by disclosure fidelity (identified, semi-anonymous, or an aggregate rollup). A Premium account can see identified viewers; a free account is capped at semi-anonymous fidelity; an in-band result, never an error. Page until cursor is null.
+         * @description Returns a cursor-paginated list of the account's recent profile viewers, each classified by disclosure fidelity (identified, semi-anonymous, or aggregate). A free account is capped at semi-anonymous; Premium sees identified. Page until cursor is null.
          */
         get: operations["getV1AccountIdProfileVisitors"];
         put?: never;
@@ -215,7 +215,7 @@ export interface paths {
         };
         /**
          * List who a user follows
-         * @description Returns a paginated list of LinkedIn accounts this user follows. LinkedIn only allows listing the connected account's OWN following list, user_id MUST be "me"; any other value returns a non-retryable error (this is a permanent LinkedIn platform limitation, not a gap in this endpoint). To list another user's followers instead, use GET /v1/{account_id}/users/{user_id}/followers, which does accept an explicit user_id.
+         * @description Lists accounts this user follows. LinkedIn allows only the connected account's own list: user_id must be "me". To list another user's followers, use the followers endpoint instead.
          */
         get: operations["getV1AccountIdUsersUserIdFollowing"];
         put?: never;
@@ -242,7 +242,7 @@ export interface paths {
         post: operations["postV1AccountIdUsersUserIdFollow"];
         /**
          * Unfollow a user
-         * @description Unfollows a LinkedIn user. Idempotent, unfollowing a user this account does not currently follow still returns 200.
+         * @description Unfollows a LinkedIn user. Unfollowing a user this account does not currently follow still returns 200, not an error.
          */
         delete: operations["deleteV1AccountIdUsersUserIdFollow"];
         options?: never;
@@ -341,7 +341,7 @@ export interface paths {
         put?: never;
         /**
          * Invite connections to follow a company page
-         * @description Invites one or more of the connected account's 1st-degree connections to follow a company page it administers with the invite-to-follow entitlement. Pass the AC... member ids from an invitable-followers read. Returns one outcome per invitee, in request order, for an all-valid request. If any invitee id is invalid, the whole request is rejected (404), with no partial success. Re-inviting an already-invited member is a safe no-op (the same invitation id, never a duplicate). Only identifiers transit. Nothing is stored.
+         * @description Invites one or more of the connected account's 1st-degree connections to follow a company page it administers, using member ids from an invitable-followers read. All-or-nothing: one invalid invitee id rejects the whole request (404). Re-inviting an already-invited member is a safe no-op.
          */
         post: operations["postV1AccountIdCompaniesIdentifierFollowInvite"];
         delete?: never;
@@ -399,7 +399,7 @@ export interface paths {
         };
         /**
          * List a company page's admin conversations
-         * @description Returns the conversations in a company page's admin message inbox, newest-activity-first. The connected account must administer the page. Content passes through and is never stored. Beta: deep pagination is being validated at scale. Single-page listing and termination are verified; deep pagination (many pages / large cursor round-trips) is provisional until validated against a busier inbox.
+         * @description Lists a company page's admin-inbox conversations, newest-activity-first. The connected account must administer the page. Content is never stored. Beta: single-page results are verified; deep pagination across many pages is still being validated at scale.
          */
         get: operations["getV1AccountIdCompaniesIdentifierChats"];
         put?: never;
@@ -419,7 +419,7 @@ export interface paths {
         };
         /**
          * Retrieve one admin conversation
-         * @description Returns a single conversation from a company page's admin inbox by id; the same shape as a list item. The connected account must administer the page.
+         * @description Returns a single conversation from a company page's admin inbox by id, the same shape as a list item. The connected account must administer the page.
          */
         get: operations["getV1AccountIdCompaniesIdentifierChatsChatId"];
         put?: never;
@@ -445,7 +445,7 @@ export interface paths {
         put?: never;
         /**
          * Reply as the company page
-         * @description Sends a message into an existing company-inbox conversation, as the page. chat_id is the conversation id from GET /v1/{account_id}/companies/{identifier}/chats, the same 2-... id this group's chat reads return, passed verbatim. The connected account must administer the page. Reply-only: a page can never start a new conversation, only answer an existing one. Send application/json with text, base64 attachments (max 5 MiB per file, and 9 MiB for the whole request body; base64 makes a file about a third larger in the body than on disk), or both; at least one of text or attachments is required. Message content passes through to the platform and is never stored. The response's sent_as field names the acting identity that was actually used.
+         * @description Sends a message into an existing company-inbox conversation, as the page. Reply-only: a page can never start a new conversation, only answer one. Send text, base64 attachments (5 MiB per file, 9 MiB per request), or both. The connected account must administer the page.
          */
         post: operations["postV1AccountIdCompaniesIdentifierChatsChatIdMessages"];
         delete?: never;
@@ -483,7 +483,7 @@ export interface paths {
         };
         /**
          * Search or filter a company page's admin inbox
-         * @description Free-text search (query) OR one topic/unread filter over the admin inbox: exactly one mode per call. topic accepts 1-5 or a name (Service request, Request a demo, Support, Careers, Other). filter_effective is present only in topic/unread mode. The connected account must administer the page. Beta: deep pagination is being validated at scale. Single-page listing and termination are verified; deep pagination (many pages / large cursor round-trips) is provisional until validated against a busier inbox.
+         * @description Free-text search (query) or one topic/unread filter over the admin inbox, exactly one mode per call. The connected account must administer the page. Beta: single-page results are verified; deep pagination across many pages is still being validated at scale.
          */
         get: operations["getV1AccountIdCompaniesIdentifierChatsSearch"];
         put?: never;
@@ -563,7 +563,7 @@ export interface paths {
         };
         /**
          * Resolve search filter IDs
-         * @description Resolves human-readable terms (e.g. 'software development') to opaque filter IDs for use in structured search filters. The type parameter selects the filter category; keywords is required for every type, including EMPLOYMENT_TYPE. Results paginate: send the cursor from the previous response to get the next page, and stop when it comes back null.
+         * @description Resolves human-readable terms (e.g. 'software development') to opaque filter IDs for structured search filters. type selects the category; keywords is required for every type. Paginate with cursor until it returns null.
          */
         get: operations["getV1AccountIdSearchParameters"];
         put?: never;
@@ -665,7 +665,7 @@ export interface paths {
         put?: never;
         /**
          * Search from a pasted URL
-         * @description Runs a pasted LinkedIn search URL directly. url is the only accepted body field, this is the sole home of URL-mode; the structured people/companies/posts/jobs endpoints no longer accept url. The response is polymorphic: each item is discriminated individually by its own kind (a person, a company, a post, or a job).
+         * @description Runs a pasted LinkedIn search URL directly; url is the only accepted body field, the sole home of URL-mode. The response is polymorphic: each item is discriminated by its own kind (person, company, post, or job).
          */
         post: operations["postV1AccountIdSearch"];
         delete?: never;
@@ -749,7 +749,7 @@ export interface paths {
         put?: never;
         /**
          * Start a chat
-         * @description Starts a new chat with one or more members from a connected account. Send application/json; attach files as base64-encoded attachments (max 5 MiB per file, and 9 MiB for the whole request body; base64 makes a file about a third larger in the body than on disk). This call keeps nothing and logs nothing. Once sent it is a message in the account's inbox, so reading that conversation back through Curviate stores its body in your tenant's inbox records, with no expiry. Company pages are reply-only and cannot start a conversation; reply using a `COMPANY_` chat id from GET /v1/{account_id}/inboxes/{inbox_id}/chats instead.
+         * @description Starts a chat with members. This call keeps nothing and logs nothing. Once sent it is a message in the account's inbox, so reading that conversation back through Curviate stores its body in your tenant's inbox records, with no expiry. Company pages are reply-only: a COMPANY_ id cannot start one.
          */
         post: operations["postV1AccountIdChats"];
         delete?: never;
@@ -797,7 +797,7 @@ export interface paths {
         put?: never;
         /**
          * Send a message
-         * @description Sends a message into an existing chat. Send application/json with text, base64 attachments (max 5 MiB per file, and 9 MiB for the whole request body; base64 makes a file about a third larger in the body than on disk), or both; at least one of text or attachments is required. This call keeps nothing and logs nothing. Once sent it is a message in the account's inbox, so reading that conversation back through Curviate stores its body in your tenant's inbox records, with no expiry. Sending on behalf of a company page: use a COMPANY_ chat id (from GET /v1/{account_id}/inboxes/{inbox_id}/chats) and the message sends AS THE PAGE, no separate parameter needed. The response's sent_as field names the acting identity that was actually used. Company pages are reply-only: this endpoint can answer an existing conversation on a page's behalf, but a page can never start a new one.
+         * @description Sends a message into a chat: text, attachments, or both. This call keeps nothing and logs nothing. Once sent it is a message in the account's inbox, so reading that conversation back through Curviate stores its body in your tenant's inbox records, with no expiry. COMPANY_ chat ids send as the page.
          */
         post: operations["postV1AccountIdChatsChatIdMessages"];
         delete?: never;
@@ -883,9 +883,7 @@ export interface paths {
         };
         /**
          * Search chats
-         * @description Free-text search of the connected account's own inbox. Matches both participant names and message content. A no-match term returns an empty list, not an error.
-         *
-         *     Served from the chats and messages already retrieved for this account, so it costs no platform call and draws down no budget. A chat that has never been retrieved cannot match. The `coverage` block on the response says how complete the searched corpus is.
+         * @description Free-text search of the connected account's own inbox, matching participant names and message content. Served from chats and messages already retrieved, so it costs no platform call. A chat never retrieved cannot match; the response's coverage block says how complete that is.
          */
         get: operations["getV1AccountIdChatsSearch"];
         put?: never;
@@ -925,7 +923,7 @@ export interface paths {
         };
         /**
          * List inboxes
-         * @description Returns the account's personal inbox plus, when the company product is attached, one entry per company page x folder (id like 'COMPANY_83734124_PRIMARY'). Company inboxes carry reply_only:true; company pages can only reply to existing conversations, never start one. company_id is resolved by correlating the page name against the account's managed pages; an uncorrelatable page returns company_id:null, never a fabricated id. When no company inbox exists, hint names the Company Pages reconnect requirement instead of returning silently empty.
+         * @description Lists the account's personal inbox plus, when the company product is attached, one entry per company page and folder. Company inboxes are reply-only. company_id is null when the page can't be correlated to a managed page.
          */
         get: operations["getV1AccountIdInboxes"];
         put?: never;
@@ -945,7 +943,7 @@ export interface paths {
         };
         /**
          * List an inbox's conversations
-         * @description Returns a paginated list of an inbox's conversations, newest-activity-first. Each chat's id is send-ready: pass it directly to the send-message endpoint to reply; a company inbox's chat id (e.g. 'COMPANY_83734124_2-...') replies AS THE PAGE, no separate parameter needed. Works identically for personal (CLASSIC_) inboxes. Company pages are reply-only (reply_only:true on the inbox, from GET /inboxes); they cannot start a new conversation. A malformed inbox_id returns 400 INVALID_REQUEST; a well-formed id for a mailbox this account does not administer returns 403 RESOURCE_ACCESS_RESTRICTED (no existence disclosure); there is no 404 for this endpoint.
+         * @description Lists an inbox's conversations, newest first. Each chat id is send-ready: pass it to the send-message endpoint to reply; a company id replies as that page. Company inboxes are reply-only. A mailbox this account doesn't administer returns 403, never 404.
          */
         get: operations["getV1AccountIdInboxesInboxIdChats"];
         put?: never;
@@ -965,7 +963,7 @@ export interface paths {
         };
         /**
          * Get the account's home feed
-         * @description Returns the connected account's LinkedIn home feed as agent-actionable posts. `sort=recent` (default) is reverse-chronological and always available; `sort=relevant` is LinkedIn's ranked 'top' feed, which draws on a shared, throttled request budget and can rate-limit. Each post carries the numeric activity id you pass to the Posts group to react, comment, or fetch detail. Page until cursor is null.
+         * @description Returns the account's LinkedIn home feed as agent-actionable posts. sort=recent (default) is always available; sort=relevant can rate-limit. Each post carries the activity id for the Posts group. Page until cursor is null.
          */
         get: operations["getV1AccountIdFeedHome"];
         put?: never;
@@ -985,7 +983,7 @@ export interface paths {
         };
         /**
          * List the account's notifications
-         * @description Returns the connected account's notification cards as a cursor-paginated list, plus the account-level unread badge (unread_count) and a newest-notification watermark (latest_published_at) for cheap polling. Injected/promo cards are included and flagged. Each post-related card carries the numeric activity id you pass to the Posts group. Page until cursor is null.
+         * @description Returns the account's notification cards, cursor-paginated, plus unread_count and a latest_published_at watermark for cheap polling. Each post-related card carries the activity id for the Posts group. Page until cursor is null.
          */
         get: operations["getV1AccountIdNotifications"];
         put?: never;
@@ -1027,7 +1025,7 @@ export interface paths {
         put?: never;
         /**
          * Show less like a notification
-         * @description Applies 'show less like this' to the source of one of the connected account's own notification cards. For network-activity cards (a repost, comment, or reaction by your network) this removes the card, the same effect as deleting it, because LinkedIn exposes no separate softer signal for these cards. This is a self-action and cannot be undone. No request body.
+         * @description Applies 'show less like this' to the source of one of the account's own notification cards. For network-activity cards this removes the card, the same as deleting it. Self-action, cannot be undone. No request body.
          */
         post: operations["postV1AccountIdNotificationsCardUrnShowLess"];
         delete?: never;
@@ -1309,7 +1307,7 @@ export interface paths {
         };
         /**
          * Get job posting
-         * @description Returns one classic LinkedIn job posting at full detail, title, company, location, description, applicant count, and budget when set. Any posting reachable by its numeric id can be retrieved; including public postings not owned by the connected account. Pass `with_sections` to request additional sections such as hiring team, salary, or benefits.
+         * @description Returns one classic job posting at full detail. Any posting reachable by its numeric id can be retrieved, including one not owned by the connected account. Pass `with_sections` for extra sections.
          */
         get: operations["getV1AccountIdJobsJobId"];
         put?: never;
@@ -1319,7 +1317,7 @@ export interface paths {
         head?: never;
         /**
          * Edit job posting
-         * @description Applies a partial update to a classic job posting the connected account owns, only the fields you include are changed; everything else is left as-is. This can affect real money: editing a posting that is already published (LISTED) changes a live, money-spending listing, and the connected account may be billed differently as a result. Only postings the connected account owns can be edited.
+         * @description Applies a partial update to a job posting the connected account owns; only included fields change. Editing an already-published (LISTED) posting affects a live, money-spending listing.
          */
         patch: operations["patchV1AccountIdJobsJobId"];
         trace?: never;
@@ -1355,7 +1353,7 @@ export interface paths {
         put?: never;
         /**
          * Publish job posting
-         * @description Publishes a classic job posting draft. THIS CAN SPEND REAL MONEY: publishing with mode PROMOTED or PROMOTED_PLUS charges the connected account's LinkedIn payment method for the budget you provide, providing `budget` on those modes IS the explicit opt-in to spend. FREE publishing spends nothing but requires free-posting eligibility (check GET .../budget's free.eligible first). Returns either the published posting or a verification checkpoint that must be resolved before the posting goes live.
+         * @description Publishes a job posting draft. PROMOTED or PROMOTED_PLUS with a budget charges the account's LinkedIn payment method; providing budget is the opt-in to spend. FREE publishing needs free-posting eligibility (check the budget endpoint first). May return a checkpoint to resolve first.
          */
         post: operations["postV1AccountIdJobsJobIdPublish"];
         delete?: never;
@@ -1631,7 +1629,7 @@ export interface paths {
         put?: never;
         /**
          * Start a chat (Recruiter)
-         * @description Send an opening InMail-style message to one or more Recruiter member IDs (AE... format). subject and signature are REQUIRED for Recruiter (InMail-based messaging). Accepts optional base64-encoded file / voice / video attachments (application/json only; multipart is not supported). Recruiter PRO: optionally schedule a follow-up. Requires a Recruiter seat.
+         * @description Sends an opening InMail-style message to one or more Recruiter member IDs. subject and signature are required. Accepts optional base64 attachments (JSON only, no multipart). Requires a Recruiter seat.
          */
         post: operations["postV1AccountIdRecruiterChats"];
         delete?: never;
@@ -1671,7 +1669,7 @@ export interface paths {
         put?: never;
         /**
          * Resolve search-filter IDs (Recruiter)
-         * @description Resolve human-readable terms to opaque Recruiter filter ids for use in pipeline, search, and applicant requests. The request body is a discriminated union on source: APPLICANTS and PIPELINE require project_id (a bad or missing project_id on these sources returns 404/400 respectively); SEARCH, JOB_POSTING, and JOBS do not take project_id. Each source has its own type enum; an out-of-family type value is rejected with 400 before any external call. Requires a Recruiter seat.
+         * @description Resolves human-readable terms to opaque Recruiter filter ids for pipeline, search, and applicant requests. Body is discriminated by source: APPLICANTS/PIPELINE require project_id, others do not. Requires a Recruiter seat.
          */
         post: operations["postV1AccountIdRecruiterSearchParameters"];
         delete?: never;
@@ -1755,7 +1753,7 @@ export interface paths {
         put?: never;
         /**
          * Search a project's talent pool
-         * @description Search a Recruiter project's talent pool. A POST body carries the required channel_id (the project's own RECRUITER_SEARCH talent-pool channel, read it off talent_pool.channels[] of GET .../recruiter/projects/{project_id}) plus the (all-optional) people-search filter set. Pagination is driven by the limit (1-100) and cursor query params. Requires a Recruiter seat.
+         * @description Searches a Recruiter project's talent pool. Requires channel_id (the project's RECRUITER_SEARCH talent-pool channel, from talent_pool.channels[]) plus optional filters. Requires a Recruiter seat.
          */
         post: operations["postV1AccountIdRecruiterProjectsProjectIdTalentPoolSearch"];
         delete?: never;
@@ -1887,7 +1885,7 @@ export interface paths {
         head?: never;
         /**
          * Edit a job posting
-         * @description MONEY WARNING: if this job posting is already PUBLISHED (LISTED/REVIEW/SUSPENDED), editing it mutates a live, money-spending listing; the posting keeps running and spending under the edited fields. Partial update: every field is optional, and any field you omit is left unchanged. Requires a Recruiter seat.
+         * @description MONEY WARNING: editing an already-published (LISTED/REVIEW/SUSPENDED) posting mutates a live, money-spending listing. Partial update: omitted fields are unchanged. Requires a Recruiter seat.
          */
         patch: operations["patchV1AccountIdRecruiterProjectsProjectIdJobsJobId"];
         trace?: never;
@@ -1903,7 +1901,7 @@ export interface paths {
         put?: never;
         /**
          * Publish a job posting
-         * @description REAL MONEY: PROMOTED and PROMOTED_PLUS spend on the connected account's LinkedIn payment method. Providing budget IS the explicit opt-in to spend, there is no separate confirm flag. FREE requires free-posting eligibility (check GET .../budget's free.eligible first). bypass_email_verification skips the on-behalf-of-company posting eligibility check (replaces the retired publish-verification checkpoint, there is no separate checkpoint-solve step). Requires a Recruiter seat.
+         * @description REAL MONEY: PROMOTED/PROMOTED_PLUS spend on the account's LinkedIn payment method; providing budget is the opt-in to spend. FREE requires free-posting eligibility (check the budget endpoint first). Requires a Recruiter seat.
          */
         post: operations["postV1AccountIdRecruiterProjectsProjectIdJobsJobIdPublish"];
         delete?: never;
@@ -2001,7 +1999,7 @@ export interface paths {
         };
         /**
          * Download an applicant's résumé
-         * @description Stream the résumé file for a talent-pool applicant as raw bytes. Curviate never caches, stores, or logs the résumé body. Gated by has_resume on the applicant detail. An applicant with no résumé on file -> 404 RESOURCE_NOT_FOUND; a résumé still generating upstream -> 503 (retry shortly). Requires a Recruiter seat.
+         * @description Streams the résumé file as raw bytes; Curviate never caches, stores, or logs it. Gated by has_resume. No résumé on file returns 404; still generating returns 503 (retry). Requires a Recruiter seat.
          */
         get: operations["getV1AccountIdRecruiterProjectsProjectIdTalentPoolApplicantsApplicantIdResume"];
         put?: never;
@@ -2023,7 +2021,7 @@ export interface paths {
         put?: never;
         /**
          * Start a chat (Sales Navigator)
-         * @description Send an opening InMail-style message to one or more Sales Navigator members (ACw... IDs). subject is REQUIRED for Sales Navigator (InMail-based messaging). Accepts optional base64-encoded file / voice / video attachments (application/json only; multipart is not supported). Requires a Sales Navigator seat.
+         * @description Sends an opening InMail-style message to one or more Sales Navigator members. subject is required. Accepts optional base64 attachments (JSON only, no multipart). Requires a Sales Navigator seat.
          */
         post: operations["postV1AccountIdSalesNavigatorChats"];
         delete?: never;
@@ -2181,7 +2179,7 @@ export interface paths {
         };
         /**
          * Resolve search-filter IDs (Sales Navigator)
-         * @description Resolve human-readable terms to opaque Sales Navigator filter IDs for use in people or company search requests. The type parameter selects the filter family; type must be one of the 16 Sales Navigator values. Any other value is rejected with 400 at schema validation, before any external call. Requires a Sales Navigator seat.
+         * @description Resolves human-readable terms to opaque Sales Navigator filter IDs for people or company search. type selects the filter family; an unrecognized value is rejected with 400. Requires a Sales Navigator seat.
          */
         get: operations["getV1AccountIdSalesNavigatorSearchParameters"];
         put?: never;
@@ -2203,7 +2201,7 @@ export interface paths {
         put?: never;
         /**
          * Search people (Sales Navigator)
-         * @description Search for LinkedIn members using the full Sales Navigator people filter set. Pass structured filters in the body, resolve filter IDs first via GET .../search/parameters. limit and cursor go in query params. To search from a pasted URL instead, use POST .../sales-navigator/search. Requires a Sales Navigator seat.
+         * @description Search for LinkedIn members using the full Sales Navigator filter set. Resolve filter IDs first via search/parameters. limit and cursor are query params. For a pasted URL instead, use POST .../search. Requires a Sales Navigator seat.
          */
         post: operations["postV1AccountIdSalesNavigatorSearchPeople"];
         delete?: never;
@@ -2223,7 +2221,7 @@ export interface paths {
         put?: never;
         /**
          * Search companies (Sales Navigator)
-         * @description Search for LinkedIn companies using the full Sales Navigator company filter set. Pass structured filters in the body, resolve filter IDs first via GET .../search/parameters. limit and cursor go in query params. To search from a pasted URL instead, use POST .../sales-navigator/search. Requires a Sales Navigator seat.
+         * @description Search for LinkedIn companies using the full Sales Navigator filter set. Resolve filter IDs first via search/parameters. limit and cursor are query params. For a pasted URL instead, use POST .../search. Requires a Sales Navigator seat.
          */
         post: operations["postV1AccountIdSalesNavigatorSearchCompanies"];
         delete?: never;
@@ -2243,7 +2241,7 @@ export interface paths {
         put?: never;
         /**
          * Search from a pasted URL (Sales Navigator)
-         * @description Run a pasted Sales Navigator search, saved-search, or lead-list URL directly. url is the only accepted body field; this is the sole home of URL-mode; the structured search/people and search/companies endpoints no longer accept url. The response is polymorphic: each item is discriminated individually by its own kind (a person, a company, a saved lead, or a saved account). limit (1-50) and cursor go in query params. Requires a Sales Navigator seat.
+         * @description Runs a pasted Sales Navigator search, saved-search, or lead-list URL directly; url is the only accepted body field, the sole home of URL-mode. Response is polymorphic by kind (person, company, saved lead, saved account). Requires a Sales Navigator seat.
          */
         post: operations["postV1AccountIdSalesNavigatorSearch"];
         delete?: never;
@@ -2261,7 +2259,7 @@ export interface paths {
         };
         /**
          * List connected LinkedIn accounts
-         * @description List the tenant's connected (non-archived) LinkedIn accounts, cursor-paginated. Use `limit` (1-250, default 50) and `cursor` (from a prior page's `cursor` field) to page; `cursor` is null on the last page.
+         * @description List the tenant's connected (non-archived) LinkedIn accounts, cursor-paginated. Use `limit` (1-250, default 50) and `cursor` (from a prior page's `cursor` field) to page; `cursor` is null on the last page. Filter by `external_id` for one end user's accounts.
          */
         get: operations["getV1Accounts"];
         put?: never;
@@ -2295,7 +2293,7 @@ export interface paths {
         head?: never;
         /**
          * Update account metadata / proxy configuration
-         * @description Update an account's custom metadata (a flat string map that replaces the store wholesale) and/or its custom proxy egress, supply a proxy object to set one, or null to clear it (revert to automatic proxy protection). Credentials and seat binding are untouched. The proxy password is encrypted at rest and never returned.
+         * @description Updates an account's metadata (a flat string map, replaced wholesale) and/or its custom proxy egress; pass a proxy object to set one, or null to clear it. Credentials and seat are untouched.
          */
         patch: operations["patchV1AccountsAccountId"];
         trace?: never;
@@ -2331,7 +2329,7 @@ export interface paths {
         put?: never;
         /**
          * Start a credential/cookie authentication
-         * @description Authenticate a LinkedIn account directly with credentials or a session cookie. The credential fields are NESTED, not top level: `auth_method: "credentials"` reads `credentials: { email, password }`, and `auth_method: "cookie"` reads `cookie: { li_at }` plus a top-level `user_agent`. Omit `account_id` to connect a NEW account into an empty `seat_id` (list your seats with GET /v1/accounts/seats, or copy a seat id from the seat table on your dashboard); include `account_id` (in the body) to re-authenticate an EXISTING account in place. Returns the account on success (201 new / 200 reconnect), or a checkpoint challenge (202) carrying the account_id when LinkedIn requires verification. Complete the challenge with POST /v1/auth/checkpoint/solve (codes) or POST /v1/auth/checkpoint/poll (mobile-app approval). Connection scope (which LinkedIn products are enabled) is not something you list: the connection asks for every product and LinkedIn activates the ones the account actually has. The recorded scope is readable as `requested_products` on the account. One LinkedIn account can hold only one of the two premium surfaces, and when both are asked for Sales Navigator takes precedence, so pass the optional `linkedin_premium` (`sales_navigator` or `recruiter`) if the account holds both and you want the other one. Omit it and nothing is narrowed. It applies per connection and is not remembered, so state it on every connect and reconnect where Recruiter must win. A reconnect that changes scope must use credentials (a saved cookie cannot change scope), which includes any reconnect of an account connected before the full product set became the default. Pin a managed proxy with the optional `country`/`ip` or supply a `proxy` to override it.
+         * @description Authenticates a LinkedIn account with credentials or a cookie, nested: auth_method credentials reads credentials: { email, password }; auth_method cookie reads cookie: { li_at }. Omit account_id for a new account; include it to reconnect. Returns the account or a 202 checkpoint.
          */
         post: operations["postV1AuthIntent"];
         delete?: never;
@@ -2351,7 +2349,7 @@ export interface paths {
         put?: never;
         /**
          * Solve a checkpoint verification challenge
-         * @description Resolve the pending verification challenge for an account by submitting the code, an OTP / 2FA code, the chosen contract id (for a contract_selection challenge), or the special value TRY_ANOTHER_WAY to switch the challenge method. `account_id` (in the body) identifies the mid-flight connect. A chained challenge returns another 202.
+         * @description Resolves the pending verification challenge for account_id: a code, OTP/2FA, a contract_selection id, or TRY_ANOTHER_WAY to switch method. A chained challenge returns another 202.
          */
         post: operations["postV1AuthCheckpointSolve"];
         delete?: never;
@@ -2370,8 +2368,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Re-request a checkpoint verification notification
-         * @description Re-issue the pending verification challenge notification for an account. Meaningful for code-delivery challenges (otp / two_factor_sms / mobile_app_approval); a two_factor_app challenge has nothing to re-request (the code is generated on the device) and returns resent:false rather than an error, the response never claims a re-send that did not happen. `account_id` (in the body) identifies the mid-flight connect. Does not reset the checkpoint's expiry.
+         * Re-send a checkpoint code, or switch its method
+         * @description Without challenge: re-sends the pending code or notification for account_id (a two_factor_app challenge has nothing to resend: resent:false). With challenge (an id from challenge_selection): switches to that method and returns the next 202 checkpoint.
          */
         post: operations["postV1AuthCheckpointRequest"];
         delete?: never;
@@ -2391,7 +2389,7 @@ export interface paths {
         put?: never;
         /**
          * Poll a mobile-app-approval checkpoint
-         * @description Poll the pending mobile-app-approval challenge for an account and advance it. This is the completion driver for mobile_app_approval (and the in-app arm of otp_or_mobile_app_approval): call it repeatedly until the account is active. Returns object:"account" + status:"active" once approved; object:"checkpoint" + status:"pending" while still waiting; status:"checkpoint_required" (with challenge_type) when the approval chained to a new challenge (e.g. approval -> 2FA), switch to POST /v1/auth/checkpoint/solve for the new type; status:"expired"/"failed" on timeout/failure. A code-based checkpoint polled here returns 422 directing you to POST /v1/auth/checkpoint/solve instead. `account_id` (in the body) identifies the mid-flight connect.
+         * @description Polls the pending mobile-app-approval challenge for account_id and advances it; call repeatedly until active. Returns active once approved, pending while waiting, or checkpoint_required if it chains. A code-based checkpoint here returns 422; use checkpoint/solve.
          */
         post: operations["postV1AuthCheckpointPoll"];
         delete?: never;
@@ -2409,7 +2407,7 @@ export interface paths {
         };
         /**
          * Get a connect session's status
-         * @description Return the current status of a credential connect session, keyed by its account id (acc_..., from auth/intent or a checkpoint response). status is one of checkpoint_required / done / expired / failed; checkpoint_required carries challenge_type. account_id is present once status is done. Poll until status leaves checkpoint_required.
+         * @description Returns a credential connect session's status by account id (from auth/intent or a checkpoint). status is checkpoint_required, done, expired, or failed; checkpoint_required carries challenge_type. Poll until status leaves checkpoint_required.
          */
         get: operations["getV1AuthSessionsSessionId"];
         put?: never;
@@ -2429,7 +2427,7 @@ export interface paths {
         };
         /**
          * List the events received for an account
-         * @description Returns the events Curviate received for this account in the last 24 hours, newest received first, with the exact payload a registered webhook would have been delivered. Events are retained whether or not any webhook is subscribed to them, so this works with no listener running. Retention is 24 hours from received_at and is absolute, and a live claim does not extend it. Disconnecting an account removes its events from this response immediately; the rows are not otherwise deleted early. Events can arrive out of order, so treat the ordering as arrival order, not causal order. Each item carries its queue state, and `state` filters on it: `done` is what your agents have already handled, `unread` is what is still waiting, `claimed` is what someone holds right now. This read claims nothing and is safe to poll. Page until cursor is null.
+         * @description Returns events received for this account in the last 24 hours, newest first, same payload a webhook would get. Retention is 24h from received_at, absolute; claiming doesn't extend it. Order is arrival, not causal. Claims nothing; safe to poll. Page until cursor is null.
          */
         get: operations["getV1AccountIdEvents"];
         put?: never;
@@ -2451,7 +2449,7 @@ export interface paths {
         put?: never;
         /**
          * Claim events to work on
-         * @description Leases up to `limit` unread events for this account and returns them, oldest `occurred_at` first, in one atomic step. Two agents claiming at the same instant never receive the same event, which a plain read plus a read flag cannot promise. Claiming when nothing is available returns an empty list and a 200. `consumer` is free text that identifies your worker. It is recorded on each event and never verified, so the lease is cooperative: it keeps your own agents from duplicating work, and it is not access control. Finish an event with the done call, or hand it back with release. If you do neither, the lease expires after `lease_seconds` (default 300, max 3600) and the event becomes claimable again. `limit` defaults to 10 and caps at 100. Ordering is arrival order, not causal order: events can arrive out of sequence, so establish causality from the payload if you need it. Retention is still 24 hours from `received_at` and a lease does not extend it, so an event can disappear while you hold it.
+         * @description Leases up to limit unread events atomically; two agents never get the same one. consumer is free text, not checked, cooperative rather than access control. Finish with done or release, or it expires after lease_seconds. Retention is still 24h; an event can vanish while held.
          */
         post: operations["postV1AccountIdEventsClaim"];
         delete?: never;
@@ -2471,7 +2469,7 @@ export interface paths {
         put?: never;
         /**
          * Release a claimed event
-         * @description Hands a leased event back so it can be claimed again immediately, by you or by anyone else. Use it when your handler fails: returning the work is better than holding it for the rest of the lease. No request body. The caller is not checked against whoever claimed it, because the lease is cooperative rather than access control. Releasing an event that is already done changes nothing and returns state `done`.
+         * @description Hands a leased event back so it can be claimed again immediately. Use when your handler fails. Not checked against the original claimer: cooperative, not access control. Releasing an already-done event changes nothing.
          */
         post: operations["postV1AccountIdEventsEventIdRelease"];
         delete?: never;
@@ -2491,7 +2489,7 @@ export interface paths {
         put?: never;
         /**
          * Mark an event done
-         * @description Marks an event handled. This is the only terminal state there is, and it is shared across every consumer under this tenant: a done event leaves the unread set for all of them, so it is the signal that the work is finished rather than a per-agent bookmark. There is no failed state. An event nothing can handle needs no special marking, it expires with the rest at 24 hours. No request body, safe to call twice, and it keeps the first completion time.
+         * @description Marks an event handled, the only terminal state, shared across every consumer under the tenant. No failed state; an unhandled event just expires at 24 hours. Safe to call twice; keeps the first completion time.
          */
         post: operations["postV1AccountIdEventsEventIdDone"];
         delete?: never;
@@ -2555,7 +2553,7 @@ export interface paths {
         put?: never;
         /**
          * Send a test delivery
-         * @description Queues a synthetic delivery to this webhook so you can confirm your endpoint really receives and verifies deliveries, without waiting for a real event. It travels the normal path: the same signature construction, the same custom headers, the same delivery record, the same retry schedule. The event name is always webhook.test, which is not in the event catalogue and cannot be subscribed to, so it can never be mistaken for a real event. The payload carries no LinkedIn content. Match data.test_id in what arrives against the test_id in this response.
+         * @description Queues a synthetic delivery to this webhook to confirm your endpoint receives and verifies deliveries. Travels the normal path: signature, headers, retry schedule. Event name is always webhook.test, never a real event. Match data.test_id against this response's test_id.
          */
         post: operations["postV1WebhooksIdTest"];
         delete?: never;
@@ -2601,7 +2599,7 @@ export interface paths {
         };
         /**
          * Read an account's safety policy
-         * @description Returns every configurable safety field for every budget row of one account, in a single response: the ceiling, the green and amber bands, the counting window, the enforcement posture and where it was inherited from, the activity window, warm-up state, the per-row character caps and search per-query cap, and how well calibrated each row's number is. Every value is seeded configuration and every one of them is settable. Each value is this account's own where it set one, otherwise the tenant default for its `limit_profile` (`GET /v1/safety-policy`), otherwise the Curviate default. Where a configured value is above the Curviate default, the row carries an `over_default` entry naming the value, the default and the source class of that default. The response also carries `tenant_default_posture`, the workspace-wide default every account inherits, separately from this account's own effective `posture`, and `limit_profile`, which says which of the four Curviate default sets (`basic`, `premium`, `sales_navigator`, `recruiter`) every row below was resolved from, detected from the platform when the account connected.
+         * @description Returns every configurable safety field for every budget row of this account: ceiling, bands, window, posture, warm-up, and where each value was inherited from. Fields, posture and precedence: /reference/safety.
          */
         get: operations["getV1AccountIdSafetyPolicy"];
         put?: never;
@@ -2611,7 +2609,7 @@ export interface paths {
         head?: never;
         /**
          * Update an account's safety policy
-         * @description The account-level safety-policy write (tenant-wide defaults are set on `PATCH /v1/safety-policy`). Send only the fields you are changing: everything you omit is left byte-identical, and sending `null` for a field clears your override and restores the tenant default where one is set, the Curviate default otherwise. Any limit may be set to any value: Curviate does not clamp, cap or refuse a change on the grounds that the number is unsafe. A value above the Curviate default is reported back in the response, and on every later read, with the default and its source class attached; there is no way to acknowledge it away, and setting the value back to the default removes it. A value that is not a value, such as a negative ceiling or an unknown row name, is a 400. Every field whose value CHANGES is appended to the account's action ledger with the previous value, the new value, the Curviate default, the actor and the time; a field you send whose value already equals its current effective value is not ledgered and is not stored as an override, so reading the policy and sending the document back changes nothing. Six fields on the read are derived rather than configured: `effective_ceiling`, `interface_ceiling`, `effective_interface_ceiling`, `posture_source`, `over_default` and each row's `warm_up_state`. Send them and they are accepted and ignored, never stored and never ledgered, so the document you read can go straight back. To pin a row's ramp, set `warm_up_factor`. `activity_window` is not accepted: send its settable subfields instead, the top-level `timezone` for the zone, and per row `activity_window_start`, `activity_window_end`, `activity_window_timezone` and `activity_window_applies_to`. The 400 this produces names those subfields, not just the refused object. And read `changes nothing` as `changes no limit`: the `posture` fields are OVERRIDES at every scope, so writing back a posture a scope merely inherits PINS it there and appends one ledger entry per pinned scope. That is what stops a later account- or tenant-wide change from moving it. A pin already in place is a no-op. An agent-authenticated write is accepted on exactly the same footing as an operator's. There is no bulk import, file upload or policy template: configuring many rows or many accounts is a loop over this operation. One field is not account-scoped: `tenant_default_posture` sets the default for EVERY account in the tenant, not just the one in the path, which is what makes it a one-call change for a whole workspace of personas. It is reported back at the top of every policy response, so a change to it is visible even on an account that overrides it. One other field is not row-scoped: `limit_profile` selects which of the four Curviate default sets this account's rows resolve from, so it moves the default under every row at once while leaving every value you have configured explicitly exactly as you set it. It is the platform product active on the account, not your Curviate seat entitlement, and the two can disagree: a lapsed subscription leaves the seat untouched. Curviate detects it when the account connects and re-detects it on every reconnect; setting it here pins it, and the pin wins from then on: no connect, reconnect or account read moves it again until you release it with `limit_profile_source: "default"`, which is sent on its own: changing `limit_profile` and releasing it in the same request is refused. One field on this operation does not configure anything: `clear_halts` lifts the platform pause on the action types you name. When the platform refuses a call on an account, Curviate pauses that action type for the platform's own retry-after or a seeded cooldown, and every later call on it is refused locally without reaching the platform; the account resource reports the live pauses as `quotas[].halt`. Naming an action type here lifts its pause immediately, so the next call goes out. An action type with no active pause is accepted and does nothing, which makes it safe to send for a set you have not checked, and only the ones actually lifted are ledgered, each with the expiry it cut short, the actor and the time, readable afterwards on `GET /v1/{account_id}/safety-events` with `reason: "halt_cleared"`. Clearing disarms nothing: if the platform refuses the account again the pause returns, and a 429 or a refused write returns it for the full cooldown. Clear one when you have reason to believe the refusal was a transient upstream fault rather than the platform pushing back on this account.
+         * @description Updates this account's safety policy. Send only the fields you're changing; null clears an override back to the tenant or Curviate default. Any value is accepted, none are clamped. Fields, posture and precedence: /reference/safety.
          */
         patch: operations["patchV1AccountIdSafetyPolicy"];
         trace?: never;
@@ -2624,8 +2622,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List what Curviate refused or warned about
-         * @description Returns this account's safety events, newest first: every action Curviate refused, and every action it let through while flagging that a limit had been crossed. Under the default posture nothing is refused, so everything here is a warning and `blocked` is how you tell the two apart. Each event names the budget row that breached, why, the operation that hit it and when. Filter by `budget_row` for one action type and by `since` / `until` for a period, and page until `cursor` is null. This is a read of what already happened, so it never changes a limit or a count: to change what is refused, update the safety policy. The account resource is the other half of the picture, reporting where each row stands right now rather than what has already been flagged. One entry here is not a refusal: `reason: "halt_cleared"` with `blocked: false` records somebody lifting a platform pause early through `clear_halts` on the safety policy, and it sits beside the `rate_limited` entry it lifted so the pause and its end read as one thread.
+         * List limit hits
+         * @description Each entry is an action Curviate refused (enforce) or warned about (warn) at a safety limit or pause, or a halt_cleared record of a pause lifted early. Read blocked and reason; filter by budget_row, since and until, and page until cursor is null.
          */
         get: operations["getV1AccountIdSafetyEvents"];
         put?: never;
@@ -2645,7 +2643,7 @@ export interface paths {
         };
         /**
          * Read the tenant safety defaults
-         * @description Returns the tenant-wide safety defaults, per limit profile and per budget row: the values every account on that profile resolves from unless it sets its own. A value nobody has set here is the Curviate default, and a value set above the Curviate default carries an `over_default` entry naming the value, the default and its source class. Also carries `tenant_default_posture`. Works with no accounts connected, so defaults can be in place before the first one is.
+         * @description Returns the tenant-wide safety defaults per limit profile and budget row, that accounts resolve from unless they override. Works with no accounts connected. Fields, posture and precedence: /reference/safety.
          */
         get: operations["getV1SafetyPolicy"];
         put?: never;
@@ -2655,9 +2653,69 @@ export interface paths {
         head?: never;
         /**
          * Update the tenant safety defaults
-         * @description The tenant-level safety-policy write. Sets defaults per limit profile and per budget row; every account on that profile resolves from them unless it overrides the same field itself, including accounts connected later. THIS CHANGES EVERY ACCOUNT IN THE TENANT THAT HAS NOT OVERRIDDEN THE FIELD, and it applies immediately: under `enforce` posture, lowering a default can start refusing actions across the tenant in one request. The response carries `impact`: how many accounts had a ceiling change, and how many moved into `over`, measured on those accounts before and after the write. Send only what you are changing; `null` clears a default back to the Curviate default. A value equal to the one already in force is not stored and not recorded. Any limit may be set to any value, and a value above the Curviate default is reported rather than refused. Every change is appended to the ledger with the previous value, the new value, the Curviate default, the actor and the time. Per-row posture is not a tenant default: use `tenant_default_posture` here, or `posture` on an account's own policy. Per-account values are set on `PATCH /v1/{account_id}/safety-policy`.
+         * @description Updates tenant-wide safety defaults per limit profile and budget row; affects every account that hasn't overridden the field, immediately. Fields, posture and precedence: /reference/safety.
          */
         patch: operations["patchV1SafetyPolicy"];
+        trace?: never;
+    };
+    "/v1/billing/seats/add": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add seats
+         * @description Adds seats to the workspace's active subscription. A trialing workspace gets 409 TRIAL_ACTIVE_SEAT_LIMIT (buy to convert first). Two adds of the same quantity within 10 minutes count as one; to buy more, send the total quantity in one call.
+         */
+        post: operations["postV1BillingSeatsAdd"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/billing/seats/{seat_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel a seat
+         * @description Schedules a seat for cancellation at the end of the current period. Already scheduled: returns the existing effective date. Already effective: 400 ALREADY_CANCELLED.
+         */
+        post: operations["postV1BillingSeatsSeatIdCancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/billing/seats/{seat_id}/cancel/revert": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Revert a scheduled seat cancellation
+         * @description Reverts a seat's pending end-of-period cancellation. 400 CANCELLATION_ALREADY_EFFECTIVE when nothing is scheduled or it already took effect; 400 INVALID_CANCELLATION_SOURCE when the whole subscription, not this seat, was scheduled to cancel.
+         */
+        post: operations["postV1BillingSeatsSeatIdCancelRevert"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
 }
@@ -2864,18 +2922,18 @@ export interface operations {
     getV1AccountIdUsersUserId: {
         parameters: {
             query?: {
-                /** @description Which profile sections to fetch (repeatable, flat). Pass one or more of: linkedin_experience, linkedin_education, linkedin_languages, linkedin_skills, linkedin_certifications, linkedin_volunteer_experience, linkedin_projects, linkedin_recommendations, linkedin_interests (or linkedin_* for all), plus each value's _preview variant. Omit for base fields only. */
+                /** @description Profile sections to fetch, repeatable: linkedin_experience, linkedin_skills, and others (each has a _preview variant). Omit for base fields only. */
                 linkedin_sections?: string[];
-                /** @description How willing this read is to reach LinkedIn. `auto` (default) serves a stored copy while it is within the resource's freshness threshold; `live` always fetches; `refill` serves a stored copy at any age and fetches once when this read has no stored copy yet; `cache_only` never fetches and returns NOT_STORED when nothing is stored. `cache_only` cannot be combined with max_age. A 502 under `cache_only` means the store could not be read, not that nothing is stored: no request was made to LinkedIn, and the same read is worth retrying. */
+                /** @description How willing this read is to reach LinkedIn: auto (default), live, refill, or cache_only. Details: /reference/getting-started/cache. */
                 mode?: "live" | "auto" | "refill" | "cache_only";
-                /** @description Maximum age, in seconds, of a stored copy this read will accept. Overrides the `auto`, `live` and `refill` presets in both directions; `0` is the same as `mode=live`. Not accepted with `mode=cache_only`, whose guarantee is not a freshness threshold. */
+                /** @description Maximum age in seconds of a stored copy this read accepts; overrides mode in both directions. Not with cache_only. Details: /reference/getting-started/cache. */
                 max_age?: number;
             };
             header?: never;
             path: {
                 /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
-                /** @description "me" for the caller's own account, or another LinkedIn user's public identifier, member ID, or profile URL. Note on the skills section: a skill's `endorsement_id` (the value needed to endorse that skill) is returned only for users you are eligible to endorse; i.e. your 1st-degree connections. For users outside your network, and on your own profile, the skills section still lists each skill (name, endorsement_count, endorsed, insights) but omits `endorsement_id`. This depends on the connection, not on the identifier form used to look the user up. */
+                /** @description "me" for the caller, or a public identifier, member ID, or profile URL. endorsement_id appears only for connections eligible to endorse. */
                 user_id: string;
             };
             cookie?: never;
@@ -4576,9 +4634,9 @@ export interface operations {
     getV1AccountIdProfileVisitors: {
         parameters: {
             query?: {
-                /** @description Maximum viewers to return in this page (1-100, default 20). The server may walk a few internal pages to fill one page, and never slices a fetched page down to a smaller limit, so the returned count can exceed this value; the response text says so and includes a cursor to continue when it does. */
+                /** @description Maximum viewers per page (1-100, default 20). The returned count can exceed this; the response includes a cursor to continue. */
                 limit?: number;
-                /** @description Opaque pagination cursor from a prior response's `cursor`; omit for the first page. Zero individuals on a page does NOT mean the list is exhausted while `cursor` is non-null (an aggregate-only page may precede more identified viewers); page until `cursor` is null. Heavy pagination consumes a shared, throttled upstream request budget; you own the spend via the cursor. */
+                /** @description Opaque cursor from a prior response's cursor; omit for the first page. Page until cursor is null, even on a page with zero people. */
                 cursor?: string;
             };
             header?: never;
@@ -5445,7 +5503,7 @@ export interface operations {
             path: {
                 /** @description The connected LinkedIn account to read with. */
                 account_id: string;
-                /** @description The company to retrieve. Accepts the company's public handle (the slug in `linkedin.com/company/<handle>`, e.g. t-systems) or its numeric id (e.g. 1234567). The numeric id field returned on each POST /v1/{account_id}/search/companies result, or the id field of this endpoint's own response, can be passed here directly. */
+                /** @description The company to retrieve: its public handle (the `linkedin.com/company/<handle>` slug) or numeric id. Both come back on a search/companies result. */
                 identifier: string;
             };
             cookie?: never;
@@ -5669,7 +5727,7 @@ export interface operations {
             path: {
                 /** @description The connected LinkedIn account to read with. */
                 account_id: string;
-                /** @description The company's numeric id (e.g. 112013061), the id field of GET /v1/{account_id}/companies/{identifier} or a POST /v1/{account_id}/search/companies result. A public handle or URN is not accepted here; pass the numeric id. */
+                /** @description The company's numeric id (e.g. 112013061), the id field from GET .../companies/{identifier} or a search/companies result. A handle or URN is not accepted here. */
                 identifier: string;
             };
             cookie?: never;
@@ -5856,7 +5914,7 @@ export interface operations {
             path: {
                 /** @description The connected LinkedIn account to read with. */
                 account_id: string;
-                /** @description The company's numeric id (e.g. 112013061), the id field of GET /v1/{account_id}/companies/{identifier} or a POST /v1/{account_id}/search/companies result. A public handle or URN is not accepted here; pass the numeric id. */
+                /** @description The company's numeric id (e.g. 112013061), the id field from GET .../companies/{identifier} or a search/companies result. A handle or URN is not accepted here. */
                 identifier: string;
             };
             cookie?: never;
@@ -6052,7 +6110,7 @@ export interface operations {
             path: {
                 /** @description The connected LinkedIn account to read with. */
                 account_id: string;
-                /** @description The company's numeric id (e.g. 112013061), the id field of GET /v1/{account_id}/companies/{identifier} or a POST /v1/{account_id}/search/companies result. A public handle or URN is not accepted here; pass the numeric id. */
+                /** @description The company's numeric id (e.g. 112013061), the id field from GET .../companies/{identifier} or a search/companies result. A handle or URN is not accepted here. */
                 identifier: string;
             };
             cookie?: never;
@@ -6225,7 +6283,7 @@ export interface operations {
             path: {
                 /** @description The connected LinkedIn account, which must administer the page with invite rights. */
                 account_id: string;
-                /** @description The company's numeric id (e.g. 112013061), the id field of GET /v1/{account_id}/companies/{identifier} or a POST /v1/{account_id}/search/companies result. A public handle or URN is not accepted here; pass the numeric id. */
+                /** @description The company's numeric id (e.g. 112013061), the id field from GET .../companies/{identifier} or a search/companies result. A handle or URN is not accepted here. */
                 identifier: string;
             };
             cookie?: never;
@@ -6239,7 +6297,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description One per-invitee outcome for each requested member, in request order, for an all-valid request. If any invitee id is invalid, the whole request is rejected (404), with no partial success. Re-inviting an already-invited member returns the same invitation id with status "already_invited", an idempotent no-op, never a duplicate. Only identifiers transit; nothing is stored. */
+            /** @description One per-invitee outcome for each requested member, in request order, for an all-valid request. If any invitee id is invalid, the whole request is rejected (404), with no partial success. Re-inviting an already-invited member returns the same invitation id with status "already_invited"; calling again never creates a duplicate. Only identifiers transit; nothing is stored. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -6263,7 +6321,7 @@ export interface operations {
                             /** @description The member id from the request, echoed back. */
                             invitee_id: string;
                             /**
-                             * @description Per-invitee outcome. "invited": a new follow-invitation was created. "already_invited": a pending invitation already existed (idempotent no-op; the same invitation_id is returned, never a duplicate). "ineligible": the member is not an invitable 1st-degree connection. "not_found": the member id did not resolve.
+                             * @description Per-invitee outcome. "invited": a new follow-invitation was created. "already_invited": a pending invitation already existed; calling again returns the same invitation_id, never a duplicate. "ineligible": the member is not an invitable 1st-degree connection. "not_found": the member id did not resolve.
                              * @enum {string}
                              */
                             status: "invited" | "already_invited" | "ineligible" | "not_found";
@@ -6397,7 +6455,7 @@ export interface operations {
             path: {
                 /** @description The connected LinkedIn account, which must administer the page. */
                 account_id: string;
-                /** @description The company's numeric id (e.g. 112013061), the id field of GET /v1/{account_id}/companies/{identifier} or a POST /v1/{account_id}/search/companies result. A public handle or URN is not accepted here; pass the numeric id. */
+                /** @description The company's numeric id (e.g. 112013061), the id field from GET .../companies/{identifier} or a search/companies result. A handle or URN is not accepted here. */
                 identifier: string;
             };
             cookie?: never;
@@ -6555,7 +6613,7 @@ export interface operations {
             path: {
                 /** @description The connected LinkedIn account, which must administer the page with invite rights. */
                 account_id: string;
-                /** @description The company's numeric id (e.g. 112013061), the id field of GET /v1/{account_id}/companies/{identifier} or a POST /v1/{account_id}/search/companies result. A public handle or URN is not accepted here; pass the numeric id. */
+                /** @description The company's numeric id (e.g. 112013061), the id field from GET .../companies/{identifier} or a search/companies result. A handle or URN is not accepted here. */
                 identifier: string;
             };
             cookie?: never;
@@ -6698,14 +6756,14 @@ export interface operations {
                 limit?: number;
                 /** @description Opaque pagination cursor from a prior response's cursor. Omit for the first page. */
                 cursor?: string;
-                /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
+                /** @description Extra fields to resolve, comma-separated in one value (expand=public_identifier). Present on every result as a value or null; repeating the key drops values. */
                 expand?: string;
             };
             header?: never;
             path: {
                 /** @description The connected LinkedIn account, which must administer the page. */
                 account_id: string;
-                /** @description The company's numeric id (e.g. 112013061), the id field of GET /v1/{account_id}/companies/{identifier} or a POST /v1/{account_id}/search/companies result. A public handle or URN is not accepted here; pass the numeric id. */
+                /** @description The company's numeric id (e.g. 112013061), the id field from GET .../companies/{identifier} or a search/companies result. A handle or URN is not accepted here. */
                 identifier: string;
             };
             cookie?: never;
@@ -6889,14 +6947,14 @@ export interface operations {
     getV1AccountIdCompaniesIdentifierChatsChatId: {
         parameters: {
             query?: {
-                /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
+                /** @description Extra fields to resolve, comma-separated in one value (expand=public_identifier). Present on every result as a value or null; repeating the key drops values. */
                 expand?: string;
             };
             header?: never;
             path: {
                 /** @description The connected LinkedIn account, which must administer the page. */
                 account_id: string;
-                /** @description The company's numeric id (e.g. 112013061), the id field of GET /v1/{account_id}/companies/{identifier} or a POST /v1/{account_id}/search/companies result. A public handle or URN is not accepted here; pass the numeric id. */
+                /** @description The company's numeric id (e.g. 112013061), the id field from GET .../companies/{identifier} or a search/companies result. A handle or URN is not accepted here. */
                 identifier: string;
                 /** @description The conversation id in the "2-..." form, the id field of a chats list or search result. Pass it verbatim. */
                 chat_id: string;
@@ -7076,14 +7134,14 @@ export interface operations {
                 limit?: number;
                 /** @description Opaque pagination cursor from a prior response's cursor. Omit for the first page. */
                 cursor?: string;
-                /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
+                /** @description Extra fields to resolve, comma-separated in one value (expand=public_identifier). Present on every result as a value or null; repeating the key drops values. */
                 expand?: string;
             };
             header?: never;
             path: {
                 /** @description The connected LinkedIn account, which must administer the page. */
                 account_id: string;
-                /** @description The company's numeric id (e.g. 112013061), the id field of GET /v1/{account_id}/companies/{identifier} or a POST /v1/{account_id}/search/companies result. A public handle or URN is not accepted here; pass the numeric id. */
+                /** @description The company's numeric id (e.g. 112013061), the id field from GET .../companies/{identifier} or a search/companies result. A handle or URN is not accepted here. */
                 identifier: string;
                 /** @description The conversation id in the "2-..." form, the id field of a chats list or search result. Pass it verbatim. */
                 chat_id: string;
@@ -7252,7 +7310,7 @@ export interface operations {
             path: {
                 /** @description The connected LinkedIn account, which must administer the page. */
                 account_id: string;
-                /** @description The company's numeric id (e.g. 112013061), the id field of GET /v1/{account_id}/companies/{identifier} or a POST /v1/{account_id}/search/companies result. A public handle or URN is not accepted here; pass the numeric id. */
+                /** @description The company's numeric id (e.g. 112013061), the id field from GET .../companies/{identifier} or a search/companies result. A handle or URN is not accepted here. */
                 identifier: string;
                 /** @description The conversation id in the "2-..." form, the id field of a chats list or search result. Pass it verbatim. */
                 chat_id: string;
@@ -7266,7 +7324,7 @@ export interface operations {
                     text?: string;
                     /** @description Optional message ID to quote or reply to. */
                     quote_id?: string;
-                    /** @description Optional file attachments (base64-encoded). */
+                    /** @description Optional file attachments, base64-encoded: at most 5 MiB per file and 9 MiB for the whole request body (base64 adds about a third). */
                     attachments?: {
                         /** @description Base64-encoded file bytes. */
                         content: string;
@@ -7427,14 +7485,14 @@ export interface operations {
     getV1AccountIdCompaniesIdentifierChatsChatIdMessagesMessageId: {
         parameters: {
             query?: {
-                /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
+                /** @description Extra fields to resolve, comma-separated in one value (expand=public_identifier). Present on every result as a value or null; repeating the key drops values. */
                 expand?: string;
             };
             header?: never;
             path: {
                 /** @description The connected LinkedIn account, which must administer the page. */
                 account_id: string;
-                /** @description The company's numeric id (e.g. 112013061), the id field of GET /v1/{account_id}/companies/{identifier} or a POST /v1/{account_id}/search/companies result. A public handle or URN is not accepted here; pass the numeric id. */
+                /** @description The company's numeric id (e.g. 112013061), the id field from GET .../companies/{identifier} or a search/companies result. A handle or URN is not accepted here. */
                 identifier: string;
                 /** @description The conversation id in the "2-..." form, the id field of a chats list or search result. Pass it verbatim. */
                 chat_id: string;
@@ -7601,14 +7659,14 @@ export interface operations {
                 limit?: number;
                 /** @description Opaque pagination cursor from a prior response's cursor. Omit for the first page. */
                 cursor?: string;
-                /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
+                /** @description Extra fields to resolve, comma-separated in one value (expand=public_identifier). Present on every result as a value or null; repeating the key drops values. */
                 expand?: string;
             };
             header?: never;
             path: {
                 /** @description The connected LinkedIn account, which must administer the page. */
                 account_id: string;
-                /** @description The company's numeric id (e.g. 112013061), the id field of GET /v1/{account_id}/companies/{identifier} or a POST /v1/{account_id}/search/companies result. A public handle or URN is not accepted here; pass the numeric id. */
+                /** @description The company's numeric id (e.g. 112013061), the id field from GET .../companies/{identifier} or a search/companies result. A handle or URN is not accepted here. */
                 identifier: string;
             };
             cookie?: never;
@@ -7797,9 +7855,9 @@ export interface operations {
     getV1AccountIdProfileGroups: {
         parameters: {
             query?: {
-                /** @description Target any other LinkedIn user's groups instead of the acting account's own, a vanity slug or a full /in/{vanity} URL. Omit to enumerate the acting account's own groups (a complete read). A profile target is a documented partial read (that target's interests-groups section only). */
+                /** @description Target another LinkedIn user's groups instead of your own (vanity slug or /in/{vanity} URL). Partial read: interests-groups section only. */
                 profile?: string;
-                /** @description Maximum items to return per page (1-100, default 20). list_group_members walks fixed-size internal pages and cannot go below one page, so its returned count can exceed this value; the response text says so and includes a cursor to continue when it does. */
+                /** @description Maximum items per page (1-100, default 20). The returned count can exceed this; the response includes a cursor to continue. */
                 limit?: number;
                 /** @description Opaque pagination cursor from a prior response's cursor. Omit for the first page. */
                 cursor?: string;
@@ -7985,7 +8043,7 @@ export interface operations {
             path: {
                 /** @description The connected LinkedIn account performing the read. */
                 account_id: string;
-                /** @description The group to look up. Accepts a numeric group id (e.g. 9123014) or a full group URL (e.g. https://www.linkedin.com/groups/9123014/, .../members/). The numeric id is extracted from either form, pass the id field returned by GET /v1/{account_id}/profile/groups or this endpoint's own response. */
+                /** @description The group to look up: a numeric group id (e.g. 9123014) or its full group URL; the id is extracted from either form. */
                 group: string;
             };
             cookie?: never;
@@ -8157,18 +8215,18 @@ export interface operations {
     getV1AccountIdGroupsGroupMembers: {
         parameters: {
             query?: {
-                /** @description Filter members by name, prefix/substring, multi-word, case-insensitive (e.g. 'raphael red' matches "Raphael Redmer"). Folds in member search as this SAME endpoint, not a separate one. Omit (or pass an empty string) for the full roster. */
+                /** @description Filter members by name, prefix/substring, case-insensitive. Folds in member search as this endpoint, not a separate one. */
                 name?: string;
-                /** @description Maximum items to return per page (1-100, default 20). list_group_members walks fixed-size internal pages and cannot go below one page, so its returned count can exceed this value; the response text says so and includes a cursor to continue when it does. */
+                /** @description Maximum items per page (1-100, default 20). The returned count can exceed this; the response includes a cursor to continue. */
                 limit?: number;
-                /** @description Opaque pagination cursor from a prior response's cursor. Omit for the first page. Scoped to the `name` value it was minted under, replaying it alongside a different `name` is rejected. */
+                /** @description Opaque cursor from a prior response's cursor. Omit for the first page. Scoped to the name value it was minted under. */
                 cursor?: string;
             };
             header?: never;
             path: {
                 /** @description The connected LinkedIn account performing the read. */
                 account_id: string;
-                /** @description The group to look up. Accepts a numeric group id (e.g. 9123014) or a full group URL (e.g. https://www.linkedin.com/groups/9123014/, .../members/). The numeric id is extracted from either form, pass the id field returned by GET /v1/{account_id}/profile/groups or this endpoint's own response. */
+                /** @description The group to look up: a numeric group id (e.g. 9123014) or its full group URL; the id is extracted from either form. */
                 group: string;
             };
             cookie?: never;
@@ -8320,7 +8378,7 @@ export interface operations {
     getV1AccountIdSearchParameters: {
         parameters: {
             query: {
-                /** @description Parameter type to resolve. Classic types: LOCATION, PEOPLE, RELATION, COMPANY, SCHOOL, INDUSTRY, SERVICE, JOB_FUNCTION, JOB_TITLE, EMPLOYMENT_TYPE, SKILL. Non-classic types (e.g. GROUPS, SALES_INDUSTRY) are rejected. */
+                /** @description Parameter type to resolve. Non-classic types (e.g. GROUPS, SALES_INDUSTRY) are rejected. */
                 type: "LOCATION" | "PEOPLE" | "RELATION" | "COMPANY" | "SCHOOL" | "INDUSTRY" | "SERVICE" | "JOB_FUNCTION" | "JOB_TITLE" | "EMPLOYMENT_TYPE" | "SKILL";
                 /** @description Human term to resolve to opaque filter IDs (e.g. 'software development'). Required for every type, including EMPLOYMENT_TYPE. */
                 keywords: string;
@@ -10183,7 +10241,7 @@ export interface operations {
                 limit?: number;
                 /** @description An opaque cursor for pagination. Pass the `cursor` from the preceding response to fetch the next page. */
                 cursor?: string;
-                /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
+                /** @description Extra fields to resolve, comma-separated in one value (expand=public_identifier). Present on every result as a value or null; repeating the key drops values. */
                 expand?: string;
             };
             header?: never;
@@ -10453,7 +10511,7 @@ export interface operations {
                     text: string;
                     /** @description Optional conversation name / subject line (<= 200 chars). */
                     subject?: string;
-                    /** @description Optional file attachments (base64-encoded). */
+                    /** @description Optional file attachments, base64-encoded: at most 5 MiB per file and 9 MiB for the whole request body (base64 adds about a third). */
                     attachments?: {
                         /** @description Base64-encoded file bytes. */
                         content: string;
@@ -10606,11 +10664,11 @@ export interface operations {
     getV1AccountIdChatsChatId: {
         parameters: {
             query?: {
-                /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
+                /** @description Extra fields to resolve, comma-separated in one value (expand=public_identifier). Present on every result as a value or null; repeating the key drops values. */
                 expand?: string;
-                /** @description How willing this read is to reach LinkedIn. `auto` (default) serves a stored copy while it is within the resource's freshness threshold; `live` always fetches; `refill` serves a stored copy at any age and fetches once when this read has no stored copy yet; `cache_only` never fetches and returns NOT_STORED when nothing is stored. `cache_only` cannot be combined with max_age. A 502 under `cache_only` means the store could not be read, not that nothing is stored: no request was made to LinkedIn, and the same read is worth retrying. */
+                /** @description How willing this read is to reach LinkedIn: auto (default), live, refill, or cache_only. Details: /reference/getting-started/cache. */
                 mode?: "live" | "auto" | "refill" | "cache_only";
-                /** @description Maximum age, in seconds, of a stored copy this read will accept. Overrides the `auto`, `live` and `refill` presets in both directions; `0` is the same as `mode=live`. Not accepted with `mode=cache_only`, whose guarantee is not a freshness threshold. */
+                /** @description Maximum age in seconds of a stored copy this read accepts; overrides mode in both directions. Not with cache_only. Details: /reference/getting-started/cache. */
                 max_age?: number;
             };
             header?: never;
@@ -10999,9 +11057,9 @@ export interface operations {
     getV1AccountIdChatsChatIdMessages: {
         parameters: {
             query?: {
-                /** @description How willing this read is to reach LinkedIn. `auto` (default) serves a stored copy while it is within the resource's freshness threshold; `live` always fetches; `refill` serves a stored copy at any age and fetches once when this read has no stored copy yet; `cache_only` never fetches and returns NOT_STORED when nothing is stored. `cache_only` cannot be combined with max_age. A 502 under `cache_only` means the store could not be read, not that nothing is stored: no request was made to LinkedIn, and the same read is worth retrying. */
+                /** @description How willing this read is to reach LinkedIn: auto (default), live, refill, or cache_only. Details: /reference/getting-started/cache. */
                 mode?: "live" | "auto" | "refill" | "cache_only";
-                /** @description Maximum age, in seconds, of a stored copy this read will accept. Overrides the `auto`, `live` and `refill` presets in both directions; `0` is the same as `mode=live`. Not accepted with `mode=cache_only`, whose guarantee is not a freshness threshold. */
+                /** @description Maximum age in seconds of a stored copy this read accepts; overrides mode in both directions. Not with cache_only. Details: /reference/getting-started/cache. */
                 max_age?: number;
                 /** @description Optional filter: only return messages from this sender ID. */
                 user_id?: string;
@@ -11013,7 +11071,7 @@ export interface operations {
                 limit?: number;
                 /** @description An opaque cursor for pagination. Pass the `cursor` from the preceding response to fetch the next page. */
                 cursor?: string;
-                /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
+                /** @description Extra fields to resolve, comma-separated in one value (expand=public_identifier). Present on every result as a value or null; repeating the key drops values. */
                 expand?: string;
             };
             header?: never;
@@ -11239,7 +11297,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) that owns the chat. */
                 account_id: string;
-                /** @description The unique identifier of the chat to send the message to. A COMPANY_ chat id (e.g. 'COMPANY_83734124_2-YTQ3ODU3Njgt', from the inboxes endpoints) sends this message as that company page instead of the connected member. */
+                /** @description The chat to send to. A COMPANY_ chat id (from the inboxes endpoints) sends as that company page instead of the connected member. */
                 chat_id: string;
             };
             cookie?: never;
@@ -11251,7 +11309,7 @@ export interface operations {
                     text?: string;
                     /** @description Optional message ID to quote or reply to. */
                     quote_id?: string;
-                    /** @description Optional file attachments (base64-encoded). */
+                    /** @description Optional file attachments, base64-encoded: at most 5 MiB per file and 9 MiB for the whole request body (base64 adds about a third). */
                     attachments?: {
                         /** @description Base64-encoded file bytes. */
                         content: string;
@@ -11403,7 +11461,7 @@ export interface operations {
     getV1AccountIdChatsChatIdMessagesMessageId: {
         parameters: {
             query?: {
-                /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
+                /** @description Extra fields to resolve, comma-separated in one value (expand=public_identifier). Present on every result as a value or null; repeating the key drops values. */
                 expand?: string;
             };
             header?: never;
@@ -12075,7 +12133,7 @@ export interface operations {
     getV1AccountIdChatsSearch: {
         parameters: {
             query: {
-                /** @description The search term: matches both participant names and message content (e.g. 'sophie keller'). Minimum 3 characters. A shorter term cannot use the search index and is rejected with INVALID_REQUEST. */
+                /** @description Search term, matches participant names and message content. Minimum 3 characters. */
                 query: string;
                 /** @description Maximum chats to return per page (1-100, default 20). The server may walk a few internal pages to fill one page. */
                 limit?: number;
@@ -12555,7 +12613,7 @@ export interface operations {
                 limit?: number;
                 /** @description An opaque cursor for pagination. Pass the `cursor` from the preceding response to fetch the next page. */
                 cursor?: string;
-                /** @description Additional response fields to resolve, comma-separated in a single value (for example expand=public_identifier). Accepted values: public_identifier. When requested, the field is present on every user object in the response, carrying either a value or null. Omit for the base fields only. Pass the parameter once; repeating it drops values. At most 25 people per request need an extra lookup to resolve; anyone beyond that carries null, so ask for a smaller page to resolve them all. */
+                /** @description Extra fields to resolve, comma-separated in one value (expand=public_identifier). Present on every result as a value or null; repeating the key drops values. */
                 expand?: string;
             };
             header?: never;
@@ -12811,11 +12869,11 @@ export interface operations {
     getV1AccountIdFeedHome: {
         parameters: {
             query?: {
-                /** @description Sort order. `recent` (default) = reverse-chronological, always available. `relevant` = LinkedIn's ranked 'top' feed, which draws on a shared, throttled request budget and can rate-limit. When a `cursor` is supplied the sort is taken from the cursor and this is ignored. */
+                /** @description Sort order. recent (default) is reverse-chronological. relevant can rate-limit. Ignored when cursor is supplied; the sort comes from the cursor. */
                 sort?: "recent" | "relevant";
-                /** @description Lower bound on the posts returned in this page (1-100, default 20). The server walks fixed internal pages and returns whole pages up to the next boundary at or beyond this value, so a page may return slightly more; page until `cursor` is null. */
+                /** @description Minimum posts per page (1-100, default 20); the returned count can exceed this. Page until cursor is null. */
                 limit?: number;
-                /** @description Opaque pagination cursor from a prior response's `cursor`; omit for the first page. Self-describing of its sort: when present, the sort is taken from the cursor. Pass it back verbatim; the `relevant` cursor expires (~1h). Page until `cursor` is null. */
+                /** @description Opaque cursor from a prior response's cursor; omit for the first page, self-describing of its sort. The relevant cursor expires after about an hour. */
                 cursor?: string;
             };
             header?: never;
@@ -12996,11 +13054,11 @@ export interface operations {
     getV1AccountIdNotifications: {
         parameters: {
             query?: {
-                /** @description Which notification stream to read (default all): all | jobs | mentions | my_posts | my_posts_comments | my_posts_reactions | my_posts_reposts. Any other value is a 400. */
+                /** @description Which notification stream to read (default all): jobs, mentions, my_posts, my_posts_comments/reactions/reposts. Any other value is a 400. */
                 filter?: "all" | "jobs" | "mentions" | "my_posts" | "my_posts_comments" | "my_posts_reactions" | "my_posts_reposts";
-                /** @description Lower bound on the notifications returned in this page (1-100, default 20). The server walks fixed internal pages and returns whole pages up to the next boundary at or beyond this value; page until cursor is null. */
+                /** @description Minimum notifications per page (1-100, default 20); the server returns whole pages up to this boundary. Page until cursor is null. */
                 limit?: number;
-                /** @description Opaque pagination cursor from a prior response's `cursor`; omit for the first page. Pass it back verbatim. This feed throttles hard under fast polling: poll `unread_count` rather than deep-paging. */
+                /** @description Opaque cursor from a prior response's cursor; omit for the first page, pass back verbatim. Poll unread_count instead of deep-paging. */
                 cursor?: string;
             };
             header?: never;
@@ -13163,7 +13221,7 @@ export interface operations {
             path: {
                 /** @description The connected LinkedIn account whose notifications to read or act on. */
                 account_id: string;
-                /** @description The card urn to delete, the `card_urn` field of a GET /v1/{account_id}/notifications item (urn:li:fsd_notificationCard:...). Pass the card urn, NOT object_urn (which targets the wrong notification). Percent-encode it into the path. This cannot be undone. */
+                /** @description The card_urn field of a notifications list item (not object_urn). Percent-encode it into the path. This cannot be undone. */
                 card_urn: string;
             };
             cookie?: never;
@@ -13172,7 +13230,7 @@ export interface operations {
         responses: {
             /** @description The notification card was deleted. This cannot be undone.
              *
-             *     **Safe to retry.** This operation is idempotent: deleting a card that you have already deleted succeeds with 200, it is not an error, and it does not delete anything else. A client that retries after a network timeout is never punished for it. (A `card_urn` that never existed on this account is a 404; that distinguishes a wrong handle from a repeat.)
+             *     **Safe to retry.** Deleting a card you already deleted succeeds with 200 again, it is not an error, and it does not delete anything else. A client that retries after a network timeout is never punished for it. (A `card_urn` that never existed on this account is a 404; that distinguishes a wrong handle from a repeat.)
              *
              *     **Timing.** The removal takes effect within a few seconds; a notifications list read immediately after this call may still include the card for a moment. If you need to confirm removal, re-read after a short delay rather than instantly; but the 200 is already your confirmation that the card was resolved and the removal accepted. */
             200: {
@@ -13287,7 +13345,7 @@ export interface operations {
             path: {
                 /** @description The connected LinkedIn account whose notifications to read or act on. */
                 account_id: string;
-                /** @description The card urn, the `card_urn` field of a GET /v1/{account_id}/notifications item. For network-activity cards (a repost, comment, or reaction by your network) 'show less' removes the card; the same effect as deleting it; because LinkedIn exposes no separate softer signal for these cards. This cannot be undone. */
+                /** @description The card_urn field of a notifications list item. For network-activity cards this removes the card, same as deleting it. This cannot be undone. */
                 card_urn: string;
             };
             cookie?: never;
@@ -13298,7 +13356,7 @@ export interface operations {
              *
              *     **This is the same operation as delete.** LinkedIn's own web client sends an identical request for both its 'Delete notification' and its 'Show less like this' menu item, on every card type that offers them; there is no separate, softer signal available to send. This endpoint exists so the calling intent reads clearly; it does not behave differently. If you want fewer cards like this one in future, change the account's notification preferences on LinkedIn instead.
              *
-             *     **Safe to retry**, and same timing as `delete_notification`: idempotent (a repeat is a 200, not an error), effective within a few seconds. */
+             *     **Safe to retry**, and same timing as `delete_notification`: a repeat call returns 200 again, not an error, effective within a few seconds. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -13640,7 +13698,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
-                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
+                /** @description The post's id from get_post or any list response. A bare activity id, a URN (activity/ugcPost/share), or a full share URL all work. */
                 post_id: string;
             };
             cookie?: never;
@@ -13811,7 +13869,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) to comment as. */
                 account_id: string;
-                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
+                /** @description The post's id from get_post or any list response. A bare activity id, a URN (activity/ugcPost/share), or a full share URL all work. */
                 post_id: string;
             };
             cookie?: never;
@@ -14017,7 +14075,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) to reply as. */
                 account_id: string;
-                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
+                /** @description The post's id from get_post or any list response. A bare activity id, a URN (activity/ugcPost/share), or a full share URL all work. */
                 post_id: string;
                 /** @description The parent comment's `id` (a bare numeric string), as returned by comment_on_post / list_comment_replies. */
                 comment_id: string;
@@ -14225,7 +14283,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) that authored the comment. */
                 account_id: string;
-                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
+                /** @description The post's id from get_post or any list response. A bare activity id, a URN (activity/ugcPost/share), or a full share URL all work. */
                 post_id: string;
                 /** @description The comment's `id` (a bare numeric string), as returned by comment_on_post / list_comment_replies. */
                 comment_id: string;
@@ -14336,7 +14394,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) that authored the comment. */
                 account_id: string;
-                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
+                /** @description The post's id from get_post or any list response. A bare activity id, a URN (activity/ugcPost/share), or a full share URL all work. */
                 post_id: string;
                 /** @description The comment's `id` (a bare numeric string), as returned by comment_on_post / list_comment_replies. */
                 comment_id: string;
@@ -14529,7 +14587,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
-                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
+                /** @description The post's id from get_post or any list response. A bare activity id, a URN (activity/ugcPost/share), or a full share URL all work. */
                 post_id: string;
                 /** @description The parent comment's `id` (a bare numeric string), as returned by comment_on_post / list_comment_replies. */
                 comment_id: string;
@@ -14709,7 +14767,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
-                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
+                /** @description The post's id from get_post or any list response. A bare activity id, a URN (activity/ugcPost/share), or a full share URL all work. */
                 post_id: string;
                 /** @description The comment's `id` (a bare numeric string), as returned by comment_on_post / list_comment_replies. */
                 comment_id: string;
@@ -14850,7 +14908,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) to react from. */
                 account_id: string;
-                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
+                /** @description The post's id from get_post or any list response. A bare activity id, a URN (activity/ugcPost/share), or a full share URL all work. */
                 post_id: string;
                 /** @description The comment's `id` (a bare numeric string), as returned by comment_on_post / list_comment_replies. */
                 comment_id: string;
@@ -14998,7 +15056,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) whose reaction to remove. */
                 account_id: string;
-                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
+                /** @description The post's id from get_post or any list response. A bare activity id, a URN (activity/ugcPost/share), or a full share URL all work. */
                 post_id: string;
                 /** @description The comment's `id` (a bare numeric string), as returned by comment_on_post / list_comment_replies. */
                 comment_id: string;
@@ -16001,7 +16059,7 @@ export interface operations {
     getV1AccountIdJobs: {
         parameters: {
             query: {
-                /** @description Filter by posting lifecycle state (request vocabulary). Required. Filtering is applied by LinkedIn and is best-effort: OPEN commonly returns the same postings as DRAFT, and no query is guaranteed to return an item whose own `state` is LISTED even though LISTED is a valid value of that field. Callers needing a strict filter should re-filter on each returned item's own `state`. */
+                /** @description Filter by posting lifecycle state (required). Best-effort: results may not match exactly, re-filter on each item's own state. */
                 state: "DRAFT" | "OPEN" | "CLOSED" | "REVIEW" | "SUSPENDED";
                 /** @description Number of results to return (1-100). */
                 limit?: number;
@@ -16418,14 +16476,14 @@ export interface operations {
     getV1AccountIdJobsJobId: {
         parameters: {
             query?: {
-                /** @description Which additional sections to include on the response (e.g. hiring_team, salary, benefits). The exact set of accepted values is not finalized, supply the section names you need, comma-separated for more than one; each name is trimmed before use. Omit for the base fields only. */
+                /** @description Extra sections to include (e.g. hiring_team, salary, benefits), comma-separated for more than one. Omit for base fields only. */
                 with_sections?: string[];
             };
             header?: never;
             path: {
                 /** @description The connected LinkedIn account to retrieve the job posting on behalf of. */
                 account_id: string;
-                /** @description The numeric id of the job posting, e.g. 4100000000. This is the number in a LinkedIn job URL (https://www.linkedin.com/jobs/view/4100000000) and the job_urn value in a POST /v1/{account_id}/search/jobs result. Pass the number only, a full URL is not accepted by the API (the SDK and CLI extract the id from a URL for you). */
+                /** @description The job posting's numeric id, e.g. 4100000000 (from the LinkedIn job URL or a search/jobs result). A full URL is not accepted here. */
                 job_id: string;
             };
             cookie?: never;
@@ -16638,7 +16696,7 @@ export interface operations {
             path: {
                 /** @description The connected LinkedIn account that owns the job posting. */
                 account_id: string;
-                /** @description The numeric id of the job posting, e.g. 4100000000. This is the number in a LinkedIn job URL (https://www.linkedin.com/jobs/view/4100000000) and the job_urn value in a POST /v1/{account_id}/search/jobs result. Pass the number only, a full URL is not accepted by the API (the SDK and CLI extract the id from a URL for you). */
+                /** @description The job posting's numeric id, e.g. 4100000000 (from the LinkedIn job URL or a search/jobs result). A full URL is not accepted here. */
                 job_id: string;
             };
             cookie?: never;
@@ -16900,7 +16958,7 @@ export interface operations {
             path: {
                 /** @description The connected LinkedIn account that owns the job posting. */
                 account_id: string;
-                /** @description The numeric id of the job posting, e.g. 4100000000. This is the number in a LinkedIn job URL (https://www.linkedin.com/jobs/view/4100000000) and the job_urn value in a POST /v1/{account_id}/search/jobs result. Pass the number only, a full URL is not accepted by the API (the SDK and CLI extract the id from a URL for you). */
+                /** @description The job posting's numeric id, e.g. 4100000000 (from the LinkedIn job URL or a search/jobs result). A full URL is not accepted here. */
                 job_id: string;
             };
             cookie?: never;
@@ -17061,7 +17119,7 @@ export interface operations {
             path: {
                 /** @description The connected LinkedIn account to publish the job posting on behalf of. */
                 account_id: string;
-                /** @description The numeric id of the job posting, e.g. 4100000000. This is the number in a LinkedIn job URL (https://www.linkedin.com/jobs/view/4100000000) and the job_urn value in a POST /v1/{account_id}/search/jobs result. Pass the number only, a full URL is not accepted by the API (the SDK and CLI extract the id from a URL for you). */
+                /** @description The job posting's numeric id, e.g. 4100000000 (from the LinkedIn job URL or a search/jobs result). A full URL is not accepted here. */
                 job_id: string;
             };
             cookie?: never;
@@ -17258,7 +17316,7 @@ export interface operations {
             path: {
                 /** @description The connected LinkedIn account that owns the job posting. */
                 account_id: string;
-                /** @description The numeric id of the job posting, e.g. 4100000000. This is the number in a LinkedIn job URL (https://www.linkedin.com/jobs/view/4100000000) and the job_urn value in a POST /v1/{account_id}/search/jobs result. Pass the number only, a full URL is not accepted by the API (the SDK and CLI extract the id from a URL for you). */
+                /** @description The job posting's numeric id, e.g. 4100000000 (from the LinkedIn job URL or a search/jobs result). A full URL is not accepted here. */
                 job_id: string;
             };
             cookie?: never;
@@ -17399,7 +17457,7 @@ export interface operations {
             path: {
                 /** @description The connected LinkedIn account that owns the job posting. */
                 account_id: string;
-                /** @description The numeric id of the job posting, e.g. 4100000000. This is the number in a LinkedIn job URL (https://www.linkedin.com/jobs/view/4100000000) and the job_urn value in a POST /v1/{account_id}/search/jobs result. Pass the number only, a full URL is not accepted by the API (the SDK and CLI extract the id from a URL for you). */
+                /** @description The job posting's numeric id, e.g. 4100000000 (from the LinkedIn job URL or a search/jobs result). A full URL is not accepted here. */
                 job_id: string;
             };
             cookie?: never;
@@ -17617,7 +17675,7 @@ export interface operations {
             path: {
                 /** @description The connected LinkedIn account that owns the job posting. */
                 account_id: string;
-                /** @description The numeric id of the job posting, e.g. 4100000000. This is the number in a LinkedIn job URL (https://www.linkedin.com/jobs/view/4100000000) and the job_urn value in a POST /v1/{account_id}/search/jobs result. Pass the number only, a full URL is not accepted by the API (the SDK and CLI extract the id from a URL for you). */
+                /** @description The job posting's numeric id, e.g. 4100000000 (from the LinkedIn job URL or a search/jobs result). A full URL is not accepted here. */
                 job_id: string;
                 /** @description The numeric id of the job applicant, obtained from the list-applicants endpoint's items[].id. */
                 applicant_id: string;
@@ -17800,7 +17858,7 @@ export interface operations {
             path: {
                 /** @description The connected LinkedIn account that owns the job posting. */
                 account_id: string;
-                /** @description The numeric id of the job posting, e.g. 4100000000. This is the number in a LinkedIn job URL (https://www.linkedin.com/jobs/view/4100000000) and the job_urn value in a POST /v1/{account_id}/search/jobs result. Pass the number only, a full URL is not accepted by the API (the SDK and CLI extract the id from a URL for you). */
+                /** @description The job posting's numeric id, e.g. 4100000000 (from the LinkedIn job URL or a search/jobs result). A full URL is not accepted here. */
                 job_id: string;
                 /** @description The numeric id of the job applicant, obtained from the list-applicants endpoint's items[].id. */
                 applicant_id: string;
@@ -17922,7 +17980,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
-                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
+                /** @description The post's id from get_post or any list response. A bare activity id, a URN (activity/ugcPost/share), or a full share URL all work. */
                 post_id: string;
             };
             cookie?: never;
@@ -18119,7 +18177,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) that owns the post. */
                 account_id: string;
-                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
+                /** @description The post's id from get_post or any list response. A bare activity id, a URN (activity/ugcPost/share), or a full share URL all work. */
                 post_id: string;
             };
             cookie?: never;
@@ -18245,7 +18303,7 @@ export interface operations {
                         /** @description File name for the attachment. */
                         filename: string;
                     }[];
-                    /** @description The post to quote or repost. Empty text + quoted_post_id = a simple repost; non-empty text + quoted_post_id = a quote-post. The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
+                    /** @description The post to quote or repost. Empty text + quoted_post_id = a simple repost; non-empty text + quoted_post_id = a quote-post. The post's id from get_post or any list response. A bare activity id, a URN (activity/ugcPost/share), or a full share URL all work. */
                     quoted_post_id?: string;
                     /**
                      * @description Who can read the post (substrate default: anyone if omitted).
@@ -18600,7 +18658,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) to use for the request. */
                 account_id: string;
-                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
+                /** @description The post's id from get_post or any list response. A bare activity id, a URN (activity/ugcPost/share), or a full share URL all work. */
                 post_id: string;
             };
             cookie?: never;
@@ -18744,7 +18802,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) to react from. */
                 account_id: string;
-                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
+                /** @description The post's id from get_post or any list response. A bare activity id, a URN (activity/ugcPost/share), or a full share URL all work. */
                 post_id: string;
             };
             cookie?: never;
@@ -18888,7 +18946,7 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) whose reaction to remove. */
                 account_id: string;
-                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
+                /** @description The post's id from get_post or any list response. A bare activity id, a URN (activity/ugcPost/share), or a full share URL all work. */
                 post_id: string;
             };
             cookie?: never;
@@ -19209,9 +19267,9 @@ export interface operations {
     getV1AccountIdSavedPosts: {
         parameters: {
             query?: {
-                /** @description Page-size lower bound (1-100, default 20); returns AT LEAST this many items, up to the next upstream page boundary (a page may return slightly more). Paginate with the returned cursor and walk until `cursor` is null for the complete list. */
+                /** @description Minimum items per page (1-100, default 20); a page may return slightly more. Walk with cursor until it is null for the complete list. */
                 limit?: number;
-                /** @description Opaque pagination cursor from a prior response's `cursor`; omit for the first page. Page until `cursor` is null. There is no `offset` parameter; an unanchored numeric offset is inert upstream, so it is not a product-surface knob. */
+                /** @description Opaque cursor from a prior response's cursor; omit for the first page. Page until cursor is null. There is no offset parameter. */
                 cursor?: string;
             };
             header?: never;
@@ -19385,13 +19443,13 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
+                    /** @description The post's id from get_post or any list response. A bare activity id, a URN (activity/ugcPost/share), or a full share URL all work. */
                     post_id: string;
                 };
             };
         };
         responses: {
-            /** @description The post is now saved (a private bookmark, no notification to the author, never visible to third parties). Re-saving an already-saved post is idempotent. */
+            /** @description The post is now saved (a private bookmark, no notification to the author, never visible to third parties). Re-saving an already-saved post just returns 200 again, not an error. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -19515,14 +19573,14 @@ export interface operations {
             path: {
                 /** @description The account ID (`acc_...`) that performs the unsave. */
                 account_id: string;
-                /** @description The post's `id`, as returned by `get_post` or any list response (`list_user_posts`, `list_profile_activity`, `get_feed`). A bare numeric activity id (`7332661864792854528`), a URN (`urn:li:activity:<id>`, `urn:li:ugcPost:<id>`, `urn:li:share:<id>`), and a full LinkedIn share URL are all accepted and mean the same post. */
+                /** @description The post's id from get_post or any list response. A bare activity id, a URN (activity/ugcPost/share), or a full share URL all work. */
                 post_id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description The post is no longer saved. Unsaving a not-currently-saved post is idempotent. */
+            /** @description The post is no longer saved. Unsaving a not-currently-saved post just returns 200 again, not an error. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -19633,7 +19691,7 @@ export interface operations {
     getV1AccountIdRecruiterProfilesUserId: {
         parameters: {
             query?: {
-                /** @description Which recruiter profile sections to fetch (repeatable, flat). Allowed values: linkedin_*, linkedin_experience, linkedin_education, linkedin_languages, linkedin_skills, linkedin_certifications, linkedin_volunteer_experience, linkedin_projects, linkedin_recommendations, linkedin_interests, linkedin_recruiting_activity, and the _preview variant of each. Omit for base fields only. */
+                /** @description Recruiter profile sections to fetch, repeatable: linkedin_experience, linkedin_skills, and others (each has a _preview variant). Omit for base fields only. */
                 with_sections?: ("linkedin_*" | "linkedin_experience" | "linkedin_education" | "linkedin_languages" | "linkedin_skills" | "linkedin_certifications" | "linkedin_volunteer_experience" | "linkedin_projects" | "linkedin_recommendations" | "linkedin_interests" | "linkedin_recruiting_activity" | "linkedin_*_preview" | "linkedin_experience_preview" | "linkedin_education_preview" | "linkedin_languages_preview" | "linkedin_skills_preview" | "linkedin_certifications_preview" | "linkedin_volunteer_experience_preview" | "linkedin_projects_preview" | "linkedin_recommendations_preview" | "linkedin_interests_preview" | "linkedin_recruiting_activity_preview")[];
             };
             header?: never;
@@ -24937,7 +24995,7 @@ export interface operations {
     getV1AccountIdSalesNavigatorProfilesIdentifier: {
         parameters: {
             query?: {
-                /** @description Which Sales Navigator profile sections to fetch (repeatable, flat). Allowed values: linkedin_*, linkedin_experience, linkedin_education, linkedin_languages, linkedin_skills, linkedin_certifications, linkedin_volunteer_experience, linkedin_projects, linkedin_recommendations, linkedin_interests, linkedin_recruiting_activity, and the _preview variant of each. Omit for base fields only. */
+                /** @description Sales Navigator sections to fetch, repeatable: linkedin_experience, linkedin_skills, others (each has a _preview variant). Omit for base fields only. */
                 with_sections?: ("linkedin_*" | "linkedin_experience" | "linkedin_education" | "linkedin_languages" | "linkedin_skills" | "linkedin_certifications" | "linkedin_volunteer_experience" | "linkedin_projects" | "linkedin_recommendations" | "linkedin_interests" | "linkedin_recruiting_activity" | "linkedin_*_preview" | "linkedin_experience_preview" | "linkedin_education_preview" | "linkedin_languages_preview" | "linkedin_skills_preview" | "linkedin_certifications_preview" | "linkedin_volunteer_experience_preview" | "linkedin_projects_preview" | "linkedin_recommendations_preview" | "linkedin_interests_preview" | "linkedin_recruiting_activity_preview")[];
             };
             header?: never;
@@ -26440,7 +26498,7 @@ export interface operations {
     getV1AccountIdSalesNavigatorSearchParameters: {
         parameters: {
             query: {
-                /** @description The Sales Navigator filter parameter family to resolve. Exactly one of: COMPANY, ACCOUNT_LIST, LEAD_LIST, LOCATION, POSTAL_CODE, JOB_FUNCTION, JOB_TITLE, INDUSTRY, GROUP, SCHOOL, RELATION, PERSONA, SAVED_PEOPLE_SEARCH, SAVED_COMPANY_SEARCH, RECENT_SEARCH, PROFILE_LANGUAGE. Any other value is rejected with 400. */
+                /** @description The Sales Navigator filter parameter family to resolve. Any value outside the enum is rejected with 400. */
                 type: "COMPANY" | "ACCOUNT_LIST" | "LEAD_LIST" | "LOCATION" | "POSTAL_CODE" | "JOB_FUNCTION" | "JOB_TITLE" | "INDUSTRY" | "GROUP" | "SCHOOL" | "RELATION" | "PERSONA" | "SAVED_PEOPLE_SEARCH" | "SAVED_COMPANY_SEARCH" | "RECENT_SEARCH" | "PROFILE_LANGUAGE";
                 /** @description Human-readable term to search within the parameter family. */
                 keywords?: string;
@@ -27759,6 +27817,8 @@ export interface operations {
                 limit?: number;
                 /** @description Opaque pagination cursor from a prior page's `cursor` field. Omit for the first page. */
                 cursor?: string;
+                /** @description Return only accounts whose external_id equals this value exactly. */
+                external_id?: string;
             };
             header?: never;
             path?: never;
@@ -27798,6 +27858,12 @@ export interface operations {
                             connected_at?: string | null;
                             /** @description The connection scope this account was last connected with (e.g. ["classic","company","sales_navigator","recruiter"]). A connect asks for every product and LinkedIn activates the ones the account actually has, so this is what was ASKED for, narrowed only by an explicit linkedin_premium on that connect. A linkedin_premium narrowing is not remembered between connects, so this shows what the LAST connect asked for and a reconnect that omits the field widens it again. Null for accounts connected before this was recorded; not attachment truth for Company Pages. */
                             requested_products?: ("classic" | "company" | "sales_navigator" | "recruiter")[] | null;
+                            /** @description Your own id for this account's end user, as set on connect or PATCH. Null when none. Not unique. */
+                            external_id?: string | null;
+                            /** @description Your own flat string map for this account, as last set by PATCH. Null when none. */
+                            metadata?: {
+                                [key: string]: string;
+                            } | null;
                             /** @description ISO-8601 UTC creation timestamp of the underlying LinkedIn account, distinct from connected_at. Null until the first background enrichment lands. */
                             substrate_created_at?: string | null;
                         }[];
@@ -27906,6 +27972,12 @@ export interface operations {
                         seat_id?: string | null;
                         /** @description The connection scope this account was last connected with (e.g. ["classic","company","sales_navigator","recruiter"]). A connect asks for every product and LinkedIn activates the ones the account actually has, so this is what was ASKED for, narrowed only by an explicit linkedin_premium on that connect. A linkedin_premium narrowing is not remembered between connects, so this shows what the LAST connect asked for and a reconnect that omits the field widens it again. Null for accounts connected before this was recorded; not attachment truth for Company Pages. */
                         requested_products?: ("classic" | "company" | "sales_navigator" | "recruiter")[] | null;
+                        /** @description Your own id for this account's end user, as set on connect or PATCH. Null when none. Not unique. */
+                        external_id?: string | null;
+                        /** @description Your own flat string map for this account, as last set by PATCH. Null when none. */
+                        metadata?: {
+                            [key: string]: string;
+                        } | null;
                         /** @description ISO-8601 UTC creation timestamp of the underlying LinkedIn account, distinct from connected_at. Null until the first background enrichment lands. */
                         substrate_created_at?: string | null;
                         /** @description Account-safety rows for this account: one entry per counted action for the current window of its grain, plus the derived total and the invitation backlog. Each row reports where the account stands, what it is allowed, which band that puts it in, what happens at the ceiling, whether the ceiling was raised above the Curviate default, and any active pause the platform caused. Whether a breach is refused or merely reported is `posture`, and the default is to report: nothing here refuses until you configure it to. Pacing is still the caller's responsibility, and nothing on this array paces for you. The per-minute REQUEST ceiling is a different thing and is deliberately not in this array: it protects Curviate's own servers rather than your LinkedIn account, it counts requests where these count platform operations, it is always enforced with HTTP 429 whatever your posture, and its envelope is returned on that refusal. Read this array to see where the account stands; read the safety events surface to see what has already been refused or flagged. */
@@ -28062,7 +28134,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The account was disconnected and hard-deleted; its seat is released. This endpoint is idempotent: calling it again for the same account also returns 200, with `already_disconnected` set so you can tell the two apart. */
+            /** @description The account was disconnected and hard-deleted; its seat is released. Calling it again for the same account also returns 200, with `already_disconnected` set so you can tell a repeat call from the first. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -28169,10 +28241,12 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description Flat string->string map that replaces this account's custom-data store wholesale (unprovided keys are removed). */
+                    /** @description Your own flat string map for this account (up to 16 keys, key 40 chars, value 500). Replaces the stored map whole; null clears it. */
                     metadata?: {
                         [key: string]: string;
-                    };
+                    } | null;
+                    /** @description Your own id for this account's end user (1-255 chars), or null to clear it. Omit to leave it unchanged. */
+                    external_id?: string | null;
                     /** @description Custom-proxy egress config, or null to clear it (revert to automatic proxy protection). Omit to leave it unchanged. */
                     proxy?: {
                         /**
@@ -28193,7 +28267,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The account metadata / proxy configuration was updated. */
+            /** @description The account was updated. metadata and external_id are stored by Curviate and read back on GET; a PATCH carrying only those makes no LinkedIn call. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -28212,7 +28286,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid request, a malformed proxy object or an unsupported field (country/ip are no longer accepted). */
+            /** @description Invalid request: a malformed proxy object, metadata over its limits (16 keys, key 40 chars, value 500), external_id outside 1-255 chars, or an unsupported field (country/ip). */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -28421,6 +28495,12 @@ export interface operations {
                      * @enum {string}
                      */
                     linkedin_premium?: "sales_navigator" | "recruiter";
+                    /** @description Optional IANA zone name for this account's LinkedIn session, e.g. Europe/Berlin. Sent in canonical form; a UTC offset such as +02:00 is a 400. */
+                    timezone?: string;
+                    /** @description Your own id for the end user who owns this account, 1-255 chars, not unique. Treat it as opaque; avoid emails. */
+                    external_id?: string;
+                    /** @description Optional allow-list of premium products to ask for: sales_navigator, recruiter. Omit to ask for both; [] asks for none. Classic LinkedIn and company pages are always included. */
+                    products?: ("sales_navigator" | "recruiter")[];
                     /** @description Managed proxy location hint as an ISO 3166-1 alpha-2 country code (e.g. US, DE). */
                     country?: string;
                     /** @description IPv4 address used to infer the managed proxy location. */
@@ -28473,6 +28553,8 @@ export interface operations {
                         account_id?: string;
                         /** @enum {string} */
                         status?: "active";
+                        /** @description Your own id for this account's end user, as set on connect or PATCH. Null when none. Not unique. */
+                        external_id?: string | null;
                         safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
@@ -28505,6 +28587,8 @@ export interface operations {
                          * @description Deprecated, use seat_id (same value). Removed at the GA /v1 cutover.
                          */
                         attached_seat_id?: string | null;
+                        /** @description Your own id for this account's end user, as set on connect or PATCH. Null when none. Not unique. */
+                        external_id?: string | null;
                         /** @description Present and true only when this connect reactivated an account you had previously disconnected, instead of opening a brand-new one. Absent on a normal connect. The account keeps its original id, and its status reflects its real observed state, which may need a reconnect. */
                         recovered?: boolean;
                         safety_warning?: components["schemas"]["SafetyWarning"];
@@ -28533,7 +28617,16 @@ export interface operations {
                          * @description The verification challenge LinkedIn issued.
                          * @enum {string}
                          */
-                        challenge_type?: "otp" | "two_factor_sms" | "two_factor_app" | "two_factor_whatsapp" | "mobile_app_approval" | "otp_or_mobile_app_approval" | "contract_selection";
+                        challenge_type?: "otp" | "two_factor_sms" | "two_factor_app" | "two_factor_whatsapp" | "mobile_app_approval" | "otp_or_mobile_app_approval" | "contract_selection" | "challenge_selection";
+                        /** @description Verification methods to choose from (challenge_selection only). Send one id as challenge to POST /v1/auth/checkpoint/request. */
+                        challenges?: {
+                            /** @enum {string} */
+                            id?: "email" | "sms" | "whatsapp";
+                            /** @description Display name, e.g. Text message. */
+                            label?: string;
+                            /** @description The masked destination, when known. */
+                            description?: string | null;
+                        }[];
                         /** @description Contract picker options (contract_selection only). Solve with the chosen id as the code. */
                         contracts?: {
                             id?: string;
@@ -28541,6 +28634,8 @@ export interface operations {
                         }[];
                         /** @description ISO-8601 expiry of the challenge. */
                         expires_at?: string;
+                        /** @description Your own id for this account's end user, as set on connect or PATCH. Null when none. Not unique. */
+                        external_id?: string | null;
                         safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
@@ -28700,6 +28795,8 @@ export interface operations {
                          * @description Deprecated, use seat_id (same value). Removed at the GA /v1 cutover.
                          */
                         attached_seat_id?: string | null;
+                        /** @description Your own id for this account's end user, as set on connect or PATCH. Null when none. Not unique. */
+                        external_id?: string | null;
                         /** @description Present and true only when this connect reactivated an account you had previously disconnected, instead of opening a brand-new one. Absent on a normal connect. The account keeps its original id, and its status reflects its real observed state, which may need a reconnect. */
                         recovered?: boolean;
                         safety_warning?: components["schemas"]["SafetyWarning"];
@@ -28728,7 +28825,16 @@ export interface operations {
                          * @description The verification challenge LinkedIn issued.
                          * @enum {string}
                          */
-                        challenge_type?: "otp" | "two_factor_sms" | "two_factor_app" | "two_factor_whatsapp" | "mobile_app_approval" | "otp_or_mobile_app_approval" | "contract_selection";
+                        challenge_type?: "otp" | "two_factor_sms" | "two_factor_app" | "two_factor_whatsapp" | "mobile_app_approval" | "otp_or_mobile_app_approval" | "contract_selection" | "challenge_selection";
+                        /** @description Verification methods to choose from (challenge_selection only). Send one id as challenge to POST /v1/auth/checkpoint/request. */
+                        challenges?: {
+                            /** @enum {string} */
+                            id?: "email" | "sms" | "whatsapp";
+                            /** @description Display name, e.g. Text message. */
+                            label?: string;
+                            /** @description The masked destination, when known. */
+                            description?: string | null;
+                        }[];
                         /** @description Contract picker options (contract_selection only). Solve with the chosen id as the code. */
                         contracts?: {
                             id?: string;
@@ -28847,6 +28953,11 @@ export interface operations {
                 "application/json": {
                     /** @description The account whose pending checkpoint notification should be re-sent (returned with the 202 checkpoint_required response, or from link/poll). */
                     account_id: string;
+                    /**
+                     * @description Optional. An id from a challenge_selection checkpoint's challenges list: switches to that method and returns the next checkpoint. Omit to re-send the current code.
+                     * @enum {string}
+                     */
+                    challenge?: "email" | "sms" | "whatsapp";
                 };
             };
         };
@@ -28869,6 +28980,58 @@ export interface operations {
                         resent?: boolean;
                         safety_warning?: components["schemas"]["SafetyWarning"];
                     };
+                };
+            };
+            /** @description challenge was sent: the method was switched and this is the next verification challenge. Solve it with POST /v1/auth/checkpoint/solve. */
+            202: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object?: "checkpoint";
+                        /** @enum {string} */
+                        status?: "checkpoint_required";
+                        /** @description The (provisional) account_id to pass to the checkpoint sub-resource (POST /v1/auth/checkpoint/solve). */
+                        account_id?: string;
+                        /**
+                         * @description The verification challenge LinkedIn issued.
+                         * @enum {string}
+                         */
+                        challenge_type?: "otp" | "two_factor_sms" | "two_factor_app" | "two_factor_whatsapp" | "mobile_app_approval" | "otp_or_mobile_app_approval" | "contract_selection" | "challenge_selection";
+                        /** @description Verification methods to choose from (challenge_selection only). Send one id as challenge to POST /v1/auth/checkpoint/request. */
+                        challenges?: {
+                            /** @enum {string} */
+                            id?: "email" | "sms" | "whatsapp";
+                            /** @description Display name, e.g. Text message. */
+                            label?: string;
+                            /** @description The masked destination, when known. */
+                            description?: string | null;
+                        }[];
+                        /** @description Contract picker options (contract_selection only). Solve with the chosen id as the code. */
+                        contracts?: {
+                            id?: string;
+                            name?: string;
+                        }[];
+                        /** @description ISO-8601 expiry of the challenge. */
+                        expires_at?: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST. challenge is not a known method id, or is not one of the methods the pending checkpoint offered; send an id from its challenges list. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description ACCOUNT_RESTRICTED. LinkedIn has restricted this account. Sign in to LinkedIn to see what it needs, resolve it there, then reconnect. */
@@ -29013,17 +29176,28 @@ export interface operations {
                          * @description Deprecated, use seat_id (same value). Removed at the GA /v1 cutover. Present on status:"active".
                          */
                         attached_seat_id?: string | null;
+                        /** @description Your own id for this account's end user, as passed on connect. Present on status:"active". */
+                        external_id?: string | null;
                         /** @description ISO-8601 expiry. Present on status:"pending" and status:"checkpoint_required". */
                         expires_at?: string;
                         /**
                          * @description Machine-readable challenge discriminator. On status:"checkpoint_required" it is the NEW challenge to submit; on status:"expired" it renders the right recovery guidance.
                          * @enum {string}
                          */
-                        challenge_type?: "mobile_app_approval" | "otp" | "two_factor_sms" | "two_factor_app" | "two_factor_whatsapp" | "contract_selection";
+                        challenge_type?: "mobile_app_approval" | "otp" | "two_factor_sms" | "two_factor_app" | "two_factor_whatsapp" | "contract_selection" | "challenge_selection";
                         /** @description Contract picker options, present only on a chained status:"checkpoint_required" with challenge_type:"contract_selection". */
                         contracts?: {
                             id?: string;
                             name?: string;
+                        }[];
+                        /** @description Verification methods to choose from (challenge_selection only). Send one id as challenge to POST /v1/auth/checkpoint/request. */
+                        challenges?: {
+                            /** @enum {string} */
+                            id?: "email" | "sms" | "whatsapp";
+                            /** @description Display name, e.g. Text message. */
+                            label?: string;
+                            /** @description The masked destination, when known. */
+                            description?: string | null;
                         }[];
                         /** @description Human-readable, actionable next step when the approval timed out. Present on status:"expired". */
                         recovery_hint?: string;
@@ -29224,7 +29398,7 @@ export interface operations {
             query?: {
                 /** @description Pagination cursor from a previous response; decodable, pass it back verbatim */
                 cursor?: string;
-                /** @description Return only events in this queue state. unread: nobody holds it, which includes an event whose lease expired. claimed: leased to a consumer right now. done: already handled, and it will never be handed out again. Omit to return every state. There is no failed state. */
+                /** @description Return only events in this state: unread (includes an expired lease), claimed, or done. Omit for every state. There is no failed state. */
                 state?: "unread" | "claimed" | "done";
                 /** @description How many events to return per page, 1 to 100. Defaults to 50. */
                 limit?: number;
@@ -29365,7 +29539,9 @@ export interface operations {
             content: {
                 "application/json": {
                     consumer: string;
+                    /** @description Max events to lease (1-100, default 10). */
                     limit?: number;
+                    /** @description Seconds to hold the lease (10-3600, default 300). */
                     lease_seconds?: number;
                 };
             };
@@ -29727,7 +29903,7 @@ export interface operations {
                             /** @description The URL that receives delivery POST requests. */
                             request_url?: string;
                             name?: string | null;
-                            account_ids?: string[];
+                            account_ids?: string[] | null;
                             enabled?: boolean;
                             /** @description Custom headers added to each delivery POST, with a fingerprint in place of the value. */
                             headers?: {
@@ -29740,7 +29916,7 @@ export interface operations {
                             /** @description First 8 characters of the secret (never the full secret). */
                             secret_prefix?: string;
                             /**
-                             * @description Delivery health state. 'degraded' when recent deliveries have repeatedly failed.
+                             * @description Delivery health state. 'degraded' when the last delivery exhausted all 5 attempts, or when it could not be signed at all because the webhook's signing secret is unusable (then no delivery can succeed; recreate the webhook).
                              * @enum {string}
                              */
                             health?: "ok" | "degraded";
@@ -29868,8 +30044,8 @@ export interface operations {
                     request_url: string;
                     /** @description Human-readable name for this webhook (1-100 chars) */
                     name?: string;
-                    /** @description Per-account targeting. Required and non-empty; each id must be an acc_-prefixed id owned by the tenant. */
-                    account_ids: string[];
+                    /** @description Per-account targeting. Omit to receive events for every current and future account; each id must be an acc_-prefixed id you own. */
+                    account_ids?: string[];
                     /**
                      * @description A disabled webhook is created but delivers nothing
                      * @default true
@@ -29914,8 +30090,8 @@ export interface operations {
                         request_url?: string;
                         /** @description Human-readable label. */
                         name?: string | null;
-                        /** @description Accounts targeted by this webhook. Required and non-empty, each id must be owned by the tenant. */
-                        account_ids?: string[];
+                        /** @description Accounts targeted by this webhook (acc_ ids you own), or null when an account_status webhook covers every current and future account. */
+                        account_ids?: string[] | null;
                         /** @description A disabled webhook is created but delivers nothing. */
                         enabled?: boolean;
                         /** @description Custom headers added to each delivery POST. Values are encrypted at rest and no read returns one, so a read shows the name and a fingerprint of the value. */
@@ -30192,8 +30368,8 @@ export interface operations {
                         request_url?: string;
                         /** @description Human-readable label. */
                         name?: string | null;
-                        /** @description Accounts targeted by this webhook. Non-empty, each id is owned by the tenant. */
-                        account_ids?: string[];
+                        /** @description Accounts targeted by this webhook (acc_ ids you own), or null when an account_status webhook covers every current and future account. */
+                        account_ids?: string[] | null;
                         /** @description A disabled webhook is kept but delivers nothing. Disabling takes effect immediately, including for retries that were already queued; those attempts are abandoned, not deferred, so re-enabling delivers new events rather than replaying the ones that were dropped. */
                         enabled?: boolean;
                         /** @description Custom headers added to each delivery POST. Values are encrypted at rest and no read returns one, so a read shows the name and a fingerprint of the value. */
@@ -30268,7 +30444,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Webhook removed. Delivery stops immediately, including retries that were already queued. Idempotent, deleting an already-deleted webhook returns the same shape. */
+            /** @description Webhook removed. Delivery stops immediately, including retries that were already queued. Deleting an already-deleted webhook returns the same shape again, not an error. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -30357,8 +30533,8 @@ export interface operations {
                     }[];
                     /** @description Replace the field-remapping keys for the delivery payload (whole-array). */
                     data?: string[];
-                    /** @description Replace the targeted accounts (whole-array). Must be non-empty; each id must be an acc_-prefixed id owned by the tenant. */
-                    account_ids?: string[];
+                    /** @description Replace the targeted accounts (whole-array, each an acc_ id you own), or null to cover every current and future account (account_status webhooks only). */
+                    account_ids?: string[] | null;
                 };
             };
         };
@@ -30388,8 +30564,8 @@ export interface operations {
                         request_url?: string;
                         /** @description Human-readable label. */
                         name?: string | null;
-                        /** @description Accounts targeted by this webhook. Non-empty, each id is owned by the tenant. */
-                        account_ids?: string[];
+                        /** @description Accounts targeted by this webhook (acc_ ids you own), or null when an account_status webhook covers every current and future account. */
+                        account_ids?: string[] | null;
                         /** @description A disabled webhook is kept but delivers nothing. Disabling takes effect immediately, including for retries that were already queued; those attempts are abandoned, not deferred, so re-enabling delivers new events rather than replaying the ones that were dropped. */
                         enabled?: boolean;
                         /** @description Custom headers added to each delivery POST. Values are encrypted at rest and no read returns one, so a read shows the name and a fingerprint of the value. */
@@ -31391,6 +31567,244 @@ export interface operations {
             };
             /** @description Payload too large, the request body exceeds the size limit. */
             413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1BillingSeatsAdd: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    qty: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Seats added. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Amount collected right now, or null when nothing was collected today. */
+                        charged_today_eur: number | null;
+                        /**
+                         * Format: date-time
+                         * @description Reserved for a future queued-proration date; always null today.
+                         */
+                        next_invoice_at: string | null;
+                        /** @description The newly created seat ids. */
+                        seat_ids: string[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description qty must be a whole number from 1 to 50. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description No active subscription found. Purchase a subscription first. */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description The workspace is on a free trial and cannot add seats. Buy a seat to convert to a paid subscription first. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1BillingSeatsSeatIdCancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The seat ID (`seat_...`) to cancel. */
+                seat_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cancellation scheduled (or already was). */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * Format: date-time
+                         * @description When the seat's access ends.
+                         */
+                        effective_at: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description seat_id not found for this workspace, or its cancellation already took effect. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description The workspace is on a free trial and cannot change seats. Buy a seat to convert to a paid subscription first. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1BillingSeatsSeatIdCancelRevert: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The seat ID (`seat_...`) whose scheduled cancellation to revert. */
+                seat_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cancellation reverted. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Always true on success.
+                         * @enum {boolean}
+                         */
+                        reverted: true;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description seat_id not found, no cancellation is scheduled, it already took effect, or the whole subscription (not this seat) was scheduled to cancel. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description The workspace is on a free trial and cannot change seats. Buy a seat to convert to a paid subscription first. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
