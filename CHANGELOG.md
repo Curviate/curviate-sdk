@@ -24,6 +24,8 @@ challenge selection on checkpoints, and seat purchase over the API.
   end-of-period cancellation, and undo it, without the dashboard. Two adds of
   the same `qty` within 10 minutes count as one; send the total quantity in one
   call to buy more. A trialing workspace gets `TRIAL_ACTIVE_SEAT_LIMIT`.
+  Their types include the 402 refusals (no subscription, past due, dispute,
+  and on add a declined card) and the 503 `SUBSCRIPTION_BUSY`.
 - **`external_id` on accounts.** Pass your own id for the account's end user on
   `auth.intent` or `accounts.update` (`null` clears it). It is returned on
   `accounts.get`/`list`, on the connect responses, and on every `account.*`
@@ -54,9 +56,6 @@ challenge selection on checkpoints, and seat purchase over the API.
   200 re-send; each narrows only its true branch).
 - **Webhook `account_ids` is `string[] | null` on reads.** `null` means a
   tenant-wide `account_status` webhook.
-- **Seat operations declare their refusals.** The seat add, cancel and revert
-  response types now include the 402 (no subscription, past due, dispute,
-  and on add a declined card) and 503 `SUBSCRIPTION_BUSY` error responses.
 - **`account.restricted` documented as "connected, some actions fail".** The
   event also fires when one LinkedIn product on the account (Sales Navigator,
   Recruiter) is failing, not only for a LinkedIn restriction. Surface it to a
