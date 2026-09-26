@@ -31643,7 +31643,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description No active subscription found. Purchase a subscription first. */
+            /** @description No active subscription, a past-due subscription, an account under dispute review, or the card was declined (no seats added). */
             402: {
                 headers: {
                     [name: string]: unknown;
@@ -31676,6 +31676,15 @@ export interface operations {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     RateLimit: components["headers"]["RateLimit"];
                     "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Another change to this subscription is in progress. Retry shortly. */
+            503: {
+                headers: {
                     [name: string]: unknown;
                 };
                 content: {
@@ -31732,6 +31741,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description No active subscription, a past-due subscription, or an account under dispute review. */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description The workspace is on a free trial and cannot change seats. Buy a seat to convert to a paid subscription first. */
             409: {
                 headers: {
@@ -31747,6 +31765,15 @@ export interface operations {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     RateLimit: components["headers"]["RateLimit"];
                     "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Another change to this subscription is in progress. Retry shortly. */
+            503: {
+                headers: {
                     [name: string]: unknown;
                 };
                 content: {
@@ -31803,6 +31830,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description No active subscription, a past-due subscription, or an account under dispute review. */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description The workspace is on a free trial and cannot change seats. Buy a seat to convert to a paid subscription first. */
             409: {
                 headers: {
@@ -31818,6 +31854,15 @@ export interface operations {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     RateLimit: components["headers"]["RateLimit"];
                     "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Another change to this subscription is in progress. Retry shortly. */
+            503: {
+                headers: {
                     [name: string]: unknown;
                 };
                 content: {

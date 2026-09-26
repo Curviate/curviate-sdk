@@ -13,7 +13,7 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 Fixture and types regenerated against the deployed staging document
 (`https://api.staging.curviate.com`, 130 paths, server
-`4762b5c41c8b9e18038e4880f593be079391cfd3`). Adds programmatic connect at
+`a2e1628d3cb600088ad35cbbec2ae9e3f9ad4f17`). Adds programmatic connect at
 scale: your own end-user id on accounts, tenant-wide account-status webhooks,
 challenge selection on checkpoints, and seat purchase over the API.
 
@@ -54,6 +54,9 @@ challenge selection on checkpoints, and seat purchase over the API.
   200 re-send; each narrows only its true branch).
 - **Webhook `account_ids` is `string[] | null` on reads.** `null` means a
   tenant-wide `account_status` webhook.
+- **Seat operations declare their refusals.** The seat add, cancel and revert
+  response types now include the 402 (no subscription, past due, dispute,
+  and on add a declined card) and 503 `SUBSCRIPTION_BUSY` error responses.
 - **`account.restricted` documented as "connected, some actions fail".** The
   event also fires when one LinkedIn product on the account (Sales Navigator,
   Recruiter) is failing, not only for a LinkedIn restriction. Surface it to a
