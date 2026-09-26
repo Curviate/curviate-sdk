@@ -51,9 +51,25 @@ export type AuthSolveCheckpointResult =
   | paths["/v1/auth/checkpoint/solve"]["post"]["responses"]["201"]["content"]["application/json"]
   | paths["/v1/auth/checkpoint/solve"]["post"]["responses"]["202"]["content"]["application/json"];
 
-/** `POST /v1/auth/checkpoint/request` 200 body. */
+/**
+ * `requestCheckpoint`'s optional body minus `account_id`: `{ challenge }`, an
+ * id from a `challenge_selection` checkpoint's `challenges` list.
+ */
+export type AuthRequestCheckpointBody = Omit<
+  paths["/v1/auth/checkpoint/request"]["post"]["requestBody"]["content"]["application/json"],
+  "account_id"
+>;
+
+/**
+ * `POST /v1/auth/checkpoint/request` result: 200 `{ resent }` for a re-send, or
+ * 202 (the next checkpoint) after switching to a `challenge`. Narrow with
+ * `"status" in result` for the 202 checkpoint and `"resent" in result` for
+ * the 200 re-send. Each check narrows only its true branch (every field on
+ * both shapes is optional), so test for the shape you want, not its else.
+ */
 export type AuthRequestCheckpointResult =
-  paths["/v1/auth/checkpoint/request"]["post"]["responses"]["200"]["content"]["application/json"];
+  | paths["/v1/auth/checkpoint/request"]["post"]["responses"]["200"]["content"]["application/json"]
+  | paths["/v1/auth/checkpoint/request"]["post"]["responses"]["202"]["content"]["application/json"];
 
 /** `POST /v1/auth/checkpoint/poll` 200 body. */
 export type AuthPollCheckpointResult =
@@ -142,20 +158,36 @@ export class AuthResource {
   }
 
   /**
-   * Re-request the pending checkpoint notification (OTP / 2FA / mobile-app
-   * push). `resent` is honest: `true` once the notification was actually
-   * re-sent, `false` when there was nothing to re-send for that challenge
-   * type (e.g. an authenticator-app code); this call never throws just
+   * Re-send the pending checkpoint code, or switch its verification method.
+   *
+   * Without `body`: re-requests the pending notification (OTP / 2FA /
+   * mobile-app push) and returns 200 `{ resent }`. `resent` is honest: `true`
+   * once the notification was actually re-sent, `false` when there was
+   * nothing to re-send for that challenge type (e.g. an authenticator-app
+   * code, or a `challenge_selection` checkpoint); this call never throws just
    * because a re-send wasn't applicable. Does not reset the checkpoint's
    * expiry.
    *
+   * With `{ challenge }`: answers a `challenge_selection` checkpoint. Pass one
+   * `id` from its `challenges` list (`email`, `sms` or `whatsapp`); the
+   * response is the next checkpoint (202), which you then solve as usual. An
+   * id the checkpoint did not offer throws `CurviateError(code:
+   * "INVALID_REQUEST")`.
+   *
    * @param accountId - the (provisional) `account_id` from the 202 response.
+   * @param body - optional `{ challenge }` for a `challenge_selection` checkpoint.
+   *
+   * @example
+   * const cp = await curviate.auth.intent({ seat_id, auth_method: "credentials", credentials });
+   * if (cp.object === "checkpoint" && cp.challenge_type === "challenge_selection") {
+   *   const next = await curviate.auth.requestCheckpoint(cp.account_id!, { challenge: cp.challenges![0]!.id });
+   * }
    */
-  requestCheckpoint(accountId: string): Promise<AuthRequestCheckpointResult> {
+  requestCheckpoint(accountId: string, body?: AuthRequestCheckpointBody): Promise<AuthRequestCheckpointResult> {
     return this.ctx.request<AuthRequestCheckpointResult>({
       method: "POST",
       path: "/v1/auth/checkpoint/request",
-      body: { account_id: accountId },
+      body: { account_id: accountId, ...body },
     });
   }
 

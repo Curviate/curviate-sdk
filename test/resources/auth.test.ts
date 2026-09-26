@@ -136,7 +136,7 @@ describe("auth.requestCheckpoint", () => {
     const res = await client.auth.requestCheckpoint("acc_prov");
     expect(seenPath).toBe("/v1/auth/checkpoint/request");
     expect(body).toEqual({ account_id: "acc_prov" });
-    expect(res.resent).toBe(true);
+    expect("resent" in res && res.resent).toBe(true);
   });
 
   it("honest no-op: returns resent:false without throwing", async () => {
@@ -146,7 +146,7 @@ describe("auth.requestCheckpoint", () => {
       ),
     );
     const res = await client.auth.requestCheckpoint("acc_prov");
-    expect(res.resent).toBe(false);
+    expect("resent" in res && res.resent).toBe(false);
   });
 });
 

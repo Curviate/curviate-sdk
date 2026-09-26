@@ -45,7 +45,14 @@ export class WebhooksResource {
    * Register a new webhook endpoint to receive real-time events.
    * `POST /v1/webhooks`
    * The HMAC signing secret is returned exactly once in the 201 response.
-   * `account_ids` is required (each webhook is scoped to specific accounts).
+   * `account_ids` scopes a webhook to specific accounts (`acc_` ids you own)
+   * and is required for `messaging` and `user`. For `account_status` it is
+   * optional: omit it to receive status events for every current and future
+   * account of the workspace (reads then return `account_ids: null`). An
+   * explicit `[]` is rejected.
+   *
+   * @example
+   * await curviate.webhooks.create({ source: "account_status", request_url: "https://example.com/hooks" });
    */
   create(body: WebhookCreateBody): Promise<WebhookCreateResult> {
     return this.ctx.request<WebhookCreateResult>({
@@ -95,6 +102,8 @@ export class WebhooksResource {
   /**
    * Update a webhook in place. `source` is immutable.
    * `PATCH /v1/webhooks/{id}`
+   * `account_ids: null` switches an `account_status` webhook to every current
+   * and future account.
    */
   update(id: string, body: WebhookUpdateBody): Promise<WebhookUpdateResult> {
     return this.ctx.request<WebhookUpdateResult>({

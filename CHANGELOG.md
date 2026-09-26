@@ -9,6 +9,64 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+## [0.38.0] - 2026-09-26
+
+Fixture and types regenerated against the deployed production document
+(`https://api.curviate.com`, 130 paths, server
+`f06ce7e52877ead27c1cfc62dde311c8cda9a325`). Adds programmatic connect at
+scale: your own end-user id on accounts, tenant-wide account-status webhooks,
+challenge selection on checkpoints, and seat purchase over the API.
+
+### Added
+
+- **`accounts.addSeats({ qty })`, `accounts.cancelSeat(seatId)`,
+  `accounts.revertSeatCancellation(seatId)`.** Buy seats, schedule a seat's
+  end-of-period cancellation, and undo it, without the dashboard. Every
+  `addSeats` call buys the seats it asks for, so a repeated call buys again,
+  and the SDK never retries it. On `SUBSCRIPTION_BUSY` (503) the purchase could
+  not be confirmed: check the seat count with `accounts.listSeats()` before
+  trying again. A trialing workspace gets `TRIAL_ACTIVE_SEAT_LIMIT`.
+  Their types include the 402 refusals (no subscription, past due, dispute,
+  and on add a declined card) and the 503 `SUBSCRIPTION_BUSY`.
+- **`external_id` on accounts.** Pass your own id for the account's end user on
+  `auth.intent` or `accounts.update` (`null` clears it). It is returned on
+  `accounts.get`/`list`, on the connect responses, and on every `account.*`
+  webhook payload (`AccountPayload.external_id`, `null` when unset).
+  `accounts.list({ external_id })` returns only that end user's accounts.
+- **`metadata` is stored and read back.** `accounts.update({ metadata })` now
+  persists the map (at most 16 keys) and `accounts.get`/`list` return it;
+  `null` clears it.
+- **`timezone` and `products` on `auth.intent`.** `timezone` is an IANA zone
+  name; `products` narrows the premium products asked for
+  (`["sales_navigator"]`, `["recruiter"]`, or `[]`).
+- **Challenge selection.** A checkpoint can now be
+  `challenge_type: "challenge_selection"` with a `challenges` list
+  (`{ id, label, description }`). Answer it with
+  `auth.requestCheckpoint(accountId, { challenge: id })`, which returns the next
+  checkpoint.
+- **Tenant-wide account-status webhooks.** `webhooks.create` with
+  `source: "account_status"` no longer needs `account_ids`: omit it to cover
+  every current and future account. `webhooks.update(id, { account_ids: null })`
+  switches an existing one.
+
+### Changed
+
+- **`auth.requestCheckpoint` returns `200 | 202`.** Without a body it still
+  re-sends and returns `{ resent }`; with `{ challenge }` it returns the next
+  checkpoint. Code reading `result.resent` must narrow first
+  (`"status" in result` for the 202 checkpoint, `"resent" in result` for the
+  200 re-send; each narrows only its true branch).
+- **Webhook `account_ids` is `string[] | null` on reads.** `null` means a
+  tenant-wide `account_status` webhook.
+- **Empty optional text is refused.** An empty `headline` on `users.update`,
+  an empty `subject` on `messaging.startChat` and an empty `message` on
+  `invites.send` are now rejected with `INVALID_REQUEST`. `bio: ""` is still
+  accepted (its type now reads `"" | string`).
+- **`account.restricted` documented as "connected, some actions fail".** The
+  event also fires when one LinkedIn product on the account (Sales Navigator,
+  Recruiter) is failing, not only for a LinkedIn restriction. Surface it to a
+  human; a reconnect may restore a single failing product.
+
 ## [0.37.1] - 2026-09-23
 
 Fixture and types regenerated against the deployed production document

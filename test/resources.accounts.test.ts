@@ -1,4 +1,4 @@
-// accounts namespace methods (5, root-scoped: list/listSeats/get/update/disconnect).
+// accounts namespace methods (root-scoped: list/listSeats/get/update/disconnect; seat add/cancel/revert are in resources.auth-parity.test.ts).
 // The connect/checkpoint ops moved to `auth` (test/resources/auth.test.ts);
 // createConnectLink/createReconnectLink/reconnect have no served op and were
 // removed.

@@ -1,5 +1,5 @@
 /**
- * Accounts resource: connected-account management (5 methods, root-scoped).
+ * Accounts resource: connected-account and seat management (8 methods, root-scoped).
  *
  * Pattern followed by all resource namespaces:
  *   - take a {@link RequestContext} in the constructor,
@@ -49,6 +49,22 @@ export type AccountUpdateResult =
 export type AccountDisconnectResult =
   paths["/v1/accounts/{account_id}"]["delete"]["responses"]["200"]["content"]["application/json"];
 
+/** `POST /v1/billing/seats/add` request body. */
+export type SeatAddBody =
+  paths["/v1/billing/seats/add"]["post"]["requestBody"]["content"]["application/json"];
+
+/** `POST /v1/billing/seats/add` 200 body: the new `seat_ids` and what was charged today. */
+export type SeatAddResult =
+  paths["/v1/billing/seats/add"]["post"]["responses"]["200"]["content"]["application/json"];
+
+/** `POST /v1/billing/seats/{seat_id}/cancel` 200 body. */
+export type SeatCancelResult =
+  paths["/v1/billing/seats/{seat_id}/cancel"]["post"]["responses"]["200"]["content"]["application/json"];
+
+/** `POST /v1/billing/seats/{seat_id}/cancel/revert` 200 body. */
+export type SeatCancelRevertResult =
+  paths["/v1/billing/seats/{seat_id}/cancel/revert"]["post"]["responses"]["200"]["content"]["application/json"];
+
 export class AccountsResource {
   constructor(private readonly ctx: RequestContext) {}
 
@@ -60,12 +76,19 @@ export class AccountsResource {
    * `signatures`, `groups`) populated by an async background enrichment,
    * `null`/`[]` until the account's first enrichment pass completes.
    *
-   * @param params - optional `limit` (1-250) and `cursor` (from a prior page).
+   * Each item carries `external_id` (your own id for the account's end user,
+   * set on `auth.intent` or `update`) and `metadata`, both `null` when unset.
+   *
+   * @param params - optional `limit` (1-250), `cursor` (from a prior page), and
+   *   `external_id` (exact match: only that end user's accounts).
    * @returns a page of accounts and the next-page `cursor` (null when exhausted).
    *
    * @example
    * const page = await curviate.accounts.list({ limit: 50 });
    * for (const acc of page.items ?? []) console.log(acc.account_id);
+   *
+   * @example
+   * const { items } = await curviate.accounts.list({ external_id: "usr_42" });
    */
   list(params?: AccountListParams): Promise<AccountListPage> {
     return this.ctx.request<AccountListPage>({
@@ -143,11 +166,18 @@ export class AccountsResource {
   /**
    * Update an account's configuration.
    *
-   * `metadata` is a flat string->string map that **replaces** the account's
-   * custom-data store wholesale (keys not provided are removed). `proxy` sets a
-   * custom egress proxy, or clears it (reverting to automatic proxy protection)
-   * when passed as `null`. The `proxy.password`, if given, is stored securely
-   * and never returned.
+   * `external_id` is your own id for the account's end user (1-255 chars, not
+   * unique, `null` clears it); treat it as an opaque id, not an email.
+   * `metadata` is a flat string->string map (at most 16 keys, key 40 chars,
+   * value 500) that **replaces** the stored map wholesale; `null` clears it.
+   * Both are stored by Curviate, read back on `get`/`list`, and a PATCH
+   * carrying only them makes no LinkedIn call. `proxy` sets a custom egress
+   * proxy, or clears it (reverting to automatic proxy protection) when passed
+   * as `null`. The `proxy.password`, if given, is stored securely and never
+   * returned.
+   *
+   * @example
+   * await curviate.accounts.update("acc_123", { external_id: "usr_42", metadata: { plan: "pro" } });
    */
   update(accountId: string, body: AccountUpdateBody): Promise<AccountUpdateResult> {
     return this.ctx.request<AccountUpdateResult>({
@@ -164,6 +194,66 @@ export class AccountsResource {
     return this.ctx.request<AccountDisconnectResult>({
       method: "DELETE",
       path: apiPath`/v1/accounts/${accountId}`,
+    });
+  }
+
+  /**
+   * Buy seats on the workspace's active subscription. Returns the new
+   * `seat_ids`; connect an account into one with `auth.intent({ seat_id })`.
+   *
+   * Every call buys the `qty` it asks for, so a repeated call buys again.
+   * The SDK never retries it for you. A
+   * `CurviateError(code: "SUBSCRIPTION_BUSY")` (503) means the purchase could
+   * not be confirmed while another change was in progress: check the seat
+   * count with `listSeats()` before trying again. A trialing workspace
+   * throws `CurviateError(code: "TRIAL_ACTIVE_SEAT_LIMIT")`: buy a seat to
+   * convert first.
+   *
+   * @param body - `{ qty }`, 1-50.
+   *
+   * @example
+   * const { seat_ids } = await curviate.accounts.addSeats({ qty: 1 });
+   */
+  addSeats(body: SeatAddBody): Promise<SeatAddResult> {
+    return this.ctx.request<SeatAddResult>({ method: "POST", path: "/v1/billing/seats/add", body });
+  }
+
+  /**
+   * Schedule a seat's cancellation at the end of the current period.
+   * `effective_at` is when access ends; until then the seat keeps working
+   * and `revertSeatCancellation()` can undo it. Repeating the call on an
+   * already-scheduled seat returns the same `effective_at`; a seat whose
+   * cancellation already took effect throws
+   * `CurviateError(code: "ALREADY_CANCELLED")`.
+   *
+   * @param seatId - a `seat_...` id from `listSeats()`.
+   *
+   * @example
+   * const { effective_at } = await curviate.accounts.cancelSeat("seat_123");
+   */
+  cancelSeat(seatId: string): Promise<SeatCancelResult> {
+    return this.ctx.request<SeatCancelResult>({
+      method: "POST",
+      path: apiPath`/v1/billing/seats/${seatId}/cancel`,
+    });
+  }
+
+  /**
+   * Undo a scheduled seat cancellation before it takes effect. A seat with
+   * nothing scheduled (never cancelled, already reverted, or already
+   * effective) throws `CurviateError(code: "CANCELLATION_ALREADY_EFFECTIVE")`;
+   * a seat covered by a whole-subscription cancellation throws
+   * `CurviateError(code: "INVALID_CANCELLATION_SOURCE")`.
+   *
+   * @param seatId - the `seat_...` id passed to `cancelSeat()`.
+   *
+   * @example
+   * await curviate.accounts.revertSeatCancellation("seat_123");
+   */
+  revertSeatCancellation(seatId: string): Promise<SeatCancelRevertResult> {
+    return this.ctx.request<SeatCancelRevertResult>({
+      method: "POST",
+      path: apiPath`/v1/billing/seats/${seatId}/cancel/revert`,
     });
   }
 }
