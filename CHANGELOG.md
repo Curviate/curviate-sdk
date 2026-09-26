@@ -9,6 +9,20 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+### Changed
+
+- **The retry decision now honours an explicit `retry_likely_to_succeed:
+  false`.** A GET on a retryable code (`INTERNAL`, `PLATFORM_ERROR`,
+  `PLATFORM_RATE_LIMIT`, `RATE_LIMIT_ACCOUNT`, `RATE_LIMIT_TENANT`) whose
+  envelope says `retry_likely_to_succeed: false` is no longer retried, with or
+  without a `retry_hint`. The server now sends `false` only as a verdict that
+  an unchanged retry fails the same way, and `true` for a failure whose cause
+  it cannot see, so this closes the half of the 0.37.1 fix that was deferred.
+  A response with no JSON envelope, or no such field, still retries on the
+  code table alone. Requires a server that includes the change; against an
+  older server, unexpected `INTERNAL` and `PLATFORM_ERROR` failures would stop
+  being retried.
+
 ## [0.37.1] - 2026-09-23
 
 Fixture and types regenerated against the deployed production document
