@@ -2669,7 +2669,7 @@ export interface paths {
         put?: never;
         /**
          * Add seats
-         * @description Adds seats to the workspace's active subscription. A trialing workspace gets 409 TRIAL_ACTIVE_SEAT_LIMIT (buy to convert first). Two adds of the same quantity within 10 minutes count as one; to buy more, send the total quantity in one call.
+         * @description Adds seats to the workspace's active subscription. A trialing workspace gets 409 TRIAL_ACTIVE_SEAT_LIMIT (buy to convert first). Every call buys the seats it asks for.
          */
         post: operations["postV1BillingSeatsAdd"];
         delete?: never;
@@ -3586,7 +3586,7 @@ export interface operations {
                     /** @description New last name. */
                     last_name?: string;
                     /** @description New text for your profile's About section. */
-                    bio?: string;
+                    bio?: "" | string;
                     /** @description Your profile headline (the short line shown under your name). */
                     headline?: string;
                     /** @description Skills to add to your profile. Add-only, this does not remove or reorder existing skills. */
@@ -31682,7 +31682,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Another change to this subscription is in progress. Retry shortly. */
+            /** @description The purchase could not be confirmed while another change was in progress. Check the seat count before retrying. */
             503: {
                 headers: {
                     [name: string]: unknown;

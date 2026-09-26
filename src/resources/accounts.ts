@@ -201,11 +201,13 @@ export class AccountsResource {
    * Buy seats on the workspace's active subscription. Returns the new
    * `seat_ids`; connect an account into one with `auth.intent({ seat_id })`.
    *
-   * Two adds of the same `qty` within 10 minutes count as one (the second
-   * returns the first's result, with no second charge); to buy more, send the
-   * total quantity in one call. A trialing workspace throws
-   * `CurviateError(code: "TRIAL_ACTIVE_SEAT_LIMIT")`: buy a seat to convert
-   * first.
+   * Every call buys the `qty` it asks for, so a repeated call buys again.
+   * The SDK never retries it for you. A
+   * `CurviateError(code: "SUBSCRIPTION_BUSY")` (503) means the purchase could
+   * not be confirmed while another change was in progress: check the seat
+   * count with {@link listSeats} before trying again. A trialing workspace
+   * throws `CurviateError(code: "TRIAL_ACTIVE_SEAT_LIMIT")`: buy a seat to
+   * convert first.
    *
    * @param body - `{ qty }`, 1-50.
    *

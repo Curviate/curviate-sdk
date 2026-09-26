@@ -13,7 +13,7 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 Fixture and types regenerated against the deployed staging document
 (`https://api.staging.curviate.com`, 130 paths, server
-`a2e1628d3cb600088ad35cbbec2ae9e3f9ad4f17`). Adds programmatic connect at
+`b1db5863c330e9824c7bb623a2a9f9488a8711b4`). Adds programmatic connect at
 scale: your own end-user id on accounts, tenant-wide account-status webhooks,
 challenge selection on checkpoints, and seat purchase over the API.
 
@@ -21,9 +21,11 @@ challenge selection on checkpoints, and seat purchase over the API.
 
 - **`accounts.addSeats({ qty })`, `accounts.cancelSeat(seatId)`,
   `accounts.revertSeatCancellation(seatId)`.** Buy seats, schedule a seat's
-  end-of-period cancellation, and undo it, without the dashboard. Two adds of
-  the same `qty` within 10 minutes count as one; send the total quantity in one
-  call to buy more. A trialing workspace gets `TRIAL_ACTIVE_SEAT_LIMIT`.
+  end-of-period cancellation, and undo it, without the dashboard. Every
+  `addSeats` call buys the seats it asks for, so a repeated call buys again,
+  and the SDK never retries it. On `SUBSCRIPTION_BUSY` (503) the purchase could
+  not be confirmed: check the seat count with `accounts.listSeats()` before
+  trying again. A trialing workspace gets `TRIAL_ACTIVE_SEAT_LIMIT`.
   Their types include the 402 refusals (no subscription, past due, dispute,
   and on add a declined card) and the 503 `SUBSCRIPTION_BUSY`.
 - **`external_id` on accounts.** Pass your own id for the account's end user on
@@ -56,6 +58,10 @@ challenge selection on checkpoints, and seat purchase over the API.
   200 re-send; each narrows only its true branch).
 - **Webhook `account_ids` is `string[] | null` on reads.** `null` means a
   tenant-wide `account_status` webhook.
+- **Empty optional text is refused.** An empty `headline` on `users.update`,
+  an empty `subject` on `messaging.startChat` and an empty `message` on
+  `invites.send` are now rejected with `INVALID_REQUEST`. `bio: ""` is still
+  accepted (its type now reads `"" | string`).
 - **`account.restricted` documented as "connected, some actions fail".** The
   event also fires when one LinkedIn product on the account (Sales Navigator,
   Recruiter) is failing, not only for a LinkedIn restriction. Surface it to a
