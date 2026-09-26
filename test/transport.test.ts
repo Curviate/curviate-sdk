@@ -781,20 +781,11 @@ describe("account-safety refusals", () => {
   // retrying. Without this arm, a decode that quietly stopped working would
   // look identical to a decode that works.
   //
-  // `retry_likely_to_succeed: TRUE`, no `retry_hint`, deliberately (#32,
-  // revisited). As of #32 the retry decision DOES consult one envelope field:
-  // `retry_hint.kind === "never"` suppresses a retry outright. It still does
-  // NOT consult `retry_likely_to_succeed` — that half was investigated and
-  // deliberately deferred: the server's own registry catch-all and its
-  // substrate-error-map default arm both degrade an unresolved error on a
-  // RETRYABLE_CODES code to `retry_likely_to_succeed: false` with no
-  // `retry_hint`, as a generic "we don't know" default rather than a per-cause
-  // verdict, so honouring it would silently stop retrying most undecoded
-  // server errors. This body carries `retry_likely_to_succeed: true` (not the
-  // deferred `false` case) and no `retry_hint` at all, so it isolates the one
-  // thing this control is here to prove: an unknown code still decodes to
-  // INTERNAL and INTERNAL still retries. The sibling arm below
-  // (`retry_hint.kind: "never"`) proves the part that DID change.
+  // `retry_likely_to_succeed: TRUE`, no `retry_hint`, deliberately: the retry
+  // decision honours both `retry_hint.kind === "never"` and an explicit
+  // `retry_likely_to_succeed: false`, so this body carries neither. It
+  // isolates the one thing this control is here to prove: an unknown code
+  // still decodes to INTERNAL and INTERNAL still retries.
   it("still downgrades an unknown 422 code to INTERNAL and retries it (4 fetches)", async () => {
     const calls = serve(
       {
@@ -845,17 +836,12 @@ describe("account-safety refusals", () => {
   });
 });
 
-// #32: the retry decision now honours `retry_hint.kind === "never"` as an
-// explicit server instruction, ahead of the RETRYABLE_CODES table. It
-// deliberately does NOT act on `retry_likely_to_succeed` alone — see the
-// `neverRetry` comment in transport.ts. Verified server-side: the two most
-// common "we don't know what happened" server error paths both degrade an
-// unresolved error on a RETRYABLE_CODES code (INTERNAL, PLATFORM_ERROR) to
-// `retry_likely_to_succeed: false` with NO `retry_hint`, as a generic
-// "unresolved" default rather than a per-cause verdict that a retry is
-// futile — honouring that field here would have silently stopped retrying
-// most undecoded server errors, the exact class RETRYABLE_CODES exists for.
-// That half is filed back to the server rather than shipped.
+// #32: the retry decision honours `retry_hint.kind === "never"` and an
+// explicit `retry_likely_to_succeed: false` as server instructions, ahead of
+// the RETRYABLE_CODES table. The second became safe once the server stopped
+// sending `false` as an unknown-cause default (its catch-alls now say `true`).
+// A missing envelope is not a refusal. See the `neverRetry` comment in
+// transport.ts.
 describe("retry_hint honouring (#32)", () => {
   // Same call-counting JSON-envelope handler as the sibling describe block's
   // `serve()` above; redeclared here because that one is scoped to its own
@@ -927,11 +913,13 @@ describe("retry_hint honouring (#32)", () => {
     expect(calls()).toBe(4);
   });
 
-  // Deferred half of #32 (server-side finding above): `retry_likely_to_succeed:
-  // false` with NO `retry_hint` must NOT suppress a retry — today's
-  // code-based behaviour is unchanged for this exact shape, because the
-  // server's own catch-alls emit it as a generic default, not a verdict.
-  it("still retries a GET when retry_likely_to_succeed is false but retry_hint is absent (4 fetches)", async () => {
+  // The deferred half of #32, now shipped: the server answers
+  // `retry_likely_to_succeed: false` only as a verdict (an unchanged retry
+  // fails the same way); an unknown-cause failure says `true`. So an explicit
+  // `false` stops the retry even with no `retry_hint`. Its same-path control
+  // is the CONTROL arm above (PLATFORM_ERROR/502, `true`, 4 fetches) and the
+  // `true` INTERNAL/500 arm below.
+  it("does not retry a GET whose envelope says retry_likely_to_succeed: false, with no retry_hint (1 fetch)", async () => {
     const calls = serve(
       {
         code: "INTERNAL",
@@ -942,12 +930,27 @@ describe("retry_hint honouring (#32)", () => {
       500,
     );
     await execute("GET", "/v1/probe", det()).catch((e) => e);
-    expect(calls()).toBe(4); // 1 initial + maxRetries 3 — unchanged by #32
+    expect(calls()).toBe(1);
+  });
+
+  it("CONTROL: retries the same INTERNAL/500 to exhaustion when retry_likely_to_succeed is true (4 fetches)", async () => {
+    const calls = serve(
+      {
+        code: "INTERNAL",
+        message: "An unexpected error occurred.",
+        user_fixable: false,
+        retry_likely_to_succeed: true,
+      },
+      500,
+    );
+    await execute("GET", "/v1/probe", det()).catch((e) => e);
+    expect(calls()).toBe(4);
   });
 
   // No envelope at all (non-JSON body): the issue's own "obvious fix" trap.
-  // #32 never reads `retry_likely_to_succeed` for the retry decision, so this
-  // stays exactly as before — retried to exhaustion on the code table alone.
+  // Only an EXPLICIT `retry_likely_to_succeed: false` refuses a retry; with
+  // no envelope the error still reads `retryLikelyToSucceed: false`, and this
+  // arm proves that default is not mistaken for a refusal.
   it("still retries a GET on a non-JSON 500 body (no envelope) to exhaustion (4 fetches)", async () => {
     let calls = 0;
     server.use(
