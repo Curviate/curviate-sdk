@@ -205,7 +205,7 @@ export class AccountsResource {
    * The SDK never retries it for you. A
    * `CurviateError(code: "SUBSCRIPTION_BUSY")` (503) means the purchase could
    * not be confirmed while another change was in progress: check the seat
-   * count with {@link listSeats} before trying again. A trialing workspace
+   * count with `listSeats()` before trying again. A trialing workspace
    * throws `CurviateError(code: "TRIAL_ACTIVE_SEAT_LIMIT")`: buy a seat to
    * convert first.
    *
@@ -221,12 +221,12 @@ export class AccountsResource {
   /**
    * Schedule a seat's cancellation at the end of the current period.
    * `effective_at` is when access ends; until then the seat keeps working
-   * and {@link revertSeatCancellation} can undo it. Repeating the call on an
+   * and `revertSeatCancellation()` can undo it. Repeating the call on an
    * already-scheduled seat returns the same `effective_at`; a seat whose
    * cancellation already took effect throws
    * `CurviateError(code: "ALREADY_CANCELLED")`.
    *
-   * @param seatId - a `seat_...` id from {@link listSeats}.
+   * @param seatId - a `seat_...` id from `listSeats()`.
    *
    * @example
    * const { effective_at } = await curviate.accounts.cancelSeat("seat_123");
@@ -245,7 +245,7 @@ export class AccountsResource {
    * a seat covered by a whole-subscription cancellation throws
    * `CurviateError(code: "INVALID_CANCELLATION_SOURCE")`.
    *
-   * @param seatId - the `seat_...` id passed to {@link cancelSeat}.
+   * @param seatId - the `seat_...` id passed to `cancelSeat()`.
    *
    * @example
    * await curviate.accounts.revertSeatCancellation("seat_123");
