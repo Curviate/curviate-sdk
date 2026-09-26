@@ -150,8 +150,13 @@ function toRetryHint(hint: WireErrorEnvelope["retry_hint"]): RetryHint | null {
   return out;
 }
 
-/** Build a {@link CurviateError} from an HTTP error response. */
-async function errorFromResponse(res: Response): Promise<CurviateError> {
+/**
+ * Build a {@link CurviateError} from an HTTP error response. `refusesRetry` is
+ * true only when the envelope EXPLICITLY says `retry_likely_to_succeed: false`;
+ * a missing envelope or field is not a refusal (the error's own
+ * `retryLikelyToSucceed` still reads `false` there, as before).
+ */
+async function errorFromResponse(res: Response): Promise<{ err: CurviateError; refusesRetry: boolean }> {
   const retryAfterMs = parseRetryAfterMs(res.headers.get("Retry-After"));
   let env: WireErrorEnvelope | undefined;
   try {
@@ -162,7 +167,7 @@ async function errorFromResponse(res: Response): Promise<CurviateError> {
   const safetyHint = toSafetyHint(env?.hint);
   const safetyReason = toSafetyReason(env?.reason);
 
-  return new CurviateError({
+  const err = new CurviateError({
     code: toErrorCode(env?.code),
     message: env?.message ?? `Request failed with status ${res.status}.`,
     httpStatus: res.status,
@@ -191,6 +196,7 @@ async function errorFromResponse(res: Response): Promise<CurviateError> {
     ...(safetyReason !== undefined ? { safetyReason } : {}),
     ...(typeof env?.blocked === "boolean" ? { blocked: env.blocked } : {}),
   });
+  return { err, refusesRetry: env?.retry_likely_to_succeed === false };
 }
 
 /** The delay to wait before a retry: Retry-After > retry_hint.delay_ms > backoff. */
@@ -300,7 +306,7 @@ export async function execute<T = unknown>(
       return parseSuccess<T>(res);
     }
 
-    const err = await errorFromResponse(res);
+    const { err, refusesRetry } = await errorFromResponse(res);
     // A RESPONSE NAMING A BUDGET ROW IS NEVER RETRIED, on any method. Neither
     // condition that carries `row` is a transient rate limit: on
     // PLATFORM_RATE_LIMIT the row is paused because LinkedIn already refused it
@@ -315,17 +321,12 @@ export async function execute<T = unknown>(
     // It is absent by default, so honouring it cannot silently change any
     // response that doesn't send it.
     //
-    // `retry_likely_to_succeed === false` is DELIBERATELY NOT consulted here.
-    // Verified server-side (#32): the two most common "we don't know what
-    // happened" server error paths both degrade ANY unresolved error on a
-    // RETRYABLE_CODES code (INTERNAL, PLATFORM_ERROR) to
-    // `retry_likely_to_succeed: false` with no retry_hint, a generic default
-    // for "we don't know", not a per-cause verdict that retrying is futile.
-    // Honouring it here would silently stop the client retrying most
-    // undecoded server errors, which is exactly the transient class
-    // RETRYABLE_CODES exists to retry. Filed back for the server side; this
-    // fix stops at the hint, which has no such false-by-default source.
-    const neverRetry = err.retryHint?.kind === "never";
+    // An explicit `retry_likely_to_succeed: false` is the same instruction in
+    // boolean form: the server sends `false` only as a verdict that an
+    // unchanged retry fails the same way, and `true` for a failure whose cause
+    // it cannot see. A missing envelope or field is NOT a refusal: an HTML 502
+    // from a proxy keeps retrying on the code table alone.
+    const neverRetry = err.retryHint?.kind === "never" || refusesRetry;
     const retryable =
       !isWrite &&
       !namesBudgetRow &&
