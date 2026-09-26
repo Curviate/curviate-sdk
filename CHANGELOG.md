@@ -9,11 +9,11 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
-## [0.38.0] - 2026-09-25
+## [0.38.0] - 2026-09-26
 
-Fixture and types regenerated against the deployed staging document
-(`https://api.staging.curviate.com`, 130 paths, server
-`b1db5863c330e9824c7bb623a2a9f9488a8711b4`). Adds programmatic connect at
+Fixture and types regenerated against the deployed production document
+(`https://api.curviate.com`, 130 paths, server
+`f06ce7e52877ead27c1cfc62dde311c8cda9a325`). Adds programmatic connect at
 scale: your own end-user id on accounts, tenant-wide account-status webhooks,
 challenge selection on checkpoints, and seat purchase over the API.
 
