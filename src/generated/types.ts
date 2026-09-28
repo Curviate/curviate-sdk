@@ -31682,7 +31682,16 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The purchase could not be confirmed while another change was in progress. Check the seat count before retrying. */
+            /** @description The purchase failed after today's charge was taken; the charge was refunded in full and the seat count was confirmed unchanged, so no seats were added. Safe to retry. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description The purchase could not be confirmed while another change was in progress (check the seat count before retrying), or the seat price is misconfigured on our side (nothing charged; contact support, retrying fails the same way). */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -31860,7 +31869,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Another change to this subscription is in progress. Retry shortly. */
+            /** @description Another change to this subscription is in progress (retry shortly), or the seat price is misconfigured on our side (nothing charged; contact support, retrying fails the same way). */
             503: {
                 headers: {
                     [name: string]: unknown;

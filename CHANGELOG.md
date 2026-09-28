@@ -9,6 +9,12 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+## [0.39.0] - 2026-09-28
+
+Fixture and types regenerated against the deployed production document
+(`https://api.curviate.com`, 130 paths, server
+`006f3739c93ff758085dc0ad13ae423bafab4631`).
+
 ### Changed
 
 - **The retry decision now honours an explicit `retry_likely_to_succeed:
@@ -22,6 +28,14 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
   code table alone. Requires a server that includes the change; against an
   older server, unexpected `INTERNAL` and `PLATFORM_ERROR` failures would stop
   being retried.
+- **`accounts.addSeats()` documents its new failure shapes.** A `502` means
+  the purchase failed after today's charge was taken; the charge was refunded
+  in full and the seat count was confirmed unchanged, so no seats were added
+  and it is safe to retry. A `503 STRIPE_DRIFT_DETECTED` means the seat price
+  is misconfigured on our side: nothing was charged, this is not something you
+  can fix, and retrying fails the same way until the price is corrected.
+  Contact support. Both are generated-type/description additions; no
+  resource-method shape changed.
 
 ## [0.38.0] - 2026-09-26
 
