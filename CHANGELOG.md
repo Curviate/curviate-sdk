@@ -34,6 +34,16 @@ Fixture and types regenerated against the deployed production document
   `CONNECTION_IN_PROGRESS` 409s are unchanged. The generated 409 descriptions
   and the `ACCOUNT_ALREADY_LINKED` note in `errors.ts` say so.
 
+### Fixed
+
+- **`TOOLSET_DISABLED` and `AMBIGUOUS_IDENTIFIER` are now in the error
+  taxonomy.** The served `Error` type documents an extra field for each
+  (`toolset`, `candidates`), but the SDK did not carry either code, so a
+  response with one decoded to `INTERNAL`, which is retryable and reads as a
+  server fault. They now decode to themselves and are not retried. A new guard
+  reads the codes named in the `Error` extras descriptions from the fixture and
+  fails if the taxonomy lacks one.
+
 ### Added
 
 - **The generated `Error` type documents the per-code extra fields**, each
