@@ -295,6 +295,35 @@ describe("retry logic", () => {
     expect(calls).toBe(1);
   });
 
+  // The two agent-surface codes the served Error component documents must
+  // decode to themselves. Proven on a GET: an INTERNAL fallback is retryable,
+  // so the fetch count would be 4, not 1, and the code would read INTERNAL.
+  it.each(["TOOLSET_DISABLED", "AMBIGUOUS_IDENTIFIER"] as const)(
+    "decodes %s to its own code and does not retry it (1 fetch)",
+    async (code) => {
+      let calls = 0;
+      server.use(
+        http.get(`${BASE}/v1/accounts/x`, () => {
+          calls += 1;
+          return HttpResponse.json(
+            {
+              code,
+              message: "refused",
+              user_fixable: true,
+              retry_likely_to_succeed: false,
+              retry_hint: { kind: "never" },
+            },
+            { status: 422 },
+          );
+        }),
+      );
+      const err = await execute("GET", "/v1/accounts/x", det()).catch((e) => e);
+      expect(isCurviateError(err)).toBe(true);
+      expect((err as CurviateError).code).toBe(code);
+      expect(calls).toBe(1);
+    },
+  );
+
   // 422 LINKEDIN_OPERATION_NOT_SUPPORTED (permanent LinkedIn platform limitation,
   // e.g. listing a non-self user's following list) must decode to its own code,
   // not fall back to INTERNAL — and must NOT be retried. Proven on a GET so a

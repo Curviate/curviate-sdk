@@ -314,6 +314,38 @@ describe("fixture-documented codes (guard)", () => {
     expect([...harvested]).toEqual(["SENTINEL_CODE"]);
   });
 
+  // THIRD ARM. The Error component's per-code extras are documented as
+  // "Present on CODE[, CODE and CODE]: ...". Those codes are real by
+  // construction, and `TOOLSET_DISABLED` / `AMBIGUOUS_IDENTIFIER` were named
+  // only here, so the response arms above never saw them. The Error `code`
+  // field has no enum in the served document, so this prose is the only
+  // machine-readable list of them.
+  function extractExtrasCodes(doc: { components?: { schemas?: Record<string, unknown> } }): Set<string> {
+    const props =
+      (doc.components?.schemas?.["Error"] as { properties?: Record<string, { description?: string }> } | undefined)
+        ?.properties ?? {};
+    const codes = new Set<string>();
+    for (const { description } of Object.values(props)) {
+      const lead = /^Present on ([^:]+):/.exec(description ?? "")?.[1] ?? "";
+      for (const c of lead.match(/[A-Z][A-Z0-9_]{3,}/g) ?? []) codes.add(c);
+    }
+    return codes;
+  }
+
+  it("finds the codes the Error extras are documented on (positive control)", () => {
+    const found = extractExtrasCodes(fixtureDoc as never);
+    expect(found.has("PAYMENT_REQUIRED")).toBe(true);
+    expect(found.has("TOOLSET_DISABLED")).toBe(true);
+    expect(found.has("AMBIGUOUS_IDENTIFIER")).toBe(true);
+    // The extractor reads the lead-in only, never the sentence after the colon.
+    expect(found.has("LINKEDIN")).toBe(false);
+  });
+
+  it("ERROR_CODES carries every code the Error extras are documented on", () => {
+    const missing = [...extractExtrasCodes(fixtureDoc as never)].filter((c) => !knownCodes.has(c)).sort();
+    expect(missing, "a code the Error component documents an extra for decodes to INTERNAL; add it").toEqual([]);
+  });
+
   // The actual guard: every code the public API reference documents (per the
   // extraction rule above) must be in the SDK's taxonomy. A future server
   // change that reaches the public docs with a new code fails this test until

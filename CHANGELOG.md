@@ -9,6 +9,54 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+## [0.40.0] - 2026-10-01
+
+Fixture and types regenerated against the deployed production document
+(`https://api.curviate.com`, 130 paths, server
+`66421dcfa43949f2fd60b2872ef7fe3b16a79660`).
+
+### Changed
+
+- **A blank search filter or keyword is now refused with a `400`.** The
+  served document marks every free-text search filter and keyword
+  `minLength: 1`, and the server enforces it. A caller that sends an empty
+  string (`""`) for a filter or `keywords` used to get a search that ignored
+  it, and now gets `INVALID_REQUEST`. Omit the field instead of sending it
+  empty. The SDK does not validate this client-side, so the refusal comes from
+  the server. This is the one behaviour change in the release: callers that
+  pass `""` through from user input need to drop the key first.
+- **`POST /v1/auth/checkpoint/poll` and `POST /v1/auth/checkpoint/solve` now
+  return `409 ACCOUNT_ALREADY_LINKED` when the approved LinkedIn identity is
+  already connected.** On solve, the body carries `account_id` when the
+  existing account is yours, so you can reuse it. When the identity is held by
+  another workspace, poll and solve name no account and the error is not
+  retryable. The
+  `CHECKPOINT_EXPIRED`, `CHECKPOINT_ALREADY_RESOLVED` and
+  `CONNECTION_IN_PROGRESS` 409s are unchanged. The generated 409 descriptions
+  and the `ACCOUNT_ALREADY_LINKED` note in `errors.ts` say so.
+
+### Fixed
+
+- **`TOOLSET_DISABLED` and `AMBIGUOUS_IDENTIFIER` are now in the error
+  taxonomy.** The served `Error` type documents an extra field for each
+  (`toolset`, `candidates`), but the SDK did not carry either code, so a
+  response with one decoded to `INTERNAL`, which is retryable and reads as a
+  server fault. They now decode to themselves and are not retried. A new guard
+  reads the codes named in the `Error` extras descriptions from the fixture and
+  fails if the taxonomy lacks one.
+
+### Added
+
+- **The generated `Error` type documents the per-code extra fields**, each
+  optional and present only on its code: `portal_url` (`PAYMENT_REQUIRED`,
+  `ACCOUNT_DISPUTED`; `null` when no portal session could be opened),
+  `attempts_remaining` (`CHECKPOINT_INVALID_CODE`), `challenge_type`
+  (`CHECKPOINT_UNSUPPORTED`), `account_id` (`ACCOUNT_ALREADY_LINKED`), `quota`
+  (`RATE_LIMIT_ACCOUNT`), `toolset` (`TOOLSET_DISABLED`) and `candidates`
+  (`AMBIGUOUS_IDENTIFIER`, each `{ id, name }`). These are types only:
+  `CurviateError` does not surface them as properties yet, so read them from
+  the response body if you need them.
+
 ## [0.39.0] - 2026-09-28
 
 Fixture and types regenerated against the deployed production document

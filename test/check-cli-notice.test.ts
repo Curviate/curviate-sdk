@@ -31,7 +31,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { execFileSync } from "node:child_process";
 import { mkdtemp, cp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 // @ts-expect-error - plain .mjs tooling script, no type declarations

@@ -2781,6 +2781,25 @@ export interface components {
                     name?: string;
                 }[];
             }[];
+            /** @description Present on PAYMENT_REQUIRED and ACCOUNT_DISPUTED: the self-service page where the tenant resolves the payment problem, so an agent can hand a human one link. Null when no portal session could be opened; fall back to the dashboard. */
+            portal_url?: string | null;
+            /** @description Present on CHECKPOINT_INVALID_CODE: how many more verification codes the checkpoint accepts before it locks. Stop and ask the account owner for a fresh code when it reaches zero, rather than guessing. */
+            attempts_remaining?: number;
+            /** @description Present on CHECKPOINT_UNSUPPORTED: the kind of verification challenge LinkedIn raised that cannot be solved through this API. A human has to complete it in LinkedIn, then the account reconnects. */
+            challenge_type?: string;
+            /** @description Present on ACCOUNT_ALREADY_LINKED: the id of your own existing account for this LinkedIn profile, so you can reuse it instead of linking again. Only ever an account of the calling tenant. */
+            account_id?: string;
+            /** @description Present on RATE_LIMIT_ACCOUNT: the per-account request ceiling that was breached, with its name, the units remaining and total, and the absolute reset_time. Wait until reset_time before retrying. */
+            quota?: Record<string, never>;
+            /** @description Present on TOOLSET_DISABLED: the name of the toolset that is switched off for this tenant, so you can enable it or use another tool. */
+            toolset?: string;
+            /** @description Present on AMBIGUOUS_IDENTIFIER: the entries the identifier matched. Pick one and re-send its id. */
+            candidates?: {
+                /** @description The id to send instead of the ambiguous identifier. */
+                id?: string;
+                /** @description Human-readable label for this entry. */
+                name?: string;
+            }[];
             /** @description Present on errors that can be recovered programmatically, a plain sentence describing the next call to make. */
             next_action?: string;
             /** @description Present when something about this response is true but not visible in it. On a search, an entry names a filter value we could not check before sending it, or reports that some of the people on the page were not disclosed to the connected account, so an unexpected result count is explicable rather than silent. Branch on each entry's code, never on its message. */
@@ -28864,7 +28883,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The checkpoint has expired. */
+            /** @description CHECKPOINT_EXPIRED or CHECKPOINT_ALREADY_RESOLVED: restart the connection. ACCOUNT_ALREADY_LINKED: the LinkedIn identity is already connected; it names your own account_id when you own it, otherwise it is not one you can manage here. CONNECTION_IN_PROGRESS: another connection attempt for this identity is open; wait for it to finish or expire. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -29214,7 +29233,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The approved LinkedIn identity is already linked to another account. Reconnect or disconnect the existing account instead of linking it again. */
+            /** @description ACCOUNT_ALREADY_LINKED. The approved LinkedIn identity is already connected and is not one you can manage here; not retryable. CONNECTION_IN_PROGRESS. Another connection attempt for this identity is open; wait for it to finish or expire. */
             409: {
                 headers: {
                     [name: string]: unknown;
