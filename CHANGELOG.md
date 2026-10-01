@@ -27,9 +27,10 @@ Fixture and types regenerated against the deployed production document
   pass `""` through from user input need to drop the key first.
 - **`POST /v1/auth/checkpoint/poll` and `POST /v1/auth/checkpoint/solve` now
   return `409 ACCOUNT_ALREADY_LINKED` when the approved LinkedIn identity is
-  already connected.** The body carries `account_id` only when the existing
-  account is yours, so you can reuse it. When the identity is held by another
-  workspace the response names no account and is not retryable. The
+  already connected.** On solve, the body carries `account_id` when the
+  existing account is yours, so you can reuse it. When the identity is held by
+  another workspace, poll and solve name no account and the error is not
+  retryable. The
   `CHECKPOINT_EXPIRED`, `CHECKPOINT_ALREADY_RESOLVED` and
   `CONNECTION_IN_PROGRESS` 409s are unchanged. The generated 409 descriptions
   and the `ACCOUNT_ALREADY_LINKED` note in `errors.ts` say so.
