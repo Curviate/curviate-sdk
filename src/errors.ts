@@ -71,8 +71,10 @@ export const ERROR_CODES = [
   // Account state
   "ACCOUNT_NOT_FOUND",
   "ACCOUNT_RESTRICTED",
-  // Duplicate connect: reconnect or adopt the existing account instead of
-  // linking again. Not retryable.
+  // Duplicate connect (409): the LinkedIn identity is already connected. When
+  // your own tenant holds it the body carries `account_id`, so reuse that
+  // account instead of linking again; when another tenant holds it the body
+  // names no account and there is nothing you can manage here. Not retryable.
   "ACCOUNT_ALREADY_LINKED",
   "RESOURCE_NOT_FOUND",
   // A read found nothing in Curviate's store and its mode may not fetch, so it
