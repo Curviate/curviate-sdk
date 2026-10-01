@@ -9,6 +9,17 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+## [0.40.1] - 2026-10-01
+
+### Fixed
+
+- **`TOOLSET_DISABLED` and `AMBIGUOUS_IDENTIFIER` are no longer part of the
+  REST error union.** Both belong to the agent (MCP) surface only; a REST call
+  never returns them. They were added to `ERROR_CODES` in 0.40.0 by mistake, so
+  a `switch (error.code)` carried two arms that cannot arrive. Remove any such
+  arm. No REST response changes; a wire code outside the union still decodes
+  to `INTERNAL`, as before 0.40.0.
+
 ## [0.40.0] - 2026-10-01
 
 Fixture and types regenerated against the deployed production document

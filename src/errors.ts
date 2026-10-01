@@ -240,17 +240,6 @@ export const ERROR_CODES = [
   // backing off.
   "STRIPE_DRIFT_DETECTED",
 
-  // Agent-surface refusals the served Error component documents (their extras
-  // are `toolset` and `candidates`). Both are user_fixable and never
-  // retryable as sent.
-  //
-  // - `TOOLSET_DISABLED`: the toolset the call needs is switched off for this
-  //   tenant. Enable it or use another tool.
-  // - `AMBIGUOUS_IDENTIFIER`: a name matched several entries. Pick one from
-  //   `candidates` and re-send its id.
-  "TOOLSET_DISABLED",
-  "AMBIGUOUS_IDENTIFIER",
-
   // Generic
   "INTERNAL",
 ] as const;
