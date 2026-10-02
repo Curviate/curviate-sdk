@@ -9,6 +9,12 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+### Documentation
+
+- `posts.get` JSDoc: a post search result's `id` and `share-` post URLs are
+  accepted post ids, and `listComments` and the reaction operations take the
+  same forms (the old note said they took the opaque `id` only).
+
 ## [0.40.1] - 2026-10-01
 
 ### Fixed
