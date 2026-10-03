@@ -9,6 +9,8 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+## [0.41.0] - 2026-10-03
+
 Fixture and types regenerated against the deployed staging document
 (`https://api.staging.curviate.com`, 130 paths, server
 `df3c133205721a75786001d51b3ee4491b4fe697`).
