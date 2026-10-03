@@ -19,9 +19,42 @@ import { apiPath } from "../internal/path.js";
 
 // ─── Type aliases from generated OpenAPI snapshot ──────────────────────────
 
-/** `POST /v1/auth/intent` request body. */
-export type AuthIntentBody =
+/** `POST /v1/auth/intent` request body, as the served document declares it (every location key optional). */
+type IntentWireBody =
   paths["/v1/auth/intent"]["post"]["requestBody"]["content"]["application/json"];
+
+/** A supported connection-location country (ISO 3166-1 alpha-2), the served enum. */
+export type ConnectionCountry = NonNullable<IntentWireBody["country"]>;
+
+type LocationKeys = "country" | "ip" | "proxy" | "allow_country_fallback";
+
+/**
+ * Where LinkedIn sees the account connecting from: exactly one of `country`,
+ * `ip` or your own `proxy`. The served document cannot express "exactly one",
+ * so the SDK does: two sources, or `allow_country_fallback` with `proxy`, is a
+ * compile error here and a 400 on the wire.
+ */
+export type ConnectionLocationSource =
+  | { country: ConnectionCountry; ip?: never; proxy?: never; allow_country_fallback?: boolean }
+  | { ip: string; country?: never; proxy?: never; allow_country_fallback?: boolean }
+  | { proxy: NonNullable<IntentWireBody["proxy"]>; country?: never; ip?: never; allow_country_fallback?: never };
+
+/** No location keys: a reconnect that keeps the account's configured location. */
+type KeepLocation = { country?: never; ip?: never; proxy?: never; allow_country_fallback?: never };
+
+/**
+ * `POST /v1/auth/intent` request body.
+ *
+ * A NEW connect (no `account_id`) must name a {@link ConnectionLocationSource};
+ * without one the API answers 400 `CONNECTION_LOCATION_REQUIRED`, and this type
+ * refuses it at compile time. A reconnect (`account_id` present) may omit it to
+ * keep the account's configured country and strictness, or send one to move it.
+ */
+export type AuthIntentBody = Omit<IntentWireBody, LocationKeys | "account_id"> &
+  (
+    | ({ account_id?: undefined } & ConnectionLocationSource)
+    | ({ account_id: string } & (ConnectionLocationSource | KeepLocation))
+  );
 
 /** `POST /v1/auth/intent` 200 response body, an existing account re-authenticated in place. */
 export type AuthIntentReconnected =
@@ -127,8 +160,30 @@ export class AuthResource {
    * LinkedIn account does not hold throws
    * `CurviateError(code: "LINKEDIN_FEATURE_NOT_SUBSCRIBED")` (403); the remedy
    * is to activate the subscription on LinkedIn or to point `linkedin_premium`
-   * at the premium the account really has. Pin a managed proxy with the
-   * optional `country`/`ip`, or supply `proxy` to override it entirely.
+   * at the premium the account really has.
+   *
+   * **Connection location.** A NEW connect must say where LinkedIn sees the
+   * account connecting from, with exactly one of: `country` (a supported ISO
+   * code such as `"US"`; pick the one the owner normally signs in from), `ip`
+   * (a public IPv4 whose country is used) or your own `proxy`. Without one the
+   * API throws `CurviateError(code: "CONNECTION_LOCATION_REQUIRED")`, and the
+   * {@link AuthIntentBody} type refuses it at compile time. `country` and `ip`
+   * are strict by default: the connect fails with
+   * `CONNECTION_LOCATION_UNAVAILABLE` rather than use another country, unless
+   * you send `allow_country_fallback: true`. A reconnect may omit the location
+   * to keep the account's configured one. The account's `connection_location`
+   * says where it connects from; when a connect re-attached an account you
+   * already had and moved it, `connection_location.previous_country` names
+   * where it was.
+   *
+   * @example
+   * const result = await curviate.auth.intent({
+   *   seat_id: "YOUR_SEAT_ID",
+   *   auth_method: "credentials",
+   *   credentials: { email: "YOUR_EMAIL", password: "YOUR_PASSWORD" },
+   *   country: "US",
+   * });
+   * console.log(result.account_id);
    */
   intent(body: AuthIntentBody): Promise<AuthIntentResult> {
     return this.ctx.request<AuthIntentResult>({
@@ -178,7 +233,7 @@ export class AuthResource {
    * @param body - optional `{ challenge }` for a `challenge_selection` checkpoint.
    *
    * @example
-   * const cp = await curviate.auth.intent({ seat_id, auth_method: "credentials", credentials });
+   * const cp = await curviate.auth.intent({ seat_id, auth_method: "credentials", credentials, country: "US" });
    * if (cp.object === "checkpoint" && cp.challenge_type === "challenge_selection") {
    *   const next = await curviate.auth.requestCheckpoint(cp.account_id!, { challenge: cp.challenges![0]!.id });
    * }
