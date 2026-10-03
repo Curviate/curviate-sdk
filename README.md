@@ -37,7 +37,13 @@ const curviate = new Curviate({
 
 ## Account-scoped accessor
 
-Every LinkedIn operation (messages, member profiles, invites, posts) is tied to a **managed account**, a LinkedIn session you have connected via the connect flow (`curviate.auth.intent()`). The `curviate.account(id)` accessor fixes the `account_id` on every call so you do not have to thread it manually:
+Every LinkedIn operation (messages, member profiles, invites, posts) is tied to a **managed account**, a LinkedIn session you have connected via the connect flow (`curviate.auth.intent()`). A new connect names where LinkedIn sees the account connecting from, with exactly one of `country` (e.g. `"US"`), `ip` or your own `proxy`:
+
+```ts
+await curviate.auth.intent({ seat_id, auth_method: "credentials", credentials: { email, password }, country: "US" });
+```
+
+The `curviate.account(id)` accessor fixes the `account_id` on every call so you do not have to thread it manually:
 
 ```ts
 // Root-level: tenant-wide operations (accounts, auth, webhooks)

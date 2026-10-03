@@ -22,6 +22,7 @@ export {
   type RetryHint,
   type SafetyHint,
   type SafetyReason,
+  type ConnectionLocation,
   type CurviateErrorInit,
   type CurviateErrorJSON,
 } from "./errors.js";
@@ -29,8 +30,17 @@ export {
 export type {
   AccountListPage,
   AccountListParams,
+  AccountDetail,
+  AccountUpdateBody,
+  AccountUpdateResult,
   SeatList,
 } from "./resources/accounts.js";
+
+export type {
+  AuthIntentBody,
+  ConnectionCountry,
+  ConnectionLocationSource,
+} from "./resources/auth.js";
 
 export type {
   ResourceNamespaces,

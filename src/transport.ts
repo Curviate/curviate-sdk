@@ -18,6 +18,7 @@ import {
   type RetryHint,
   type SafetyHint,
   type SafetyReason,
+  type ConnectionLocation,
 } from "./errors.js";
 
 /** HTTP methods the transport issues. */
@@ -70,6 +71,8 @@ interface WireErrorEnvelope {
   reason?: string;
   /** `BUDGET_EXHAUSTED`: always true on the error; false on the 2xx `safety_warning`. */
   blocked?: boolean;
+  /** `CONNECTION_LOCATION_UNAVAILABLE` after an applied change: where the account connects from now. */
+  connection_location?: unknown;
 }
 
 // Backoff defaults.
@@ -195,6 +198,9 @@ async function errorFromResponse(res: Response): Promise<{ err: CurviateError; r
     ...(safetyHint !== undefined ? { safetyHint } : {}),
     ...(safetyReason !== undefined ? { safetyReason } : {}),
     ...(typeof env?.blocked === "boolean" ? { blocked: env.blocked } : {}),
+    ...(env?.connection_location !== null && typeof env?.connection_location === "object"
+      ? { connectionLocation: env.connection_location as ConnectionLocation }
+      : {}),
   });
   return { err, refusesRetry: env?.retry_likely_to_succeed === false };
 }

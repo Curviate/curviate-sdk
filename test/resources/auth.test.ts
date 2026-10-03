@@ -32,6 +32,7 @@ describe("auth.intent", () => {
       seat_id: "seat_1",
       auth_method: "credentials",
       credentials: { email: "u@x.com", password: "p" },
+      country: "US",
     });
     expect(seenPath).toBe("/v1/auth/intent");
     expect(body?.["account_id"]).toBeUndefined();
@@ -76,6 +77,7 @@ describe("auth.intent", () => {
       seat_id: "s",
       auth_method: "credentials",
       credentials: { email: "u@x.com", password: "p" },
+      country: "US",
     });
     expect(res.object).toBe("checkpoint");
   });

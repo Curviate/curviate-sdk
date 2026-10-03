@@ -9,6 +9,51 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+## [0.41.0] - 2026-10-03
+
+Fixture and types regenerated against the deployed staging document
+(`https://api.staging.curviate.com`, 130 paths, server
+`df3c133205721a75786001d51b3ee4491b4fe697`).
+
+### Breaking
+
+- **A new connect must name its connection location.** `auth.intent()`
+  without `account_id` needs exactly one of `country` (a supported ISO 3166-1
+  alpha-2 code, e.g. `"US"`), `ip` (a public IPv4) or your own `proxy`. The
+  API refuses a connect without one with `400 CONNECTION_LOCATION_REQUIRED`,
+  and `AuthIntentBody` now refuses it at compile time, along with two sources
+  at once and `allow_country_fallback` with `proxy`. A reconnect (`account_id`
+  present) may still omit it to keep the account's configured location.
+  `country` is typed as the served 56-code enum (`ConnectionCountry`).
+- **`accounts.update()` returns the account.** It used to return
+  `{ object, account_id }`; it now returns the account as `get` does, without
+  `quotas` and `event_log`, with `connection_location` re-read after a
+  location change.
+- **`proxy: null` on `accounts.update()` requires a `country`** in the same
+  call. Clearing your own proxy alone used to fall back to an automatic
+  location; it is now `CONNECTION_LOCATION_REQUIRED`.
+- **Post engagement counts can be `null`.** On `search.posts`, `search.fromUrl`,
+  `companies.posts` and `feed.home` items, `likes`, `comments`
+  and `shares` are `number | null`, as the served document now declares.
+
+### Added
+
+- **Connection location.** `country` and `allow_country_fallback` on
+  `accounts.update()` move an account's location (strict unless
+  `allow_country_fallback: true`). Every account read and connect result
+  carries `connection_location: { country, current_country, mode, strict }`,
+  plus `previous_country` when a connect moved an account you already had.
+  The `proxy.protocol` enum gains `socks4`.
+- **`CONNECTION_LOCATION_REQUIRED` and `CONNECTION_LOCATION_UNAVAILABLE`** are
+  in `ERROR_CODES`; before this release both decoded to `INTERNAL`.
+  `CurviateError.connectionLocation` carries where the account connects from
+  now when a `CONNECTION_LOCATION_UNAVAILABLE` followed an applied change.
+- Search and feed post items carry `created_at`, and the author carries
+  `display_name` and `type` on the shape without `name`.
+- `AuthIntentBody`, `ConnectionCountry`, `ConnectionLocationSource`,
+  `ConnectionLocation`, `AccountDetail`, `AccountUpdateBody` and
+  `AccountUpdateResult` are exported.
+
 ### Documentation
 
 - `posts.get` JSDoc: a post search result's `id` and `share-` post URLs are
