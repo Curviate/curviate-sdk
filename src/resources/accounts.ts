@@ -115,7 +115,7 @@ export class AccountsResource {
    * const { items } = await curviate.accounts.listSeats();
    * const free = items.find((seat) => !seat.occupied);
    * if (!free) throw new Error("No seat is free to connect to right now (add a seat, or check billing).");
-   * await curviate.auth.intent({ seat_id: free.seat_id, auth_method: "cookie", cookie: { li_at }, user_agent });
+   * await curviate.auth.intent({ seat_id: free.seat_id, auth_method: "cookie", cookie: { li_at }, user_agent, country: "US" });
    */
   listSeats(): Promise<SeatList> {
     return this.ctx.request<SeatList>({ method: "GET", path: "/v1/accounts/seats" });
@@ -171,13 +171,30 @@ export class AccountsResource {
    * `metadata` is a flat string->string map (at most 16 keys, key 40 chars,
    * value 500) that **replaces** the stored map wholesale; `null` clears it.
    * Both are stored by Curviate, read back on `get`/`list`, and a PATCH
-   * carrying only them makes no LinkedIn call. `proxy` sets a custom egress
-   * proxy, or clears it (reverting to automatic proxy protection) when passed
-   * as `null`. The `proxy.password`, if given, is stored securely and never
-   * returned.
+   * carrying only them makes no LinkedIn call.
+   *
+   * `country` moves the account's connection location to that supported ISO
+   * country. LinkedIn sees a new IP there and may ask the owner to verify, so
+   * change it only when the current location is wrong. Strict unless
+   * `allow_country_fallback: true`; `allow_country_fallback` alone changes the
+   * strictness of the configured country. `proxy` sets your own proxy; `null`
+   * returns to a managed location and **requires** a `country` in the same
+   * call (else `CONNECTION_LOCATION_REQUIRED`), and an account on your own
+   * proxy can only take a `country` together with `proxy: null`. The
+   * `proxy.password`, if given, is never returned.
+   *
+   * Returns the account (as `get` returns it, without `quotas` and
+   * `event_log`). After a location change its `connection_location` is re-read,
+   * so it shows where the account really connects from now. A change that did
+   * not land where asked throws `CONNECTION_LOCATION_UNAVAILABLE`, whose
+   * `connectionLocation` carries the actual location.
    *
    * @example
    * await curviate.accounts.update("acc_123", { external_id: "usr_42", metadata: { plan: "pro" } });
+   *
+   * @example
+   * const account = await curviate.accounts.update("acc_123", { country: "DE" });
+   * console.log(account.connection_location?.country); // "DE"
    */
   update(accountId: string, body: AccountUpdateBody): Promise<AccountUpdateResult> {
     return this.ctx.request<AccountUpdateResult>({
@@ -199,7 +216,7 @@ export class AccountsResource {
 
   /**
    * Buy seats on the workspace's active subscription. Returns the new
-   * `seat_ids`; connect an account into one with `auth.intent({ seat_id })`.
+   * `seat_ids`; connect an account into one with `auth.intent({ seat_id, country, ... })`.
    *
    * Every call buys the `qty` it asks for, so a repeated call buys again.
    * The SDK never retries it for you. A

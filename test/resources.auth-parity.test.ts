@@ -64,6 +64,7 @@ describe("auth.intent: external_id, timezone, products", () => {
       seat_id: "seat_1",
       auth_method: "credentials",
       credentials: { email: "u@x.com", password: "p" },
+      country: "US",
       external_id: "usr_42",
       timezone: "Europe/Berlin",
       products: ["recruiter"],

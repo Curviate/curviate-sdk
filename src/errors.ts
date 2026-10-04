@@ -143,6 +143,19 @@ export const ERROR_CODES = [
   "CHECKPOINT_ALREADY_RESOLVED",
   "CHECKPOINT_UNSUPPORTED",
   "CONNECTION_IN_PROGRESS",
+  // Connection location (where LinkedIn sees the account connecting from).
+  // `CONNECTION_LOCATION_REQUIRED` (400): a new connect named no location, or
+  // a PATCH cleared your own proxy (`proxy: null`) without a `country`. Send
+  // exactly one of `country`, `ip` or `proxy`. user_fixable, never retryable
+  // as sent.
+  // `CONNECTION_LOCATION_UNAVAILABLE` (422): no connection is free in that
+  // country right now (strict), or the change landed elsewhere. When a change
+  // was applied, {@link CurviateError.connectionLocation} says where the
+  // account connects from now, which may mean your own proxy is already gone.
+  // Try a nearby country, or allow fallback. user_fixable, never retryable as
+  // sent.
+  "CONNECTION_LOCATION_REQUIRED",
+  "CONNECTION_LOCATION_UNAVAILABLE",
   // A reconnect whose seat-derived scope differs from the account's recorded
   // scope was attempted with cookie auth; a cookie replay cannot change
   // scope, so a full credentials re-authentication is required. user_fixable,
@@ -260,6 +273,21 @@ export type ErrorCode = (typeof ERROR_CODES)[number];
  */
 export const KNOWN_ERROR_CODES: ReadonlySet<string> = new Set(ERROR_CODES);
 
+/**
+ * Where LinkedIn sees an account connecting from. Wire field
+ * `connection_location`; the same shape rides every account read.
+ * `country` is the configured country, `current_country` the one in use now
+ * (they differ only after a fallback), `mode` `auto` (managed) or `custom`
+ * (your own proxy), `strict` true when it never connects from another
+ * country. Each is `null` until known.
+ */
+export interface ConnectionLocation {
+  country?: string | null;
+  current_country?: string | null;
+  mode?: "auto" | "custom" | null;
+  strict?: boolean | null;
+}
+
 /** Structured retry guidance attached to retryable errors. */
 export interface RetryHint {
   kind: "delay" | "backoff" | "never";
@@ -365,6 +393,12 @@ export interface CurviateErrorInit {
    * moving an account to `enforce` is not a breaking change.
    */
   blocked?: boolean;
+  /**
+   * Where the account connects from now, on a `CONNECTION_LOCATION_UNAVAILABLE`
+   * that followed an applied change (re-read after it). Wire field
+   * `connection_location`. Absent when nothing was changed.
+   */
+  connectionLocation?: ConnectionLocation;
 }
 
 /** Plain-object shape produced by {@link CurviateError.toJSON}. */
@@ -383,6 +417,7 @@ export interface CurviateErrorJSON {
   safetyHint?: SafetyHint;
   safetyReason?: SafetyReason;
   blocked?: boolean;
+  connectionLocation?: ConnectionLocation;
 }
 
 /**
@@ -417,6 +452,8 @@ export class CurviateError extends Error {
   readonly safetyReason: SafetyReason | undefined;
   /** Whether the action was refused. See {@link CurviateErrorInit.blocked}. */
   readonly blocked: boolean | undefined;
+  /** Where the account connects from now. See {@link CurviateErrorInit.connectionLocation}. */
+  readonly connectionLocation: ConnectionLocation | undefined;
 
   constructor(init: CurviateErrorInit) {
     super(init.message);
@@ -432,6 +469,7 @@ export class CurviateError extends Error {
     this.safetyHint = init.safetyHint;
     this.safetyReason = init.safetyReason;
     this.blocked = init.blocked;
+    this.connectionLocation = init.connectionLocation;
     // Maintains a correct prototype chain when targeting ES5-class semantics.
     Object.setPrototypeOf(this, CurviateError.prototype);
   }
@@ -462,6 +500,7 @@ export class CurviateError extends Error {
     if (this.safetyHint !== undefined) json.safetyHint = this.safetyHint;
     if (this.safetyReason !== undefined) json.safetyReason = this.safetyReason;
     if (this.blocked !== undefined) json.blocked = this.blocked;
+    if (this.connectionLocation !== undefined) json.connectionLocation = this.connectionLocation;
     return json;
   }
 }

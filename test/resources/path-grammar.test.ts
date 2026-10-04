@@ -93,6 +93,7 @@ const CASES: PathGrammarCase[] = [
         seat_id: "seat_1",
         auth_method: "credentials",
         credentials: { email: "u@x.com", password: "p" },
+        country: "US",
       });
       return captured!;
     },

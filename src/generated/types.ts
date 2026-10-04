@@ -625,7 +625,7 @@ export interface paths {
         put?: never;
         /**
          * Search posts
-         * @description Searches LinkedIn posts using structured filters. To search from a pasted LinkedIn search URL instead, use POST .../search. Post text, engagement counters, author, and attachments are returned.
+         * @description Searches LinkedIn posts using structured filters. To search from a pasted LinkedIn search URL instead, use POST .../search. Returns text, counts, author and attachments; the text can repeat fragments around links, mentions and hashtags, so get the post by its id for the clean body.
          */
         post: operations["postV1AccountIdSearchPosts"];
         delete?: never;
@@ -2292,8 +2292,8 @@ export interface paths {
         options?: never;
         head?: never;
         /**
-         * Update account metadata / proxy configuration
-         * @description Updates an account's metadata (a flat string map, replaced wholesale) and/or its custom proxy egress; pass a proxy object to set one, or null to clear it. Credentials and seat are untouched.
+         * Update an account's metadata or connection location
+         * @description Updates metadata, external_id, the connection location (country) or your own proxy (null plus a country returns to a managed location). Returns the account; connection_location is re-read after a location change.
          */
         patch: operations["patchV1AccountsAccountId"];
         trace?: never;
@@ -2789,6 +2789,20 @@ export interface components {
             challenge_type?: string;
             /** @description Present on ACCOUNT_ALREADY_LINKED: the id of your own existing account for this LinkedIn profile, so you can reuse it instead of linking again. Only ever an account of the calling tenant. */
             account_id?: string;
+            /** @description Present on CONNECTION_LOCATION_UNAVAILABLE after a location PATCH that did not land where asked: where the account connects from now (country, current_country, mode, strict), re-read after the change. */
+            connection_location?: {
+                /** @description Configured country (ISO 3166-1 alpha-2). */
+                country?: string | null;
+                /** @description Country of the connection in use now. */
+                current_country?: string | null;
+                /**
+                 * @description auto: managed. custom: your own proxy.
+                 * @enum {string|null}
+                 */
+                mode?: "auto" | "custom" | null;
+                /** @description true: never connects from another country. */
+                strict?: boolean | null;
+            };
             /** @description Present on RATE_LIMIT_ACCOUNT: the per-account request ceiling that was breached, with its name, the units remaining and total, and the absolute reset_time. Wait until reset_time before retrying. */
             quota?: Record<string, never>;
             /** @description Present on TOOLSET_DISABLED: the name of the toolset that is switched off for this tenant, so you can enable it or use another tool. */
@@ -5960,13 +5974,20 @@ export interface operations {
                             id: string;
                             /** @description Shareable post URL. Present when available. */
                             share_url?: string;
-                            /** @description Post text content. Present when available. */
+                            /** @description Post text content. Present when available. Can repeat fragments around links, mentions and hashtags; get the post by its id for the clean body. */
                             text?: string;
+                            /** @description ISO-8601 UTC datetime the post was published, derived from the post's own activity identity (the same source as get-post's `created_at`). null when the result carries no activity identity to derive it from. */
+                            created_at: string | null;
                             /** @description Post author object. Present when available. */
                             author?: {
                                 id?: string;
+                                /** @description Author's display name, on the shape that carries `name`. Read `name` when present, else `display_name`. */
                                 name?: string | null;
+                                /** @description Author's display name, on the shape that carries `display_name` instead of `name`. */
+                                display_name?: string;
                                 is_company?: boolean;
+                                /** @description Author entity type (for example individual or organization), on the shape that carries `display_name`. */
+                                type?: string;
                                 public_identifier?: string | null;
                             } & {
                                 [key: string]: unknown;
@@ -9048,13 +9069,20 @@ export interface operations {
                             id: string;
                             /** @description Shareable post URL. Present when available. */
                             share_url?: string;
-                            /** @description Post text content. Present when available. */
+                            /** @description Post text content. Present when available. Can repeat fragments around links, mentions and hashtags; get the post by its id for the clean body. */
                             text?: string;
+                            /** @description ISO-8601 UTC datetime the post was published, derived from the post's own activity identity (the same source as get-post's `created_at`). null when the result carries no activity identity to derive it from. */
+                            created_at: string | null;
                             /** @description Post author object. Present when available. */
                             author?: {
                                 id?: string;
+                                /** @description Author's display name, on the shape that carries `name`. Read `name` when present, else `display_name`. */
                                 name?: string | null;
+                                /** @description Author's display name, on the shape that carries `display_name` instead of `name`. */
+                                display_name?: string;
                                 is_company?: boolean;
+                                /** @description Author entity type (for example individual or organization), on the shape that carries `display_name`. */
+                                type?: string;
                                 public_identifier?: string | null;
                             } & {
                                 [key: string]: unknown;
@@ -9577,13 +9605,20 @@ export interface operations {
                             id: string;
                             /** @description Shareable post URL. Present when available. */
                             share_url?: string;
-                            /** @description Post text content. Present when available. */
+                            /** @description Post text content. Present when available. Can repeat fragments around links, mentions and hashtags; get the post by its id for the clean body. */
                             text?: string;
+                            /** @description ISO-8601 UTC datetime the post was published, derived from the post's own activity identity (the same source as get-post's `created_at`). null when the result carries no activity identity to derive it from. */
+                            created_at: string | null;
                             /** @description Post author object. Present when available. */
                             author?: {
                                 id?: string;
+                                /** @description Author's display name, on the shape that carries `name`. Read `name` when present, else `display_name`. */
                                 name?: string | null;
+                                /** @description Author's display name, on the shape that carries `display_name` instead of `name`. */
+                                display_name?: string;
                                 is_company?: boolean;
+                                /** @description Author entity type (for example individual or organization), on the shape that carries `display_name`. */
+                                type?: string;
                                 public_identifier?: string | null;
                             } & {
                                 [key: string]: unknown;
@@ -12904,7 +12939,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The connected account's home feed as agent-actionable posts. `sort=recent` (default) resolves each post's activity id + author name + post URL + kind; `sort=relevant` resolves the full shape (text, engagement, author id-triple). An empty feed is a valid 200 (items:[], cursor:null). Page until cursor is null. */
+            /** @description The connected account's home feed as agent-actionable posts. `sort=recent` (default) resolves each post's activity id + created_at + text + author name + post URL + kind, with engagement null; `sort=relevant` resolves the full shape (text, engagement, author id-triple). An empty feed is a valid 200 (items:[], cursor:null). Page until cursor is null. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -12951,8 +12986,10 @@ export interface operations {
                                 /** @description Canonical profile URL. */
                                 profile_url: string | null;
                             };
-                            /** @description Full post body, verbatim (relevant). null on recent (the body is nested deep in the source). Pass-through, never stored. */
+                            /** @description Full post body, verbatim, on both sorts. null when the post has no body. Pass-through, never stored. */
                             text: string | null;
+                            /** @description ISO-8601 UTC datetime the feed activity was created, derived from the activity id (the same source as get-post's `created_at`). Both sorts. For a reshare this is when the reshare was made. null when the id does not carry a time. */
+                            created_at: string | null;
                             /** @description Canonical post URL (recent). null on relevant. */
                             post_url: string | null;
                             /** @description Post type parsed from the URL slug: ugcPost | share | groupPost | activity | post (recent). Open enum. null on relevant. */
@@ -12968,14 +13005,14 @@ export interface operations {
                                 /** @description Original post body (pass-through; never stored). */
                                 text: string | null;
                             } | null;
-                            /** @description Engagement counts. All 0 on recent. */
+                            /** @description Engagement counts. Every count is null on recent, which cannot read them; use sort=relevant for counts. A null count is unknown, never zero. */
                             engagement: {
-                                /** @description Reaction count. Defaults 0. */
-                                likes: number;
-                                /** @description Comment count. Defaults 0. */
-                                comments: number;
-                                /** @description Reshare count. Defaults 0. */
-                                shares: number;
+                                /** @description Reaction count, or null when the sort cannot read it. */
+                                likes: number | null;
+                                /** @description Comment count, or null when the sort cannot read it. */
+                                comments: number | null;
+                                /** @description Reshare count, or null when the sort cannot read it. */
+                                shares: number | null;
                             };
                         }[];
                         /** @description Opaque cursor for the next page; null when the walk is exhausted. Self-describing of the sort, pass it back verbatim as `cursor`. The relevant cursor expires (~1h). There is no total (an unbounded, reordering stream); page until cursor is null. */
@@ -18030,7 +18067,7 @@ export interface operations {
                         title?: string | null;
                         /** @description Full post text (content pass-through, never stored). */
                         text?: string | null;
-                        /** @description ISO-8601 UTC datetime this post was created, or null if unavailable. Derived from the post's own identity, so it does not change with the route you used to reach it. For a repost this is when the repost was made, not when the post it reshares was, so it is safe to sort by recency. */
+                        /** @description ISO-8601 UTC datetime this post was published, or null when it cannot be told reliably. Derived from the post's own activity identity, so it does not change with the route you used to reach it. null when the post carries no activity identity of its own (often a video or image post), never a guess. For a repost this is when the repost was made, not when the post it reshares was. */
                         created_at?: string | null;
                         /** @description Total comment count, or null when the platform hides it. */
                         comment_count?: number | null;
@@ -18514,7 +18551,7 @@ export interface operations {
                             title?: string | null;
                             /** @description Full post text (content pass-through, never stored). */
                             text?: string | null;
-                            /** @description ISO-8601 UTC datetime this post was created, or null if unavailable. Derived from the post's own identity, so it does not change with the route you used to reach it. For a repost this is when the repost was made, not when the post it reshares was, so it is safe to sort by recency. */
+                            /** @description ISO-8601 UTC datetime this post was published, or null when it cannot be told reliably. Derived from the post's own activity identity, so it does not change with the route you used to reach it. null when the post carries no activity identity of its own (often a video or image post), never a guess. For a repost this is when the repost was made, not when the post it reshares was. */
                             created_at?: string | null;
                             /** @description Total comment count, or null when the platform hides it. */
                             comment_count?: number | null;
@@ -27862,6 +27899,20 @@ export interface operations {
                         items?: {
                             /** @description Curviate account id (acc_...). */
                             account_id?: string;
+                            /** @description Where LinkedIn sees this account connecting from. country: the configured country (ISO 3166-1 alpha-2), the one the account is set to use. current_country: the country of the connection in use right now; it differs from country only after a fallback, which can happen only when strict is false. mode: auto (a managed connection in country) or custom (your own proxy). strict: true when the account never connects from another country, null when unknown. Each field is null until known; an account connected through ip or your own proxy may show null until the next background refresh. Change it with PATCH /v1/accounts/{account_id} (country), or by reconnecting with country. */
+                            connection_location?: {
+                                /** @description Configured country (ISO 3166-1 alpha-2). */
+                                country?: string | null;
+                                /** @description Country of the connection in use right now. */
+                                current_country?: string | null;
+                                /**
+                                 * @description auto: managed connection. custom: your own proxy.
+                                 * @enum {string|null}
+                                 */
+                                mode?: "auto" | "custom" | null;
+                                /** @description true: never connects from another country. */
+                                strict?: boolean | null;
+                            };
                             /**
                              * @description Stable status whitelist.
                              * @enum {string}
@@ -27997,6 +28048,20 @@ export interface operations {
                         metadata?: {
                             [key: string]: string;
                         } | null;
+                        /** @description Where LinkedIn sees this account connecting from. country: the configured country (ISO 3166-1 alpha-2), the one the account is set to use. current_country: the country of the connection in use right now; it differs from country only after a fallback, which can happen only when strict is false. mode: auto (a managed connection in country) or custom (your own proxy). strict: true when the account never connects from another country, null when unknown. Each field is null until known; an account connected through ip or your own proxy may show null until the next background refresh. Change it with PATCH /v1/accounts/{account_id} (country), or by reconnecting with country. */
+                        connection_location?: {
+                            /** @description Configured country (ISO 3166-1 alpha-2). */
+                            country?: string | null;
+                            /** @description Country of the connection in use right now. */
+                            current_country?: string | null;
+                            /**
+                             * @description auto: managed connection. custom: your own proxy.
+                             * @enum {string|null}
+                             */
+                            mode?: "auto" | "custom" | null;
+                            /** @description true: never connects from another country. */
+                            strict?: boolean | null;
+                        };
                         /** @description ISO-8601 UTC creation timestamp of the underlying LinkedIn account, distinct from connected_at. Null until the first background enrichment lands. */
                         substrate_created_at?: string | null;
                         /** @description Account-safety rows for this account: one entry per counted action for the current window of its grain, plus the derived total and the invitation backlog. Each row reports where the account stands, what it is allowed, which band that puts it in, what happens at the ceiling, whether the ceiling was raised above the Curviate default, and any active pause the platform caused. Whether a breach is refused or merely reported is `posture`, and the default is to report: nothing here refuses until you configure it to. Pacing is still the caller's responsibility, and nothing on this array paces for you. The per-minute REQUEST ceiling is a different thing and is deliberately not in this array: it protects Curviate's own servers rather than your LinkedIn account, it counts requests where these count platform operations, it is always enforced with HTTP 429 whatever your posture, and its envelope is returned on that refusal. Read this array to see where the account stands; read the safety events surface to see what has already been refused or flagged. */
@@ -28266,27 +28331,34 @@ export interface operations {
                     } | null;
                     /** @description Your own id for this account's end user (1-255 chars), or null to clear it. Omit to leave it unchanged. */
                     external_id?: string | null;
-                    /** @description Custom-proxy egress config, or null to clear it (revert to automatic proxy protection). Omit to leave it unchanged. */
+                    /** @description Your own proxy, or null to stop using it and return to a managed location (null requires country in the same request). Omit to leave it unchanged. */
                     proxy?: {
                         /**
-                         * @description Proxy protocol. One of http, https, socks5.
+                         * @description Proxy protocol. One of http, https, socks5, socks4.
                          * @enum {string}
                          */
-                        protocol: "http" | "https" | "socks5";
+                        protocol: "http" | "https" | "socks5" | "socks4";
                         /** @description Proxy host or IP. */
                         host: string;
                         /** @description Proxy port (1-65535). */
                         port: number;
                         /** @description Proxy auth username (optional). */
                         username?: string;
-                        /** @description Proxy auth password (optional). Encrypted at rest, never logged or returned. */
+                        /** @description Proxy auth password (optional). Passed to the connection only: never stored, logged or returned. */
                         password?: string;
                     } | null;
+                    /**
+                     * @description Move this account's connection location to this supported ISO 3166-1 alpha-2 country (e.g. US, DE). LinkedIn sees a new IP in that country and may ask the owner to verify, so change it only when the current location is wrong. Strict unless allow_country_fallback is true. On an account using your own proxy, send proxy: null with it.
+                     * @enum {string}
+                     */
+                    country?: "AE" | "AO" | "AR" | "AT" | "AU" | "BD" | "BE" | "BG" | "BR" | "CA" | "CH" | "CL" | "CN" | "CO" | "CY" | "CZ" | "DE" | "DK" | "EE" | "EG" | "ES" | "FI" | "FR" | "GB" | "GT" | "HK" | "ID" | "IE" | "IL" | "IN" | "IT" | "JP" | "KR" | "KZ" | "MA" | "MX" | "MY" | "NL" | "NO" | "PA" | "PH" | "PK" | "PL" | "PR" | "PT" | "RO" | "SA" | "SE" | "SG" | "TH" | "TN" | "TR" | "UA" | "US" | "VN" | "ZA";
+                    /** @description Optional. false (the default with country or ip): only ever connect from that country; a connect fails when no connection is free there. true: a connection from another country may be used when none is free in the chosen one. Not accepted with proxy. */
+                    allow_country_fallback?: boolean;
                 };
             };
         };
         responses: {
-            /** @description The account was updated. metadata and external_id are stored by Curviate and read back on GET; a PATCH carrying only those makes no LinkedIn call. */
+            /** @description The updated account: the object GET /v1/accounts/{account_id} returns, without quotas and event_log (read those on GET). After a location change, connection_location is re-read from LinkedIn's side, so it shows where the account really connects from now. metadata and external_id are stored by Curviate; a PATCH carrying only those makes no LinkedIn call. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -28301,11 +28373,55 @@ export interface operations {
                          */
                         object?: "account";
                         account_id?: string;
+                        /** @enum {string} */
+                        status?: "active" | "reconnect_needed" | "restricted" | "connecting" | "disconnected";
+                        auth_method?: string;
+                        full_name?: string | null;
+                        headline?: string | null;
+                        /** @description ISO-8601 UTC connection timestamp. */
+                        connected_at?: string | null;
+                        /** @description ISO-8601 UTC time the account state was last checked. */
+                        last_checked_at?: string;
+                        /** @description The seat this account occupies (null for an admin seatless account). */
+                        seat_id?: string | null;
+                        /** @description The connection scope this account was last connected with (e.g. ["classic","company","sales_navigator","recruiter"]). A connect asks for every product and LinkedIn activates the ones the account actually has, so this is what was ASKED for, narrowed only by an explicit linkedin_premium on that connect. A linkedin_premium narrowing is not remembered between connects, so this shows what the LAST connect asked for and a reconnect that omits the field widens it again. Null for accounts connected before this was recorded; not attachment truth for Company Pages. */
+                        requested_products?: ("classic" | "company" | "sales_navigator" | "recruiter")[] | null;
+                        /** @description Your own id for this account's end user, as set on connect or PATCH. Null when none. Not unique. */
+                        external_id?: string | null;
+                        /** @description Your own flat string map for this account, as last set by PATCH. Null when none. */
+                        metadata?: {
+                            [key: string]: string;
+                        } | null;
+                        /** @description Where LinkedIn sees this account connecting from. country: the configured country (ISO 3166-1 alpha-2), the one the account is set to use. current_country: the country of the connection in use right now; it differs from country only after a fallback, which can happen only when strict is false. mode: auto (a managed connection in country) or custom (your own proxy). strict: true when the account never connects from another country, null when unknown. Each field is null until known; an account connected through ip or your own proxy may show null until the next background refresh. Change it with PATCH /v1/accounts/{account_id} (country), or by reconnecting with country. */
+                        connection_location?: {
+                            /** @description Configured country (ISO 3166-1 alpha-2). */
+                            country?: string | null;
+                            /** @description Country of the connection in use right now. */
+                            current_country?: string | null;
+                            /**
+                             * @description auto: managed connection. custom: your own proxy.
+                             * @enum {string|null}
+                             */
+                            mode?: "auto" | "custom" | null;
+                            /** @description true: never connects from another country. */
+                            strict?: boolean | null;
+                        };
+                        /** @description ISO-8601 UTC creation timestamp of the underlying LinkedIn account, distinct from connected_at. Null until the first background enrichment lands. */
+                        substrate_created_at?: string | null;
+                        /** @description Platform conditions this LinkedIn account is currently in, additive to `status` and independent of it. `recruiter_session_evicted`: the account is signed in somewhere else and LinkedIn allows one session at a time for it, so a person has to close the other session; reconnecting will not help. `commercial_use_limited`: LinkedIn's commercial-use limit has tripped, so people search returns only a handful of results per query. It is a paywall, not a penalty, and nothing else about the account is affected. `profile_view_limited`: profile views outside this account's own network are being blocked; first-degree views still work. The two limits are detected from their symptom: LinkedIn publishes no threshold for either, exposes no counter, and lifts neither on request, so no number is reported. `commercial_use_limited` is a present-tense reading and a genuinely narrow search can also produce the shape it looks for, so treat it as a reason to check rather than a certainty; the next people search that returns a full page clears it. An account in none of these reports an empty array. */
+                        account_states?: ("recruiter_session_evicted" | "commercial_use_limited" | "profile_view_limited")[];
+                        /** @description The account's activity window, the hours in which Curviate reports or refuses live writes to LinkedIn. Reads and anything served from Curviate's own store are never affected, at any hour. Configure it on the account's safety policy. */
+                        activity_window?: {
+                            /** @description The IANA zone the window is read in, or null when none is set. */
+                            timezone?: string | null;
+                            /** @description True when no zone is set, which DISABLES the activity window. Curviate never guesses a zone: a guess eight hours wrong inverts the window, refusing every daytime write and permitting every nocturnal one. If you configured a window and it never fires, this is why. */
+                            timezone_unset?: boolean;
+                        };
                         safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
-            /** @description Invalid request: a malformed proxy object, metadata over its limits (16 keys, key 40 chars, value 500), external_id outside 1-255 chars, or an unsupported field (country/ip). */
+            /** @description INVALID_REQUEST: a malformed proxy object; proxy together with country or allow_country_fallback; country on an account that uses your own proxy without proxy: null; allow_country_fallback alone on such an account; an unsupported country; ip (not changeable after connect; reconnect with ip instead); metadata over its limits (16 keys, key 40 chars, value 500); external_id outside 1-255 chars. CONNECTION_LOCATION_REQUIRED: proxy: null without country (clearing your own proxy alone would let the connection land anywhere). */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -28323,8 +28439,26 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description REAUTH_REQUIRED: the account is disconnected, so its location cannot change in place. Reconnect it (POST /v1/auth/intent with account_id) and pass country there. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Payload too large, the request body exceeds the size limit. */
             413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description CONNECTION_LOCATION_UNAVAILABLE: no connection is free in that country right now, or the account did not end up there. When the change was applied but landed elsewhere, the body carries connection_location with where the account connects from now. Try a nearby country, or allow fallback. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -28520,24 +28654,29 @@ export interface operations {
                     external_id?: string;
                     /** @description Optional allow-list of premium products to ask for: sales_navigator, recruiter. Omit to ask for both; [] asks for none. Classic LinkedIn and company pages are always included. */
                     products?: ("sales_navigator" | "recruiter")[];
-                    /** @description Managed proxy location hint as an ISO 3166-1 alpha-2 country code (e.g. US, DE). */
-                    country?: string;
-                    /** @description IPv4 address used to infer the managed proxy location. */
+                    /**
+                     * @description Where LinkedIn sees this account connecting from: a supported ISO 3166-1 alpha-2 country code (e.g. US, DE; case-insensitive). Pick the country the account owner normally signs in from. A new connect needs exactly one of country, ip or proxy. Strict by default: the connect fails rather than use another country, unless allow_country_fallback is true.
+                     * @enum {string}
+                     */
+                    country?: "AE" | "AO" | "AR" | "AT" | "AU" | "BD" | "BE" | "BG" | "BR" | "CA" | "CH" | "CL" | "CN" | "CO" | "CY" | "CZ" | "DE" | "DK" | "EE" | "EG" | "ES" | "FI" | "FR" | "GB" | "GT" | "HK" | "ID" | "IE" | "IL" | "IN" | "IT" | "JP" | "KR" | "KZ" | "MA" | "MX" | "MY" | "NL" | "NO" | "PA" | "PH" | "PK" | "PL" | "PR" | "PT" | "RO" | "SA" | "SE" | "SG" | "TH" | "TN" | "TR" | "UA" | "US" | "VN" | "ZA";
+                    /** @description A public IPv4 address; its country becomes the connection location (strict by default). An alternative to country: send exactly one of country, ip or proxy on a new connect. */
                     ip?: string;
-                    /** @description Managed-proxy egress configuration for this account's outbound traffic. */
+                    /** @description Optional. false (the default with country or ip): only ever connect from that country; a connect fails when no connection is free there. true: a connection from another country may be used when none is free in the chosen one. Not accepted with proxy. */
+                    allow_country_fallback?: boolean;
+                    /** @description Your own proxy for this account's traffic. The proxy decides where LinkedIn sees the account connecting from, so country, ip and allow_country_fallback are not accepted with it. */
                     proxy?: {
                         /**
-                         * @description Proxy protocol. One of http, https, socks5.
+                         * @description Proxy protocol. One of http, https, socks5, socks4.
                          * @enum {string}
                          */
-                        protocol: "http" | "https" | "socks5";
+                        protocol: "http" | "https" | "socks5" | "socks4";
                         /** @description Proxy host or IP. */
                         host: string;
                         /** @description Proxy port (1-65535). */
                         port: number;
                         /** @description Proxy auth username (optional). */
                         username?: string;
-                        /** @description Proxy auth password (optional). Encrypted at rest, never logged or returned. */
+                        /** @description Proxy auth password (optional). Passed to the connection only: never stored, logged or returned. */
                         password?: string;
                     };
                     /** @description Exact browser User-Agent to pin for this account. REQUIRED for a cookie connect: send the User-Agent of the browser the li_at cookie was copied from. Optional for a credentials connect, where it helps an account that hits disconnection issues. */
@@ -28574,6 +28713,22 @@ export interface operations {
                         status?: "active";
                         /** @description Your own id for this account's end user, as set on connect or PATCH. Null when none. Not unique. */
                         external_id?: string | null;
+                        /** @description Where LinkedIn sees this account connecting from. country: the configured country (ISO 3166-1 alpha-2), the one the account is set to use. current_country: the country of the connection in use right now; it differs from country only after a fallback, which can happen only when strict is false. mode: auto (a managed connection in country) or custom (your own proxy). strict: true when the account never connects from another country, null when unknown. Each field is null until known; an account connected through ip or your own proxy may show null until the next background refresh. Change it with PATCH /v1/accounts/{account_id} (country), or by reconnecting with country. */
+                        connection_location?: {
+                            /** @description Configured country (ISO 3166-1 alpha-2). */
+                            country?: string | null;
+                            /** @description Country of the connection in use right now. */
+                            current_country?: string | null;
+                            /**
+                             * @description auto: managed connection. custom: your own proxy.
+                             * @enum {string|null}
+                             */
+                            mode?: "auto" | "custom" | null;
+                            /** @description true: never connects from another country. */
+                            strict?: boolean | null;
+                            /** @description Present only when this connect landed on an account you already had and changed its configured country (to another one, to unknown with ip, or to your own proxy). It names the country before. */
+                            previous_country?: string;
+                        };
                         safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
@@ -28610,6 +28765,22 @@ export interface operations {
                         external_id?: string | null;
                         /** @description Present and true only when this connect reactivated an account you had previously disconnected, instead of opening a brand-new one. Absent on a normal connect. The account keeps its original id, and its status reflects its real observed state, which may need a reconnect. */
                         recovered?: boolean;
+                        /** @description Where LinkedIn sees this account connecting from. country: the configured country (ISO 3166-1 alpha-2), the one the account is set to use. current_country: the country of the connection in use right now; it differs from country only after a fallback, which can happen only when strict is false. mode: auto (a managed connection in country) or custom (your own proxy). strict: true when the account never connects from another country, null when unknown. Each field is null until known; an account connected through ip or your own proxy may show null until the next background refresh. Change it with PATCH /v1/accounts/{account_id} (country), or by reconnecting with country. */
+                        connection_location?: {
+                            /** @description Configured country (ISO 3166-1 alpha-2). */
+                            country?: string | null;
+                            /** @description Country of the connection in use right now. */
+                            current_country?: string | null;
+                            /**
+                             * @description auto: managed connection. custom: your own proxy.
+                             * @enum {string|null}
+                             */
+                            mode?: "auto" | "custom" | null;
+                            /** @description true: never connects from another country. */
+                            strict?: boolean | null;
+                            /** @description Present only when this connect landed on an account you already had and changed its configured country (to another one, to unknown with ip, or to your own proxy). It names the country before. */
+                            previous_country?: string;
+                        };
                         safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
@@ -28659,7 +28830,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST. The most common causes: the auth block is at the top level instead of nested (send `credentials: { email, password }` or `cookie: { li_at }`, not bare `email`/`password`/`li_at`); `seat_id` is missing on a new connect; or a cookie connect has no top-level `user_agent`. SEAT_NOT_FOUND if the seat id is unknown or is not yours. */
+            /** @description CONNECTION_LOCATION_REQUIRED: a new connect names no location; send exactly one of `country` (a supported ISO code, e.g. `US`), `ip` (a public IPv4) or your own `proxy`. INVALID_REQUEST. The most common causes: two location sources at once (`ip` overrides `country`, `proxy` overrides both, so send one); an unsupported `country` (use `proxy` for a location we don't serve); a private or reserved `ip`; `allow_country_fallback` together with `proxy`; your own proxy rejected its credentials, could not be reached or timed out (the message names which); the auth block is at the top level instead of nested (send `credentials: { email, password }` or `cookie: { li_at }`, not bare `email`/`password`/`li_at`); `seat_id` is missing on a new connect; or a cookie connect has no top-level `user_agent`. SEAT_NOT_FOUND if the seat id is unknown or is not yours. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -28695,7 +28866,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description This LinkedIn account is already linked (names your own account_id when your tenant owns it). */
+            /** @description ACCOUNT_ALREADY_LINKED: this LinkedIn account is already linked. It names your own account_id when your tenant owns it; otherwise no id is named, it is not one you can manage here, and retrying will not help. CONNECTION_IN_PROGRESS: another connection attempt for this identity is open; wait for it to finish or expire. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -28713,7 +28884,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The verification challenge cannot be resolved automatically (a dead-end challenge such as a CAPTCHA or a phone-number registration). For those two dead-ends the error body carries a machine-readable challenge_type (captcha | phone_register) so a client can render the right guidance; other unsupported challenges carry no challenge_type. */
+            /** @description CONNECTION_LOCATION_UNAVAILABLE: no connection is free in the country you chose right now (it is strict); try a nearby country, or send allow_country_fallback: true. Also returned when the connect re-attached an account you already had and its location could not be changed here (sent as ip): the body carries connection_location, and PATCH /v1/accounts/{account_id} with country moves it. CHECKPOINT_UNSUPPORTED: the verification challenge cannot be resolved automatically (a dead-end challenge such as a CAPTCHA or a phone-number registration). For those two dead-ends the error body carries a machine-readable challenge_type (captcha | phone_register) so a client can render the right guidance; other unsupported challenges carry no challenge_type. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -28818,6 +28989,22 @@ export interface operations {
                         external_id?: string | null;
                         /** @description Present and true only when this connect reactivated an account you had previously disconnected, instead of opening a brand-new one. Absent on a normal connect. The account keeps its original id, and its status reflects its real observed state, which may need a reconnect. */
                         recovered?: boolean;
+                        /** @description Where LinkedIn sees this account connecting from. country: the configured country (ISO 3166-1 alpha-2), the one the account is set to use. current_country: the country of the connection in use right now; it differs from country only after a fallback, which can happen only when strict is false. mode: auto (a managed connection in country) or custom (your own proxy). strict: true when the account never connects from another country, null when unknown. Each field is null until known; an account connected through ip or your own proxy may show null until the next background refresh. Change it with PATCH /v1/accounts/{account_id} (country), or by reconnecting with country. */
+                        connection_location?: {
+                            /** @description Configured country (ISO 3166-1 alpha-2). */
+                            country?: string | null;
+                            /** @description Country of the connection in use right now. */
+                            current_country?: string | null;
+                            /**
+                             * @description auto: managed connection. custom: your own proxy.
+                             * @enum {string|null}
+                             */
+                            mode?: "auto" | "custom" | null;
+                            /** @description true: never connects from another country. */
+                            strict?: boolean | null;
+                            /** @description Present only when this connect landed on an account you already had and changed its configured country (to another one, to unknown with ip, or to your own proxy). It names the country before. */
+                            previous_country?: string;
+                        };
                         safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
@@ -28901,7 +29088,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The submitted code was incorrect, or the challenge type is unsupported. */
+            /** @description The submitted code was incorrect, or the challenge type is unsupported. CONNECTION_LOCATION_UNAVAILABLE: the connect completed onto an account you already had, and the location you sent could not be applied (no connection free in that country, or it was an ip); the account stays connected, the body carries its actual connection_location, and PATCH /v1/accounts/{account_id} with country moves it. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -29197,6 +29384,22 @@ export interface operations {
                         attached_seat_id?: string | null;
                         /** @description Your own id for this account's end user, as passed on connect. Present on status:"active". */
                         external_id?: string | null;
+                        /** @description Where LinkedIn sees this account connecting from. country: the configured country (ISO 3166-1 alpha-2), the one the account is set to use. current_country: the country of the connection in use right now; it differs from country only after a fallback, which can happen only when strict is false. mode: auto (a managed connection in country) or custom (your own proxy). strict: true when the account never connects from another country, null when unknown. Each field is null until known; an account connected through ip or your own proxy may show null until the next background refresh. Change it with PATCH /v1/accounts/{account_id} (country), or by reconnecting with country. Present on object:"account". */
+                        connection_location?: {
+                            /** @description Configured country (ISO 3166-1 alpha-2). */
+                            country?: string | null;
+                            /** @description Country of the connection in use right now. */
+                            current_country?: string | null;
+                            /**
+                             * @description auto: managed connection. custom: your own proxy.
+                             * @enum {string|null}
+                             */
+                            mode?: "auto" | "custom" | null;
+                            /** @description true: never connects from another country. */
+                            strict?: boolean | null;
+                            /** @description Present only when this connect landed on an account you already had and changed its configured country (to another one, to unknown with ip, or to your own proxy). It names the country before. */
+                            previous_country?: string;
+                        };
                         /** @description ISO-8601 expiry. Present on status:"pending" and status:"checkpoint_required". */
                         expires_at?: string;
                         /**
@@ -29251,7 +29454,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The pending checkpoint is code-based, not mobile_app_approval, use submit instead. */
+            /** @description The pending checkpoint is code-based, not mobile_app_approval, use submit instead. CONNECTION_LOCATION_UNAVAILABLE: the approval completed onto an account you already had, and the location you sent could not be applied; the account stays connected, the body carries its actual connection_location, and PATCH /v1/accounts/{account_id} with country moves it. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -31701,7 +31904,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The purchase failed after today's charge was taken; the charge was refunded in full and the seat count was confirmed unchanged, so no seats were added. Safe to retry. */
+            /** @description No seats were added. Branch on retry_likely_to_succeed. true: today's charge was refunded in full and the seat count was confirmed unchanged, so a retry is safe. false: whether today's charge went through could not be confirmed; a retry is a new purchase and could charge twice, so check your invoices first. */
             502: {
                 headers: {
                     [name: string]: unknown;
