@@ -40,6 +40,12 @@ export interface RequestArgs {
    */
   query?: Record<string, string | number | boolean | string[] | undefined | null>;
   body?: unknown;
+  /**
+   * A raw (non-JSON) request body with its own `Content-Type`, for the one
+   * route that takes a file as the body (`drafts.uploadAttachment`). Mutually
+   * exclusive with `body`.
+   */
+  rawBody?: { data: Blob | ArrayBuffer | Uint8Array; contentType: string };
 }
 
 /** The bound caller a resource receives. */
@@ -104,6 +110,7 @@ export function createContext(
       ...(config.fetch ? { fetch: config.fetch } : {}),
       ...(args.query !== undefined ? { query: args.query } : {}),
       ...(args.body !== undefined ? { body: args.body } : {}),
+      ...(args.rawBody !== undefined ? { rawBody: args.rawBody } : {}),
     });
   };
   return { request, accountId };

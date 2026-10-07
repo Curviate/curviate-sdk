@@ -46,7 +46,7 @@ await curviate.auth.intent({ seat_id, auth_method: "credentials", credentials: {
 The `curviate.account(id)` accessor fixes the `account_id` on every call so you do not have to thread it manually:
 
 ```ts
-// Root-level: tenant-wide operations (accounts, auth, webhooks)
+// Root-level: tenant-wide operations (accounts, auth, webhooks, drafts)
 const { items: accounts } = await curviate.accounts.list();
 
 // Account-scoped: all LinkedIn ops under a specific account
@@ -57,6 +57,30 @@ const { items: chats } = await acc.messaging.listChats();
 const me = await acc.users.get("me");           // your own profile
 const profile = await acc.users.get("some-user-id"); // someone else's
 ```
+
+## Drafts and scheduled posts
+
+A Draft is a stored, editable, unpublished post. Give it an account and a `scheduled_at` and Curviate publishes it at that time. Drafts are tenant-wide, so `drafts` hangs off the root client (a Draft's `account_id` is a field, and optional). `acc.posts.create()` still publishes immediately and does not schedule.
+
+```ts
+const draft = await curviate.drafts.create({
+  account_id: "acc_...",
+  text: "Three things we learned shipping our first agent integration.",
+  scheduled_at: "2026-10-12T09:00:00+02:00", // ISO 8601 with offset; 5 min to 365 days ahead
+});
+
+// A video or PDF (up to 50 MiB) goes up as the raw body; small images can ride inline as base64.
+await curviate.drafts.uploadAttachment(draft.id, await readFile("clip.mp4"), {
+  filename: "clip.mp4",
+  contentType: "video/mp4",
+});
+
+await curviate.drafts.update(draft.id, { scheduled_at: null }); // unschedule
+const { id: postId } = await curviate.drafts.publish(draft.id); // or publish now
+const { items } = await curviate.drafts.list({ status: ["scheduled", "published"] });
+```
+
+Refusals carry their own codes: `DRAFT_LIMIT_REACHED`, `MEDIA_QUOTA_EXCEEDED`, `ACCOUNT_REQUIRED`, `DRAFT_NOT_PUBLISHABLE`, `SCHEDULE_CONFLICT` and `DRAFT_PUBLISHING`. A scheduled publish that fails raises the `post.publish_failed` webhook (`post.published` on success); a `failure_code` of `outcome_unknown` means the post may be live, so check the account's posts before retrying.
 
 ---
 

@@ -159,7 +159,7 @@ describe("account-scoped accessor", () => {
 
   it("does not leak the root-only namespaces onto the account accessor", () => {
     const scoped = new Curviate({ apiKey: "k", baseUrl: BASE }).account("acc_123");
-    for (const ns of ["accounts", "auth", "webhooks", "profiles"]) {
+    for (const ns of ["accounts", "auth", "webhooks", "drafts", "profiles"]) {
       expect(scoped, `namespace ${ns} must not exist`).not.toHaveProperty(ns);
     }
   });

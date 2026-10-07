@@ -1477,7 +1477,7 @@ export interface paths {
         put?: never;
         /**
          * Create a post
-         * @description Publishes a post on the authenticated LinkedIn account. Send application/json; attach files as base64 objects. Post text passes through to the platform and is never stored.
+         * @description Publishes a post now; JSON, files as base64. Text is never stored. A publish record (account, post id, time) is kept, listed by GET /v1/drafts?status=published and removed when the post is deleted. To publish later, create a Draft at POST /v1/drafts.
          */
         post: operations["postV1AccountIdPosts"];
         delete?: never;
@@ -1593,6 +1593,98 @@ export interface paths {
          * @description Removes a post from the connected account's private bookmark list.
          */
         delete: operations["deleteV1AccountIdSavedPostsPostId"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List drafts
+         * @description Lists your Drafts and, with status=published, publish records (account, post id, time; never Drafts). Filter by status, account (or none) and a [from, to) range on each item's own date.
+         */
+        get: operations["getV1Drafts"];
+        put?: never;
+        /**
+         * Create a draft
+         * @description Stores an unpublished post until it is published or deleted. Every field is optional, the account too; a Draft has at most one account and can move between yours. Up to 50 Drafts and 2 GiB of media per account, and per no-account. A retry creates a second Draft.
+         */
+        post: operations["postV1Drafts"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/drafts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve a draft
+         * @description Returns one Draft, with a fresh signed link (valid 1 hour) for each attachment.
+         */
+        get: operations["getV1DraftsId"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a draft
+         * @description Deletes the Draft and its stored media.
+         */
+        delete: operations["deleteV1DraftsId"];
+        options?: never;
+        head?: never;
+        /**
+         * Update a draft
+         * @description Partial update: an omitted field is left as is, null clears it. attachments replaces the whole list ({id} keeps an existing file, a base64 object adds one, anything left out is deleted). account_id moves the Draft to another of your accounts. Editing a failed Draft clears its failure.
+         */
+        patch: operations["patchV1DraftsId"];
+        trace?: never;
+    };
+    "/v1/drafts/{id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Publish a draft now
+         * @description Publishes the Draft now, under the same rules as create post, safety limits included. Success deletes the Draft and its media, writes a publish record and returns the post id, no webhook. Failure leaves the Draft unchanged.
+         */
+        post: operations["postV1DraftsIdPublish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/drafts/{id}/attachments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload a draft attachment
+         * @description Adds one file to the Draft as the raw request body, for media too large to send inline: a video (MP4, up to 50 MiB), a PDF (up to 50 MiB) or an image. Content-Type is the file's type, Content-Length is required; kept only if it arrives whole. Same media rules as inline.
+         */
+        post: operations["postV1DraftsIdAttachments"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -2513,7 +2605,7 @@ export interface paths {
         put?: never;
         /**
          * Create a webhook
-         * @description Registers a new webhook endpoint to receive real-time events. Choose a source (messaging / user / account_status) and supply the target URL. The HMAC signing secret is returned exactly once in the 201 response, store it securely.
+         * @description Registers a new webhook endpoint to receive real-time events. Choose a source (messaging / user / account_status / post) and supply the target URL. The HMAC signing secret is returned exactly once in the 201 response, store it securely.
          */
         post: operations["postV1Webhooks"];
         delete?: never;
@@ -2531,7 +2623,7 @@ export interface paths {
         };
         /**
          * List webhook event types
-         * @description Returns the complete canonical event catalogue (27 events) grouped by source: messaging (7), user (2), account_status (15), plus 3 recruiter/sales_nav events. A local catalogue read: no platform call is made.
+         * @description Returns the complete canonical event catalogue (29 events) grouped by source: messaging (7), user (2), account_status (15), post (2), plus 3 recruiter/sales_nav events. A local catalogue read: no platform call is made.
          */
         get: operations["getV1WebhooksEvents"];
         put?: never;
@@ -19744,6 +19836,1046 @@ export interface operations {
             };
         };
     };
+    getV1Drafts: {
+        parameters: {
+            query?: {
+                /** @description Comma list of draft, scheduled, failed, published. Default draft,scheduled,failed. published items are publish records, never Drafts. */
+                status?: ("draft" | "scheduled" | "failed" | "published")[];
+                /** @description Only items on this account (acc_...), or none for Drafts with no account. Omitted: all of yours. */
+                account_id?: string;
+                /** @description Only items whose date is at or after this instant (inclusive). */
+                from?: string;
+                /** @description Only items whose date is before this instant (exclusive). */
+                to?: string;
+                /** @description Sort by the item's date: desc (default) or asc. */
+                order?: "desc" | "asc";
+                /** @description Max items per page (1-100, default 20). */
+                limit?: number;
+                /** @description Pagination cursor from a previous response; pass it back verbatim with the same filters. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Drafts and publish records, ordered by each item's own date: scheduled_at for scheduled, failure.failed_at for failed, published_at for published, updated_at for draft. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "draft_list";
+                        /** @description Each item is a draft (object: draft) or a publish record (object: publish_record). Publish records are never Drafts. */
+                        items: ({
+                            /**
+                             * @description Response type discriminator.
+                             * @enum {string}
+                             */
+                            object: "draft";
+                            /** @description Draft id (drf_...). */
+                            id: string;
+                            /** @description The account this Draft will publish as, or null for none yet. */
+                            account_id: string | null;
+                            /**
+                             * @description Derived: failed if failure is set, else scheduled if scheduled_at is set, else draft.
+                             * @enum {string}
+                             */
+                            status: "draft" | "scheduled" | "failed";
+                            /** @description Post body text. May be empty or null while drafting. */
+                            text: string | null;
+                            /** @description Media, in post order. */
+                            attachments: {
+                                /** @description Attachment id (att_...). Send {id} in a PATCH attachments list to keep it. */
+                                id: string;
+                                /** @description The file's type. */
+                                content_type: string;
+                                /** @description File name. */
+                                filename: string;
+                                /** @description Stored size in bytes. */
+                                size_bytes: number;
+                                /** @description Signed download link to the stored file, valid for 1 hour. Read the Draft again for a fresh one. Null when the stored file is unavailable. */
+                                url: string | null;
+                            }[];
+                            /** @description A post to quote or repost when published. */
+                            quoted_post_id?: string | null;
+                            /**
+                             * @description Who can read the post once published.
+                             * @enum {string|null}
+                             */
+                            can_read?: "anyone" | "relations_only" | null;
+                            /**
+                             * @description Who may comment once published.
+                             * @enum {string|null}
+                             */
+                            can_comment?: "anyone" | "relations_only" | "no_one" | null;
+                            /** @description Company page id to post as. */
+                            post_as?: string | null;
+                            /** @description When Curviate publishes the Draft (UTC, whole minute), or null. It goes out up to 20 seconds after this time. A failed Draft has null here; the time that failed is failure.scheduled_at. */
+                            scheduled_at: string | null;
+                            /** @description Why the last scheduled publish failed; present on failed Drafts only. */
+                            failure: {
+                                /**
+                                 * @description Why it failed. outcome_unknown: the platform gave no usable answer, so the post may be live; check the account's posts before you publish again. missed: Curviate could not start within an hour of the time. platform_error and rate_limited: 3 attempts over about 15 minutes all failed.
+                                 * @enum {string}
+                                 */
+                                code?: "platform_error" | "rate_limited" | "account_unavailable" | "media_rejected" | "budget_exhausted" | "outside_activity_window" | "no_active_seat" | "not_publishable" | "platform_rejected" | "missed" | "outcome_unknown";
+                                /** @description What went wrong and what to do next. Never contains post text. */
+                                message?: string;
+                                /** @description When it failed. */
+                                failed_at?: string;
+                                /** @description The time that failed to publish. */
+                                scheduled_at?: string;
+                            } | null;
+                            /** @description Creation time. */
+                            created_at: string;
+                            /** @description Last change. */
+                            updated_at: string;
+                        } | {
+                            /**
+                             * @description Response type discriminator.
+                             * @enum {string}
+                             */
+                            object: "publish_record";
+                            /** @description The published post's id, or null when the platform returned none. */
+                            post_id: string | null;
+                            /** @description The account that published it. */
+                            account_id: string;
+                            /** @description When it was published. */
+                            published_at: string;
+                            /** @description The Draft it came from, or null for a post created directly. */
+                            draft_id: string | null;
+                        })[];
+                        /** @description Pass back as cursor for the next page; null on the last page. */
+                        cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Invalid filter: an unknown status, a malformed date or cursor, or limit out of range. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1Drafts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The account (acc_...) this Draft will publish as, or null for none yet. A Draft belongs to at most one account. */
+                    account_id?: string | null;
+                    /** @description When Curviate publishes this Draft: an ISO 8601 date-time with an offset, at least 5 minutes and at most 365 days ahead, stored in UTC truncated to the minute. Scheduling needs an account and text. Curviate publishes it up to 20 seconds after this time, and keeps scheduled posts on one account at least 5 minutes apart. null unschedules. */
+                    scheduled_at?: string | null;
+                    /** @description Post body text, up to 3000 characters. May be empty while drafting; publishing needs at least one character. */
+                    text?: string | null;
+                    /** @description A post to quote or repost when published, the same as on create post. Checked at publish time. */
+                    quoted_post_id?: string | null;
+                    /**
+                     * @description Who can read the post once published.
+                     * @enum {string|null}
+                     */
+                    can_read?: "anyone" | "relations_only" | null;
+                    /**
+                     * @description Who may comment once published.
+                     * @enum {string|null}
+                     */
+                    can_comment?: "anyone" | "relations_only" | "no_one" | null;
+                    /** @description Company page id to post as; the account must administer it. Checked at publish time. */
+                    post_as?: string | null;
+                    /** @description Media as base64 objects: up to 20 images, or one MP4 video, or one PDF, never mixed. 5 MiB per file inline. */
+                    attachments?: {
+                        /** @description Base64-encoded file bytes. */
+                        content: string;
+                        /** @description The file's type: image/jpeg, image/png, image/gif, image/webp, video/mp4 or application/pdf. */
+                        content_type: string;
+                        /** @description File name. */
+                        filename: string;
+                    }[];
+                };
+            };
+        };
+        responses: {
+            /** @description Draft created. With scheduled_at, status is scheduled and Curviate publishes it on its own. With scheduled_at, the response carries safety_warning (reason activity_window) when the time is outside the account's activity window and its posture is warn; under enforce the request is refused instead (429 BUDGET_EXHAUSTED, reason activity_window) and nothing is saved. */
+            201: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "draft";
+                        /** @description Draft id (drf_...). */
+                        id: string;
+                        /** @description The account this Draft will publish as, or null for none yet. */
+                        account_id: string | null;
+                        /**
+                         * @description Derived: failed if failure is set, else scheduled if scheduled_at is set, else draft.
+                         * @enum {string}
+                         */
+                        status: "draft" | "scheduled" | "failed";
+                        /** @description Post body text. May be empty or null while drafting. */
+                        text: string | null;
+                        /** @description Media, in post order. */
+                        attachments: {
+                            /** @description Attachment id (att_...). Send {id} in a PATCH attachments list to keep it. */
+                            id: string;
+                            /** @description The file's type. */
+                            content_type: string;
+                            /** @description File name. */
+                            filename: string;
+                            /** @description Stored size in bytes. */
+                            size_bytes: number;
+                            /** @description Signed download link to the stored file, valid for 1 hour. Read the Draft again for a fresh one. Null when the stored file is unavailable. */
+                            url: string | null;
+                        }[];
+                        /** @description A post to quote or repost when published. */
+                        quoted_post_id?: string | null;
+                        /**
+                         * @description Who can read the post once published.
+                         * @enum {string|null}
+                         */
+                        can_read?: "anyone" | "relations_only" | null;
+                        /**
+                         * @description Who may comment once published.
+                         * @enum {string|null}
+                         */
+                        can_comment?: "anyone" | "relations_only" | "no_one" | null;
+                        /** @description Company page id to post as. */
+                        post_as?: string | null;
+                        /** @description When Curviate publishes the Draft (UTC, whole minute), or null. It goes out up to 20 seconds after this time. A failed Draft has null here; the time that failed is failure.scheduled_at. */
+                        scheduled_at: string | null;
+                        /** @description Why the last scheduled publish failed; present on failed Drafts only. */
+                        failure: {
+                            /**
+                             * @description Why it failed. outcome_unknown: the platform gave no usable answer, so the post may be live; check the account's posts before you publish again. missed: Curviate could not start within an hour of the time. platform_error and rate_limited: 3 attempts over about 15 minutes all failed.
+                             * @enum {string}
+                             */
+                            code?: "platform_error" | "rate_limited" | "account_unavailable" | "media_rejected" | "budget_exhausted" | "outside_activity_window" | "no_active_seat" | "not_publishable" | "platform_rejected" | "missed" | "outcome_unknown";
+                            /** @description What went wrong and what to do next. Never contains post text. */
+                            message?: string;
+                            /** @description When it failed. */
+                            failed_at?: string;
+                            /** @description The time that failed to publish. */
+                            scheduled_at?: string;
+                        } | null;
+                        /** @description Creation time. */
+                        created_at: string;
+                        /** @description Last change. */
+                        updated_at: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Invalid input. Media rules: up to 20 images (JPEG, PNG, GIF, WEBP, at most 6012 x 6012 px), or one MP4 video, or one PDF, never mixed. scheduled_at must be an ISO 8601 date-time with an offset, 5 minutes to 365 days ahead after truncation to the minute. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description The account_id is not one of yours (ACCOUNT_NOT_FOUND). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description The account is disconnected (REAUTH_REQUIRED). Reconnect it, or choose another account. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description A file is over its size limit: 5 MiB per image, and 5 MiB per file sent inline. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description DRAFT_LIMIT_REACHED: the bucket (one account, or Drafts with no account) already holds 50 Drafts. MEDIA_QUOTA_EXCEEDED: the media would take the bucket past its 2 GiB quota; nothing is stored. ACCOUNT_REQUIRED / DRAFT_NOT_PUBLISHABLE: scheduling needs an account and text. SCHEDULE_CONFLICT: another scheduled Draft on the account is less than 5 minutes away; the message names it. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description BUDGET_EXHAUSTED with reason activity_window: the scheduled time is outside the account's activity window and the account enforces it. Nothing is saved. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1DraftsId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Draft id (drf_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The Draft. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "draft";
+                        /** @description Draft id (drf_...). */
+                        id: string;
+                        /** @description The account this Draft will publish as, or null for none yet. */
+                        account_id: string | null;
+                        /**
+                         * @description Derived: failed if failure is set, else scheduled if scheduled_at is set, else draft.
+                         * @enum {string}
+                         */
+                        status: "draft" | "scheduled" | "failed";
+                        /** @description Post body text. May be empty or null while drafting. */
+                        text: string | null;
+                        /** @description Media, in post order. */
+                        attachments: {
+                            /** @description Attachment id (att_...). Send {id} in a PATCH attachments list to keep it. */
+                            id: string;
+                            /** @description The file's type. */
+                            content_type: string;
+                            /** @description File name. */
+                            filename: string;
+                            /** @description Stored size in bytes. */
+                            size_bytes: number;
+                            /** @description Signed download link to the stored file, valid for 1 hour. Read the Draft again for a fresh one. Null when the stored file is unavailable. */
+                            url: string | null;
+                        }[];
+                        /** @description A post to quote or repost when published. */
+                        quoted_post_id?: string | null;
+                        /**
+                         * @description Who can read the post once published.
+                         * @enum {string|null}
+                         */
+                        can_read?: "anyone" | "relations_only" | null;
+                        /**
+                         * @description Who may comment once published.
+                         * @enum {string|null}
+                         */
+                        can_comment?: "anyone" | "relations_only" | "no_one" | null;
+                        /** @description Company page id to post as. */
+                        post_as?: string | null;
+                        /** @description When Curviate publishes the Draft (UTC, whole minute), or null. It goes out up to 20 seconds after this time. A failed Draft has null here; the time that failed is failure.scheduled_at. */
+                        scheduled_at: string | null;
+                        /** @description Why the last scheduled publish failed; present on failed Drafts only. */
+                        failure: {
+                            /**
+                             * @description Why it failed. outcome_unknown: the platform gave no usable answer, so the post may be live; check the account's posts before you publish again. missed: Curviate could not start within an hour of the time. platform_error and rate_limited: 3 attempts over about 15 minutes all failed.
+                             * @enum {string}
+                             */
+                            code?: "platform_error" | "rate_limited" | "account_unavailable" | "media_rejected" | "budget_exhausted" | "outside_activity_window" | "no_active_seat" | "not_publishable" | "platform_rejected" | "missed" | "outcome_unknown";
+                            /** @description What went wrong and what to do next. Never contains post text. */
+                            message?: string;
+                            /** @description When it failed. */
+                            failed_at?: string;
+                            /** @description The time that failed to publish. */
+                            scheduled_at?: string;
+                        } | null;
+                        /** @description Creation time. */
+                        created_at: string;
+                        /** @description Last change. */
+                        updated_at: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description No Draft with this id among yours (RESOURCE_NOT_FOUND). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    deleteV1DraftsId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Draft id (drf_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Draft and its media deleted. No response body. */
+            204: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description No Draft with this id among yours (RESOURCE_NOT_FOUND). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description DRAFT_PUBLISHING: a publish of this Draft is in flight. Read it again in a few seconds. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    patchV1DraftsId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Draft id (drf_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The account (acc_...) this Draft will publish as, or null for none yet. A Draft belongs to at most one account. */
+                    account_id?: string | null;
+                    /** @description When Curviate publishes this Draft: an ISO 8601 date-time with an offset, at least 5 minutes and at most 365 days ahead, stored in UTC truncated to the minute. Scheduling needs an account and text. Curviate publishes it up to 20 seconds after this time, and keeps scheduled posts on one account at least 5 minutes apart. null unschedules. */
+                    scheduled_at?: string | null;
+                    /** @description Post body text, up to 3000 characters. May be empty while drafting; publishing needs at least one character. */
+                    text?: string | null;
+                    /** @description A post to quote or repost when published, the same as on create post. Checked at publish time. */
+                    quoted_post_id?: string | null;
+                    /**
+                     * @description Who can read the post once published.
+                     * @enum {string|null}
+                     */
+                    can_read?: "anyone" | "relations_only" | null;
+                    /**
+                     * @description Who may comment once published.
+                     * @enum {string|null}
+                     */
+                    can_comment?: "anyone" | "relations_only" | "no_one" | null;
+                    /** @description Company page id to post as; the account must administer it. Checked at publish time. */
+                    post_as?: string | null;
+                    /** @description Replaces the whole list. Each item is {id} to keep an existing attachment, or a new base64 object. Attachments left out are deleted. */
+                    attachments?: ({
+                        /** @description An attachment already on this Draft (att_...), kept as is. */
+                        id: string;
+                    } | {
+                        /** @description Base64-encoded file bytes. */
+                        content: string;
+                        /** @description The file's type: image/jpeg, image/png, image/gif, image/webp, video/mp4 or application/pdf. */
+                        content_type: string;
+                        /** @description File name. */
+                        filename: string;
+                    })[];
+                };
+            };
+        };
+        responses: {
+            /** @description The updated Draft. scheduled_at schedules, reschedules or (null) unschedules; changing it or the account cancels a pending publish and its retries. Unscheduling alone needs no active seat. With scheduled_at, the response carries safety_warning (reason activity_window) when the time is outside the account's activity window and its posture is warn; under enforce the request is refused instead (429 BUDGET_EXHAUSTED, reason activity_window) and nothing is saved. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "draft";
+                        /** @description Draft id (drf_...). */
+                        id: string;
+                        /** @description The account this Draft will publish as, or null for none yet. */
+                        account_id: string | null;
+                        /**
+                         * @description Derived: failed if failure is set, else scheduled if scheduled_at is set, else draft.
+                         * @enum {string}
+                         */
+                        status: "draft" | "scheduled" | "failed";
+                        /** @description Post body text. May be empty or null while drafting. */
+                        text: string | null;
+                        /** @description Media, in post order. */
+                        attachments: {
+                            /** @description Attachment id (att_...). Send {id} in a PATCH attachments list to keep it. */
+                            id: string;
+                            /** @description The file's type. */
+                            content_type: string;
+                            /** @description File name. */
+                            filename: string;
+                            /** @description Stored size in bytes. */
+                            size_bytes: number;
+                            /** @description Signed download link to the stored file, valid for 1 hour. Read the Draft again for a fresh one. Null when the stored file is unavailable. */
+                            url: string | null;
+                        }[];
+                        /** @description A post to quote or repost when published. */
+                        quoted_post_id?: string | null;
+                        /**
+                         * @description Who can read the post once published.
+                         * @enum {string|null}
+                         */
+                        can_read?: "anyone" | "relations_only" | null;
+                        /**
+                         * @description Who may comment once published.
+                         * @enum {string|null}
+                         */
+                        can_comment?: "anyone" | "relations_only" | "no_one" | null;
+                        /** @description Company page id to post as. */
+                        post_as?: string | null;
+                        /** @description When Curviate publishes the Draft (UTC, whole minute), or null. It goes out up to 20 seconds after this time. A failed Draft has null here; the time that failed is failure.scheduled_at. */
+                        scheduled_at: string | null;
+                        /** @description Why the last scheduled publish failed; present on failed Drafts only. */
+                        failure: {
+                            /**
+                             * @description Why it failed. outcome_unknown: the platform gave no usable answer, so the post may be live; check the account's posts before you publish again. missed: Curviate could not start within an hour of the time. platform_error and rate_limited: 3 attempts over about 15 minutes all failed.
+                             * @enum {string}
+                             */
+                            code?: "platform_error" | "rate_limited" | "account_unavailable" | "media_rejected" | "budget_exhausted" | "outside_activity_window" | "no_active_seat" | "not_publishable" | "platform_rejected" | "missed" | "outcome_unknown";
+                            /** @description What went wrong and what to do next. Never contains post text. */
+                            message?: string;
+                            /** @description When it failed. */
+                            failed_at?: string;
+                            /** @description The time that failed to publish. */
+                            scheduled_at?: string;
+                        } | null;
+                        /** @description Creation time. */
+                        created_at: string;
+                        /** @description Last change. */
+                        updated_at: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Invalid input. Media rules: up to 20 images (JPEG, PNG, GIF, WEBP, at most 6012 x 6012 px), or one MP4 video, or one PDF, never mixed. Also: an attachment id that is not on this Draft. scheduled_at must be an ISO 8601 date-time with an offset, 5 minutes to 365 days ahead after truncation to the minute. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description No such Draft (RESOURCE_NOT_FOUND), or the account_id is not one of yours (ACCOUNT_NOT_FOUND). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description DRAFT_PUBLISHING: a publish of this Draft is in flight. Read it again in a few seconds. Or the target account is disconnected (REAUTH_REQUIRED). */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description A file is over its size limit: 5 MiB per image, and 5 MiB per file sent inline. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description DRAFT_LIMIT_REACHED: the bucket (one account, or Drafts with no account) already holds 50 Drafts. MEDIA_QUOTA_EXCEEDED: the media would take the bucket past its 2 GiB quota; nothing is stored. ACCOUNT_REQUIRED: a scheduled Draft cannot drop its account; unschedule it first. ACCOUNT_REQUIRED / DRAFT_NOT_PUBLISHABLE: scheduling needs an account and text. SCHEDULE_CONFLICT: another scheduled Draft on the account is less than 5 minutes away; the message names it. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description BUDGET_EXHAUSTED with reason activity_window: the scheduled time is outside the account's activity window and the account enforces it. Nothing is saved. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1DraftsIdPublish: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Draft id (drf_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Published. The Draft and its media are deleted and a publish record is written. No webhook is sent: this response is the result. */
+            201: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "post_created";
+                        /** @description The published post's id. */
+                        id: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description No Draft with this id among yours (RESOURCE_NOT_FOUND). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description DRAFT_PUBLISHING: a publish of this Draft is in flight. Read it again in a few seconds. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_REQUIRED: the Draft has no account. DRAFT_NOT_PUBLISHABLE: a content gap, the message names the field (for example text: empty). The Draft is unchanged. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An account-safety limit or a platform rate limit refused the publish. The Draft is unchanged. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description The platform refused or failed the publish. The Draft is unchanged; the error says whether a retry can help. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description PLATFORM_ERROR: the platform did not answer in time. The Draft is unchanged, but the post may still have been published: check the account's posts before publishing again. */
+            504: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1DraftsIdAttachments: {
+        parameters: {
+            query: {
+                /** @description The file's name, kept with the attachment. */
+                filename: string;
+            };
+            header?: never;
+            path: {
+                /** @description Draft id (drf_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "video/mp4": string;
+                "application/pdf": string;
+                "image/jpeg": string;
+                "image/png": string;
+                "image/gif": string;
+                "image/webp": string;
+            };
+        };
+        responses: {
+            /** @description The Draft, with the new attachment last in attachments[]. */
+            201: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "draft";
+                        /** @description Draft id (drf_...). */
+                        id: string;
+                        /** @description The account this Draft will publish as, or null for none yet. */
+                        account_id: string | null;
+                        /**
+                         * @description Derived: failed if failure is set, else scheduled if scheduled_at is set, else draft.
+                         * @enum {string}
+                         */
+                        status: "draft" | "scheduled" | "failed";
+                        /** @description Post body text. May be empty or null while drafting. */
+                        text: string | null;
+                        /** @description Media, in post order. */
+                        attachments: {
+                            /** @description Attachment id (att_...). Send {id} in a PATCH attachments list to keep it. */
+                            id: string;
+                            /** @description The file's type. */
+                            content_type: string;
+                            /** @description File name. */
+                            filename: string;
+                            /** @description Stored size in bytes. */
+                            size_bytes: number;
+                            /** @description Signed download link to the stored file, valid for 1 hour. Read the Draft again for a fresh one. Null when the stored file is unavailable. */
+                            url: string | null;
+                        }[];
+                        /** @description A post to quote or repost when published. */
+                        quoted_post_id?: string | null;
+                        /**
+                         * @description Who can read the post once published.
+                         * @enum {string|null}
+                         */
+                        can_read?: "anyone" | "relations_only" | null;
+                        /**
+                         * @description Who may comment once published.
+                         * @enum {string|null}
+                         */
+                        can_comment?: "anyone" | "relations_only" | "no_one" | null;
+                        /** @description Company page id to post as. */
+                        post_as?: string | null;
+                        /** @description When Curviate publishes the Draft (UTC, whole minute), or null. It goes out up to 20 seconds after this time. A failed Draft has null here; the time that failed is failure.scheduled_at. */
+                        scheduled_at: string | null;
+                        /** @description Why the last scheduled publish failed; present on failed Drafts only. */
+                        failure: {
+                            /**
+                             * @description Why it failed. outcome_unknown: the platform gave no usable answer, so the post may be live; check the account's posts before you publish again. missed: Curviate could not start within an hour of the time. platform_error and rate_limited: 3 attempts over about 15 minutes all failed.
+                             * @enum {string}
+                             */
+                            code?: "platform_error" | "rate_limited" | "account_unavailable" | "media_rejected" | "budget_exhausted" | "outside_activity_window" | "no_active_seat" | "not_publishable" | "platform_rejected" | "missed" | "outcome_unknown";
+                            /** @description What went wrong and what to do next. Never contains post text. */
+                            message?: string;
+                            /** @description When it failed. */
+                            failed_at?: string;
+                            /** @description The time that failed to publish. */
+                            scheduled_at?: string;
+                        } | null;
+                        /** @description Creation time. */
+                        created_at: string;
+                        /** @description Last change. */
+                        updated_at: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Invalid input. Media rules: up to 20 images (JPEG, PNG, GIF, WEBP, at most 6012 x 6012 px), or one MP4 video, or one PDF, never mixed. Also: an empty file, a filename missing, or a body that did not carry exactly its Content-Length (a truncated upload; nothing is kept). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description No Draft with this id among yours (RESOURCE_NOT_FOUND). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description DRAFT_PUBLISHING: a publish of this Draft is in flight. Read it again in a few seconds. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INVALID_REQUEST: Content-Length is required; a chunked upload is not accepted. */
+            411: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description PAYLOAD_TOO_LARGE: the file is over its type's limit: 5 MiB per image, 50 MiB for a video, 50 MiB for a PDF. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description UNSUPPORTED_MEDIA_TYPE: Content-Type is not one of the accepted file types (JSON and multipart bodies included). */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MEDIA_QUOTA_EXCEEDED: the file would take the bucket past its 2 GiB quota; nothing is stored. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     getV1AccountIdRecruiterProfilesUserId: {
         parameters: {
             query?: {
@@ -30121,7 +31253,7 @@ export interface operations {
                              * @description The event source this webhook subscribes to.
                              * @enum {string}
                              */
-                            source?: "messaging" | "user" | "account_status";
+                            source?: "messaging" | "user" | "account_status" | "post";
                             /** @description The URL that receives delivery POST requests. */
                             request_url?: string;
                             name?: string | null;
@@ -30283,6 +31415,30 @@ export interface operations {
                     }[];
                     /** @description Account-status events to subscribe to (default: all 12 lifecycle events) */
                     events?: ("account.created" | "account.connected" | "account.synced" | "account.reconnected" | "account.reconnect_needed" | "account.restricted" | "account.creation_failed" | "account.disconnected" | "account.error" | "account.paused" | "account.connecting" | "account.permission_revoked" | "account.initial_sync.running" | "account.initial_sync.completed" | "account.initial_sync.failed")[];
+                } | {
+                    /** @constant */
+                    source: "post";
+                    /** @description HTTPS URL that receives webhook deliveries. Must be a publicly reachable host on the default https port; private, loopback and link-local addresses are rejected. */
+                    request_url: string;
+                    /** @description Human-readable name for this webhook (1-100 chars) */
+                    name?: string;
+                    /** @description Per-account targeting. Required and non-empty; each id must be an acc_-prefixed id owned by the tenant. */
+                    account_ids: string[];
+                    /**
+                     * @description A disabled webhook is created but delivers nothing
+                     * @default true
+                     */
+                    enabled?: boolean;
+                    /**
+                     * @description Custom headers added to each delivery POST. Names must be valid HTTP header names and values must be printable ASCII (no line breaks or control characters). Reserved names are rejected at registration; they include Content-Type, User-Agent, Host, any Curviate-* or Sec-* name, and the hop-by-hop headers. At most 10 headers, 1024 characters per value, 4096 bytes in total. Custom headers are not covered by the delivery signature, so treat them as a hint, not as proof of origin. Values are encrypted at rest and are never returned by a read. A read shows the header name plus a 8-character keyed fingerprint of the value, which carries no part of the value and no indication of its length. It is deterministic within your account, so a fingerprint confirms a rotation took effect and tells you whether two of your webhooks carry the same credential; fingerprints are not comparable across accounts. The header name is what identifies which credential is configured.
+                     * @default []
+                     */
+                    headers?: {
+                        key: string;
+                        value: string;
+                    }[];
+                    /** @description Post events to subscribe to (default: both post.published and post.publish_failed) */
+                    events?: ("post.published" | "post.publish_failed")[];
                 };
             };
         };
@@ -30307,7 +31463,7 @@ export interface operations {
                          * @description The event source this webhook subscribes to.
                          * @enum {string}
                          */
-                        source?: "messaging" | "user" | "account_status";
+                        source?: "messaging" | "user" | "account_status" | "post";
                         /** @description The URL that receives delivery POST requests. */
                         request_url?: string;
                         /** @description Human-readable label. */
@@ -30325,7 +31481,7 @@ export interface operations {
                         }[];
                         /** @description Canonical event names this webhook subscribes to. */
                         events?: string[];
-                        /** @description Field-remapping keys for the delivery payload (messaging and user sources only). */
+                        /** @description Field-remapping keys for the delivery payload (messaging and user sources only; post and account_status have none). */
                         data?: string[];
                         /**
                          * @description HMAC signing secret, 64 hexadecimal characters, returned exactly once at creation. Store it securely.
@@ -30427,7 +31583,7 @@ export interface operations {
                         object?: "webhook_event_catalogue";
                         /** @description Event types grouped by source. */
                         sources?: {
-                            /** @description Event source group (messaging, user, account_status, recruiter, sales_nav). */
+                            /** @description Event source group (messaging, user, account_status, post, recruiter, sales_nav). */
                             source?: string;
                             events?: {
                                 /** @description Canonical event name. */
@@ -30585,7 +31741,7 @@ export interface operations {
                          * @description The event source this webhook subscribes to (immutable).
                          * @enum {string}
                          */
-                        source?: "messaging" | "user" | "account_status";
+                        source?: "messaging" | "user" | "account_status" | "post";
                         /** @description The URL that receives delivery POST requests. */
                         request_url?: string;
                         /** @description Human-readable label. */
@@ -30603,7 +31759,7 @@ export interface operations {
                         }[];
                         /** @description Canonical event names this webhook subscribes to. */
                         events?: string[];
-                        /** @description Field-remapping keys for the delivery payload (messaging and user sources only). */
+                        /** @description Field-remapping keys for the delivery payload (messaging and user sources only; post and account_status have none). */
                         data?: string[];
                         /** @description First 8 characters of the signing secret. The full secret is never returned on edit, it is preserved unchanged. */
                         secret_prefix?: string;
@@ -30781,7 +31937,7 @@ export interface operations {
                          * @description The event source this webhook subscribes to (immutable).
                          * @enum {string}
                          */
-                        source?: "messaging" | "user" | "account_status";
+                        source?: "messaging" | "user" | "account_status" | "post";
                         /** @description The URL that receives delivery POST requests. */
                         request_url?: string;
                         /** @description Human-readable label. */
@@ -30799,7 +31955,7 @@ export interface operations {
                         }[];
                         /** @description Canonical event names this webhook subscribes to. */
                         events?: string[];
-                        /** @description Field-remapping keys for the delivery payload (messaging and user sources only). */
+                        /** @description Field-remapping keys for the delivery payload (messaging and user sources only; post and account_status have none). */
                         data?: string[];
                         /** @description First 8 characters of the signing secret. The full secret is never returned on edit, it is preserved unchanged. */
                         secret_prefix?: string;

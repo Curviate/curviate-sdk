@@ -253,6 +253,29 @@ export const ERROR_CODES = [
   // backing off.
   "STRIPE_DRIFT_DETECTED",
 
+  // Drafts and scheduled posts (`/v1/drafts`). Each is user_fixable and none
+  // clears on an unchanged retry; read the code, then change the request.
+  //
+  // - `DRAFT_LIMIT_REACHED` (422): the bucket (one account, or "no account")
+  //   already holds 50 Drafts. Delete one, or use another account.
+  // - `MEDIA_QUOTA_EXCEEDED` (422): the file would take the bucket past its
+  //   media quota; nothing was stored. Delete media first.
+  // - `ACCOUNT_REQUIRED` (422): publishing or scheduling needs an account on the
+  //   Draft (also `account_id: null` on a scheduled Draft: unschedule first).
+  // - `DRAFT_NOT_PUBLISHABLE` (422): a content gap (empty text, ...); the
+  //   message names the field.
+  // - `SCHEDULE_CONFLICT` (422): another scheduled Draft on the same account is
+  //   within 5 minutes of this `scheduled_at`; the message names it.
+  // - `DRAFT_PUBLISHING` (409): a publish of this Draft is in flight (or its
+  //   outcome is being settled). Read the Draft again in a few seconds; if it
+  //   says to check the account's posts first, do that before retrying.
+  "DRAFT_LIMIT_REACHED",
+  "MEDIA_QUOTA_EXCEEDED",
+  "ACCOUNT_REQUIRED",
+  "DRAFT_NOT_PUBLISHABLE",
+  "SCHEDULE_CONFLICT",
+  "DRAFT_PUBLISHING",
+
   // Generic
   "INTERNAL",
 ] as const;
