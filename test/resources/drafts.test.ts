@@ -157,8 +157,7 @@ describe("drafts.get / update / delete / publish", () => {
         return new HttpResponse(null, { status: 204 });
       }),
     );
-    // A bodyless 204 comes back as an empty buffer from the transport (as posts.delete).
-    await expect(client.drafts.delete(ID)).resolves.not.toThrow();
+    await expect(client.drafts.delete(ID)).resolves.toBeUndefined();
     expect(body).toBe("");
   });
 

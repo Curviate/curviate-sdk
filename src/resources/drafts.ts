@@ -154,8 +154,9 @@ export class DraftsResource {
    * @example
    * await curviate.drafts.delete(id);
    */
-  delete(id: string): Promise<DraftDeleteResult> {
-    return this.ctx.request<DraftDeleteResult>({
+  async delete(id: string): Promise<DraftDeleteResult> {
+    // The transport hands a bodyless 204 back as an empty buffer; the contract is `void`.
+    await this.ctx.request<unknown>({
       method: "DELETE",
       path: apiPath`/v1/drafts/${id}`,
     });

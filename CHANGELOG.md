@@ -25,7 +25,8 @@ publishing.
   sends it as the API's comma list; `status: ["published"]` returns publish
   records. `uploadAttachment(id, data, { filename, contentType })` sends a
   file (video or PDF up to 50 MiB, or an image) as the raw request body.
-  `delete` resolves with nothing (204).
+  `delete` resolves with `undefined` (204). (`posts.delete` and `comments.delete`
+  still hand back the transport's empty buffer under a `void` type; unchanged here.)
 - **Six new error codes** decode to themselves instead of `INTERNAL`:
   `DRAFT_LIMIT_REACHED`, `MEDIA_QUOTA_EXCEEDED`, `ACCOUNT_REQUIRED`,
   `DRAFT_NOT_PUBLISHABLE`, `SCHEDULE_CONFLICT`, `DRAFT_PUBLISHING`.
