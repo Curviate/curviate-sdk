@@ -40,6 +40,8 @@ export interface ExecuteOptions {
   query?: Record<string, string | number | boolean | string[] | undefined | null>;
   /** Request body: a plain object (JSON) or a FormData (multipart). */
   body?: unknown;
+  /** A raw body sent as-is under its own `Content-Type` (file upload). */
+  rawBody?: { data: Blob | ArrayBuffer | Uint8Array; contentType: string };
   /** Injectable fetch (edge runtimes / tests). Defaults to global fetch. */
   fetch?: typeof fetch;
   /** @internal deterministic jitter for tests; defaults to Math.random()*200. */
@@ -221,6 +223,12 @@ function buildInit(method: HttpMethod, opts: ExecuteOptions, signal: AbortSignal
   };
   const init: RequestInit = { method, headers, signal };
 
+  if (opts.rawBody !== undefined && method !== "GET" && method !== "HEAD") {
+    // fetch sets Content-Length itself for a Blob/buffer, which the upload route requires.
+    headers["content-type"] = opts.rawBody.contentType;
+    init.body = opts.rawBody.data as BodyInit;
+    return init;
+  }
   if (method === "GET" || method === "HEAD" || opts.body === undefined) {
     return init;
   }

@@ -43,6 +43,21 @@ export type {
 } from "./resources/auth.js";
 
 export type {
+  DraftCreateBody,
+  DraftCreateResult,
+  DraftListParams,
+  DraftListResult,
+  DraftGetResult,
+  DraftUpdateBody,
+  DraftUpdateResult,
+  DraftDeleteResult,
+  DraftPublishResult,
+  DraftAttachmentContentType,
+  DraftUploadOptions,
+  DraftUploadResult,
+} from "./resources/drafts.js";
+
+export type {
   ResourceNamespaces,
   AccountScopedNamespaces,
 } from "./resources/index.js";
@@ -59,5 +74,7 @@ export {
   type MessagePayload,
   type ConnectionPayload,
   type AccountPayload,
+  type PostPublishedPayload,
+  type PostPublishFailedPayload,
   type ConstructEventOptions,
 } from "./webhooks.js";

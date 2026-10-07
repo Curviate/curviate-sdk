@@ -116,6 +116,33 @@ export interface AccountPayload extends EventPayloadBase {
 }
 
 /**
+ * Payload of `post.published`: a scheduled Draft went out. Carries ids and
+ * times only, never the post text or media.
+ */
+export interface PostPublishedPayload extends EventPayloadBase {
+  draft_id: string;
+  /** The published post's id; `null` when none was returned. */
+  post_id: string | null;
+  scheduled_at: string;
+  published_at: string;
+  /** Present when a warn-posture safety limit was breached by this publish. */
+  safety_warning?: unknown;
+}
+
+/**
+ * Payload of `post.publish_failed`: a scheduled Draft could not be published.
+ * `failure_code` `outcome_unknown` means the post may be live: check the
+ * account's posts before retrying. Never carries the post text or media.
+ */
+export interface PostPublishFailedPayload extends EventPayloadBase {
+  draft_id: string;
+  /** The time that failed (the Draft's own `scheduled_at` is cleared on failure). */
+  scheduled_at: string;
+  failure_code: string;
+  failure_message: string;
+}
+
+/**
  * Delivery metadata that accompanies every Curviate webhook event.
  *
  * These fields are present on every delivery the platform sends, but
@@ -203,6 +230,8 @@ export type CurviateEvent = CurviateEventEnvelope &
     | { event: "account.initial_sync.running"; data: AccountPayload }
     | { event: "account.initial_sync.completed"; data: AccountPayload }
     | { event: "account.initial_sync.failed"; data: AccountPayload }
+    | { event: "post.published"; data: PostPublishedPayload }
+    | { event: "post.publish_failed"; data: PostPublishFailedPayload }
   );
 
 // ─── Header parsing ──────────────────────────────────────────────────────────

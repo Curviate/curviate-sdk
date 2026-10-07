@@ -9,6 +9,36 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+## [0.42.0] - 2026-10-07
+
+Fixture and types regenerated from the server integration branch (134 paths,
+server `b1c443c6a3a0e1c2a09944be39f01c6921fca46c`), **not** from a deployed
+document: regenerate from deployed staging and confirm an empty diff before
+publishing.
+
+### Added
+
+- **`drafts` resource** (root-scoped, 7 methods): `create`, `list`, `get`,
+  `update`, `delete`, `publish`, `uploadAttachment`. A Draft is a stored,
+  editable post that Curviate publishes at `scheduled_at` (ISO 8601 with
+  offset, passed through unchanged). `list` takes `status` as an array and
+  sends it as the API's comma list; `status: ["published"]` returns publish
+  records. `uploadAttachment(id, data, { filename, contentType })` sends a
+  file (an MP4 video or PDF up to 50 MiB; an image is capped at 5 MiB) as the raw request body.
+  `delete` resolves with `undefined` (204). (`posts.delete` and `comments.delete`
+  still hand back the transport's empty buffer under a `void` type; unchanged here.)
+- **Six new error codes** decode to themselves instead of `INTERNAL`:
+  `DRAFT_LIMIT_REACHED`, `MEDIA_QUOTA_EXCEEDED`, `ACCOUNT_REQUIRED`,
+  `DRAFT_NOT_PUBLISHABLE`, `SCHEDULE_CONFLICT`, `DRAFT_PUBLISHING`.
+- **`post.published` and `post.publish_failed` webhook events** join
+  `CurviateEvent` (`PostPublishedPayload`, `PostPublishFailedPayload`).
+  Payloads carry ids and times, never post text or media.
+- `Draft*` request and result types are exported.
+
+### Changed
+
+- The webhook `source` enum includes `post`, from the regenerated types.
+
 ## [0.41.0] - 2026-10-03
 
 Fixture and types regenerated against the deployed staging document

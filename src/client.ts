@@ -28,6 +28,7 @@ import {
   type AccountsResource,
   type AuthResource,
   type WebhooksResource,
+  type DraftsResource,
 } from "./resources/index.js";
 
 export class Curviate {
@@ -40,6 +41,7 @@ export class Curviate {
   readonly accounts: AccountsResource;
   readonly auth: AuthResource;
   readonly webhooks: WebhooksResource;
+  readonly drafts: DraftsResource;
 
   constructor(config: CurviateConfig) {
     this.config = resolveConfig(config);
@@ -48,6 +50,7 @@ export class Curviate {
     this.accounts = ns.accounts;
     this.auth = ns.auth;
     this.webhooks = ns.webhooks;
+    this.drafts = ns.drafts;
   }
 
   /**

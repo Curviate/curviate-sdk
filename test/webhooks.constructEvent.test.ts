@@ -313,3 +313,43 @@ describe("CurviateEvent union pin — matches the generated create-events catalo
     expect(true).toBe(true); // runtime no-op — the real proof is the 7 suppressed errors above
   });
 });
+
+// ─── post source (scheduled Drafts) ──────────────────────────────────────────
+
+describe("constructEvent — post.* events narrow to their payloads", () => {
+  it("post.published exposes draft_id/post_id/published_at; post.publish_failed exposes failure_code", async () => {
+    const t = nowSecs();
+    const ok = JSON.stringify({
+      event: "post.published",
+      data: {
+        account_id: "acc_1",
+        event: "post.published",
+        occurred_at: "2026-10-12T07:00:10Z",
+        draft_id: "drf_1",
+        post_id: null,
+        scheduled_at: "2026-10-12T07:00:00Z",
+        published_at: "2026-10-12T07:00:10Z",
+      },
+    });
+    const e1 = await constructEvent(ok, makeHeader(ok, SECRET, t), SECRET);
+    if (e1.event !== "post.published") throw new Error("expected post.published");
+    expect(e1.data.draft_id).toBe("drf_1");
+    expect(e1.data.post_id).toBeNull();
+
+    const bad = JSON.stringify({
+      event: "post.publish_failed",
+      data: {
+        account_id: "acc_1",
+        event: "post.publish_failed",
+        occurred_at: "2026-10-12T07:00:10Z",
+        draft_id: "drf_1",
+        scheduled_at: "2026-10-12T07:00:00Z",
+        failure_code: "outcome_unknown",
+        failure_message: "check the account's posts first",
+      },
+    });
+    const e2 = await constructEvent(bad, makeHeader(bad, SECRET, t), SECRET);
+    if (e2.event !== "post.publish_failed") throw new Error("expected post.publish_failed");
+    expect(e2.data.failure_code).toBe("outcome_unknown");
+  });
+});
