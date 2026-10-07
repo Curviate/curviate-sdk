@@ -9,6 +9,8 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+## [0.42.0] - 2026-10-07
+
 Fixture and types regenerated from the server integration branch (134 paths,
 server `b1c443c6a3a0e1c2a09944be39f01c6921fca46c`), **not** from a deployed
 document: regenerate from deployed staging and confirm an empty diff before
