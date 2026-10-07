@@ -1,8 +1,8 @@
 {
-  "source_base_url": "server integration branch @ b1c443c6a (OpenAPI built in-process by the server app; deployed staging pending)",
-  "server_git_sha": "b1c443c6a3a0e1c2a09944be39f01c6921fca46c",
-  "fetched_at": "2026-10-07T00:10:09.080Z",
+  "source_base_url": "https://api.staging.curviate.com",
+  "server_git_sha": "907ae82547aaa92177ead4111a6bb6be1d639ed4",
+  "fetched_at": "2026-10-07T13:43:55.952Z",
   "paths": 134,
-  "servers_canonicalized": false,
-  "note": "Interim: not from deployed staging. Regenerate from deployed staging (CURVIATE_BASE_URL=https://api.staging.curviate.com node scripts/refresh-fixture.mjs && node scripts/gen-types.mjs --fixture) and diff: expect empty apart from provenance."
+  "servers_canonicalized": true,
+  "note": "Written by scripts/refresh-fixture.mjs (pnpm gen:fixture). Do not hand-edit; refresh instead."
 }
