@@ -69,7 +69,7 @@ const draft = await curviate.drafts.create({
   scheduled_at: "2026-10-12T09:00:00+02:00", // ISO 8601 with offset; 5 min to 365 days ahead
 });
 
-// A video or PDF (up to 50 MiB) goes up as the raw body; small images can ride inline as base64.
+// A video or PDF (up to 50 MiB) goes up as the raw body; images (up to 5 MiB) can ride inline as base64.
 await curviate.drafts.uploadAttachment(draft.id, await readFile("clip.mp4"), {
   filename: "clip.mp4",
   contentType: "video/mp4",

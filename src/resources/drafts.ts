@@ -184,7 +184,8 @@ export class DraftsResource {
 
   /**
    * Add one file to the Draft as the raw request body, for media too large to
-   * send inline (a video or PDF up to 50 MiB, or an image). One file per call.
+   * send inline: an MP4 video or a PDF, each up to 50 MiB. An image is capped at 5 MiB on
+   * every route. One file per call.
    * `POST /v1/drafts/{id}/attachments?filename=...`
    *
    * Small files (up to 5 MiB) can instead ride inline in `create` / `update`
