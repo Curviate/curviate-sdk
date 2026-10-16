@@ -74,6 +74,7 @@ export {
   type MessagePayload,
   type ConnectionPayload,
   type AccountPayload,
+  type MotionPayload,
   type PostPublishedPayload,
   type PostPublishFailedPayload,
   type ConstructEventOptions,
