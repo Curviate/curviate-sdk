@@ -353,3 +353,26 @@ describe("constructEvent — post.* events narrow to their payloads", () => {
     expect(e2.data.failure_code).toBe("outcome_unknown");
   });
 });
+
+// ─── motion source ───────────────────────────────────────────────────────────
+
+describe("constructEvent — motion events narrow to MotionPayload", () => {
+  it("motion.status_changed exposes motion_id and a null account_id", async () => {
+    const body = JSON.stringify({
+      event: "motion.status_changed",
+      data: {
+        motion_id: "mot_1",
+        account_id: null,
+        event: "motion.status_changed",
+        occurred_at: "2026-10-12T07:00:10Z",
+        from: "draft",
+        to: "running",
+      },
+    });
+    const e = await constructEvent(body, makeHeader(body, SECRET, nowSecs()), SECRET);
+    if (e.event !== "motion.status_changed") throw new Error("expected motion.status_changed");
+    expect(e.data.motion_id).toBe("mot_1");
+    expect(e.data.account_id).toBeNull();
+    expect(e.data["to"]).toBe("running");
+  });
+});

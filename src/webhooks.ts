@@ -143,6 +143,26 @@ export interface PostPublishFailedPayload extends EventPayloadBase {
 }
 
 /**
+ * Payload of the seven `motion` events (`motion.status_changed`,
+ * `enrollment.started`, `enrollment.skipped`, `enrollment.finished`,
+ * `step.executed`, `step.failed`, `motion.signal`). Each carries `motion_id`;
+ * the rest varies by event and is documented at
+ * https://docs.curviate.com/reference/webhooks/events (`contact` is the Contact
+ * record, `null` once deleted).
+ *
+ * `account_id` is `null` on an event of no single account (`motion.status_changed`,
+ * and an `enrollment.skipped` with none assigned yet), which is why this does
+ * not extend {@link EventPayloadBase}.
+ */
+export interface MotionPayload {
+  motion_id: string;
+  account_id: string | null;
+  event: string;
+  occurred_at: string;
+  [key: string]: unknown;
+}
+
+/**
  * Delivery metadata that accompanies every Curviate webhook event.
  *
  * These fields are present on every delivery the platform sends, but
@@ -232,6 +252,13 @@ export type CurviateEvent = CurviateEventEnvelope &
     | { event: "account.initial_sync.failed"; data: AccountPayload }
     | { event: "post.published"; data: PostPublishedPayload }
     | { event: "post.publish_failed"; data: PostPublishFailedPayload }
+    | { event: "motion.status_changed"; data: MotionPayload }
+    | { event: "enrollment.started"; data: MotionPayload }
+    | { event: "enrollment.skipped"; data: MotionPayload }
+    | { event: "enrollment.finished"; data: MotionPayload }
+    | { event: "step.executed"; data: MotionPayload }
+    | { event: "step.failed"; data: MotionPayload }
+    | { event: "motion.signal"; data: MotionPayload }
   );
 
 // ─── Header parsing ──────────────────────────────────────────────────────────

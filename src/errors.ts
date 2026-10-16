@@ -275,6 +275,15 @@ export const ERROR_CODES = [
   "DRAFT_NOT_PUBLISHABLE",
   "SCHEDULE_CONFLICT",
   "DRAFT_PUBLISHING",
+  // Teams and Tiers. Neither clears on a retry; the fix is with a person.
+  //
+  // - `INSUFFICIENT_ROLE` (403): your role in the team may not do this on an
+  //   account a teammate connected.
+  // - `TIER_REQUIRED` (403): the team's Tier does not include the feature. The
+  //   error body names it (`feature`) and the lowest Tier that has it
+  //   (`required_tier`); a team Owner upgrades.
+  "INSUFFICIENT_ROLE",
+  "TIER_REQUIRED",
 
   // Generic
   "INTERNAL",

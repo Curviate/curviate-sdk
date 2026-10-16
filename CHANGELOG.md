@@ -9,6 +9,43 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+Fixture and types regenerated from deployed staging (server
+`3b0b7503a516f6a1f39622bd40ec6fec9c217c38`, 176 paths). The previous fixture
+was older, so this regen also carries earlier, unrelated server changes (see
+Changed). Regenerate from production and confirm an empty diff before publishing.
+
+### Added
+
+- **`activity_window.effective_timezone` and `activity_window.source`** on the
+  account object (`accounts.get`, `accounts.update`) and on the per-account
+  safety policy (`GET`/`PATCH /v1/{account_id}/safety-policy`, types only: the
+  SDK has no safety-policy method). `effective_timezone` is the IANA zone the activity window is
+  read in; `source` is `account`, `browser`, `location` or `default`.
+
+### Changed
+
+- **The activity window applies to every account, with or without a
+  `timezone`.** It is no longer switched off when no zone is set: the zone is
+  the one you set, else the one the user's browser reported, else one inferred
+  from the LinkedIn profile location when it maps to one zone, else
+  `Europe/Berlin`. `timezone` and `timezone_unset` keep their meaning: what you
+  set. Behavior change on the server: under `enforce` an account with no
+  `timezone` is now refused outside 07:00 to 22:00 in its effective zone
+  (`BUDGET_EXHAUSTED`, `safetyReason: "activity_window"`), where before nothing
+  was refused. Description changes only on the generated types.
+- Types regenerated from the staging document also include server changes that
+  were not in the previous fixture: the contacts, tags, contact lists, Motions,
+  enrollments, unibox, notifications, network sync and billing tier paths; new
+  `Error` fields and `reason` values; `owner_user_id` and `team_access` on the
+  account object. Types only: no resource wraps them yet.
+- **Two drift fixes the regen forced** (the SDK's own pins went red against the
+  new document): the seven `motion` webhook events (`motion.status_changed`,
+  `enrollment.started`, `enrollment.skipped`, `enrollment.finished`,
+  `step.executed`, `step.failed`, `motion.signal`) join `CurviateEvent` with a
+  loose `MotionPayload` (`motion_id`, `account_id` nullable), and the error
+  codes `INSUFFICIENT_ROLE` and `TIER_REQUIRED` join `ERROR_CODES` instead of
+  decoding to `INTERNAL`.
+
 ## [0.42.0] - 2026-10-07
 
 Fixture and types regenerated from the server integration branch (134 paths,

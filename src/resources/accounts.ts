@@ -143,6 +143,12 @@ export class AccountsResource {
    * LinkedIn account, and it is always enforced with `429` whatever the
    * posture.
    *
+   * `activity_window` applies to every account, with or without a zone set.
+   * `timezone` and `timezone_unset` report what YOU set; read
+   * `activity_window.effective_timezone` for the zone the window is actually
+   * read in and `activity_window.source` (`account`, `browser`, `location` or
+   * `default`) for where it came from.
+   *
    * `account_states[]` lists platform conditions the account is in right now,
    * additive to `status` and independent of it: `recruiter_session_evicted`,
    * `commercial_use_limited`, `profile_view_limited`. The last two are read on

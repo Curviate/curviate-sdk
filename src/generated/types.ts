@@ -35,7 +35,7 @@ export interface paths {
         };
         /**
          * List 1st-degree connections
-         * @description Returns a paginated list of the connected account's 1st-degree connections. Filter by member name with the filter parameter.
+         * @description Returns a paginated list of the connected account's 1st-degree connections, read from LinkedIn. Filter by member name with the filter parameter. For the stored list across accounts, which calls nothing on LinkedIn, use GET /v1/network/connections.
          */
         get: operations["getV1AccountIdProfilesRelations"];
         put?: never;
@@ -1274,6 +1274,186 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/network/connections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List stored connections
+         * @description Lists the Connections Curviate has stored for your accounts, newest first, without calling LinkedIn or using any limit. It is what is stored as of coverage.as_of, not a live reading; a new Connection can take hours to appear. Read coverage before trusting an empty page.
+         */
+        get: operations["getV1NetworkConnections"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/network/sync-status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve connection sync status
+         * @description Returns, per account, how far Connection sync is: its state, why it is paused if it is, how many Connections are stored, when the last full sync finished and when the next read can happen. Calls nothing on LinkedIn.
+         */
+        get: operations["getV1NetworkSyncStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/network/resync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resync an account's connections
+         * @description Starts a full re-read of one account's Connections. Paced like every sync read and only inside the account's activity window, so a large network takes hours to days. Once per account per 24 hours. Follow it on GET /v1/network/sync-status. Needs Automate.
+         */
+        post: operations["postV1NetworkResync"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/unibox/accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Unibox accounts
+         * @description Returns, for every account you can operate, whether its whole inbox is copied into the Unibox and how far the chat-list sync is. Calls nothing on LinkedIn. An account with full-inbox sync off still shows its Motion chats in the Unibox.
+         */
+        get: operations["getV1UniboxAccounts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/unibox/accounts/{account_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Set full-inbox sync for an account
+         * @description Turns copying an account's whole inbox into the Unibox on or off. Only the person who connected the account can do this. On starts a paced listing that takes hours. Off hides the account's non-Motion chats at once and deletes them within 15 minutes.
+         */
+        patch: operations["patchV1UniboxAccountsAccountId"];
+        trace?: never;
+    };
+    "/v1/unibox/chats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Unibox chats
+         * @description Lists the conversations of every account you can operate in one inbox, newest activity first, from what Curviate has stored. Calls nothing on LinkedIn and uses no limit. An account with full-inbox sync off shows only its Motion chats. Read messages with GET /v1/{account_id}/chats/{chat_id}/messages.
+         */
+        get: operations["getV1UniboxChats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/unibox/chats/{account_id}/{chat_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve a Unibox chat
+         * @description Returns one conversation as the Unibox lists it, from what Curviate has stored. Calls nothing on LinkedIn. Read its messages with GET /v1/{account_id}/chats/{chat_id}/messages.
+         */
+        get: operations["getV1UniboxChatsAccountIdChatId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/unibox/unread-count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Count unread Unibox chats
+         * @description Counts the unread conversations in your Unibox: chats, not messages. Calls nothing on LinkedIn, so it is cheap to poll.
+         */
+        get: operations["getV1UniboxUnreadCount"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/unibox/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh Unibox chats
+         * @description Queues a re-read of the newest conversations of each account with full-inbox sync on: the top of each inbox, up to 100 chats. Paced like the sync, so it runs within minutes. Once per account per 5 minutes; a repeat answers cooldown with next_allowed_at. Needs Automate.
+         */
+        post: operations["postV1UniboxRefresh"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/{account_id}/jobs": {
         parameters: {
             query?: never;
@@ -1613,7 +1793,7 @@ export interface paths {
         put?: never;
         /**
          * Create a draft
-         * @description Stores an unpublished post until it is published or deleted. Every field is optional, the account too; a Draft has at most one account and can move between yours. Up to 50 Drafts and 2 GiB of media per account, and per no-account. A retry creates a second Draft.
+         * @description Stores an unpublished post until it is published or deleted. Every field is optional, the account too; a Draft has at most one account and can move between yours. Up to 50 Drafts and 2 GiB of media per account, and per no-account. A retry creates a second Draft. Needs Automate.
          */
         post: operations["postV1Drafts"];
         delete?: never;
@@ -1645,7 +1825,7 @@ export interface paths {
         head?: never;
         /**
          * Update a draft
-         * @description Partial update: an omitted field is left as is, null clears it. attachments replaces the whole list ({id} keeps an existing file, a base64 object adds one, anything left out is deleted). account_id moves the Draft to another of your accounts. Editing a failed Draft clears its failure.
+         * @description Partial update: an omitted field is left as is, null clears it. attachments replaces the whole list ({id} keeps an existing file, a base64 object adds one, the rest is deleted). account_id moves the Draft to another of your accounts. Editing a failed Draft clears its failure. Needs Automate.
          */
         patch: operations["patchV1DraftsId"];
         trace?: never;
@@ -1661,7 +1841,7 @@ export interface paths {
         put?: never;
         /**
          * Publish a draft now
-         * @description Publishes the Draft now, under the same rules as create post, safety limits included. Success deletes the Draft and its media, writes a publish record and returns the post id, no webhook. Failure leaves the Draft unchanged.
+         * @description Publishes the Draft now, under create post's rules and safety limits. Success deletes the Draft and its media, writes a publish record and returns the post id, no webhook. A known failure keeps the content; a scheduled time already passed is cleared. The responses say more. Needs Automate.
          */
         post: operations["postV1DraftsIdPublish"];
         delete?: never;
@@ -1681,13 +1861,93 @@ export interface paths {
         put?: never;
         /**
          * Upload a draft attachment
-         * @description Adds one file to the Draft as the raw request body, for media too large to send inline: a video (MP4, up to 50 MiB), a PDF (up to 50 MiB) or an image. Content-Type is the file's type, Content-Length is required; kept only if it arrives whole. Same media rules as inline.
+         * @description Adds one file to the Draft as the raw request body, for media too large to send inline: a video (MP4, up to 50 MiB), a PDF (up to 50 MiB) or an image. Content-Type is the file's type, Content-Length is required; kept only if it arrives whole. Same media rules as inline. Needs Automate.
          */
         post: operations["postV1DraftsIdAttachments"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/v1/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List your notifications
+         * @description What Curviate needs you to know: an account needs reconnecting, a Motion paused, an import finished. Each person has their own list and read state, per team. Check unread at session start. Not an account's LinkedIn notifications (/v1/{account_id}/notifications), and not webhook events.
+         */
+        get: operations["getV1Notifications"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/notifications/unread-count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Count your unread notifications
+         * @description Returns how many of your Notifications in this team are neither read nor archived. Cheap to poll. Not an account's LinkedIn notifications (/v1/{account_id}/notifications), and not webhook events.
+         */
+        get: operations["getV1NotificationsUnreadCount"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/notifications/mark-all-read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark all your notifications as read
+         * @description Marks your unread Notifications read, up to before or now. Send the newest created_at you have seen as before, so one arriving meanwhile stays unread. The body is optional. Not an account's LinkedIn notifications (/v1/{account_id}/notifications), and not webhook events.
+         */
+        post: operations["postV1NotificationsMarkAllRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/notifications/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update a notification
+         * @description Marks one of your Notifications read, archives it or moves it back to the list. Archiving also marks it read; none can be marked unread. Not an account's LinkedIn notifications (/v1/{account_id}/notifications), and not webhook events.
+         */
+        patch: operations["patchV1NotificationsId"];
         trace?: never;
     };
     "/v1/{account_id}/recruiter/profiles/{user_id}": {
@@ -2623,7 +2883,7 @@ export interface paths {
         };
         /**
          * List webhook event types
-         * @description Returns the complete canonical event catalogue (29 events) grouped by source: messaging (7), user (2), account_status (15), post (2), plus 3 recruiter/sales_nav events. A local catalogue read: no platform call is made.
+         * @description Returns the complete canonical event catalogue (36 events) grouped by source: messaging (7), user (2), account_status (15), post (2), motion (7), plus 3 recruiter/sales_nav events. A local catalogue read: no platform call is made.
          */
         get: operations["getV1WebhooksEvents"];
         put?: never;
@@ -2750,6 +3010,610 @@ export interface paths {
         patch: operations["patchV1SafetyPolicy"];
         trace?: never;
     };
+    "/v1/contacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List contacts
+         * @description Lists your team's Contacts. Filters combine with AND; each parameter at most once. Cursor-paginated.
+         */
+        get: operations["getV1Contacts"];
+        put?: never;
+        /**
+         * Create or update a contact
+         * @description Upserts the Contact for one person, keyed on LinkedIn identity: any spelling of the same profile URL updates the same Contact. An empty or null value never erases a stored one; tags and list_id/list_name only add. 201 when created, 200 otherwise, with outcome. Needs Automate.
+         */
+        post: operations["postV1Contacts"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contacts/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export contacts
+         * @description Streams every Contact matching the listing's filters in one download, as CSV, JSON or NDJSON (default). No cursor. fields picks and orders the columns. A CSV export re-imports without changes.
+         */
+        get: operations["getV1ContactsExport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contacts/update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Tag or move contacts in bulk
+         * @description Adds and removes Tags and list memberships on up to 1000 Contacts in one call. Adding what is present or removing what is absent is a no-op. A new Tag name or add_list_name creates it. Needs Automate.
+         */
+        post: operations["postV1ContactsUpdate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contacts/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Delete contacts in bulk
+         * @description Deletes up to 1000 Contacts with their Tags and list memberships.
+         */
+        post: operations["postV1ContactsDelete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contacts/enrich": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Enrich contacts
+         * @description Fills up to 1000 Contacts from LinkedIn data. Stored data is used first, free; the rest is queued as a paced live profile visit from account_id (profile_views budget). A live visit is a real profile view the person may see; cache_only never visits. Needs Automate.
+         */
+        post: operations["postV1ContactsEnrich"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contacts/imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List contact imports
+         * @description Lists your team's imports, newest first. Imports and their reports are kept 30 days after they finish.
+         */
+        get: operations["getV1ContactsImports"];
+        put?: never;
+        /**
+         * Import contacts
+         * @description Imports Contacts from rows or CSV text, keyed on LinkedIn identity as POST /v1/contacts; re-importing merges. Up to 10000 rows. 500 rows or fewer run in the request (201, per-row report inline); more run in the background (202). A bad value skips its row, a bad structure refuses all. Needs Automate.
+         */
+        post: operations["postV1ContactsImports"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contacts/imports/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve a contact import
+         * @description Returns one import: status, counts and, once failed, why. The per-row report is GET /v1/contacts/imports/{id}/rows.
+         */
+        get: operations["getV1ContactsImportsId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contacts/imports/{id}/rows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a contact import's rows
+         * @description The per-row report in row order. outcome keeps only the listed outcomes (comma list), e.g. skipped to see what to fix. Reports hold no field values.
+         */
+        get: operations["getV1ContactsImportsIdRows"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contacts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve a contact
+         * @description Returns one Contact.
+         */
+        get: operations["getV1ContactsId"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a contact
+         * @description Deletes the Contact, its Tags and list memberships. This deletes your record only; it is not erasure of the person elsewhere.
+         */
+        delete: operations["deleteV1ContactsId"];
+        options?: never;
+        head?: never;
+        /**
+         * Update a contact
+         * @description Partial update: an omitted field is left as is, null clears it (Curviate may fill it again from LinkedIn). In extra, null removes that key. linkedin_url cannot change. Needs Automate.
+         */
+        patch: operations["patchV1ContactsId"];
+        trace?: never;
+    };
+    "/v1/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List tags
+         * @description Lists your team's Tags by name, each with its Contact count. Tags are created by using a new name.
+         */
+        get: operations["getV1Tags"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tags/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete a tag
+         * @description Deletes the Tag and removes it from every Contact.
+         */
+        delete: operations["deleteV1TagsId"];
+        options?: never;
+        head?: never;
+        /**
+         * Rename a tag
+         * @description Renames the Tag on every Contact. Names are unique in any casing. Needs Automate.
+         */
+        patch: operations["patchV1TagsId"];
+        trace?: never;
+    };
+    "/v1/contact-lists": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List contact lists
+         * @description Lists your team's Contact lists by name, each with its Contact count.
+         */
+        get: operations["getV1ContactLists"];
+        put?: never;
+        /**
+         * Create a contact list
+         * @description Creates a static Contact list. Add Contacts with POST /v1/contacts/update or list_name on create and import. Needs Automate.
+         */
+        post: operations["postV1ContactLists"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contact-lists/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve a contact list
+         * @description Returns one Contact list. Its Contacts: GET /v1/contacts?list_id=.
+         */
+        get: operations["getV1ContactListsId"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a contact list
+         * @description Deletes the list and its memberships. The Contacts are kept.
+         */
+        delete: operations["deleteV1ContactListsId"];
+        options?: never;
+        head?: never;
+        /**
+         * Update a contact list
+         * @description Renames the list or changes its description. Needs Automate.
+         */
+        patch: operations["patchV1ContactListsId"];
+        trace?: never;
+    };
+    "/v1/motions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List motions
+         * @description Lists your team's Motions, most recently updated first, without their Sequence documents. Archived Motions are left out unless status names them. Cursor-paginated.
+         */
+        get: operations["getV1Motions"];
+        put?: never;
+        /**
+         * Create a motion
+         * @description Creates a Motion as a draft: nothing is sent until you start it. Only name is required; the rest has defaults and can be set later. A sequence, when given, is validated whole against the Sequence document schema (GET /schemas/sequence/v1.json) and refused with every error at once. Needs Automate.
+         */
+        post: operations["postV1Motions"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/motions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve a motion
+         * @description Returns one Motion with its current Sequence and lint warnings. The writable fields can be sent back to create or update a Motion.
+         */
+        get: operations["getV1MotionsId"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a draft motion
+         * @description Deletes a draft Motion with its Sequence. A Motion that was started cannot be deleted: archive it instead.
+         */
+        delete: operations["deleteV1MotionsId"];
+        options?: never;
+        head?: never;
+        /**
+         * Update a motion
+         * @description Partial update in every status but archived. schedule and settings merge key by key; lists, accounts, where and sequence are replaced whole. After start, a sequence edit to text, waits or notes applies in place (sequence_change copy); any other is a new Sequence version (structural). Needs Automate.
+         */
+        patch: operations["patchV1MotionsId"];
+        trace?: never;
+    };
+    "/v1/motions/{id}/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start a motion
+         * @description Starts a draft: active, or scheduled while schedule.start_at is in the future. Needs a Contact list, a sending account that is active with a seat, schedule.timezone and a Sequence; every gap comes back at once in errors[]. Nothing reaches LinkedIn before this call. Needs Automate.
+         */
+        post: operations["postV1MotionsIdStart"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/motions/{id}/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pause a motion
+         * @description Pauses a scheduled or active Motion (pause_reason user). No Step runs while it is paused.
+         */
+        post: operations["postV1MotionsIdPause"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/motions/{id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resume a motion
+         * @description Resumes a paused Motion: active, or scheduled before schedule.start_at. Checks what start checks; every gap comes back at once in errors[]. Needs Automate.
+         */
+        post: operations["postV1MotionsIdResume"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/motions/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Archive a motion
+         * @description Archives the Motion. This cannot be undone: it becomes read-only and its open Enrollments end. Its Sequence versions and history are kept.
+         */
+        post: operations["postV1MotionsIdArchive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/motions/{id}/sequence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve a sequence version
+         * @description Returns one version of the Motion's Sequence document: the current one, or the one version names. Earlier versions are kept while the Motion exists.
+         */
+        get: operations["getV1MotionsIdSequence"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/motions/{id}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preview a motion
+         * @description Renders the Sequence for sample Contacts and projects how long the list takes, in any status. A read: nothing is sent, saved or spent; what only LinkedIn can answer is unknown. The projection is an estimate.
+         */
+        get: operations["getV1MotionsIdPreview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/motions/{id}/contacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add contacts to a motion
+         * @description Enrolls up to 1000 Contacts directly, without a Contact list. Exclusions still apply; the answer says per Contact what happened, and a repeat answers already_enrolled. Works in every status but archived; adding to a completed Motion reactivates it. Needs Automate.
+         */
+        post: operations["postV1MotionsIdContacts"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/motions/{id}/contacts/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Remove contacts from a motion
+         * @description Ends the pending and running Enrollments of up to 1000 Contacts in this Motion (finish_reason removed). No further Step runs for them. The Contacts themselves are kept.
+         */
+        post: operations["postV1MotionsIdContactsRemove"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/enrollments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List enrollments
+         * @description Lists your team's Enrollments, newest first. Filter by Motion, Contact, account, status or the Step they are at. Cursor-paginated.
+         */
+        get: operations["getV1Enrollments"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/enrollments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve an enrollment
+         * @description Returns one Enrollment with its history: the outcome and exit of every Step so far. The history holds no message text.
+         */
+        get: operations["getV1EnrollmentsId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/enrollments/{id}/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Stop an enrollment
+         * @description Ends a pending, active or paused Enrollment (finish_reason stopped). No further Step runs. A stopped Enrollment that had started can be resumed.
+         */
+        post: operations["postV1EnrollmentsIdStop"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/enrollments/{id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resume an enrollment at a step
+         * @description Continues an active, paused or finished Enrollment at the Step you name, e.g. after an out-of-office reply. The reply rule is armed again. It stays paused while its account or its Motion is paused, then continues from that Step. Resuming in a completed Motion reactivates the Motion. Needs Automate.
+         */
+        post: operations["postV1EnrollmentsIdResume"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/enrollments/{id}/signal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send a signal to an enrollment
+         * @description Records a signal for an active or paused Enrollment whose Sequence has a Step waiting for it (`until signal.<name>`). Typical use: write the researched text to the Contact's extra fields, then signal. A name no Step waits for is refused, with the awaited names in the message. Needs Automate.
+         */
+        post: operations["postV1EnrollmentsIdSignal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/billing/seats/add": {
         parameters: {
             query?: never;
@@ -2810,6 +3674,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/billing/tier": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve the Team's Tier
+         * @description Returns the Tier the Team has now and where it comes from: the Tier bought, the free trial while it runs, or a Tier Curviate granted, with the features included. Any member can read it. It reports no prices. A Team's first call starts its free trial when one is due.
+         */
+        get: operations["getV1BillingTier"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2851,14 +3735,23 @@ export interface components {
                 message: string;
             };
             /**
-             * @description Present on BUDGET_EXHAUSTED: which rule refused. ceiling means the row's configured limit is spent, and you wait until reset_at or raise it. activity_window means the account is outside the hours it works in, and reset_at is when the window next opens. The two need different fixes, so branch on this rather than on the message; hint.parameter already names the right setting for each.
+             * @description Present on CONTACT_NOT_ENROLLABLE: why the Contact was not enrolled (already_enrolled, in_exclusion_list, in_other_motion or filtered_out). Present on BUDGET_EXHAUSTED: which rule refused. ceiling means the row's configured limit is spent, and you wait until reset_at or raise it. activity_window means the account is outside the hours it works in, and reset_at is when the window next opens. The two need different fixes, so branch on this rather than on the message; hint.parameter already names the right setting for each.
              * @enum {string}
              */
-            reason?: "ceiling" | "activity_window";
+            reason?: "ceiling" | "activity_window" | "already_enrolled" | "in_exclusion_list" | "in_other_motion" | "filtered_out";
             /** @description Present on BUDGET_EXHAUSTED, always true: the action did not happen and spent nothing. The same payload with blocked false rides the SUCCESS body of an account on the default warn posture, under safety_warning, and is otherwise field-identical, so one branch of your code handles both postures and moving an account to enforce is not a breaking change. */
             blocked?: boolean;
+            /** @description Present on RESOURCE_NOT_FOUND for a Contact id that was merged into another Contact (two records turned out to be one person): the id to use instead. */
+            merged_into?: string;
             /** @description Present alongside row: whole seconds until that row is usable again. This response carries no Retry-After header and no delay retry_hint, deliberately: a paused row can be paused for an hour, and a client that sleeps that inside the call hangs. Do not retry this row before the wait elapses; switch to other work instead. Seconds, not milliseconds. */
             retry_after?: number;
+            /** @description Present on SEQUENCE_INVALID: every failure of the refused Sequence document, not only the first (the first 100; the message counts them all), in step order, so one fix round covers them all. Also on MOTION_NOT_STARTABLE: every gap that keeps the Motion from starting. path is relative to the document (for example opener.variants.opener_named.text or invite.with.withdraw_after); rule says what to change. The message repeats the first entry. */
+            errors?: {
+                /** @description Where in the Sequence document: step id, then field. */
+                path: string;
+                /** @description The broken rule, phrased as the fix. */
+                rule: string;
+            }[];
             /** @description Present when a structured search filter value matched several filter options and one has to be picked (422 FILTER_CANDIDATES_REQUIRED). One entry per offending value, so a single retry can fix them all. A value that matched no option at all is not listed here and is not an error: it is sent on as an id and reported in notices[] on the 200. */
             unresolved?: {
                 /** @description The request body field the value came from. Dotted for nested filters, for example author.company. */
@@ -2875,6 +3768,14 @@ export interface components {
             }[];
             /** @description Present on PAYMENT_REQUIRED and ACCOUNT_DISPUTED: the self-service page where the tenant resolves the payment problem, so an agent can hand a human one link. Null when no portal session could be opened; fall back to the dashboard. */
             portal_url?: string | null;
+            /** @description Present on TIER_REQUIRED: the feature the team's Tier does not include (drafts, contacts, motions, network, unibox or keep_connected). */
+            feature?: string;
+            /** @description Present on TIER_REQUIRED: the lowest Tier that includes the feature. Null when no Tier includes it. */
+            required_tier?: string | null;
+            /** @description Present on TIER_REQUIRED: the team's Tier now. Null when the team has none. */
+            current_tier?: string | null;
+            /** @description Present on TIER_REQUIRED for a team Owner only: the dashboard page where the Tier is changed. Any other role gets none and asks an Owner. */
+            upgrade_url?: string;
             /** @description Present on CHECKPOINT_INVALID_CODE: how many more verification codes the checkpoint accepts before it locks. Stop and ask the account owner for a fresh code when it reaches zero, rather than guessing. */
             attempts_remaining?: number;
             /** @description Present on CHECKPOINT_UNSUPPORTED: the kind of verification challenge LinkedIn raised that cannot be solved through this API. A human has to complete it in LinkedIn, then the account reconnects. */
@@ -2897,8 +3798,10 @@ export interface components {
             };
             /** @description Present on RATE_LIMIT_ACCOUNT: the per-account request ceiling that was breached, with its name, the units remaining and total, and the absolute reset_time. Wait until reset_time before retrying. */
             quota?: Record<string, never>;
-            /** @description Present on TOOLSET_DISABLED: the name of the toolset that is switched off for this tenant, so you can enable it or use another tool. */
-            toolset?: string;
+            /** @description Present on TOOLSET_DISABLED: the name of the toolset that is switched off for this tenant, so you can enable it or use another tool. Present on TOOL_REMOVED: the toolset of the tool that replaces the removed one (enable it if it is off), or null when the tool left MCP for the CLI and REST API only. */
+            toolset?: string | null;
+            /** @description Present on TOOL_REMOVED (MCP only): the tool that replaces the removed one, to call instead with the arguments next_action describes, or null when it left MCP for the CLI and REST API only. */
+            replacement?: string | null;
             /** @description Present on AMBIGUOUS_IDENTIFIER: the entries the identifier matched. Pick one and re-send its id. */
             candidates?: {
                 /** @description The id to send instead of the ambiguous identifier. */
@@ -3027,6 +3930,480 @@ export interface components {
                     [key: string]: unknown;
                 };
             };
+        };
+        /**
+         * Sequence document v1
+         * @description A Motion's Sequence: a flat steps array run from the first step, ending explicitly in "end". Served documents use this key order: $schema, on_reply, steps; in a step id, the kind key, timeout, variants, with, then, else, next, note; in with post, newer_than, reaction, subject, text, note, note_fallback, fallback, withdraw_after; in a variant id, subject, text. A text holds at most 50 variables.
+         */
+        SequenceDocument: {
+            /** @constant */
+            $schema?: "https://docs.curviate.com/schemas/sequence/v1.json";
+            /** @description Where a reply interrupts to. Used only while stop_on_engagement is false. */
+            on_reply: string;
+            steps: ({
+                /** @description Step id, unique in the document. "end" is reserved. */
+                id: string;
+                /** @constant */
+                do: "profile.view";
+                with?: Record<string, never>;
+                /** @description A step id, or "end". */
+                next?: string;
+                /** @description Taken when the action cannot run or fails. Absent: same as success. */
+                else?: string;
+                /** @description Annotation shown in the builder graph. Never sent. */
+                note?: string;
+            } | {
+                /** @description Step id, unique in the document. "end" is reserved. */
+                id: string;
+                /** @constant */
+                do: "profile.follow";
+                with?: Record<string, never>;
+                /** @description A step id, or "end". */
+                next?: string;
+                /** @description Taken when the action cannot run or fails. Absent: same as success. */
+                else?: string;
+                /** @description Annotation shown in the builder graph. Never sent. */
+                note?: string;
+            } | {
+                /** @description Step id, unique in the document. "end" is reserved. */
+                id: string;
+                /** @constant */
+                do: "profile.unfollow";
+                with?: Record<string, never>;
+                /** @description A step id, or "end". */
+                next?: string;
+                /** @description Taken when the action cannot run or fails. Absent: same as success. */
+                else?: string;
+                /** @description Annotation shown in the builder graph. Never sent. */
+                note?: string;
+            } | {
+                /** @description Step id, unique in the document. "end" is reserved. */
+                id: string;
+                /** @constant */
+                do: "invite.send";
+                with?: {
+                    /** @description Invitation note; null or absent sends no note. Variables need note_fallback. */
+                    note?: string | null;
+                    /** @description Variable-free note used when a variable is missing, or "drop" to send without a note. */
+                    note_fallback?: string;
+                    /** @description Withdraw the invitation if still pending after this long (14d to 180d). Absent: never. */
+                    withdraw_after?: string;
+                };
+                /** @description A/B variants, split evenly and sticky per Enrollment. Exclusive with the text in with. */
+                variants?: {
+                    /** @description Step id, unique in the document. "end" is reserved. */
+                    id: string;
+                    text: string;
+                }[];
+                /** @description A step id, or "end". */
+                next?: string;
+                /** @description Taken when the action cannot run or fails. Absent: same as success. */
+                else?: string;
+                /** @description Annotation shown in the builder graph. Never sent. */
+                note?: string;
+            } | {
+                /** @description Step id, unique in the document. "end" is reserved. */
+                id: string;
+                /** @constant */
+                do: "invite.withdraw";
+                with?: Record<string, never>;
+                /** @description A step id, or "end". */
+                next?: string;
+                /** @description Taken when the action cannot run or fails. Absent: same as success. */
+                else?: string;
+                /** @description Annotation shown in the builder graph. Never sent. */
+                note?: string;
+            } | {
+                /** @description Step id, unique in the document. "end" is reserved. */
+                id: string;
+                /** @constant */
+                do: "message.send";
+                with?: {
+                    /** @description Message text. Variables need a fallback. */
+                    text?: string;
+                    /** @description Variable-free text used when a variable is missing. */
+                    fallback?: string;
+                };
+                /** @description A/B variants, split evenly and sticky per Enrollment. Exclusive with the text in with. */
+                variants?: {
+                    /** @description Step id, unique in the document. "end" is reserved. */
+                    id: string;
+                    text: string;
+                }[];
+                /** @description A step id, or "end". */
+                next?: string;
+                /** @description Taken when the action cannot run or fails. Absent: same as success. */
+                else?: string;
+                /** @description Annotation shown in the builder graph. Never sent. */
+                note?: string;
+            } | {
+                /** @description Step id, unique in the document. "end" is reserved. */
+                id: string;
+                /** @constant */
+                do: "inmail.send";
+                with?: {
+                    /** @description InMail subject. */
+                    subject?: string;
+                    /** @description Message text. Variables need a fallback. */
+                    text?: string;
+                    /** @description Variable-free subject and text, required when either uses a variable. */
+                    fallback?: {
+                        subject: string;
+                        text: string;
+                    };
+                };
+                /** @description A/B variants, split evenly and sticky per Enrollment. Exclusive with the text in with. */
+                variants?: {
+                    /** @description Step id, unique in the document. "end" is reserved. */
+                    id: string;
+                    subject: string;
+                    text: string;
+                }[];
+                /** @description A step id, or "end". */
+                next?: string;
+                /** @description Taken when the action cannot run or fails. Absent: same as success. */
+                else?: string;
+                /** @description Annotation shown in the builder graph. Never sent. */
+                note?: string;
+            } | {
+                /** @description Step id, unique in the document. "end" is reserved. */
+                id: string;
+                /** @constant */
+                do: "post.react";
+                with?: {
+                    /**
+                     * @description Which post. Only "latest" in v1.
+                     * @default latest
+                     * @constant
+                     */
+                    post: "latest";
+                    /**
+                     * @description Only a post newer than this (1h to 365d).
+                     * @default 30d
+                     */
+                    newer_than: string;
+                    /**
+                     * @default like
+                     * @enum {string}
+                     */
+                    reaction: "like" | "celebrate" | "support" | "love" | "insightful" | "funny";
+                };
+                /** @description A step id, or "end". */
+                next?: string;
+                /** @description Taken when the action cannot run or fails. Absent: same as success. */
+                else?: string;
+                /** @description Annotation shown in the builder graph. Never sent. */
+                note?: string;
+            } | {
+                /** @description Step id, unique in the document. "end" is reserved. */
+                id: string;
+                /** @constant */
+                do: "post.comment";
+                with?: {
+                    /**
+                     * @description Which post. Only "latest" in v1.
+                     * @default latest
+                     * @constant
+                     */
+                    post: "latest";
+                    /**
+                     * @description Only a post newer than this (1h to 365d).
+                     * @default 30d
+                     */
+                    newer_than: string;
+                    /** @description Message text. Variables need a fallback. */
+                    text?: string;
+                    /** @description Variable-free comment, or "skip" to skip the step when a variable is missing. */
+                    fallback?: string;
+                };
+                /** @description A/B variants, split evenly and sticky per Enrollment. Exclusive with the text in with. */
+                variants?: {
+                    /** @description Step id, unique in the document. "end" is reserved. */
+                    id: string;
+                    text: string;
+                }[];
+                /** @description A step id, or "end". */
+                next?: string;
+                /** @description Taken when the action cannot run or fails. Absent: same as success. */
+                else?: string;
+                /** @description Annotation shown in the builder graph. Never sent. */
+                note?: string;
+            } | {
+                /** @description Step id, unique in the document. "end" is reserved. */
+                id: string;
+                /** @constant */
+                do: "skill.endorse";
+                with?: Record<string, never>;
+                /** @description A step id, or "end". */
+                next?: string;
+                /** @description Taken when the action cannot run or fails. Absent: same as success. */
+                else?: string;
+                /** @description Annotation shown in the builder graph. Never sent. */
+                note?: string;
+            } | {
+                /** @description Step id, unique in the document. "end" is reserved. */
+                id: string;
+                /** @description Calendar time to wait (1m to 365d). */
+                wait: string;
+                /** @description A step id, or "end". */
+                next?: string;
+                /** @description Annotation shown in the builder graph. Never sent. */
+                note?: string;
+            } | {
+                /** @description Step id, unique in the document. "end" is reserved. */
+                id: string;
+                /** @description `invite.accepted`, `message.replied`, `message.read`, or `signal.<name>`. */
+                until: ("invite.accepted" | "message.replied" | "message.read") | string;
+                /** @description Give up waiting after this long (1h to 180d). */
+                timeout: string;
+                /** @description A step id, or "end". */
+                then: string;
+                /** @description A step id, or "end". */
+                else?: string;
+                /** @description Annotation shown in the builder graph. Never sent. */
+                note?: string;
+            } | {
+                /** @description Step id, unique in the document. "end" is reserved. */
+                id: string;
+                /** @description One key per predicate. No all/any: chain if steps. A predicate nests at most 10 levels. */
+                if: {
+                    "contact.connected": boolean;
+                } | {
+                    "contact.open_profile": boolean;
+                } | {
+                    "contact.premium": boolean;
+                } | {
+                    "contact.has_photo": boolean;
+                } | {
+                    "contact.degree": {
+                        /** @enum {integer} */
+                        eq: 1 | 2 | 3;
+                    } | {
+                        in: (1 | 2 | 3)[];
+                    };
+                } | {
+                    "contact.connections_gte": number;
+                } | {
+                    /** @description Posted within this long. */
+                    "contact.posted_within": string;
+                } | {
+                    "contact.tag": string;
+                } | {
+                    /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
+                    "contact.full_name"?: {
+                        eq?: string | number | boolean;
+                        neq?: string | number | boolean;
+                        in?: (string | number | boolean)[];
+                        contains?: string;
+                        exists?: boolean;
+                    };
+                    /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
+                    "contact.first_name"?: {
+                        eq?: string | number | boolean;
+                        neq?: string | number | boolean;
+                        in?: (string | number | boolean)[];
+                        contains?: string;
+                        exists?: boolean;
+                    };
+                    /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
+                    "contact.last_name"?: {
+                        eq?: string | number | boolean;
+                        neq?: string | number | boolean;
+                        in?: (string | number | boolean)[];
+                        contains?: string;
+                        exists?: boolean;
+                    };
+                    /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
+                    "contact.headline"?: {
+                        eq?: string | number | boolean;
+                        neq?: string | number | boolean;
+                        in?: (string | number | boolean)[];
+                        contains?: string;
+                        exists?: boolean;
+                    };
+                    /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
+                    "contact.job_title"?: {
+                        eq?: string | number | boolean;
+                        neq?: string | number | boolean;
+                        in?: (string | number | boolean)[];
+                        contains?: string;
+                        exists?: boolean;
+                    };
+                    /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
+                    "contact.company"?: {
+                        eq?: string | number | boolean;
+                        neq?: string | number | boolean;
+                        in?: (string | number | boolean)[];
+                        contains?: string;
+                        exists?: boolean;
+                    };
+                    /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
+                    "contact.email"?: {
+                        eq?: string | number | boolean;
+                        neq?: string | number | boolean;
+                        in?: (string | number | boolean)[];
+                        contains?: string;
+                        exists?: boolean;
+                    };
+                    /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
+                    "contact.location"?: {
+                        eq?: string | number | boolean;
+                        neq?: string | number | boolean;
+                        in?: (string | number | boolean)[];
+                        contains?: string;
+                        exists?: boolean;
+                    };
+                    /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
+                    "contact.linkedin_url"?: {
+                        eq?: string | number | boolean;
+                        neq?: string | number | boolean;
+                        in?: (string | number | boolean)[];
+                        contains?: string;
+                        exists?: boolean;
+                    };
+                    /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
+                    "contact.about"?: {
+                        eq?: string | number | boolean;
+                        neq?: string | number | boolean;
+                        in?: (string | number | boolean)[];
+                        contains?: string;
+                        exists?: boolean;
+                    };
+                } | Record<string, never> | {
+                    "account.premium": boolean;
+                } | {
+                    not: {
+                        "contact.connected": boolean;
+                    } | {
+                        "contact.open_profile": boolean;
+                    } | {
+                        "contact.premium": boolean;
+                    } | {
+                        "contact.has_photo": boolean;
+                    } | {
+                        "contact.degree": {
+                            /** @enum {integer} */
+                            eq: 1 | 2 | 3;
+                        } | {
+                            in: (1 | 2 | 3)[];
+                        };
+                    } | {
+                        "contact.connections_gte": number;
+                    } | {
+                        /** @description Posted within this long. */
+                        "contact.posted_within": string;
+                    } | {
+                        "contact.tag": string;
+                    } | {
+                        /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
+                        "contact.full_name"?: {
+                            eq?: string | number | boolean;
+                            neq?: string | number | boolean;
+                            in?: (string | number | boolean)[];
+                            contains?: string;
+                            exists?: boolean;
+                        };
+                        /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
+                        "contact.first_name"?: {
+                            eq?: string | number | boolean;
+                            neq?: string | number | boolean;
+                            in?: (string | number | boolean)[];
+                            contains?: string;
+                            exists?: boolean;
+                        };
+                        /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
+                        "contact.last_name"?: {
+                            eq?: string | number | boolean;
+                            neq?: string | number | boolean;
+                            in?: (string | number | boolean)[];
+                            contains?: string;
+                            exists?: boolean;
+                        };
+                        /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
+                        "contact.headline"?: {
+                            eq?: string | number | boolean;
+                            neq?: string | number | boolean;
+                            in?: (string | number | boolean)[];
+                            contains?: string;
+                            exists?: boolean;
+                        };
+                        /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
+                        "contact.job_title"?: {
+                            eq?: string | number | boolean;
+                            neq?: string | number | boolean;
+                            in?: (string | number | boolean)[];
+                            contains?: string;
+                            exists?: boolean;
+                        };
+                        /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
+                        "contact.company"?: {
+                            eq?: string | number | boolean;
+                            neq?: string | number | boolean;
+                            in?: (string | number | boolean)[];
+                            contains?: string;
+                            exists?: boolean;
+                        };
+                        /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
+                        "contact.email"?: {
+                            eq?: string | number | boolean;
+                            neq?: string | number | boolean;
+                            in?: (string | number | boolean)[];
+                            contains?: string;
+                            exists?: boolean;
+                        };
+                        /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
+                        "contact.location"?: {
+                            eq?: string | number | boolean;
+                            neq?: string | number | boolean;
+                            in?: (string | number | boolean)[];
+                            contains?: string;
+                            exists?: boolean;
+                        };
+                        /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
+                        "contact.linkedin_url"?: {
+                            eq?: string | number | boolean;
+                            neq?: string | number | boolean;
+                            in?: (string | number | boolean)[];
+                            contains?: string;
+                            exists?: boolean;
+                        };
+                        /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
+                        "contact.about"?: {
+                            eq?: string | number | boolean;
+                            neq?: string | number | boolean;
+                            in?: (string | number | boolean)[];
+                            contains?: string;
+                            exists?: boolean;
+                        };
+                    } | Record<string, never> | {
+                        "account.premium": boolean;
+                    };
+                };
+                /** @description A step id, or "end". */
+                then: string;
+                /** @description A step id, or "end". */
+                else?: string;
+                /** @description Annotation shown in the builder graph. Never sent. */
+                note?: string;
+            } | {
+                /** @description Step id, unique in the document. "end" is reserved. */
+                id: string;
+                /** @description Signal name for the motion.signal webhook. */
+                emit: string;
+                /** @description A step id, or "end". */
+                next?: string;
+                /** @description Annotation shown in the builder graph. Never sent. */
+                note?: string;
+            } | {
+                /** @description Step id, unique in the document. "end" is reserved. */
+                id: string;
+                /** @description Tag added to the Contact. */
+                tag: string;
+                /** @description A step id, or "end". */
+                next?: string;
+                /** @description Annotation shown in the builder graph. Never sent. */
+                note?: string;
+            })[];
         };
     };
     responses: never;
@@ -3614,7 +4991,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. LINKEDIN_FEATURE_NOT_SUBSCRIBED: the connected LinkedIn account's own subscription level does not entitle it to view this person's profile. This is the same condition a people-search result reports in-band as visibility:"hidden" on GET/POST .../search/..., reading a hidden result back always ends here. It is not a bug or a misconfiguration; retrying will not help, and there is no request shape that makes this person readable from this account. */
+            /** @description Forbidden. LINKEDIN_FEATURE_NOT_SUBSCRIBED: the connected LinkedIn account's own subscription level does not entitle it to view this person's profile. This is the same condition a people-search result reports in-band as visibility:"hidden" on GET/POST .../search/..., reading a hidden result back always ends here. It is not a bug or a misconfiguration; retrying will not help, and there is no request shape that makes this person readable from this account. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -4194,7 +5571,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account lacks the required permission for this action. */
+            /** @description The account lacks the required permission for this action. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -4391,7 +5768,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -4970,7 +6347,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The LinkedIn account lacks the feature backing this score. Defensive and unobserved, a free account with activity returns a valid 200, not a 403. */
+            /** @description The LinkedIn account lacks the feature backing this score. Defensive and unobserved, a free account with activity returns a valid 200, not a 403. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -5426,7 +6803,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The target account is blocked or otherwise restricted. */
+            /** @description The target account is blocked or otherwise restricted. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -5759,7 +7136,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -5950,7 +7327,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -6151,7 +7528,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -6331,7 +7708,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -6489,7 +7866,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not administer this page with the invite-to-follow entitlement (fail-closed), or lacks an active seat. */
+            /** @description The account does not administer this page with the invite-to-follow entitlement (fail-closed), or lacks an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -6656,7 +8033,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not administer this page (follower analytics is admin-gated), or lacks an active seat. */
+            /** @description The account does not administer this page (follower analytics is admin-gated), or lacks an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -6804,7 +8181,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not administer this page with the invite-to-follow entitlement, or lacks an active seat. */
+            /** @description The account does not administer this page with the invite-to-follow entitlement, or lacks an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -6999,7 +8376,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not administer this page (the admin gate), or lacks an active seat. */
+            /** @description The account does not administer this page (the admin gate), or lacks an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -7182,7 +8559,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not administer this page (the admin gate), or lacks an active seat. */
+            /** @description The account does not administer this page (the admin gate), or lacks an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -7358,7 +8735,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not administer this page (the admin gate), or lacks an active seat. */
+            /** @description The account does not administer this page (the admin gate), or lacks an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -7519,7 +8896,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not administer this page (fail-closed, the target company is absent from the account's administered pages), or the account lacks an active seat. */
+            /** @description The account does not administer this page (fail-closed, the target company is absent from the account's administered pages), or the account lacks an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -7701,7 +9078,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not administer this page (the admin gate), or lacks an active seat. */
+            /** @description The account does not administer this page (the admin gate), or lacks an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -7907,7 +9284,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account does not administer this page (the admin gate), or lacks an active seat. */
+            /** @description The account does not administer this page (the admin gate), or lacks an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -8100,7 +9477,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -8276,7 +9653,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -8439,7 +9816,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -12528,7 +13905,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The account is missing the InMail credits or premium subscription needed to send. */
+            /** @description The account is missing the InMail credits or premium subscription needed to send. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -12944,7 +14321,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The connected account does not administer this inbox: either it is not an admin of this page, or the mailbox is unknown to this account. No existence disclosure. */
+            /** @description The connected account does not administer this inbox: either it is not an admin of this page, or the mailbox is unknown to this account. No existence disclosure. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13131,7 +14508,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The LinkedIn account lacks a feature backing the feed. Not expected, both free and premium accounts read the home feed; documented for completeness. */
+            /** @description The LinkedIn account lacks a feature backing the feed. Not expected, both free and premium accounts read the home feed; documented for completeness. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -13294,7 +14671,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The LinkedIn account lacks a feature backing notifications. Not expected, free accounts read notifications; documented for completeness. */
+            /** @description The LinkedIn account lacks a feature backing notifications. Not expected, free accounts read notifications; documented for completeness. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -14467,7 +15844,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description This account is not the comment's author. */
+            /** @description This account is not the comment's author. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -14646,7 +16023,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description This account is not the comment's author. */
+            /** @description This account is not the comment's author. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -16204,6 +17581,1117 @@ export interface operations {
             };
         };
     };
+    getV1NetworkConnections: {
+        parameters: {
+            query?: {
+                /** @description Only Connections of these accounts: a comma list of 1 to 50 account ids (acc_...). Omitted: every account you can operate. */
+                account_id?: string[];
+                /** @description Case-insensitive text to find in the full name or the headline, 3 to 100 characters. */
+                q?: string;
+                /** @description true also returns Connections that are no longer connected (removed_at set). Default false. */
+                include_removed?: boolean;
+                /** @description Max items per page (1-1000, default 100). */
+                limit?: number;
+                /** @description Pagination cursor from a previous response; pass it back verbatim with the same filters. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Stored Connections, newest first. Read coverage before trusting an empty page: empty items with coverage.complete false means not synced yet; with coverage.complete true it means no Connections as of coverage.as_of. A new Connection can take hours to appear. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "connection_list";
+                        /** @description One item per account and person. */
+                        items: {
+                            /**
+                             * @description Response type discriminator.
+                             * @enum {string}
+                             */
+                            object: "connection";
+                            /** @description The account this person is connected to. */
+                            account_id: string;
+                            /** @description The person's LinkedIn member id, or null when only the public identifier is known. */
+                            member_id: string | null;
+                            /** @description The person's public profile slug. */
+                            public_identifier: string | null;
+                            /** @description The person's public profile link. */
+                            public_profile_url: string | null;
+                            /** @description First name. */
+                            first_name: string | null;
+                            /** @description Last name. */
+                            last_name: string | null;
+                            /** @description Profile headline. */
+                            headline: string | null;
+                            /** @description Current job title, when a profile read of this person has stored it. Null otherwise. */
+                            job_title: string | null;
+                            /** @description Current company, when a profile read of this person has stored it. Null otherwise. */
+                            company: string | null;
+                            /** @description Location, when a profile read of this person has stored it. Null otherwise. */
+                            location: string | null;
+                            /** @description The last observed picture link. LinkedIn picture links expire, so tolerate a dead image. */
+                            profile_picture_url: string | null;
+                            /** @description When LinkedIn says the connection was made, or null when it did not say. */
+                            connected_at: string | null;
+                            /** @description When Curviate first stored this Connection. */
+                            first_seen_at: string;
+                            /** @description When a full sync no longer found this Connection. Always present: null while connected, set only on items that include_removed=true adds. */
+                            removed_at: string | null;
+                            /** @description When this person's stored fields were last written, by any read of that person. */
+                            observed_at: string | null;
+                        }[];
+                        /** @description Pass back as cursor for the next page; null on the last page. */
+                        cursor: string | null;
+                        /** @description How much of the accounts in scope (the account_id filter, else every account you can operate) is stored. The list is what Curviate has stored as of as_of, not a live reading of LinkedIn. With no account in scope, complete is true, as_of is null and accounts is 0. */
+                        coverage: {
+                            /** @description true when every account in scope has finished at least one full sync. */
+                            complete: boolean;
+                            /** @description The oldest last full sync among the accounts in scope. Null while any of them is incomplete. */
+                            as_of: string | null;
+                            /** @description Accounts in scope. */
+                            accounts: number;
+                            /** @description Accounts in scope with no finished full sync yet. */
+                            accounts_incomplete: number;
+                        };
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST, naming the field: q shorter than 3 or longer than 100 characters, more than 50 account ids or a malformed one, a malformed cursor, include_removed other than true or false, limit outside 1 to 1000, or a parameter given more than once. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description A named account is in your team but you may not use it. INSUFFICIENT_ROLE: your role does not reach a teammate's account. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. Neither is fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_NOT_FOUND: a named account is not one of your team's accounts. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1NetworkSyncStatus: {
+        parameters: {
+            query?: {
+                /** @description Only these accounts: a comma list of 1 to 50 account ids (acc_...). Omitted: every account you can operate. */
+                account_id?: string[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One item per account in scope. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "network_sync_list";
+                        /** @description One item per account. */
+                        items: {
+                            /**
+                             * @description Response type discriminator.
+                             * @enum {string}
+                             */
+                            object: "network_sync";
+                            /** @description The account. */
+                            account_id: string;
+                            /**
+                             * @description paused: no read is happening now, paused_reason says why. pending: no sync read yet. syncing: a first read has been made and no full sync has completed yet. complete: at least one full sync finished.
+                             * @enum {string}
+                             */
+                            state: "paused" | "pending" | "syncing" | "complete";
+                            /**
+                             * @description Set only when state is paused. disabled: Connection sync is switched off. tier_required: the team's Tier does not include Network, so nothing is read. account_unavailable: the account is not active. reconnect_hold: the 24 hours after a reconnect. rate_limited: LinkedIn pushed back on a sync read. halted: another limit on the account is halted. outside_window: outside the account's activity window. budget_exhausted: today's sync reads are used up.
+                             * @enum {string|null}
+                             */
+                            paused_reason: "disabled" | "tier_required" | "account_unavailable" | "reconnect_hold" | "rate_limited" | "halted" | "outside_window" | "budget_exhausted" | null;
+                            /** @description true once at least one full sync has finished. */
+                            complete: boolean;
+                            /** @description Connections stored for the account, removed ones excluded. */
+                            connections_stored: number;
+                            /** @description When the last full sync finished. */
+                            last_full_sync_at: string | null;
+                            /** @description When the newest Connections were last checked. */
+                            last_poll_at: string | null;
+                            /** @description The scheduled time of the next read; can be in the past when a run is due; null when none is planned. While paused it is when the pause ends, or null when no run can be scheduled (disabled, tier_required, account_unavailable). */
+                            next_run_at: string | null;
+                            /** @description End of the hold after the last reconnect, when there was one. */
+                            reconnect_hold_until: string | null;
+                            /** @description The full sync in progress, or null. */
+                            walk: {
+                                /** @description When it started. */
+                                started_at: string;
+                                /** @description Pages read so far. */
+                                pages: number;
+                                /** @description Connections seen so far. */
+                                connections_seen: number;
+                            } | null;
+                            /** @description Set when the last full sync found Connections missing but did not mark them removed, as a safety measure. They stay listed as connected. */
+                            removals_withheld: {
+                                /** @description When that sync finished. */
+                                at: string;
+                                /**
+                                 * @description Why removals were withheld.
+                                 * @enum {string}
+                                 */
+                                reason: "removals_disabled" | "page_anomaly" | "unkeyable_item" | "too_many" | "low_coverage";
+                                /** @description How many Connections it would have marked removed. */
+                                would_remove: number;
+                            } | null;
+                            /** @description When POST /v1/network/resync is allowed again for this account. Null when it is allowed now. */
+                            next_manual_resync_at: string | null;
+                            /** @description The daily window sync reads happen in. Its timezone is the one set on the account, else the one its user's browser reported, else one inferred from the LinkedIn profile location, else Europe/Berlin. Reads start a little after start and stop a little before end, varying by day. Null when sync is not reading for this account (disabled, tier_required, account_unavailable). */
+                            read_window: {
+                                /** @description Local opening time, HH:MM. */
+                                start: string;
+                                /** @description Local closing time, HH:MM. */
+                                end: string;
+                                /** @description IANA timezone the window is read in. */
+                                timezone: string;
+                                /**
+                                 * @description Where the timezone came from: set on the account (safety policy), the user's browser, the LinkedIn profile location, or the default. Setting one on the account always wins.
+                                 * @enum {string}
+                                 */
+                                source: "set" | "browser" | "location" | "default";
+                            } | null;
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST, naming the field: more than 50 account ids, a malformed one, or account_id given more than once. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description A named account is in your team but you may not use it. INSUFFICIENT_ROLE: your role does not reach a teammate's account. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. Neither is fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_NOT_FOUND: a named account is not one of your team's accounts. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1NetworkResync: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The account whose Connections to walk again (acc_...). */
+                    account_id: string;
+                };
+            };
+        };
+        responses: {
+            /** @description What happens for the account. cooldown, in_progress and paused are answers, not errors. */
+            202: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "network_resync";
+                        /** @description The account. */
+                        account_id: string;
+                        /**
+                         * @description queued: the full re-read is started. It reads like a person scrolling: its first page within about a minute, at any hour, then small pages seconds apart in sessions with breaks; sessions after the first stay inside the activity window. cooldown: one was started in the last 24 hours. in_progress: a full read of this account is already running. paused: nothing was started, because sync cannot run for this account now (paused_reason says why); try again once it can.
+                         * @enum {string}
+                         */
+                        status: "queued" | "cooldown" | "in_progress" | "paused";
+                        /**
+                         * @description paused: why nothing was started. queued: why the first page waits (for example rate_limited), or null. Otherwise null.
+                         * @enum {string|null}
+                         */
+                        paused_reason: "disabled" | "tier_required" | "account_unavailable" | "reconnect_hold" | "rate_limited" | "halted" | "outside_window" | "budget_exhausted" | null;
+                        /** @description queued and cooldown: when the next manual resync is allowed. Otherwise null. */
+                        next_allowed_at: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST, naming the field: account_id missing or malformed, or an unknown field. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description A named account is in your team but you may not use it. INSUFFICIENT_ROLE: your role does not reach a teammate's account. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. Neither is fixed by retrying. TIER_REQUIRED: the team's Tier does not include Network. TIER_REQUIRED: the team's Tier does not include Network (Network is part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_NOT_FOUND: the account is not one of your team's accounts. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1UniboxAccounts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One item per account you can operate. Disconnected accounts are left out. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "unibox_account_list";
+                        /** @description Accounts, in account id order. */
+                        items: {
+                            /**
+                             * @description Response type discriminator.
+                             * @enum {string}
+                             */
+                            object: "unibox_account";
+                            /** @description The account. */
+                            account_id: string;
+                            /** @description The account's connection status. */
+                            account_status: string;
+                            /** @description Whether this account's whole inbox is copied into the Unibox. Off by default; only the person who connected the account can change it. While off, the Unibox holds only this account's Motion chats. */
+                            sync_full_inbox: boolean;
+                            /** @description The user who turned full-inbox sync on. Null while it is off. */
+                            granted_by: string | null;
+                            /** @description When full-inbox sync was turned on. Null while it is off. */
+                            granted_at: string | null;
+                            /** @description How far the chat-list sync is. Read it before trusting an empty Unibox: off and pending mean nothing was listed yet. */
+                            sync: {
+                                /**
+                                 * @description off: full-inbox sync is not turned on. pending: turned on, no read yet. syncing: the first full listing is under way. complete: every conversation was listed once. paused: no read is happening now, paused_reason says why.
+                                 * @enum {string}
+                                 */
+                                state: "off" | "pending" | "syncing" | "complete" | "paused";
+                                /**
+                                 * @description Set only when state is paused. disabled: Unibox sync is not turned on for this account yet. tier_required: the team's Tier does not include the Unibox, so nothing is read. account_unavailable: the account is not active. reconnect_hold: the 24 hours after a reconnect. rate_limited: LinkedIn pushed back on a sync read. halted: another limit on the account is halted. outside_window: outside the account's activity window. budget_exhausted: today's sync reads are used up.
+                                 * @enum {string|null}
+                                 */
+                                paused_reason: "disabled" | "tier_required" | "account_unavailable" | "reconnect_hold" | "rate_limited" | "halted" | "outside_window" | "budget_exhausted" | null;
+                                /** @description When the next read happens; null when none can be scheduled. While paused it is when the pause ends. */
+                                next_run_at: string | null;
+                                /** @description Distinct conversations the sync has listed so far. */
+                                chats_synced: number;
+                                /** @description One entry per inbox the sync walks. Company page inboxes are never part of the Unibox. */
+                                inboxes: {
+                                    /**
+                                     * @description The inbox.
+                                     * @enum {string}
+                                     */
+                                    type: "classic" | "inmail" | "sales_navigator" | "recruiter";
+                                    /** @description true once this inbox was listed to its end. */
+                                    complete: boolean;
+                                    /** @description Conversations listed from this inbox. A conversation in two inboxes counts in both. */
+                                    chats_synced: number;
+                                }[];
+                            };
+                            /** @description When the newest conversations were last re-read. */
+                            last_refresh_at: string | null;
+                            /** @description When a manual refresh is allowed again. Null when one is allowed now. */
+                            next_manual_refresh_at: string | null;
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    patchV1UniboxAccountsAccountId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The account (acc_...). */
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description true copies this account's whole inbox into the Unibox; false stops that and removes the copied conversations that are not Motion chats. */
+                    sync_full_inbox: boolean;
+                };
+            };
+        };
+        responses: {
+            /** @description The account's Unibox state after the change. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "unibox_account";
+                        /** @description The account. */
+                        account_id: string;
+                        /** @description The account's connection status. */
+                        account_status: string;
+                        /** @description Whether this account's whole inbox is copied into the Unibox. Off by default; only the person who connected the account can change it. While off, the Unibox holds only this account's Motion chats. */
+                        sync_full_inbox: boolean;
+                        /** @description The user who turned full-inbox sync on. Null while it is off. */
+                        granted_by: string | null;
+                        /** @description When full-inbox sync was turned on. Null while it is off. */
+                        granted_at: string | null;
+                        /** @description How far the chat-list sync is. Read it before trusting an empty Unibox: off and pending mean nothing was listed yet. */
+                        sync: {
+                            /**
+                             * @description off: full-inbox sync is not turned on. pending: turned on, no read yet. syncing: the first full listing is under way. complete: every conversation was listed once. paused: no read is happening now, paused_reason says why.
+                             * @enum {string}
+                             */
+                            state: "off" | "pending" | "syncing" | "complete" | "paused";
+                            /**
+                             * @description Set only when state is paused. disabled: Unibox sync is not turned on for this account yet. tier_required: the team's Tier does not include the Unibox, so nothing is read. account_unavailable: the account is not active. reconnect_hold: the 24 hours after a reconnect. rate_limited: LinkedIn pushed back on a sync read. halted: another limit on the account is halted. outside_window: outside the account's activity window. budget_exhausted: today's sync reads are used up.
+                             * @enum {string|null}
+                             */
+                            paused_reason: "disabled" | "tier_required" | "account_unavailable" | "reconnect_hold" | "rate_limited" | "halted" | "outside_window" | "budget_exhausted" | null;
+                            /** @description When the next read happens; null when none can be scheduled. While paused it is when the pause ends. */
+                            next_run_at: string | null;
+                            /** @description Distinct conversations the sync has listed so far. */
+                            chats_synced: number;
+                            /** @description One entry per inbox the sync walks. Company page inboxes are never part of the Unibox. */
+                            inboxes: {
+                                /**
+                                 * @description The inbox.
+                                 * @enum {string}
+                                 */
+                                type: "classic" | "inmail" | "sales_navigator" | "recruiter";
+                                /** @description true once this inbox was listed to its end. */
+                                complete: boolean;
+                                /** @description Conversations listed from this inbox. A conversation in two inboxes counts in both. */
+                                chats_synced: number;
+                            }[];
+                        };
+                        /** @description When the newest conversations were last re-read. */
+                        last_refresh_at: string | null;
+                        /** @description When a manual refresh is allowed again. Null when one is allowed now. */
+                        next_manual_refresh_at: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: sync_full_inbox is missing or not a boolean. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_OWNER_ONLY: only the person who connected the account can change this. INSUFFICIENT_ROLE: your role does not reach a teammate's account. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. TIER_REQUIRED: turning sync on needs a Tier with the Unibox; turning it off always works. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_NOT_FOUND: the account is not one of your team's accounts. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1UniboxChats: {
+        parameters: {
+            query?: {
+                /** @description Only chats of these accounts: a comma list of 1 to 50 account ids (acc_...). Omitted: every account you can operate. */
+                account_ids?: string[];
+                /** @description Only chats linked to any of these Motions: a comma list of Motion ids. */
+                motion_ids?: string[];
+                /** @description Only chats whose Contact has any of these Tags (names, case-insensitive): a comma list. */
+                tags?: string[];
+                /** @description true: only unread chats. false: only read chats. Omitted: both. */
+                unread?: boolean;
+                /** @description me: the last message is yours. them: the other person wrote last, so it may wait for your answer. */
+                last_message_from?: "me" | "them";
+                /** @description Only chats of this kind. A chat whose kind is not known yet never matches. */
+                type?: "recruiter" | "sales_navigator" | "inmail" | "classic";
+                /** @description Case-insensitive text to find in the other person's name, the preview and the stored messages, 3 characters or more. */
+                q?: string;
+                /** @description Max items per page (1-100, default 25). */
+                limit?: number;
+                /** @description Pagination cursor from a previous response; pass it back verbatim with the same filters. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of chats. A chat whose activity moves it above your cursor while you page shows on your next walk from the top. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "unibox_chat_list";
+                        /** @description Chats, newest activity first; ties by account id, then chat id. */
+                        items: {
+                            /**
+                             * @description Response type discriminator.
+                             * @enum {string}
+                             */
+                            object: "unibox_chat";
+                            /** @description The account the chat belongs to. */
+                            account_id: string;
+                            /** @description That account's connection status. A chat stays listed while its account needs a reconnect. */
+                            account_status: string;
+                            /** @description The chat. Use it with the account id on the chat routes. */
+                            chat_id: string;
+                            /**
+                             * @description The kind of conversation. Null until it is known: a chat seen only through a new message gets its kind when it is listed or opened.
+                             * @enum {string|null}
+                             */
+                            type: "classic" | "inmail" | "sales_navigator" | "recruiter" | null;
+                            /** @description true for a group chat. */
+                            is_group: boolean;
+                            /** @description The other person in a one-to-one chat. Null for a group chat, or while nobody is known yet. */
+                            counterpart: {
+                                /** @description Their LinkedIn member id. */
+                                member_id?: string | null;
+                                /** @description Their name. */
+                                name?: string | null;
+                                /** @description Their headline. */
+                                headline?: string | null;
+                                /** @description Their profile picture. */
+                                picture_url?: string | null;
+                                /** @description Their profile. */
+                                profile_url?: string | null;
+                            } | null;
+                            /** @description The Contact this person is, when you hold one (matched on their LinkedIn ids). */
+                            contact_id: string | null;
+                            /** @description That Contact's Tags; empty without a Contact. */
+                            tags: string[];
+                            /** @description Whether the chat is unread. */
+                            unread: boolean;
+                            /** @description The newest message or send in this chat Curviate knows of. */
+                            last_activity_at: string | null;
+                            /**
+                             * @description Who sent the last message. Null while unknown.
+                             * @enum {string|null}
+                             */
+                            last_message_from: "me" | "them" | null;
+                            /** @description The newest message text Curviate holds for the chat. Null when it holds none. */
+                            preview: {
+                                /** @description The text. */
+                                text?: string;
+                                /** @description When it was sent. */
+                                at?: string;
+                            } | null;
+                            /** @description The Motion this chat belongs to. Null for a chat no Motion links. */
+                            motion_context: Record<string, never> | null;
+                        }[];
+                        /** @description Pass it back as cursor, with the same filters, for the next page. Null on the last page. */
+                        cursor: string | null;
+                        /** @description Only with q. How much of the searched chats' history is stored: q can only match stored messages, so read this before trusting no match. */
+                        coverage?: {
+                            /** @description true when every chat searched has its whole message history stored. */
+                            complete: boolean;
+                            /** @description Chats searched. */
+                            chats_stored: number;
+                            /** @description Of those, chats whose message history is not fully stored. */
+                            chats_incomplete: number;
+                        };
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: an unknown value for unread, type or last_message_from, q under 3 characters, limit outside 1 to 100, or a cursor that is not one of ours. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: your role does not reach a teammate's account named in account_ids. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_NOT_FOUND: an account in account_ids is not one of your team's accounts. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1UniboxChatsAccountIdChatId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The account the chat belongs to (acc_...). */
+                account_id: string;
+                /** @description The chat. */
+                chat_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The chat. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "unibox_chat";
+                        /** @description The account the chat belongs to. */
+                        account_id: string;
+                        /** @description That account's connection status. A chat stays listed while its account needs a reconnect. */
+                        account_status: string;
+                        /** @description The chat. Use it with the account id on the chat routes. */
+                        chat_id: string;
+                        /**
+                         * @description The kind of conversation. Null until it is known: a chat seen only through a new message gets its kind when it is listed or opened.
+                         * @enum {string|null}
+                         */
+                        type: "classic" | "inmail" | "sales_navigator" | "recruiter" | null;
+                        /** @description true for a group chat. */
+                        is_group: boolean;
+                        /** @description The other person in a one-to-one chat. Null for a group chat, or while nobody is known yet. */
+                        counterpart: {
+                            /** @description Their LinkedIn member id. */
+                            member_id?: string | null;
+                            /** @description Their name. */
+                            name?: string | null;
+                            /** @description Their headline. */
+                            headline?: string | null;
+                            /** @description Their profile picture. */
+                            picture_url?: string | null;
+                            /** @description Their profile. */
+                            profile_url?: string | null;
+                        } | null;
+                        /** @description The Contact this person is, when you hold one (matched on their LinkedIn ids). */
+                        contact_id: string | null;
+                        /** @description That Contact's Tags; empty without a Contact. */
+                        tags: string[];
+                        /** @description Whether the chat is unread. */
+                        unread: boolean;
+                        /** @description The newest message or send in this chat Curviate knows of. */
+                        last_activity_at: string | null;
+                        /**
+                         * @description Who sent the last message. Null while unknown.
+                         * @enum {string|null}
+                         */
+                        last_message_from: "me" | "them" | null;
+                        /** @description The newest message text Curviate holds for the chat. Null when it holds none. */
+                        preview: {
+                            /** @description The text. */
+                            text?: string;
+                            /** @description When it was sent. */
+                            at?: string;
+                        } | null;
+                        /** @description The Motion this chat belongs to. Null for a chat no Motion links. */
+                        motion_context: Record<string, never> | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: your role does not reach a teammate's account named in account_ids. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_NOT_FOUND: the account is not one of your team's accounts. RESOURCE_NOT_FOUND: no such chat in your Unibox, the same answer for a chat that does not exist and for one you cannot see. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1UniboxUnreadCount: {
+        parameters: {
+            query?: {
+                /** @description Only chats of these accounts: a comma list of 1 to 50 account ids (acc_...). Omitted: every account you can operate. */
+                account_ids?: string[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The count. 0 when you can operate no account. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "unibox_unread_count";
+                        /** @description Unread chats you can see in the Unibox. */
+                        unread_chats: number;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: account_ids is not a comma list of account ids. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: your role does not reach a teammate's account named in account_ids. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_NOT_FOUND: an account in account_ids is not one of your team's accounts. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1UniboxRefresh: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The accounts to refresh. Omitted: every account you can operate that has full-inbox sync on. */
+                    account_ids?: string[];
+                };
+            };
+        };
+        responses: {
+            /** @description What happens per account. cooldown and paused are answers, not errors: wait for next_allowed_at. */
+            202: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "unibox_refresh";
+                        /** @description One entry per account, in account id order. */
+                        accounts: {
+                            /** @description The account. */
+                            account_id: string;
+                            /**
+                             * @description queued: the refresh runs within minutes. cooldown: one ran in the last 5 minutes. not_synced: full-inbox sync is off, so nothing is listed to refresh. paused: it runs when the pause ends, paused_reason says why.
+                             * @enum {string}
+                             */
+                            status: "queued" | "cooldown" | "not_synced" | "paused";
+                            /**
+                             * @description Set only when status is paused; the same reasons as the account's sync.paused_reason.
+                             * @enum {string|null}
+                             */
+                            paused_reason: "disabled" | "tier_required" | "account_unavailable" | "reconnect_hold" | "rate_limited" | "halted" | "outside_window" | "budget_exhausted" | null;
+                            /** @description queued and cooldown: when the next manual refresh is allowed. paused: when the pause ends, null when that cannot be known. */
+                            next_allowed_at: string | null;
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: account_ids is empty or not a list of account ids. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: your role does not reach a teammate's account named in account_ids. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team's Tier does not include Unibox (Unibox is part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_NOT_FOUND: an account in account_ids is not one of your team's accounts. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     getV1AccountIdJobs: {
         parameters: {
             query: {
@@ -16284,7 +18772,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -16535,7 +19023,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -16760,7 +19248,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -17013,7 +19501,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -17183,7 +19671,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -17371,7 +19859,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED, the connected LinkedIn account lacks the subscription/entitlement LinkedIn requires to publish job postings, even a FREE posting (activate it on LinkedIn; reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED, the connected LinkedIn account lacks the subscription/entitlement LinkedIn requires to publish job postings, even a FREE posting (activate it on LinkedIn; reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -17507,7 +19995,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the connected LinkedIn account lacks the subscription/entitlement LinkedIn requires to manage job postings (the same gate that blocks publish also blocks close; activate it on LinkedIn; reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED; the connected LinkedIn account lacks the subscription/entitlement LinkedIn requires to manage job postings (the same gate that blocks publish also blocks close; activate it on LinkedIn; reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -17730,7 +20218,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -17922,7 +20410,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -18044,7 +20532,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -18359,7 +20847,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description This account is not the post's owner. */
+            /** @description This account is not the post's owner. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -19510,7 +21998,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -19637,7 +22125,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -19768,7 +22256,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -19927,7 +22415,7 @@ export interface operations {
                                  * @description Why it failed. outcome_unknown: the platform gave no usable answer, so the post may be live; check the account's posts before you publish again. missed: Curviate could not start within an hour of the time. platform_error and rate_limited: 3 attempts over about 15 minutes all failed.
                                  * @enum {string}
                                  */
-                                code?: "platform_error" | "rate_limited" | "account_unavailable" | "media_rejected" | "budget_exhausted" | "outside_activity_window" | "no_active_seat" | "not_publishable" | "platform_rejected" | "missed" | "outcome_unknown";
+                                code?: "platform_error" | "rate_limited" | "account_unavailable" | "media_rejected" | "budget_exhausted" | "outside_activity_window" | "no_active_seat" | "not_publishable" | "platform_rejected" | "missed" | "outcome_unknown" | "account_not_shared" | "insufficient_role";
                                 /** @description What went wrong and what to do next. Never contains post text. */
                                 message?: string;
                                 /** @description When it failed. */
@@ -20095,7 +22583,7 @@ export interface operations {
                              * @description Why it failed. outcome_unknown: the platform gave no usable answer, so the post may be live; check the account's posts before you publish again. missed: Curviate could not start within an hour of the time. platform_error and rate_limited: 3 attempts over about 15 minutes all failed.
                              * @enum {string}
                              */
-                            code?: "platform_error" | "rate_limited" | "account_unavailable" | "media_rejected" | "budget_exhausted" | "outside_activity_window" | "no_active_seat" | "not_publishable" | "platform_rejected" | "missed" | "outcome_unknown";
+                            code?: "platform_error" | "rate_limited" | "account_unavailable" | "media_rejected" | "budget_exhausted" | "outside_activity_window" | "no_active_seat" | "not_publishable" | "platform_rejected" | "missed" | "outcome_unknown" | "account_not_shared" | "insufficient_role";
                             /** @description What went wrong and what to do next. Never contains post text. */
                             message?: string;
                             /** @description When it failed. */
@@ -20129,7 +22617,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. TIER_REQUIRED: the team's Tier does not include Drafts (Drafts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -20260,7 +22748,7 @@ export interface operations {
                              * @description Why it failed. outcome_unknown: the platform gave no usable answer, so the post may be live; check the account's posts before you publish again. missed: Curviate could not start within an hour of the time. platform_error and rate_limited: 3 attempts over about 15 minutes all failed.
                              * @enum {string}
                              */
-                            code?: "platform_error" | "rate_limited" | "account_unavailable" | "media_rejected" | "budget_exhausted" | "outside_activity_window" | "no_active_seat" | "not_publishable" | "platform_rejected" | "missed" | "outcome_unknown";
+                            code?: "platform_error" | "rate_limited" | "account_unavailable" | "media_rejected" | "budget_exhausted" | "outside_activity_window" | "no_active_seat" | "not_publishable" | "platform_rejected" | "missed" | "outcome_unknown" | "account_not_shared" | "insufficient_role";
                             /** @description What went wrong and what to do next. Never contains post text. */
                             message?: string;
                             /** @description When it failed. */
@@ -20479,7 +22967,7 @@ export interface operations {
                              * @description Why it failed. outcome_unknown: the platform gave no usable answer, so the post may be live; check the account's posts before you publish again. missed: Curviate could not start within an hour of the time. platform_error and rate_limited: 3 attempts over about 15 minutes all failed.
                              * @enum {string}
                              */
-                            code?: "platform_error" | "rate_limited" | "account_unavailable" | "media_rejected" | "budget_exhausted" | "outside_activity_window" | "no_active_seat" | "not_publishable" | "platform_rejected" | "missed" | "outcome_unknown";
+                            code?: "platform_error" | "rate_limited" | "account_unavailable" | "media_rejected" | "budget_exhausted" | "outside_activity_window" | "no_active_seat" | "not_publishable" | "platform_rejected" | "missed" | "outcome_unknown" | "account_not_shared" | "insufficient_role";
                             /** @description What went wrong and what to do next. Never contains post text. */
                             message?: string;
                             /** @description When it failed. */
@@ -20513,7 +23001,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. TIER_REQUIRED: the team's Tier does not include Drafts (Drafts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -20613,7 +23101,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. TIER_REQUIRED: the team's Tier does not include Drafts (Drafts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -20649,7 +23137,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description An account-safety limit or a platform rate limit refused the publish. The Draft is unchanged. */
+            /** @description An account-safety limit or a platform rate limit refused the publish. The Draft's content is unchanged; a scheduled time still ahead stays scheduled, one already passed is cleared. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -20661,7 +23149,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The platform refused or failed the publish. The Draft is unchanged; the error says whether a retry can help. */
+            /** @description The platform refused or failed the publish; the error says whether a retry can help. A known failure leaves the Draft's content unchanged (a scheduled time still ahead stays scheduled, one already passed is cleared); an unknown outcome fails it (outcome_unknown). */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -20670,7 +23158,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description PLATFORM_ERROR: the platform did not answer in time. The Draft is unchanged, but the post may still have been published: check the account's posts before publishing again. */
+            /** @description PLATFORM_ERROR: the platform did not answer in time, so the post may have been published. The Draft is failed (outcome_unknown): check the account's posts before publishing again. */
             504: {
                 headers: {
                     [name: string]: unknown;
@@ -20765,7 +23253,7 @@ export interface operations {
                              * @description Why it failed. outcome_unknown: the platform gave no usable answer, so the post may be live; check the account's posts before you publish again. missed: Curviate could not start within an hour of the time. platform_error and rate_limited: 3 attempts over about 15 minutes all failed.
                              * @enum {string}
                              */
-                            code?: "platform_error" | "rate_limited" | "account_unavailable" | "media_rejected" | "budget_exhausted" | "outside_activity_window" | "no_active_seat" | "not_publishable" | "platform_rejected" | "missed" | "outcome_unknown";
+                            code?: "platform_error" | "rate_limited" | "account_unavailable" | "media_rejected" | "budget_exhausted" | "outside_activity_window" | "no_active_seat" | "not_publishable" | "platform_rejected" | "missed" | "outcome_unknown" | "account_not_shared" | "insufficient_role";
                             /** @description What went wrong and what to do next. Never contains post text. */
                             message?: string;
                             /** @description When it failed. */
@@ -20799,7 +23287,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. TIER_REQUIRED: the team's Tier does not include Drafts (Drafts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -20855,6 +23343,370 @@ export interface operations {
             };
             /** @description MEDIA_QUOTA_EXCEEDED: the file would take the bucket past its 2 GiB quota; nothing is stored. */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1Notifications: {
+        parameters: {
+            query?: {
+                /** @description all (default): not archived. unread: not archived and not read. archived: archived only. */
+                filter?: "all" | "unread" | "archived";
+                /** @description Max items per page (1-100, default 20). */
+                limit?: number;
+                /** @description Pagination cursor from a previous response; pass it back verbatim with the same filter. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Your Notifications in this team, newest first. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "curviate_notification_list";
+                        /** @description One page of Notifications. */
+                        items: {
+                            /**
+                             * @description Response type discriminator.
+                             * @enum {string}
+                             */
+                            object: "curviate_notification";
+                            /** @description Notification id (ntf_...). Valid for you only. */
+                            id: string;
+                            /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, motion.auto_paused, motion.no_sending_account, motion.completed, contacts.import_finished, team.invite_accepted, team.member_left. */
+                            type: string;
+                            /** @description What the Notification is about. */
+                            subject: {
+                                /**
+                                 * @description The kind of subject.
+                                 * @enum {string}
+                                 */
+                                type: "account" | "motion" | "contact_import" | "team_member";
+                                /** @description The subject's id. */
+                                id: string;
+                                /** @description Whether you can open the subject now. false when it is gone or you no longer have access to it. */
+                                exists: boolean;
+                            };
+                            /** @description Ids, counts and codes for this type, for acting on it without reading the title. Never free text. */
+                            data: {
+                                [key: string]: unknown;
+                            };
+                            /** @description One line in English, written when you read it from current names. Never stored. */
+                            title: string;
+                            /** @description Whether it is read. */
+                            read: boolean;
+                            /** @description Whether it is archived. An archived Notification is always read. */
+                            archived: boolean;
+                            /** @description When it was created (UTC). */
+                            created_at: string;
+                            /** @description When it was marked read, or null. */
+                            read_at: string | null;
+                            /** @description When it was archived, or null. */
+                            archived_at: string | null;
+                        }[];
+                        /** @description Pass back as cursor for the next page; null on the last page. */
+                        cursor: string | null;
+                        /** @description Your Notifications that are neither read nor archived, in this team. */
+                        unread_count: number;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: an unknown filter, limit out of range, or a cursor that is not from a previous response. The message names the parameter. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1NotificationsUnreadCount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description How many of your Notifications are unread. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "curviate_notification_unread_count";
+                        /** @description Your Notifications that are neither read nor archived, in this team. */
+                        unread_count: number;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1NotificationsMarkAllRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description ISO 8601 date-time with an offset. Only Notifications created at or before it are marked. Default: now. A future time acts as now. */
+                    before?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Your unread Notifications created at or before the returned time are now read. One created after it stays unread. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "curviate_notification_mark_all_read";
+                        /** @description The time that was used (UTC): yours, or now when you sent none or one in the future. */
+                        before: string;
+                        /** @description How many Notifications this call marked read. */
+                        marked: number;
+                        /** @description Your Notifications that are neither read nor archived, in this team. */
+                        unread_count: number;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: before is not an ISO 8601 date-time with an offset, or the body has an unknown field. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    patchV1NotificationsId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Notification id (ntf_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description true marks it read. A Notification cannot be marked unread. */
+                    read?: boolean;
+                    /** @description true archives it (and marks it read); false moves it back to the list, still read. */
+                    archived?: boolean;
+                };
+            };
+        };
+        responses: {
+            /** @description The updated Notification. Setting a flag to the value it already has changes nothing and keeps the original time. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "curviate_notification";
+                        /** @description Notification id (ntf_...). Valid for you only. */
+                        id: string;
+                        /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, motion.auto_paused, motion.no_sending_account, motion.completed, contacts.import_finished, team.invite_accepted, team.member_left. */
+                        type: string;
+                        /** @description What the Notification is about. */
+                        subject: {
+                            /**
+                             * @description The kind of subject.
+                             * @enum {string}
+                             */
+                            type: "account" | "motion" | "contact_import" | "team_member";
+                            /** @description The subject's id. */
+                            id: string;
+                            /** @description Whether you can open the subject now. false when it is gone or you no longer have access to it. */
+                            exists: boolean;
+                        };
+                        /** @description Ids, counts and codes for this type, for acting on it without reading the title. Never free text. */
+                        data: {
+                            [key: string]: unknown;
+                        };
+                        /** @description One line in English, written when you read it from current names. Never stored. */
+                        title: string;
+                        /** @description Whether it is read. */
+                        read: boolean;
+                        /** @description Whether it is archived. An archived Notification is always read. */
+                        archived: boolean;
+                        /** @description When it was created (UTC). */
+                        created_at: string;
+                        /** @description When it was marked read, or null. */
+                        read_at: string | null;
+                        /** @description When it was archived, or null. */
+                        archived_at: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: neither read nor archived set, read set to false (a Notification cannot be marked unread), a value that is not a boolean, or an unknown field. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description No Notification with this id among yours (RESOURCE_NOT_FOUND). Another person's Notification answers the same. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -21255,7 +24107,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -21473,7 +24325,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -21786,7 +24638,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -21979,7 +24831,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -22213,7 +25065,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -22417,7 +25269,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -22575,7 +25427,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -22829,7 +25681,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -23137,7 +25989,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -23481,7 +26333,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -23661,7 +26513,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -23869,7 +26721,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -24024,7 +26876,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -24189,7 +27041,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -24397,7 +27249,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -24577,7 +27429,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -24785,7 +27637,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -24980,7 +27832,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -25118,7 +27970,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -25263,7 +28115,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -25595,7 +28447,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -25803,7 +28655,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -25925,7 +28777,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Recruiter subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -26085,7 +28937,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -26400,7 +29252,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -26548,7 +29400,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -26705,7 +29557,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -26917,7 +29769,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -27303,7 +30155,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -27450,7 +30302,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -27597,7 +30449,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -27758,7 +30610,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -28239,7 +31091,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -28511,7 +31363,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -28912,7 +31764,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. */
+            /** @description Forbidden. Either NO_ACTIVE_SEAT (the account is not attached to an active seat), or LINKEDIN_FEATURE_NOT_SUBSCRIBED (the connected LinkedIn account lacks the Sales Navigator subscription; activate it on LinkedIn, reconnecting will not help). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -29062,6 +31914,10 @@ export interface operations {
                             requested_products?: ("classic" | "company" | "sales_navigator" | "recruiter")[] | null;
                             /** @description Your own id for this account's end user, as set on connect or PATCH. Null when none. Not unique. */
                             external_id?: string | null;
+                            /** @description The user who connected this account. Only this person can reconnect it or solve its checkpoints. Null when unknown. */
+                            owner_user_id?: string | null;
+                            /** @description Whether the team's Owners and Managers may operate this account. True unless the person who connected it turned team access off. */
+                            team_access?: boolean;
                             /** @description Your own flat string map for this account, as last set by PATCH. Null when none. */
                             metadata?: {
                                 [key: string]: string;
@@ -29176,6 +32032,10 @@ export interface operations {
                         requested_products?: ("classic" | "company" | "sales_navigator" | "recruiter")[] | null;
                         /** @description Your own id for this account's end user, as set on connect or PATCH. Null when none. Not unique. */
                         external_id?: string | null;
+                        /** @description The user who connected this account. Only this person can reconnect it or solve its checkpoints. Null when unknown. */
+                        owner_user_id?: string | null;
+                        /** @description Whether the team's Owners and Managers may operate this account. True unless the person who connected it turned team access off. */
+                        team_access?: boolean;
                         /** @description Your own flat string map for this account, as last set by PATCH. Null when none. */
                         metadata?: {
                             [key: string]: string;
@@ -29202,7 +32062,7 @@ export interface operations {
                              * @description The safety row. `search` counts result LINES, not queries issued; `content_poll` also debits `profile_views`. Two rows are not counters and say so in `kind`: `total_actions` is a tally of everything this account did in the window, and `pending_invites` is the outstanding invitation backlog read from the platform rather than something this account spends.
                              * @enum {string}
                              */
-                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "total_actions" | "pending_invites";
+                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "total_actions" | "pending_invites";
                             /**
                              * @description Which arithmetic produced `used`. `debit`: actions this account spent, counted as they happen. `tally`: a sum across the debit rows in the window, which is why it has a warn threshold and no ceiling. `gauge`: a level read from the platform rather than counted here, so it falls on its own as invitations are accepted or withdrawn.
                              * @enum {string}
@@ -29261,10 +32121,17 @@ export interface operations {
                         account_states?: ("recruiter_session_evicted" | "commercial_use_limited" | "profile_view_limited")[];
                         /** @description The account's activity window, the hours in which Curviate reports or refuses live writes to LinkedIn. Reads and anything served from Curviate's own store are never affected, at any hour. Configure it on the account's safety policy. */
                         activity_window?: {
-                            /** @description The IANA zone the window is read in, or null when none is set. */
+                            /** @description The IANA zone set on the account, or null when none is set. */
                             timezone?: string | null;
-                            /** @description True when no zone is set, which DISABLES the activity window. Curviate never guesses a zone: a guess eight hours wrong inverts the window, refusing every daytime write and permitting every nocturnal one. If you configured a window and it never fires, this is why. */
+                            /** @description True when no zone is set on the account. The window still applies: it is then read in effective_timezone. Set timezone on the safety policy to choose the zone yourself. */
                             timezone_unset?: boolean;
+                            /** @description The IANA zone the activity window is read in: the zone set on the account, else the one its user's browser reported, else one inferred from the LinkedIn profile location, else Europe/Berlin. */
+                            effective_timezone?: string;
+                            /**
+                             * @description Where effective_timezone came from: account (set through the safety policy), browser, location (the LinkedIn profile location), or default (Europe/Berlin).
+                             * @enum {string}
+                             */
+                            source?: "account" | "browser" | "location" | "default";
                         };
                         /** @description Where this account stands against the retained event log's row budget. Events are retained for 24 hours so you can read what the platform sent without running a listener; an account may hold at most row_cap of them at once. While at_row_cap is true, further events for this account are still delivered to any webhook you registered but are NOT retained, so the events resource stops being a complete record of what arrived. The budget is a backstop against a misbehaving upstream, sized so ordinary use never approaches it. */
                         event_log?: {
@@ -29520,6 +32387,10 @@ export interface operations {
                         requested_products?: ("classic" | "company" | "sales_navigator" | "recruiter")[] | null;
                         /** @description Your own id for this account's end user, as set on connect or PATCH. Null when none. Not unique. */
                         external_id?: string | null;
+                        /** @description The user who connected this account. Only this person can reconnect it or solve its checkpoints. Null when unknown. */
+                        owner_user_id?: string | null;
+                        /** @description Whether the team's Owners and Managers may operate this account. True unless the person who connected it turned team access off. */
+                        team_access?: boolean;
                         /** @description Your own flat string map for this account, as last set by PATCH. Null when none. */
                         metadata?: {
                             [key: string]: string;
@@ -29544,10 +32415,17 @@ export interface operations {
                         account_states?: ("recruiter_session_evicted" | "commercial_use_limited" | "profile_view_limited")[];
                         /** @description The account's activity window, the hours in which Curviate reports or refuses live writes to LinkedIn. Reads and anything served from Curviate's own store are never affected, at any hour. Configure it on the account's safety policy. */
                         activity_window?: {
-                            /** @description The IANA zone the window is read in, or null when none is set. */
+                            /** @description The IANA zone set on the account, or null when none is set. */
                             timezone?: string | null;
-                            /** @description True when no zone is set, which DISABLES the activity window. Curviate never guesses a zone: a guess eight hours wrong inverts the window, refusing every daytime write and permitting every nocturnal one. If you configured a window and it never fires, this is why. */
+                            /** @description True when no zone is set on the account. The window still applies: it is then read in effective_timezone. Set timezone on the safety policy to choose the zone yourself. */
                             timezone_unset?: boolean;
+                            /** @description The IANA zone the activity window is read in: the zone set on the account, else the one its user's browser reported, else one inferred from the LinkedIn profile location, else Europe/Berlin. */
+                            effective_timezone?: string;
+                            /**
+                             * @description Where effective_timezone came from: account (set through the safety policy), browser, location (the LinkedIn profile location), or default (Europe/Berlin).
+                             * @enum {string}
+                             */
+                            source?: "account" | "browser" | "location" | "default";
                         };
                         safety_warning?: components["schemas"]["SafetyWarning"];
                     };
@@ -29685,7 +32563,7 @@ export interface operations {
                             seat_id: string;
                             /** @description True when an account is connected on this seat. */
                             occupied: boolean;
-                            /** @description The account on this seat, or null when unoccupied. */
+                            /** @description The account on this seat. Null when the seat is unoccupied, and in a team also when the seat holds a teammate's account you may not use (`occupied` is then true). */
                             account_id: string | null;
                         }[];
                         safety_warning?: components["schemas"]["SafetyWarning"];
@@ -29845,6 +32723,10 @@ export interface operations {
                         status?: "active";
                         /** @description Your own id for this account's end user, as set on connect or PATCH. Null when none. Not unique. */
                         external_id?: string | null;
+                        /** @description The user who connected this account. Only this person can reconnect it or solve its checkpoints. Null when unknown. */
+                        owner_user_id?: string | null;
+                        /** @description Whether the team's Owners and Managers may operate this account. True unless the person who connected it turned team access off. */
+                        team_access?: boolean;
                         /** @description Where LinkedIn sees this account connecting from. country: the configured country (ISO 3166-1 alpha-2), the one the account is set to use. current_country: the country of the connection in use right now; it differs from country only after a fallback, which can happen only when strict is false. mode: auto (a managed connection in country) or custom (your own proxy). strict: true when the account never connects from another country, null when unknown. Each field is null until known; an account connected through ip or your own proxy may show null until the next background refresh. Change it with PATCH /v1/accounts/{account_id} (country), or by reconnecting with country. */
                         connection_location?: {
                             /** @description Configured country (ISO 3166-1 alpha-2). */
@@ -29895,6 +32777,10 @@ export interface operations {
                         attached_seat_id?: string | null;
                         /** @description Your own id for this account's end user, as set on connect or PATCH. Null when none. Not unique. */
                         external_id?: string | null;
+                        /** @description The user who connected this account. Only this person can reconnect it or solve its checkpoints. Null when unknown. */
+                        owner_user_id?: string | null;
+                        /** @description Whether the team's Owners and Managers may operate this account. True unless the person who connected it turned team access off. */
+                        team_access?: boolean;
                         /** @description Present and true only when this connect reactivated an account you had previously disconnected, instead of opening a brand-new one. Absent on a normal connect. The account keeps its original id, and its status reflects its real observed state, which may need a reconnect. */
                         recovered?: boolean;
                         /** @description Where LinkedIn sees this account connecting from. country: the configured country (ISO 3166-1 alpha-2), the one the account is set to use. current_country: the country of the connection in use right now; it differs from country only after a fallback, which can happen only when strict is false. mode: auto (a managed connection in country) or custom (your own proxy). strict: true when the account never connects from another country, null when unknown. Each field is null until known; an account connected through ip or your own proxy may show null until the next background refresh. Change it with PATCH /v1/accounts/{account_id} (country), or by reconnecting with country. */
@@ -29989,7 +32875,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Either LINKEDIN_FEATURE_NOT_SUBSCRIBED (this LinkedIn account is not subscribed to a premium product the connection asked for, Sales Navigator or Recruiter; activate that subscription on LinkedIn and connect again, or set linkedin_premium to the premium the account actually holds), or ACCOUNT_RESTRICTED (LinkedIn has restricted this account; sign in to LinkedIn to see what it needs, resolve it there, then connect again). The code field distinguishes the two. */
+            /** @description Either LINKEDIN_FEATURE_NOT_SUBSCRIBED (this LinkedIn account is not subscribed to a premium product the connection asked for, Sales Navigator or Recruiter; activate that subscription on LinkedIn and connect again, or set linkedin_premium to the premium the account actually holds), or ACCOUNT_RESTRICTED (LinkedIn has restricted this account; sign in to LinkedIn to see what it needs, resolve it there, then connect again). The code field distinguishes the two. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -30119,6 +33005,10 @@ export interface operations {
                         attached_seat_id?: string | null;
                         /** @description Your own id for this account's end user, as set on connect or PATCH. Null when none. Not unique. */
                         external_id?: string | null;
+                        /** @description The user who connected this account. Only this person can reconnect it or solve its checkpoints. Null when unknown. */
+                        owner_user_id?: string | null;
+                        /** @description Whether the team's Owners and Managers may operate this account. True unless the person who connected it turned team access off. */
+                        team_access?: boolean;
                         /** @description Present and true only when this connect reactivated an account you had previously disconnected, instead of opening a brand-new one. Absent on a normal connect. The account keeps its original id, and its status reflects its real observed state, which may need a reconnect. */
                         recovered?: boolean;
                         /** @description Where LinkedIn sees this account connecting from. country: the configured country (ISO 3166-1 alpha-2), the one the account is set to use. current_country: the country of the connection in use right now; it differs from country only after a fallback, which can happen only when strict is false. mode: auto (a managed connection in country) or custom (your own proxy). strict: true when the account never connects from another country, null when unknown. Each field is null until known; an account connected through ip or your own proxy may show null until the next background refresh. Change it with PATCH /v1/accounts/{account_id} (country), or by reconnecting with country. */
@@ -30184,7 +33074,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description ACCOUNT_RESTRICTED. LinkedIn has restricted this account (not a wrong code and not our subscription gate). Sign in to LinkedIn to see what it needs, resolve it there, then reconnect. */
+            /** @description ACCOUNT_RESTRICTED. LinkedIn has restricted this account (not a wrong code and not our subscription gate). Sign in to LinkedIn to see what it needs, resolve it there, then reconnect. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -30372,7 +33262,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ACCOUNT_RESTRICTED. LinkedIn has restricted this account. Sign in to LinkedIn to see what it needs, resolve it there, then reconnect. */
+            /** @description ACCOUNT_RESTRICTED. LinkedIn has restricted this account. Sign in to LinkedIn to see what it needs, resolve it there, then reconnect. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -30516,6 +33406,10 @@ export interface operations {
                         attached_seat_id?: string | null;
                         /** @description Your own id for this account's end user, as passed on connect. Present on status:"active". */
                         external_id?: string | null;
+                        /** @description The user who connected this account. Only this person can reconnect it or solve its checkpoints. Null when unknown. */
+                        owner_user_id?: string | null;
+                        /** @description Whether the team's Owners and Managers may operate this account. True unless the person who connected it turned team access off. */
+                        team_access?: boolean;
                         /** @description Where LinkedIn sees this account connecting from. country: the configured country (ISO 3166-1 alpha-2), the one the account is set to use. current_country: the country of the connection in use right now; it differs from country only after a fallback, which can happen only when strict is false. mode: auto (a managed connection in country) or custom (your own proxy). strict: true when the account never connects from another country, null when unknown. Each field is null until known; an account connected through ip or your own proxy may show null until the next background refresh. Change it with PATCH /v1/accounts/{account_id} (country), or by reconnecting with country. Present on object:"account". */
                         connection_location?: {
                             /** @description Configured country (ISO 3166-1 alpha-2). */
@@ -31253,11 +34147,13 @@ export interface operations {
                              * @description The event source this webhook subscribes to.
                              * @enum {string}
                              */
-                            source?: "messaging" | "user" | "account_status" | "post";
+                            source?: "messaging" | "user" | "account_status" | "post" | "motion";
                             /** @description The URL that receives delivery POST requests. */
                             request_url?: string;
                             name?: string | null;
                             account_ids?: string[] | null;
+                            /** @description When set, only events whose data.motion_id is one of these Motions (mot_ ids) are delivered. null: no Motion filter. */
+                            motion_ids?: string[] | null;
                             enabled?: boolean;
                             /** @description Custom headers added to each delivery POST, with a fingerprint in place of the value. */
                             headers?: {
@@ -31355,6 +34251,8 @@ export interface operations {
                         key: string;
                         value: string;
                     }[];
+                    /** @description Only deliver events whose data.motion_id is one of these Motions (mot_ ids you own, up to 100). Events that carry no Motion are then not delivered. Default: no filter. */
+                    motion_ids?: string[];
                     /** @description Messaging events to subscribe to (default: [message.received]) */
                     events?: ("message.received" | "message.read" | "message.reaction" | "message.edited" | "message.deleted" | "chat.updated" | "chat.deleted")[];
                     /**
@@ -31384,6 +34282,8 @@ export interface operations {
                         key: string;
                         value: string;
                     }[];
+                    /** @description Only deliver events whose data.motion_id is one of these Motions (mot_ ids you own, up to 100). Events that carry no Motion are then not delivered. Default: no filter. */
+                    motion_ids?: string[];
                     /** @description User/relation events to subscribe to (default: [connection.accepted]) */
                     events?: ("connection.accepted" | "connection.new")[];
                     /**
@@ -31413,6 +34313,8 @@ export interface operations {
                         key: string;
                         value: string;
                     }[];
+                    /** @description Only deliver events whose data.motion_id is one of these Motions (mot_ ids you own, up to 100). Events that carry no Motion are then not delivered. Default: no filter. */
+                    motion_ids?: string[];
                     /** @description Account-status events to subscribe to (default: all 12 lifecycle events) */
                     events?: ("account.created" | "account.connected" | "account.synced" | "account.reconnected" | "account.reconnect_needed" | "account.restricted" | "account.creation_failed" | "account.disconnected" | "account.error" | "account.paused" | "account.connecting" | "account.permission_revoked" | "account.initial_sync.running" | "account.initial_sync.completed" | "account.initial_sync.failed")[];
                 } | {
@@ -31437,8 +34339,36 @@ export interface operations {
                         key: string;
                         value: string;
                     }[];
+                    /** @description Only deliver events whose data.motion_id is one of these Motions (mot_ ids you own, up to 100). Events that carry no Motion are then not delivered. Default: no filter. */
+                    motion_ids?: string[];
                     /** @description Post events to subscribe to (default: both post.published and post.publish_failed) */
                     events?: ("post.published" | "post.publish_failed")[];
+                } | {
+                    /** @constant */
+                    source: "motion";
+                    /** @description HTTPS URL that receives webhook deliveries. Must be a publicly reachable host on the default https port; private, loopback and link-local addresses are rejected. */
+                    request_url: string;
+                    /** @description Human-readable name for this webhook (1-100 chars) */
+                    name?: string;
+                    /** @description Per-account targeting. Required and non-empty; each id must be an acc_-prefixed id owned by the tenant. */
+                    account_ids: string[];
+                    /**
+                     * @description A disabled webhook is created but delivers nothing
+                     * @default true
+                     */
+                    enabled?: boolean;
+                    /**
+                     * @description Custom headers added to each delivery POST. Names must be valid HTTP header names and values must be printable ASCII (no line breaks or control characters). Reserved names are rejected at registration; they include Content-Type, User-Agent, Host, any Curviate-* or Sec-* name, and the hop-by-hop headers. At most 10 headers, 1024 characters per value, 4096 bytes in total. Custom headers are not covered by the delivery signature, so treat them as a hint, not as proof of origin. Values are encrypted at rest and are never returned by a read. A read shows the header name plus a 8-character keyed fingerprint of the value, which carries no part of the value and no indication of its length. It is deterministic within your account, so a fingerprint confirms a rotation took effect and tells you whether two of your webhooks carry the same credential; fingerprints are not comparable across accounts. The header name is what identifies which credential is configured.
+                     * @default []
+                     */
+                    headers?: {
+                        key: string;
+                        value: string;
+                    }[];
+                    /** @description Only deliver events whose data.motion_id is one of these Motions (mot_ ids you own, up to 100). Events that carry no Motion are then not delivered. Default: no filter. */
+                    motion_ids?: string[];
+                    /** @description Motion events to subscribe to (default: all but step.executed) */
+                    events?: ("motion.status_changed" | "enrollment.started" | "enrollment.skipped" | "enrollment.finished" | "step.executed" | "step.failed" | "motion.signal")[];
                 };
             };
         };
@@ -31463,13 +34393,15 @@ export interface operations {
                          * @description The event source this webhook subscribes to.
                          * @enum {string}
                          */
-                        source?: "messaging" | "user" | "account_status" | "post";
+                        source?: "messaging" | "user" | "account_status" | "post" | "motion";
                         /** @description The URL that receives delivery POST requests. */
                         request_url?: string;
                         /** @description Human-readable label. */
                         name?: string | null;
                         /** @description Accounts targeted by this webhook (acc_ ids you own), or null when an account_status webhook covers every current and future account. */
                         account_ids?: string[] | null;
+                        /** @description When set, only events whose data.motion_id is one of these Motions (mot_ ids) are delivered. null: no Motion filter. */
+                        motion_ids?: string[] | null;
                         /** @description A disabled webhook is created but delivers nothing. */
                         enabled?: boolean;
                         /** @description Custom headers added to each delivery POST. Values are encrypted at rest and no read returns one, so a read shows the name and a fingerprint of the value. */
@@ -31741,13 +34673,15 @@ export interface operations {
                          * @description The event source this webhook subscribes to (immutable).
                          * @enum {string}
                          */
-                        source?: "messaging" | "user" | "account_status" | "post";
+                        source?: "messaging" | "user" | "account_status" | "post" | "motion";
                         /** @description The URL that receives delivery POST requests. */
                         request_url?: string;
                         /** @description Human-readable label. */
                         name?: string | null;
                         /** @description Accounts targeted by this webhook (acc_ ids you own), or null when an account_status webhook covers every current and future account. */
                         account_ids?: string[] | null;
+                        /** @description When set, only events whose data.motion_id is one of these Motions (mot_ ids) are delivered. null: no Motion filter. */
+                        motion_ids?: string[] | null;
                         /** @description A disabled webhook is kept but delivers nothing. Disabling takes effect immediately, including for retries that were already queued; those attempts are abandoned, not deferred, so re-enabling delivers new events rather than replaying the ones that were dropped. */
                         enabled?: boolean;
                         /** @description Custom headers added to each delivery POST. Values are encrypted at rest and no read returns one, so a read shows the name and a fingerprint of the value. */
@@ -31913,6 +34847,8 @@ export interface operations {
                     data?: string[];
                     /** @description Replace the targeted accounts (whole-array, each an acc_ id you own), or null to cover every current and future account (account_status webhooks only). */
                     account_ids?: string[] | null;
+                    /** @description Only deliver events whose data.motion_id is one of these Motions (mot_ ids you own, up to 100). Events that carry no Motion are then not delivered. Replaces the whole list; null removes the filter. */
+                    motion_ids?: string[] | null;
                 };
             };
         };
@@ -31937,13 +34873,15 @@ export interface operations {
                          * @description The event source this webhook subscribes to (immutable).
                          * @enum {string}
                          */
-                        source?: "messaging" | "user" | "account_status" | "post";
+                        source?: "messaging" | "user" | "account_status" | "post" | "motion";
                         /** @description The URL that receives delivery POST requests. */
                         request_url?: string;
                         /** @description Human-readable label. */
                         name?: string | null;
                         /** @description Accounts targeted by this webhook (acc_ ids you own), or null when an account_status webhook covers every current and future account. */
                         account_ids?: string[] | null;
+                        /** @description When set, only events whose data.motion_id is one of these Motions (mot_ ids) are delivered. null: no Motion filter. */
+                        motion_ids?: string[] | null;
                         /** @description A disabled webhook is kept but delivers nothing. Disabling takes effect immediately, including for retries that were already queued; those attempts are abandoned, not deferred, so re-enabling delivers new events rather than replaying the ones that were dropped. */
                         enabled?: boolean;
                         /** @description Custom headers added to each delivery POST. Values are encrypted at rest and no read returns one, so a read shows the name and a fingerprint of the value. */
@@ -32100,10 +35038,17 @@ export interface operations {
                         };
                         /** @description The account-level half of the activity window. Outside the window, a live write to LinkedIn is reported under `warn` posture and refused under `enforce`; reads and anything served from Curviate's own store are never affected, at any hour. */
                         activity_window?: {
-                            /** @description The IANA zone this account's activity window is read in, or null when none is set. A row may override it with its own `activity_window_timezone`. */
+                            /** @description The IANA zone set on this account, or null when none is set. A row may override it with its own `activity_window_timezone`. */
                             timezone?: string | null;
-                            /** @description True when no zone is set, which DISABLES the activity window for every row that has not set its own. Curviate never guesses a zone: a guess eight hours wrong inverts the window, refusing every daytime write and permitting every nocturnal one, which is worse than having no window at all. If you configured a window and it never fires, this is why. */
+                            /** @description True when no zone is set on the account. The window still applies: it is then read in effective_timezone. Set timezone on the safety policy to choose the zone yourself. */
                             timezone_unset?: boolean;
+                            /** @description The IANA zone the activity window is read in: the zone set on the account, else the one its user's browser reported, else one inferred from the LinkedIn profile location, else Europe/Berlin. */
+                            effective_timezone?: string;
+                            /**
+                             * @description Where effective_timezone came from: account (set through the safety policy), browser, location (the LinkedIn profile location), or default (Europe/Berlin).
+                             * @enum {string}
+                             */
+                            source?: "account" | "browser" | "location" | "default";
                         };
                         /** @description Every budget row, always. */
                         rows?: {
@@ -32138,7 +35083,7 @@ export interface operations {
                             activity_window_start?: string;
                             /** @description Local HH:MM the activity window closes. */
                             activity_window_end?: string;
-                            /** @description IANA zone name the activity window is read in. Null disables the window entirely. */
+                            /** @description IANA zone name this row's activity window is read in. Null: the account's effective zone. */
                             activity_window_timezone?: string | null;
                             /**
                              * @description What the activity window governs. `writes` (the default) covers live writes to LinkedIn; `all` widens it to live reads as well, which is the setting for a persona that should not be seen browsing at 03:00. It is broader than it sounds: `all` covers every live read, including the ones about the account itself, so a nightly analytics or invitation-backlog poll is refused at 03:00 too. A read Curviate answers from its own store never reaches LinkedIn, so it is never subject to the window under either setting, at any hour; the same read IS covered when the store cannot answer it, or when you ask for it live. Inbound events are never subject to it either. One action set to `all` reaches the whole account's live reads that spend no budget of their own (notifications, profile analytics, SSI, profile visitors, the invitation and saved-list listings): those calls debit no action type, so they have none to read this setting from and take the account-wide answer instead. Reads that DO debit an action type read that action type's own setting.
@@ -32187,6 +35132,262 @@ export interface operations {
                                 source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
                             }[];
                         }[];
+                        /** @description How Curviate paces Motion actions on this account: before a Motion action of a type, at least `min_gap_seconds` plus a random part of `jitter_seconds` must have passed since the account's previous Motion action of that type, and `global.min_gap_seconds` since its previous Motion action of any type or its previous LinkedIn write through the API. `read` covers profile and post reads. Direct API calls are never paced: those are yours to pace. Values resolve per field from Curviate's default, then the team's, then this account's. Write any subset as `pacing: {"invite.send": {"min_gap_seconds": 600}}`; null clears a field or a whole type back to the default. Values are whole seconds from 0 to 86400 and are never clamped; an unknown type or field, a fraction or an out-of-range value is a 400 naming it. */
+                        pacing?: {
+                            "invite.send"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "post.comment"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "message.send"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "inmail.send"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "profile.follow"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "profile.unfollow"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "skill.endorse"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "invite.withdraw"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "post.react"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            read?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            global?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                        };
                         safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
@@ -32232,15 +35433,15 @@ export interface operations {
                      * @enum {string}
                      */
                     limit_profile?: "basic" | "premium" | "sales_navigator" | "recruiter";
-                    /** @description The IANA zone this account's ACTIVITY window is read in, e.g. `Europe/Berlin`. Must be a real zone; anything else is a 400. Null clears it, which DISABLES the activity window for every row that has not set its own: a guessed zone inverts the window, which is worse than not having one. */
+                    /** @description The IANA zone this account's ACTIVITY window is read in, e.g. `Europe/Berlin`. Must be a real zone; anything else is a 400. Null clears it: the window is then read in the zone the user's browser reported, else one inferred from the LinkedIn profile location, else Europe/Berlin (activity_window.effective_timezone and source show which). */
                     timezone?: string | null;
                     /**
-                     * @description The tenant-wide posture default, which every account inherits unless it overrides it. Set it once for a whole tenant of personas. Null clears it back to `warn`.
+                     * @description The tenant-wide posture default, which every account inherits unless it overrides it. Set it once for a whole tenant of personas. Null clears it back to `warn`. A team setting: in a team only an Owner changes it. A request changing it from anyone else is refused whole with INSUFFICIENT_ROLE; sending the value the team already holds changes nothing, so this field can be sent back as you read it.
                      * @enum {string|null}
                      */
                     tenant_default_posture?: "warn" | "enforce" | null;
                     /** @description Lift the platform pause on these action types now, instead of waiting for it to expire. When the platform refuses a call on an account (a rate limit, a server error on a budgeted route, an invitation resend cooldown), Curviate pauses that action type for the platform's own retry-after or a seeded cooldown, and every later call on it is refused locally without reaching the platform. Naming an action type here clears that pause: the next call goes out. Read `quotas[].halt` on the account to see which action types are paused and for how long. A type with no active pause is accepted and does nothing, so this is safe to send for a set you have not checked. Clearing is recorded in the account's ledger with the expiry it cut short, who cleared it and when, and it appears on the safety-events surface. It does not disarm anything: if the platform refuses the account again, the pause comes straight back, longer than the one you cleared where the platform says so. Clear a pause when you have reason to believe the refusal was a transient upstream fault rather than the platform pushing back on this account; clearing one and calling straight back into a real rate limit is itself how accounts get restricted. */
-                    clear_halts?: ("connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep")[];
+                    clear_halts?: ("connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync")[];
                     /**
                      * @description This account's posture default, overriding the tenant default for this account only. Null clears the override.
                      * @enum {string|null}
@@ -32252,7 +35453,7 @@ export interface operations {
                          * @description The budget row this patch configures.
                          * @enum {string}
                          */
-                        budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "total_actions" | "pending_invites";
+                        budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "total_actions" | "pending_invites";
                         /** @description What `enforce` refuses at and `warn` reports at, in this row's own unit. Any value up to 9007199254740991 is accepted and stored verbatim; a value above the Curviate default is reported back, never clamped. */
                         ceiling?: number | null;
                         /** @description Routine band. Activity at or below it is unremarkable. */
@@ -32277,7 +35478,7 @@ export interface operations {
                         activity_window_start?: string | null;
                         /** @description Local time the activity window closes, HH:MM. */
                         activity_window_end?: string | null;
-                        /** @description IANA zone name the activity window is read in, e.g. `Europe/Berlin`. Must be a real zone; anything else is a 400. Null DISABLES the activity window: a guessed zone inverts it, which is worse than not having one. */
+                        /** @description IANA zone name the activity window is read in, e.g. `Europe/Berlin`. Must be a real zone; anything else is a 400. Null clears it: the row then reads the account's effective zone. */
                         activity_window_timezone?: string | null;
                         /**
                          * @description What the activity window governs. `writes` (the default) covers live writes to LinkedIn; `all` widens it to live reads. A read Curviate answers from its own store never reaches LinkedIn and so is never covered; the same read IS covered when the store cannot answer it, or when you ask for it live. Stored reads and inbound events are never subject to the window under either setting, at any hour. One action set to `all` reaches the whole account's live reads that spend no budget of their own (notifications, profile analytics, SSI, profile visitors, the invitation and saved-list listings): those calls debit no action type, so they have none to read this setting from and take the account-wide answer instead. Reads that DO debit an action type read that action type's own setting.
@@ -32313,6 +35514,17 @@ export interface operations {
                         /** @description READ-ONLY. The fields on this row configured above the Curviate default. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                         over_default?: unknown;
                     }[];
+                    /** @description Motion pacing at this scope (an account, or the team default every account inherits), keyed by action type (`invite.send`, `post.comment`, `message.send`, `inmail.send`, `profile.follow`, `profile.unfollow`, `skill.endorse`, `invite.withdraw`, `post.react`), `read` and `global`: `{"invite.send": {"min_gap_seconds": 600, "jitter_seconds": 360}}`. Any subset; null clears a field or a type back to the default. Whole seconds from 0 to 86400, never clamped. A value below the default carries an `over_default` warning, the rows' own shape. Direct API calls are never paced. */
+                    pacing?: {
+                        [key: string]: {
+                            /** @description Whole seconds, 0 to 86400. Null clears it. */
+                            min_gap_seconds?: unknown;
+                            /** @description Whole seconds, 0 to 86400. Not on `global`. Null clears it. */
+                            jitter_seconds?: unknown;
+                            /** @description READ-ONLY. The over-default warnings (a value below the default). Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                            over_default?: unknown;
+                        } | null;
+                    };
                     /** @description READ-ONLY. The document's type discriminator. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                     object?: unknown;
                     /** @description READ-ONLY. The account this document describes; the path names it. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
@@ -32398,10 +35610,17 @@ export interface operations {
                         };
                         /** @description The account-level half of the activity window. Outside the window, a live write to LinkedIn is reported under `warn` posture and refused under `enforce`; reads and anything served from Curviate's own store are never affected, at any hour. */
                         activity_window?: {
-                            /** @description The IANA zone this account's activity window is read in, or null when none is set. A row may override it with its own `activity_window_timezone`. */
+                            /** @description The IANA zone set on this account, or null when none is set. A row may override it with its own `activity_window_timezone`. */
                             timezone?: string | null;
-                            /** @description True when no zone is set, which DISABLES the activity window for every row that has not set its own. Curviate never guesses a zone: a guess eight hours wrong inverts the window, refusing every daytime write and permitting every nocturnal one, which is worse than having no window at all. If you configured a window and it never fires, this is why. */
+                            /** @description True when no zone is set on the account. The window still applies: it is then read in effective_timezone. Set timezone on the safety policy to choose the zone yourself. */
                             timezone_unset?: boolean;
+                            /** @description The IANA zone the activity window is read in: the zone set on the account, else the one its user's browser reported, else one inferred from the LinkedIn profile location, else Europe/Berlin. */
+                            effective_timezone?: string;
+                            /**
+                             * @description Where effective_timezone came from: account (set through the safety policy), browser, location (the LinkedIn profile location), or default (Europe/Berlin).
+                             * @enum {string}
+                             */
+                            source?: "account" | "browser" | "location" | "default";
                         };
                         /** @description Every budget row, always. */
                         rows?: {
@@ -32436,7 +35655,7 @@ export interface operations {
                             activity_window_start?: string;
                             /** @description Local HH:MM the activity window closes. */
                             activity_window_end?: string;
-                            /** @description IANA zone name the activity window is read in. Null disables the window entirely. */
+                            /** @description IANA zone name this row's activity window is read in. Null: the account's effective zone. */
                             activity_window_timezone?: string | null;
                             /**
                              * @description What the activity window governs. `writes` (the default) covers live writes to LinkedIn; `all` widens it to live reads as well, which is the setting for a persona that should not be seen browsing at 03:00. It is broader than it sounds: `all` covers every live read, including the ones about the account itself, so a nightly analytics or invitation-backlog poll is refused at 03:00 too. A read Curviate answers from its own store never reaches LinkedIn, so it is never subject to the window under either setting, at any hour; the same read IS covered when the store cannot answer it, or when you ask for it live. Inbound events are never subject to it either. One action set to `all` reaches the whole account's live reads that spend no budget of their own (notifications, profile analytics, SSI, profile visitors, the invitation and saved-list listings): those calls debit no action type, so they have none to read this setting from and take the account-wide answer instead. Reads that DO debit an action type read that action type's own setting.
@@ -32485,12 +35704,277 @@ export interface operations {
                                 source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
                             }[];
                         }[];
+                        /** @description How Curviate paces Motion actions on this account: before a Motion action of a type, at least `min_gap_seconds` plus a random part of `jitter_seconds` must have passed since the account's previous Motion action of that type, and `global.min_gap_seconds` since its previous Motion action of any type or its previous LinkedIn write through the API. `read` covers profile and post reads. Direct API calls are never paced: those are yours to pace. Values resolve per field from Curviate's default, then the team's, then this account's. Write any subset as `pacing: {"invite.send": {"min_gap_seconds": 600}}`; null clears a field or a whole type back to the default. Values are whole seconds from 0 to 86400 and are never clamped; an unknown type or field, a fraction or an out-of-range value is a 400 naming it. */
+                        pacing?: {
+                            "invite.send"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "post.comment"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "message.send"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "inmail.send"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "profile.follow"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "profile.unfollow"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "skill.endorse"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "invite.withdraw"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "post.react"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            read?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            global?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                        };
                         safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
             };
             /** @description INVALID_REQUEST. The row name, posture or source class is not one of the accepted values, or a number is not a number (a negative ceiling). A value is never rejected for being unsafe: any limit may be set to any value, and a high one is reported rather than refused. */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: `tenant_default_posture` is a team setting, and in a team only an Owner changes it. A request changing it from anyone else is refused whole and nothing in it is applied. Sending the value the team already holds is accepted and changes nothing. Read the policy again and send the account's own fields. Not fixed by retrying. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -32536,7 +36020,7 @@ export interface operations {
                 /** @description Pagination cursor from a previous response; decodable, pass it back verbatim. */
                 cursor?: string;
                 /** @description Return only events flagged against this budget row. Omit for every row. */
-                budget_row?: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "total_actions" | "pending_invites";
+                budget_row?: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "total_actions" | "pending_invites";
                 /** @description Only events at or after this instant (ISO-8601, e.g. 2026-09-01T00:00:00Z). */
                 since?: string;
                 /** @description Only events strictly before this instant (ISO-8601). */
@@ -32580,7 +36064,7 @@ export interface operations {
                              * @description The budget row that breached. It is not always a row the call itself spends: an invitation refused because the outstanding backlog is at its ceiling reports `pending_invites`, which is the thing that breached. `*` means the event was not about a row at all: the activity window closing on an action that spends no budget of its own, such as editing a message or a Recruiter admin action. The `budget_row` filter accepts real row names only, so page without it to see those.
                              * @enum {string}
                              */
-                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "total_actions" | "pending_invites" | "*";
+                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "total_actions" | "pending_invites" | "*";
                             /**
                              * @description Which rule flagged it, and each one calls for a different response. `budget_exhausted`: the account reached the ceiling configured for that row, which you can raise on the safety policy. `activity_window`: the account was acting outside its configured activity window, so no ceiling was the constraint. Wait for the window to open, move `activity_window_start` or `activity_window_end`, or check `activity_window_timezone` is the zone you meant. `rate_limited`: the platform itself refused this account on that row recently and Curviate is holding the row until the pause expires. No ceiling you raise lifts it; the one thing that does is `clear_halts` on the safety policy, which lifts it deliberately and records that it was lifted. `halt_cleared` is the odd one out and the only entry that is not a refusal: somebody lifted one of those platform pauses early through `clear_halts` on the safety policy, so the row was open again from that instant. It carries `blocked: false` and its `method` is `update_safety_policy` rather than the operation that breached. Read it beside the `rate_limited` entry it lifts: the pause and its lifting are one thread, and an entry list that showed only the first would report a row as still paused.
                              * @enum {string}
@@ -32692,7 +36176,7 @@ export interface operations {
                                 activity_window_start?: string;
                                 /** @description Local HH:MM the activity window closes. */
                                 activity_window_end?: string;
-                                /** @description IANA zone name the activity window is read in. Null disables the window entirely. */
+                                /** @description IANA zone name this row's activity window is read in. Null: the account's effective zone. */
                                 activity_window_timezone?: string | null;
                                 /**
                                  * @description What the activity window governs. `writes` (the default) covers live writes to LinkedIn; `all` widens it to live reads as well, which is the setting for a persona that should not be seen browsing at 03:00. It is broader than it sounds: `all` covers every live read, including the ones about the account itself, so a nightly analytics or invitation-backlog poll is refused at 03:00 too. A read Curviate answers from its own store never reaches LinkedIn, so it is never subject to the window under either setting, at any hour; the same read IS covered when the store cannot answer it, or when you ask for it live. Inbound events are never subject to it either. One action set to `all` reaches the whole account's live reads that spend no budget of their own (notifications, profile analytics, SSI, profile visitors, the invitation and saved-list listings): those calls debit no action type, so they have none to read this setting from and take the account-wide answer instead. Reads that DO debit an action type read that action type's own setting.
@@ -32733,6 +36217,262 @@ export interface operations {
                                 }[];
                             }[];
                         }[];
+                        /** @description The team's Motion pacing defaults: the Curviate default where the team has set nothing. Every account inherits them unless it sets its own. How Curviate paces Motion actions on this account: before a Motion action of a type, at least `min_gap_seconds` plus a random part of `jitter_seconds` must have passed since the account's previous Motion action of that type, and `global.min_gap_seconds` since its previous Motion action of any type or its previous LinkedIn write through the API. `read` covers profile and post reads. Direct API calls are never paced: those are yours to pace. Values resolve per field from Curviate's default, then the team's, then this account's. Write any subset as `pacing: {"invite.send": {"min_gap_seconds": 600}}`; null clears a field or a whole type back to the default. Values are whole seconds from 0 to 86400 and are never clamped; an unknown type or field, a fraction or an out-of-range value is a 400 naming it. */
+                        pacing?: {
+                            "invite.send"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "post.comment"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "message.send"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "inmail.send"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "profile.follow"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "profile.unfollow"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "skill.endorse"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "invite.withdraw"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "post.react"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            read?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            global?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                        };
                         safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
@@ -32779,7 +36519,7 @@ export interface operations {
                              * @description The budget row this patch configures.
                              * @enum {string}
                              */
-                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "total_actions" | "pending_invites";
+                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "total_actions" | "pending_invites";
                             /** @description What `enforce` refuses at and `warn` reports at, in this row's own unit. Any value up to 9007199254740991 is accepted and stored verbatim; a value above the Curviate default is reported back, never clamped. */
                             ceiling?: number | null;
                             /** @description Routine band. Activity at or below it is unremarkable. */
@@ -32799,7 +36539,7 @@ export interface operations {
                             activity_window_start?: string | null;
                             /** @description Local time the activity window closes, HH:MM. */
                             activity_window_end?: string | null;
-                            /** @description IANA zone name the activity window is read in, e.g. `Europe/Berlin`. Must be a real zone; anything else is a 400. Null DISABLES the activity window: a guessed zone inverts it, which is worse than not having one. */
+                            /** @description IANA zone name the activity window is read in, e.g. `Europe/Berlin`. Must be a real zone; anything else is a 400. Null clears it: the row then reads the account's effective zone. */
                             activity_window_timezone?: string | null;
                             /**
                              * @description What the activity window governs. `writes` (the default) covers live writes to LinkedIn; `all` widens it to live reads. A read Curviate answers from its own store never reaches LinkedIn and so is never covered; the same read IS covered when the store cannot answer it, or when you ask for it live. Stored reads and inbound events are never subject to the window under either setting, at any hour. One action set to `all` reaches the whole account's live reads that spend no budget of their own (notifications, profile analytics, SSI, profile visitors, the invitation and saved-list listings): those calls debit no action type, so they have none to read this setting from and take the account-wide answer instead. Reads that DO debit an action type read that action type's own setting.
@@ -32825,6 +36565,17 @@ export interface operations {
                             over_default?: unknown;
                         }[];
                     }[];
+                    /** @description Motion pacing at this scope (an account, or the team default every account inherits), keyed by action type (`invite.send`, `post.comment`, `message.send`, `inmail.send`, `profile.follow`, `profile.unfollow`, `skill.endorse`, `invite.withdraw`, `post.react`), `read` and `global`: `{"invite.send": {"min_gap_seconds": 600, "jitter_seconds": 360}}`. Any subset; null clears a field or a type back to the default. Whole seconds from 0 to 86400, never clamped. A value below the default carries an `over_default` warning, the rows' own shape. Direct API calls are never paced. */
+                    pacing?: {
+                        [key: string]: {
+                            /** @description Whole seconds, 0 to 86400. Null clears it. */
+                            min_gap_seconds?: unknown;
+                            /** @description Whole seconds, 0 to 86400. Not on `global`. Null clears it. */
+                            jitter_seconds?: unknown;
+                            /** @description READ-ONLY. The over-default warnings (a value below the default). Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                            over_default?: unknown;
+                        } | null;
+                    };
                     /** @description READ-ONLY. The document's type discriminator. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                     object?: unknown;
                     /** @description READ-ONLY. What the last write changed across the tenant's accounts. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
@@ -32882,7 +36633,7 @@ export interface operations {
                                 activity_window_start?: string;
                                 /** @description Local HH:MM the activity window closes. */
                                 activity_window_end?: string;
-                                /** @description IANA zone name the activity window is read in. Null disables the window entirely. */
+                                /** @description IANA zone name this row's activity window is read in. Null: the account's effective zone. */
                                 activity_window_timezone?: string | null;
                                 /**
                                  * @description What the activity window governs. `writes` (the default) covers live writes to LinkedIn; `all` widens it to live reads as well, which is the setting for a persona that should not be seen browsing at 03:00. It is broader than it sounds: `all` covers every live read, including the ones about the account itself, so a nightly analytics or invitation-backlog poll is refused at 03:00 too. A read Curviate answers from its own store never reaches LinkedIn, so it is never subject to the window under either setting, at any hour; the same read IS covered when the store cannot answer it, or when you ask for it live. Inbound events are never subject to it either. One action set to `all` reaches the whole account's live reads that spend no budget of their own (notifications, profile analytics, SSI, profile visitors, the invitation and saved-list listings): those calls debit no action type, so they have none to read this setting from and take the account-wide answer instead. Reads that DO debit an action type read that action type's own setting.
@@ -32923,6 +36674,262 @@ export interface operations {
                                 }[];
                             }[];
                         }[];
+                        /** @description The team's Motion pacing defaults: the Curviate default where the team has set nothing. Every account inherits them unless it sets its own. How Curviate paces Motion actions on this account: before a Motion action of a type, at least `min_gap_seconds` plus a random part of `jitter_seconds` must have passed since the account's previous Motion action of that type, and `global.min_gap_seconds` since its previous Motion action of any type or its previous LinkedIn write through the API. `read` covers profile and post reads. Direct API calls are never paced: those are yours to pace. Values resolve per field from Curviate's default, then the team's, then this account's. Write any subset as `pacing: {"invite.send": {"min_gap_seconds": 600}}`; null clears a field or a whole type back to the default. Values are whole seconds from 0 to 86400 and are never clamped; an unknown type or field, a fraction or an out-of-range value is a 400 naming it. */
+                        pacing?: {
+                            "invite.send"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "post.comment"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "message.send"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "inmail.send"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "profile.follow"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "profile.unfollow"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "skill.endorse"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "invite.withdraw"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            "post.react"?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            read?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                            global?: {
+                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                min_gap_seconds?: number;
+                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                jitter_seconds?: number;
+                                /** @description READ-ONLY. Empty when nothing on this entry is below default. */
+                                over_default?: {
+                                    /**
+                                     * @description The pacing field set below default.
+                                     * @enum {string}
+                                     */
+                                    field?: "min_gap_seconds" | "jitter_seconds";
+                                    /** @description The configured value. */
+                                    value?: number;
+                                    /** @description The Curviate default it exceeds. */
+                                    default?: number;
+                                    /**
+                                     * @description How well calibrated the DEFAULT is. `substrate` and `linkedin_official` are published figures; `practitioner` is corroborated operator experience; `inferred` is our own reasoning; `unseeded` means we have no figure at all for that row, in which case there is nothing to be above and no entry appears. Read this before deciding whether being above default matters.
+                                     * @enum {string}
+                                     */
+                                    source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                                }[];
+                            };
+                        };
                         /** @description What this write changed across the tenant's accounts, measured on them before and after it applied. */
                         impact?: {
                             /** @description Accounts on which at least one budget row's resolved ceiling changed. */
@@ -32936,6 +36943,5233 @@ export interface operations {
             };
             /** @description INVALID_REQUEST. An unknown limit profile, row name or field, or a value that is not a value (a negative ceiling). A value is never rejected for being unsafe. */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: in a team, only an Owner changes the tenant safety defaults. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1Contacts: {
+        parameters: {
+            query?: {
+                /** @description Only Contacts in this Contact list (cl_...). */
+                list_id?: string;
+                /** @description Comma list of Tag names, any casing: Contacts with any of them. */
+                tag?: string;
+                /** @description Only Contacts in this import's report (imp_...), while the import exists. */
+                import_id?: string;
+                /** @description The Contact for this person, any URL spelling. */
+                linkedin_url?: string;
+                /** @description Case-insensitive text match on names, headline, job title, company, email, location and profile slug. */
+                q?: string;
+                /** @description none, queued, done or failed. */
+                enrichment_status?: "none" | "queued" | "done" | "failed";
+                /** @description true: Connections of your accounts only; false: everyone else. */
+                connected?: boolean;
+                /** @description Only Contacts that are Connections of this account (acc_...). */
+                account_id?: string;
+                /** @description Only Contacts with an Enrollment in this Motion (mot_...). */
+                motion_id?: string;
+                /** @description With motion_id: comma list of pending, active, paused, finished, skipped, Contacts whose Enrollment in that Motion has one of them. */
+                enrollment_status?: ("pending" | "active" | "paused" | "finished" | "skipped")[];
+                /** @description By creation time: desc (default) or asc. */
+                order?: "desc" | "asc";
+                /** @description Max items per page (1-100, default 20). */
+                limit?: number;
+                /** @description Pagination cursor from a previous response; pass it back verbatim with the same filters. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Contacts, newest first by default. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "contact_page";
+                        items: {
+                            /**
+                             * @description Response type discriminator.
+                             * @enum {string}
+                             */
+                            object: "contact";
+                            /** @description Contact id (con_...). */
+                            id: string;
+                            /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person. */
+                            linkedin_url: string | null;
+                            /** @description The profile slug, when known. */
+                            public_identifier: string | null;
+                            /** @description LinkedIn's profile id, when known. */
+                            provider_id: string | null;
+                            /** @description LinkedIn's member id, when observed. */
+                            member_id: string | null;
+                            /** @description Full name. */
+                            full_name: string | null;
+                            /** @description First name. */
+                            first_name: string | null;
+                            /** @description Last name. */
+                            last_name: string | null;
+                            /** @description Profile headline. */
+                            headline: string | null;
+                            /** @description Current job title. */
+                            job_title: string | null;
+                            /** @description Current company. */
+                            company: string | null;
+                            /** @description Email, only ever what you supplied. */
+                            email: string | null;
+                            /** @description Location. */
+                            location: string | null;
+                            /** @description About text. */
+                            about: string | null;
+                            /** @description Your own fields. */
+                            extra: {
+                                [key: string]: unknown;
+                            };
+                            /** @description Per non-empty standard field: tenant (you supplied it) or linkedin (Curviate filled it). A tenant value is never overwritten by LinkedIn data. */
+                            sources: {
+                                [key: string]: "tenant" | "linkedin";
+                            };
+                            /** @description Tag names. */
+                            tags: string[];
+                            /** @description Contact lists (cl_...) holding this Contact. */
+                            list_ids: string[];
+                            /** @description Your accounts this person is a Connection of. */
+                            connected_account_ids: string[];
+                            enrichment: {
+                                /** @enum {string} */
+                                status: "none" | "queued" | "done" | "failed";
+                                /** @description When observed profile data last changed this Contact. */
+                                enriched_at: string | null;
+                                /**
+                                 * @description Why the last enrich visit failed: profile_not_found (no such profile, or it is not this person), expired (not visited within 7 days), account_unavailable (the account was removed), platform_error, or tier_required (the team's plan no longer includes Contacts).
+                                 * @enum {string|null}
+                                 */
+                                failure_code: "profile_not_found" | "expired" | "account_unavailable" | "platform_error" | "tier_required" | null;
+                            };
+                            /** @description ISO 8601. */
+                            created_at: string;
+                            /** @description ISO 8601. */
+                            updated_at: string;
+                        }[];
+                        /** @description Pass back as cursor for the next page; null on the last page. */
+                        cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Invalid filter, a query key given twice, a malformed cursor, or account_id with connected=false. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Only with account_id, in a team. ACCOUNT_NOT_SHARED: the teammate turned team access off for the account, so only they filter by it. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: list_id or a tag name is not yours (the message names the parameter). ACCOUNT_NOT_FOUND: account_id is not one of your accounts. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1Contacts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The person's LinkedIn profile or Sales Navigator lead URL. Any spelling of one person resolves to one Contact. */
+                    linkedin_url: string;
+                    /** @description Full name, up to 200 characters. */
+                    full_name?: string | null;
+                    /** @description First name, up to 200 characters. */
+                    first_name?: string | null;
+                    /** @description Last name, up to 200 characters. */
+                    last_name?: string | null;
+                    /** @description Profile headline, up to 500 characters. */
+                    headline?: string | null;
+                    /** @description Current job title, up to 300 characters. */
+                    job_title?: string | null;
+                    /** @description Current company, up to 300 characters. */
+                    company?: string | null;
+                    /** @description Email address, only ever what you supply (Curviate never fills it), up to 320 characters. */
+                    email?: string | null;
+                    /** @description Location, up to 300 characters. */
+                    location?: string | null;
+                    /** @description About text, up to 10000 characters. */
+                    about?: string | null;
+                    /** @description Your own fields, merged key by key. Keys are letters, digits and underscore, up to 64 characters; values any JSON. */
+                    extra?: {
+                        [key: string]: unknown;
+                    };
+                    /** @description Tag names to add (never removes). Up to 50 Tags per Contact; a new name creates the Tag. */
+                    tags?: string[];
+                    /** @description A Contact list to add the Contact to (cl_...). */
+                    list_id?: string;
+                    /** @description A Contact list to add the Contact to, by name; created if none matches (any casing). */
+                    list_name?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description An existing Contact for this person: outcome updated (a field, Tag or membership changed) or unchanged. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "contact";
+                        /** @description Contact id (con_...). */
+                        id: string;
+                        /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person. */
+                        linkedin_url: string | null;
+                        /** @description The profile slug, when known. */
+                        public_identifier: string | null;
+                        /** @description LinkedIn's profile id, when known. */
+                        provider_id: string | null;
+                        /** @description LinkedIn's member id, when observed. */
+                        member_id: string | null;
+                        /** @description Full name. */
+                        full_name: string | null;
+                        /** @description First name. */
+                        first_name: string | null;
+                        /** @description Last name. */
+                        last_name: string | null;
+                        /** @description Profile headline. */
+                        headline: string | null;
+                        /** @description Current job title. */
+                        job_title: string | null;
+                        /** @description Current company. */
+                        company: string | null;
+                        /** @description Email, only ever what you supplied. */
+                        email: string | null;
+                        /** @description Location. */
+                        location: string | null;
+                        /** @description About text. */
+                        about: string | null;
+                        /** @description Your own fields. */
+                        extra: {
+                            [key: string]: unknown;
+                        };
+                        /** @description Per non-empty standard field: tenant (you supplied it) or linkedin (Curviate filled it). A tenant value is never overwritten by LinkedIn data. */
+                        sources: {
+                            [key: string]: "tenant" | "linkedin";
+                        };
+                        /** @description Tag names. */
+                        tags: string[];
+                        /** @description Contact lists (cl_...) holding this Contact. */
+                        list_ids: string[];
+                        /** @description Your accounts this person is a Connection of. */
+                        connected_account_ids: string[];
+                        enrichment: {
+                            /** @enum {string} */
+                            status: "none" | "queued" | "done" | "failed";
+                            /** @description When observed profile data last changed this Contact. */
+                            enriched_at: string | null;
+                            /**
+                             * @description Why the last enrich visit failed: profile_not_found (no such profile, or it is not this person), expired (not visited within 7 days), account_unavailable (the account was removed), platform_error, or tier_required (the team's plan no longer includes Contacts).
+                             * @enum {string|null}
+                             */
+                            failure_code: "profile_not_found" | "expired" | "account_unavailable" | "platform_error" | "tier_required" | null;
+                        };
+                        /** @description ISO 8601. */
+                        created_at: string;
+                        /** @description ISO 8601. */
+                        updated_at: string;
+                        /** @enum {string} */
+                        outcome?: "created" | "updated" | "unchanged";
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Contact created. outcome is created. */
+            201: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "contact";
+                        /** @description Contact id (con_...). */
+                        id: string;
+                        /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person. */
+                        linkedin_url: string | null;
+                        /** @description The profile slug, when known. */
+                        public_identifier: string | null;
+                        /** @description LinkedIn's profile id, when known. */
+                        provider_id: string | null;
+                        /** @description LinkedIn's member id, when observed. */
+                        member_id: string | null;
+                        /** @description Full name. */
+                        full_name: string | null;
+                        /** @description First name. */
+                        first_name: string | null;
+                        /** @description Last name. */
+                        last_name: string | null;
+                        /** @description Profile headline. */
+                        headline: string | null;
+                        /** @description Current job title. */
+                        job_title: string | null;
+                        /** @description Current company. */
+                        company: string | null;
+                        /** @description Email, only ever what you supplied. */
+                        email: string | null;
+                        /** @description Location. */
+                        location: string | null;
+                        /** @description About text. */
+                        about: string | null;
+                        /** @description Your own fields. */
+                        extra: {
+                            [key: string]: unknown;
+                        };
+                        /** @description Per non-empty standard field: tenant (you supplied it) or linkedin (Curviate filled it). A tenant value is never overwritten by LinkedIn data. */
+                        sources: {
+                            [key: string]: "tenant" | "linkedin";
+                        };
+                        /** @description Tag names. */
+                        tags: string[];
+                        /** @description Contact lists (cl_...) holding this Contact. */
+                        list_ids: string[];
+                        /** @description Your accounts this person is a Connection of. */
+                        connected_account_ids: string[];
+                        enrichment: {
+                            /** @enum {string} */
+                            status: "none" | "queued" | "done" | "failed";
+                            /** @description When observed profile data last changed this Contact. */
+                            enriched_at: string | null;
+                            /**
+                             * @description Why the last enrich visit failed: profile_not_found (no such profile, or it is not this person), expired (not visited within 7 days), account_unavailable (the account was removed), platform_error, or tier_required (the team's plan no longer includes Contacts).
+                             * @enum {string|null}
+                             */
+                            failure_code: "profile_not_found" | "expired" | "account_unavailable" | "platform_error" | "tier_required" | null;
+                        };
+                        /** @description ISO 8601. */
+                        created_at: string;
+                        /** @description ISO 8601. */
+                        updated_at: string;
+                        /** @enum {string} */
+                        outcome?: "created" | "updated" | "unchanged";
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Invalid input: a URL that is not a LinkedIn profile or Sales Navigator lead (message starts linkedin_url:), a field over its length, extra over its caps, a bad Tag name. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: list_id is not one of your Contact lists. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description CONTACT_LIMIT_REACHED: a team cap would be passed (100000 Contacts, 1000 lists, 1000 Tags). Nothing is written. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1ContactsExport: {
+        parameters: {
+            query?: {
+                /** @description Only Contacts in this Contact list (cl_...). */
+                list_id?: string;
+                /** @description Comma list of Tag names, any casing: Contacts with any of them. */
+                tag?: string;
+                /** @description Only Contacts in this import's report (imp_...), while the import exists. */
+                import_id?: string;
+                /** @description The Contact for this person, any URL spelling. */
+                linkedin_url?: string;
+                /** @description Case-insensitive text match on names, headline, job title, company, email, location and profile slug. */
+                q?: string;
+                /** @description none, queued, done or failed. */
+                enrichment_status?: "none" | "queued" | "done" | "failed";
+                /** @description true: Connections of your accounts only; false: everyone else. */
+                connected?: boolean;
+                /** @description Only Contacts that are Connections of this account (acc_...). */
+                account_id?: string;
+                /** @description Only Contacts with an Enrollment in this Motion (mot_...). */
+                motion_id?: string;
+                /** @description With motion_id: comma list of pending, active, paused, finished, skipped, Contacts whose Enrollment in that Motion has one of them. */
+                enrollment_status?: ("pending" | "active" | "paused" | "finished" | "skipped")[];
+                /** @description csv, json or ndjson (default). */
+                format?: "csv" | "json" | "ndjson";
+                /** @description Comma list of columns to include, in this order (e.g. linkedin_url,tags,extra.note). Default: all. */
+                fields?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The whole matching set in one streamed download (Content-Disposition: attachment). CSV is UTF-8 with a BOM; a cell starting with = + - @, tab or CR is prefixed with '. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/x-ndjson": string;
+                };
+            };
+            /** @description Invalid filter or an unknown name in fields (the message names it). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Only with account_id, in a team. ACCOUNT_NOT_SHARED: the teammate turned team access off for the account, so only they filter by it. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: list_id or a tag name is not yours. ACCOUNT_NOT_FOUND: account_id is not one of your accounts. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1ContactsUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Contact ids (con_...), up to 1000. */
+                    contact_ids: string[];
+                    /** @description Tag names to add; a new name creates the Tag. */
+                    add_tags?: string[];
+                    /** @description Tag names to remove; an unknown name is a no-op. */
+                    remove_tags?: string[];
+                    /** @description Contact list to add the Contacts to (cl_...). */
+                    add_list_id?: string;
+                    /** @description Contact list to add the Contacts to, by name; created if none matches. */
+                    add_list_name?: string;
+                    /** @description Contact list to remove the Contacts from (cl_...). */
+                    remove_list_id?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Counts. A Contact that would pass 50 Tags is left untouched and listed in refused. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        updated: number;
+                        unchanged: number;
+                        not_found: string[];
+                        refused: {
+                            contact_id: string;
+                            /** @enum {string} */
+                            reason: "too_many_tags";
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description No operation named, contact_ids empty or too long, a bad Tag name, or add_list_id together with add_list_name. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: add_list_id or remove_list_id is not one of your Contact lists. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description CONTACT_LIMIT_REACHED: a team cap would be passed (100000 Contacts, 1000 lists, 1000 Tags). Nothing is written. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1ContactsDelete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Contact ids (con_...), up to 1000. */
+                    contact_ids: string[];
+                };
+            };
+        };
+        responses: {
+            /** @description Deleted count; ids that are not yours or do not exist are listed in not_found. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        deleted: number;
+                        not_found: string[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description contact_ids empty or over 1000. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: in a team, only an Owner or a Manager deletes. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1ContactsEnrich: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Contact ids (con_...), up to 1000. */
+                    contact_ids?: string[];
+                    /** @description A Contact list of up to 1000 Contacts to enrich instead of contact_ids (cl_...). */
+                    list_id?: string;
+                    /** @description The account (acc_...) whose live profile views enrich what the store cannot. Required unless mode is cache_only. */
+                    account_id?: string;
+                    /**
+                     * @description auto (default): stored data newer than max_age, else a live visit. refill: stored data at any age, a visit only when none. cache_only: stored data only, never a visit. live: always a visit.
+                     * @enum {string}
+                     */
+                    mode?: "auto" | "refill" | "cache_only" | "live";
+                    /** @description Seconds. Stored data older than this is refreshed by a live visit; overrides the mode's threshold (default 30 days). Not with cache_only. */
+                    max_age?: number;
+                };
+            };
+        };
+        responses: {
+            /** @description What happened to each Contact. from_store: filled now from data Curviate already holds. queued: a live profile visit waits in the account's paced queue. skipped lists every other Contact with its reason (already_queued, queue_full, not_stored, not_found). A visit's result lands on the Contact's enrichment (done, or failed with failure_code profile_not_found, expired, account_unavailable, platform_error or tier_required). */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "contact_enrichment";
+                        /** @description The account the visits are queued from. */
+                        account_id: string | null;
+                        counts: {
+                            from_store: number;
+                            queued: number;
+                            already_queued: number;
+                            queue_full: number;
+                            not_stored: number;
+                            not_found: number;
+                        };
+                        skipped: {
+                            contact_id: string;
+                            /** @enum {string} */
+                            reason: "already_queued" | "queue_full" | "not_stored" | "not_found";
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description contact_ids and list_id both or neither, more than 1000 ids or list members, account_id missing without mode cache_only, or max_age with cache_only. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: a Member named a teammate's account. ACCOUNT_NOT_SHARED: its person turned team access off. NO_ACTIVE_SEAT: the account has no seat. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_NOT_FOUND: account_id is not one of your accounts. RESOURCE_NOT_FOUND: list_id is not one of your Contact lists. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description REAUTH_REQUIRED: the account is disconnected. Reconnect it, or choose another account. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1ContactsImports: {
+        parameters: {
+            query?: {
+                /** @description Max items per page (1-100, default 20). */
+                limit?: number;
+                /** @description Pagination cursor from a previous response. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Imports, newest first. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "contact_import_list";
+                        items: {
+                            /** @enum {string} */
+                            object: "contact_import";
+                            /** @description Import id (imp_...). */
+                            id: string;
+                            /** @enum {string} */
+                            status: "queued" | "running" | "completed" | "failed";
+                            /** @enum {string} */
+                            format: "rows" | "csv";
+                            total_rows: number;
+                            counts: {
+                                created: number;
+                                updated: number;
+                                unchanged: number;
+                                skipped: number;
+                            };
+                            /** @description The Contact list every row was added to. */
+                            list_id: string | null;
+                            /** @description Tag names added to every row's Contact. */
+                            tags: string[];
+                            /** @description CSV only: how each header was read. */
+                            columns: {
+                                /** @description Header to target (a standard field, `tags` or `extra.<key>`). */
+                                mapped?: {
+                                    [key: string]: string;
+                                };
+                                ignored?: string[];
+                            } | null;
+                            /** @description The user who started the import (the user your API key belongs to). */
+                            created_by_user_id: string | null;
+                            created_at: string;
+                            /** @description When processing began. */
+                            started_at: string | null;
+                            /** @description When processing ended. */
+                            finished_at: string | null;
+                            /** @description Set when status is failed. Rows applied before the failure stay applied and reported. */
+                            failure: {
+                                code?: string;
+                                message?: string;
+                            } | null;
+                            /** @description Inline imports only: the per-row report, in row order. */
+                            report?: {
+                                /** @description 1-based data row. */
+                                row: number;
+                                /** @enum {string} */
+                                outcome: "created" | "updated" | "unchanged" | "skipped";
+                                /** @description The Contact this row wrote to; null when skipped or when the Contact was deleted since. */
+                                contact_id: string | null;
+                                /**
+                                 * @description Why a row was skipped.
+                                 * @enum {string|null}
+                                 */
+                                reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
+                                /** @description The field a field_too_long row names. */
+                                field: string | null;
+                                /** @description An earlier row of this import for the same person. */
+                                duplicate_of_row: number | null;
+                            }[];
+                        }[];
+                        /** @description Pass back as cursor for the next page; null on the last page. */
+                        cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Malformed cursor or limit. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1ContactsImports: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The rows: objects with linkedin_url (required), the standard fields, extra and tags. Send rows or csv, not both. */
+                    rows?: {
+                        [key: string]: unknown;
+                    }[];
+                    /** @description The file as text (RFC 4180, UTF-8). Send rows or csv, not both. */
+                    csv?: string;
+                    /** @description A Contact list to add every row's Contact to (cl_...). */
+                    list_id?: string;
+                    /** @description A Contact list to add every row's Contact to, by name; created if none matches. */
+                    list_name?: string;
+                    /** @description Tag names added to every row's Contact. */
+                    tags?: string[];
+                    /** @description Tag names removed from every row's Contact. */
+                    remove_tags?: string[];
+                    /** @description csv only: a map of header to target (a standard field, `tags`, `extra.<key>` or `ignore`) that overrides the header matching. */
+                    mapping?: {
+                        [key: string]: string;
+                    };
+                    /**
+                     * @description csv only: , ; or tab. Default: the most frequent in the header line.
+                     * @enum {string}
+                     */
+                    delimiter?: "," | ";" | "\t";
+                };
+            };
+        };
+        responses: {
+            /** @description The import ran inside the request (500 rows or fewer): status completed, report inline. */
+            201: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "contact_import";
+                        /** @description Import id (imp_...). */
+                        id: string;
+                        /** @enum {string} */
+                        status: "queued" | "running" | "completed" | "failed";
+                        /** @enum {string} */
+                        format: "rows" | "csv";
+                        total_rows: number;
+                        counts: {
+                            created: number;
+                            updated: number;
+                            unchanged: number;
+                            skipped: number;
+                        };
+                        /** @description The Contact list every row was added to. */
+                        list_id: string | null;
+                        /** @description Tag names added to every row's Contact. */
+                        tags: string[];
+                        /** @description CSV only: how each header was read. */
+                        columns: {
+                            /** @description Header to target (a standard field, `tags` or `extra.<key>`). */
+                            mapped?: {
+                                [key: string]: string;
+                            };
+                            ignored?: string[];
+                        } | null;
+                        /** @description The user who started the import (the user your API key belongs to). */
+                        created_by_user_id: string | null;
+                        created_at: string;
+                        /** @description When processing began. */
+                        started_at: string | null;
+                        /** @description When processing ended. */
+                        finished_at: string | null;
+                        /** @description Set when status is failed. Rows applied before the failure stay applied and reported. */
+                        failure: {
+                            code?: string;
+                            message?: string;
+                        } | null;
+                        /** @description Inline imports only: the per-row report, in row order. */
+                        report?: {
+                            /** @description 1-based data row. */
+                            row: number;
+                            /** @enum {string} */
+                            outcome: "created" | "updated" | "unchanged" | "skipped";
+                            /** @description The Contact this row wrote to; null when skipped or when the Contact was deleted since. */
+                            contact_id: string | null;
+                            /**
+                             * @description Why a row was skipped.
+                             * @enum {string|null}
+                             */
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
+                            /** @description The field a field_too_long row names. */
+                            field: string | null;
+                            /** @description An earlier row of this import for the same person. */
+                            duplicate_of_row: number | null;
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description More rows than that: queued and processed in the background. Poll GET /v1/contacts/imports/{id}. */
+            202: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "contact_import";
+                        /** @description Import id (imp_...). */
+                        id: string;
+                        /** @enum {string} */
+                        status: "queued" | "running" | "completed" | "failed";
+                        /** @enum {string} */
+                        format: "rows" | "csv";
+                        total_rows: number;
+                        counts: {
+                            created: number;
+                            updated: number;
+                            unchanged: number;
+                            skipped: number;
+                        };
+                        /** @description The Contact list every row was added to. */
+                        list_id: string | null;
+                        /** @description Tag names added to every row's Contact. */
+                        tags: string[];
+                        /** @description CSV only: how each header was read. */
+                        columns: {
+                            /** @description Header to target (a standard field, `tags` or `extra.<key>`). */
+                            mapped?: {
+                                [key: string]: string;
+                            };
+                            ignored?: string[];
+                        } | null;
+                        /** @description The user who started the import (the user your API key belongs to). */
+                        created_by_user_id: string | null;
+                        created_at: string;
+                        /** @description When processing began. */
+                        started_at: string | null;
+                        /** @description When processing ended. */
+                        finished_at: string | null;
+                        /** @description Set when status is failed. Rows applied before the failure stay applied and reported. */
+                        failure: {
+                            code?: string;
+                            message?: string;
+                        } | null;
+                        /** @description Inline imports only: the per-row report, in row order. */
+                        report?: {
+                            /** @description 1-based data row. */
+                            row: number;
+                            /** @enum {string} */
+                            outcome: "created" | "updated" | "unchanged" | "skipped";
+                            /** @description The Contact this row wrote to; null when skipped or when the Contact was deleted since. */
+                            contact_id: string | null;
+                            /**
+                             * @description Why a row was skipped.
+                             * @enum {string|null}
+                             */
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
+                            /** @description The field a field_too_long row names. */
+                            field: string | null;
+                            /** @description An earlier row of this import for the same person. */
+                            duplicate_of_row: number | null;
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Neither or both of rows and csv, no rows, an unknown key or wrong type in a row (the message names rows[n]...), a CSV header problem (duplicate header, two headers on one target, a mapping naming an unknown header or target, no column for the LinkedIn URL), or mapping or delimiter with rows. Nothing is imported. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: list_id is not one of your Contact lists. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description PAYLOAD_TOO_LARGE: more than 10000 rows or a body over 9 MiB. The CLI splits larger files. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description CONTACT_LIMIT_REACHED: a team cap would be passed (100000 Contacts, 1000 lists, 1000 Tags). Nothing is written. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description IMPORT_QUEUE_FULL: 5 background imports are already queued or running. Wait for one to finish, then retry. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1ContactsImportsId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Import id (imp_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The import and its counts. Its per-row report: GET /v1/contacts/imports/{id}/rows. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "contact_import";
+                        /** @description Import id (imp_...). */
+                        id: string;
+                        /** @enum {string} */
+                        status: "queued" | "running" | "completed" | "failed";
+                        /** @enum {string} */
+                        format: "rows" | "csv";
+                        total_rows: number;
+                        counts: {
+                            created: number;
+                            updated: number;
+                            unchanged: number;
+                            skipped: number;
+                        };
+                        /** @description The Contact list every row was added to. */
+                        list_id: string | null;
+                        /** @description Tag names added to every row's Contact. */
+                        tags: string[];
+                        /** @description CSV only: how each header was read. */
+                        columns: {
+                            /** @description Header to target (a standard field, `tags` or `extra.<key>`). */
+                            mapped?: {
+                                [key: string]: string;
+                            };
+                            ignored?: string[];
+                        } | null;
+                        /** @description The user who started the import (the user your API key belongs to). */
+                        created_by_user_id: string | null;
+                        created_at: string;
+                        /** @description When processing began. */
+                        started_at: string | null;
+                        /** @description When processing ended. */
+                        finished_at: string | null;
+                        /** @description Set when status is failed. Rows applied before the failure stay applied and reported. */
+                        failure: {
+                            code?: string;
+                            message?: string;
+                        } | null;
+                        /** @description Inline imports only: the per-row report, in row order. */
+                        report?: {
+                            /** @description 1-based data row. */
+                            row: number;
+                            /** @enum {string} */
+                            outcome: "created" | "updated" | "unchanged" | "skipped";
+                            /** @description The Contact this row wrote to; null when skipped or when the Contact was deleted since. */
+                            contact_id: string | null;
+                            /**
+                             * @description Why a row was skipped.
+                             * @enum {string|null}
+                             */
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
+                            /** @description The field a field_too_long row names. */
+                            field: string | null;
+                            /** @description An earlier row of this import for the same person. */
+                            duplicate_of_row: number | null;
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such import, or purged (imports and reports are kept 30 days after they finish). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1ContactsImportsIdRows: {
+        parameters: {
+            query?: {
+                /** @description Comma list of outcomes to keep: created, updated, unchanged, skipped. */
+                outcome?: string;
+                /** @description Max items per page (1-100, default 20). */
+                limit?: number;
+                /** @description Pagination cursor from a previous response. */
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Import id (imp_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Report rows in row order. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "contact_import_row_list";
+                        items: {
+                            /** @description 1-based data row. */
+                            row: number;
+                            /** @enum {string} */
+                            outcome: "created" | "updated" | "unchanged" | "skipped";
+                            /** @description The Contact this row wrote to; null when skipped or when the Contact was deleted since. */
+                            contact_id: string | null;
+                            /**
+                             * @description Why a row was skipped.
+                             * @enum {string|null}
+                             */
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
+                            /** @description The field a field_too_long row names. */
+                            field: string | null;
+                            /** @description An earlier row of this import for the same person. */
+                            duplicate_of_row: number | null;
+                        }[];
+                        /** @description Pass back as cursor for the next page; null on the last page. */
+                        cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description An unknown outcome, a malformed cursor or limit. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such import, or purged. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1ContactsId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Contact id (con_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The Contact. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "contact";
+                        /** @description Contact id (con_...). */
+                        id: string;
+                        /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person. */
+                        linkedin_url: string | null;
+                        /** @description The profile slug, when known. */
+                        public_identifier: string | null;
+                        /** @description LinkedIn's profile id, when known. */
+                        provider_id: string | null;
+                        /** @description LinkedIn's member id, when observed. */
+                        member_id: string | null;
+                        /** @description Full name. */
+                        full_name: string | null;
+                        /** @description First name. */
+                        first_name: string | null;
+                        /** @description Last name. */
+                        last_name: string | null;
+                        /** @description Profile headline. */
+                        headline: string | null;
+                        /** @description Current job title. */
+                        job_title: string | null;
+                        /** @description Current company. */
+                        company: string | null;
+                        /** @description Email, only ever what you supplied. */
+                        email: string | null;
+                        /** @description Location. */
+                        location: string | null;
+                        /** @description About text. */
+                        about: string | null;
+                        /** @description Your own fields. */
+                        extra: {
+                            [key: string]: unknown;
+                        };
+                        /** @description Per non-empty standard field: tenant (you supplied it) or linkedin (Curviate filled it). A tenant value is never overwritten by LinkedIn data. */
+                        sources: {
+                            [key: string]: "tenant" | "linkedin";
+                        };
+                        /** @description Tag names. */
+                        tags: string[];
+                        /** @description Contact lists (cl_...) holding this Contact. */
+                        list_ids: string[];
+                        /** @description Your accounts this person is a Connection of. */
+                        connected_account_ids: string[];
+                        enrichment: {
+                            /** @enum {string} */
+                            status: "none" | "queued" | "done" | "failed";
+                            /** @description When observed profile data last changed this Contact. */
+                            enriched_at: string | null;
+                            /**
+                             * @description Why the last enrich visit failed: profile_not_found (no such profile, or it is not this person), expired (not visited within 7 days), account_unavailable (the account was removed), platform_error, or tier_required (the team's plan no longer includes Contacts).
+                             * @enum {string|null}
+                             */
+                            failure_code: "profile_not_found" | "expired" | "account_unavailable" | "platform_error" | "tier_required" | null;
+                        };
+                        /** @description ISO 8601. */
+                        created_at: string;
+                        /** @description ISO 8601. */
+                        updated_at: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Contact. A Contact merged into another answers with merged_into naming the one to use. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    deleteV1ContactsId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Contact id (con_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted, with its Tags and list memberships. No response body. */
+            204: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: in a team, only an Owner or a Manager deletes. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Contact. A Contact merged into another answers with merged_into naming the one to use. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    patchV1ContactsId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Contact id (con_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Full name, up to 200 characters. */
+                    full_name?: string | null;
+                    /** @description First name, up to 200 characters. */
+                    first_name?: string | null;
+                    /** @description Last name, up to 200 characters. */
+                    last_name?: string | null;
+                    /** @description Profile headline, up to 500 characters. */
+                    headline?: string | null;
+                    /** @description Current job title, up to 300 characters. */
+                    job_title?: string | null;
+                    /** @description Current company, up to 300 characters. */
+                    company?: string | null;
+                    /** @description Email address, only ever what you supply (Curviate never fills it), up to 320 characters. */
+                    email?: string | null;
+                    /** @description Location, up to 300 characters. */
+                    location?: string | null;
+                    /** @description About text, up to 10000 characters. */
+                    about?: string | null;
+                    /** @description Keys to set; a key set to null is removed, keys left out are untouched. */
+                    extra?: {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+        responses: {
+            /** @description The updated Contact. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "contact";
+                        /** @description Contact id (con_...). */
+                        id: string;
+                        /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person. */
+                        linkedin_url: string | null;
+                        /** @description The profile slug, when known. */
+                        public_identifier: string | null;
+                        /** @description LinkedIn's profile id, when known. */
+                        provider_id: string | null;
+                        /** @description LinkedIn's member id, when observed. */
+                        member_id: string | null;
+                        /** @description Full name. */
+                        full_name: string | null;
+                        /** @description First name. */
+                        first_name: string | null;
+                        /** @description Last name. */
+                        last_name: string | null;
+                        /** @description Profile headline. */
+                        headline: string | null;
+                        /** @description Current job title. */
+                        job_title: string | null;
+                        /** @description Current company. */
+                        company: string | null;
+                        /** @description Email, only ever what you supplied. */
+                        email: string | null;
+                        /** @description Location. */
+                        location: string | null;
+                        /** @description About text. */
+                        about: string | null;
+                        /** @description Your own fields. */
+                        extra: {
+                            [key: string]: unknown;
+                        };
+                        /** @description Per non-empty standard field: tenant (you supplied it) or linkedin (Curviate filled it). A tenant value is never overwritten by LinkedIn data. */
+                        sources: {
+                            [key: string]: "tenant" | "linkedin";
+                        };
+                        /** @description Tag names. */
+                        tags: string[];
+                        /** @description Contact lists (cl_...) holding this Contact. */
+                        list_ids: string[];
+                        /** @description Your accounts this person is a Connection of. */
+                        connected_account_ids: string[];
+                        enrichment: {
+                            /** @enum {string} */
+                            status: "none" | "queued" | "done" | "failed";
+                            /** @description When observed profile data last changed this Contact. */
+                            enriched_at: string | null;
+                            /**
+                             * @description Why the last enrich visit failed: profile_not_found (no such profile, or it is not this person), expired (not visited within 7 days), account_unavailable (the account was removed), platform_error, or tier_required (the team's plan no longer includes Contacts).
+                             * @enum {string|null}
+                             */
+                            failure_code: "profile_not_found" | "expired" | "account_unavailable" | "platform_error" | "tier_required" | null;
+                        };
+                        /** @description ISO 8601. */
+                        created_at: string;
+                        /** @description ISO 8601. */
+                        updated_at: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Invalid input. "" is refused (use null to clear); linkedin_url cannot change (delete and create again). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Contact. A Contact merged into another answers with merged_into naming the one to use. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1Tags: {
+        parameters: {
+            query?: {
+                /** @description Max items per page (1-100, default 20). */
+                limit?: number;
+                /** @description Pagination cursor from a previous response. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Tags, by name. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "tag_list";
+                        items: {
+                            /** @enum {string} */
+                            object: "tag";
+                            /** @description Tag id (ctg_...). */
+                            id: string;
+                            name: string;
+                            contact_count: number;
+                            created_at: string;
+                        }[];
+                        /** @description Pass back as cursor for the next page; null on the last page. */
+                        cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Malformed cursor or limit. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    deleteV1TagsId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Tag id (ctg_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted, and removed from every Contact. No response body. */
+            204: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: in a team, only an Owner or a Manager deletes. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Tag. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_IN_USE: a Motion that is not completed or archived, or an import still queued or running, uses it; the message names them. Remove it from the Motion or archive the Motion, or wait for the import to finish. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    patchV1TagsId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Tag id (ctg_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The new name. */
+                    name: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The renamed Tag. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "tag";
+                        /** @description Tag id (ctg_...). */
+                        id: string;
+                        name: string;
+                        contact_count: number;
+                        created_at: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description A name that is empty, over 64 characters, or holds , or ;. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Tag. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description NAME_TAKEN: another Tag has this name in any casing. Renaming a Tag to its own name in other casing is allowed. RESOURCE_IN_USE: a Motion that is not completed or archived uses the Tag; the message names it. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1ContactLists: {
+        parameters: {
+            query?: {
+                /** @description Case-insensitive match on the list name. */
+                q?: string;
+                /** @description Max items per page (1-100, default 20). */
+                limit?: number;
+                /** @description Pagination cursor from a previous response. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Contact lists, by name. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "contact_list_page";
+                        items: {
+                            /** @enum {string} */
+                            object: "contact_list";
+                            /** @description Contact list id (cl_...). */
+                            id: string;
+                            name: string;
+                            /** @description Description. */
+                            description: string | null;
+                            contact_count: number;
+                            created_at: string;
+                            updated_at: string;
+                        }[];
+                        /** @description Pass back as cursor for the next page; null on the last page. */
+                        cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Malformed cursor or limit. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1ContactLists: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Unique name, any casing, up to 100 characters. */
+                    name: string;
+                    /** @description Up to 500 characters. */
+                    description?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description List created. */
+            201: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "contact_list";
+                        /** @description Contact list id (cl_...). */
+                        id: string;
+                        name: string;
+                        /** @description Description. */
+                        description: string | null;
+                        contact_count: number;
+                        created_at: string;
+                        updated_at: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description A name that is empty or over 100 characters, or a description over 500. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description NAME_TAKEN: another Contact list has this name in any casing. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description CONTACT_LIMIT_REACHED: a team cap would be passed (100000 Contacts, 1000 lists, 1000 Tags). Nothing is written. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1ContactListsId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Contact list id (cl_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The Contact list. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "contact_list";
+                        /** @description Contact list id (cl_...). */
+                        id: string;
+                        name: string;
+                        /** @description Description. */
+                        description: string | null;
+                        contact_count: number;
+                        created_at: string;
+                        updated_at: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such list. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    deleteV1ContactListsId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Contact list id (cl_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted. Its Contacts are kept, only the memberships go. No response body. */
+            204: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: in a team, only an Owner or a Manager deletes. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such list. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_IN_USE: a Motion that is not completed or archived, or an import still queued or running, uses it; the message names them. Remove it from the Motion or archive the Motion, or wait for the import to finish. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    patchV1ContactListsId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Contact list id (cl_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description New name. */
+                    name?: string;
+                    /** @description New description; null clears it. */
+                    description?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description The updated Contact list. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "contact_list";
+                        /** @description Contact list id (cl_...). */
+                        id: string;
+                        name: string;
+                        /** @description Description. */
+                        description: string | null;
+                        contact_count: number;
+                        created_at: string;
+                        updated_at: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Invalid name or description. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such list. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description NAME_TAKEN: another Contact list has this name in any casing. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1Motions: {
+        parameters: {
+            query?: {
+                /** @description Comma list of draft, scheduled, active, paused, completed, archived. Default: all but archived. */
+                status?: ("draft" | "scheduled" | "active" | "paused" | "completed" | "archived")[];
+                /** @description Only Motions sending from this account (acc_...). */
+                account_id?: string;
+                /** @description Case-insensitive match on the Motion name. */
+                q?: string;
+                /** @description Max items per page (1-100, default 20). */
+                limit?: number;
+                /** @description Pagination cursor from a previous response; pass it back verbatim with the same filters. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Motions, most recently updated first. Items carry sequence_version but not sequence or warnings: read one Motion for those. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "motion_list";
+                        items: {
+                            /**
+                             * @description Response type discriminator.
+                             * @enum {string}
+                             */
+                            object: "motion";
+                            /** @description Motion id (mot_...). */
+                            id: string;
+                            name: string;
+                            /** @enum {string} */
+                            status: "draft" | "scheduled" | "active" | "paused" | "completed" | "archived";
+                            /**
+                             * @description Why it is paused; null unless status is paused.
+                             * @enum {string|null}
+                             */
+                            pause_reason: "user" | "acceptance_floor" | "no_sending_account" | "tier_required" | null;
+                            /** @description Contact lists (cl_...) whose Contacts enroll. */
+                            contact_list_ids: string[];
+                            /** @description Contact lists (cl_...) whose Contacts never enroll. */
+                            exclusion_list_ids: string[];
+                            /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
+                            account_ids: string[];
+                            schedule: {
+                                /** @description IANA zone. */
+                                timezone: string | null;
+                                days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
+                                hours: {
+                                    start: string;
+                                    end: string;
+                                };
+                                /** @description ISO 8601. */
+                                start_at: string | null;
+                                /** @description ISO 8601. */
+                                end_at: string | null;
+                            };
+                            settings: {
+                                accounts_per_contact: number;
+                                /** @enum {string} */
+                                assign: "auto" | "even" | "already_connected";
+                                new_enrollments_per_account_per_day: number;
+                                exclude: {
+                                    other_motions: boolean;
+                                    known_chats: boolean;
+                                };
+                                /** @description null: disabled. */
+                                acceptance_floor: {
+                                    percent: number;
+                                    min_invites: number;
+                                } | null;
+                                variables: {
+                                    [key: string]: string;
+                                };
+                                stop_on_engagement: boolean;
+                            };
+                            /** @description contact.* predicates a Contact must all pass to enroll. */
+                            where: {
+                                [key: string]: unknown;
+                            }[];
+                            /** @description The current Sequence version. 1 until a structural edit after start. */
+                            sequence_version: number;
+                            /** @description Enrollments by status. */
+                            counts: {
+                                pending: number;
+                                active: number;
+                                paused: number;
+                                finished: number;
+                                skipped: number;
+                            };
+                            /** @description The user who created the Motion. */
+                            created_by_user_id: string | null;
+                            /** @description ISO 8601. */
+                            created_at: string;
+                            /** @description ISO 8601. */
+                            updated_at: string;
+                            /** @description When it first became active. */
+                            started_at: string | null;
+                            /** @description When it completed. */
+                            completed_at: string | null;
+                            /** @description When it was archived. */
+                            archived_at: string | null;
+                        }[];
+                        /** @description Pass back as cursor for the next page; null on the last page. */
+                        cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Invalid filter, a query key given twice, an empty value, or a malformed cursor. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Only with account_id, in a team. ACCOUNT_NOT_SHARED: the teammate turned team access off for the account, so only they filter by it. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_NOT_FOUND: account_id is not one of your accounts. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1Motions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description 1 to 100 characters. */
+                    name: string;
+                    /** @description Contact lists (cl_...) whose Contacts enroll, up to 20. Replaced whole on update. */
+                    contact_list_ids?: string[];
+                    /** @description Contact lists (cl_...) whose Contacts never enroll, up to 20. Replaced whole on update. */
+                    exclusion_list_ids?: string[];
+                    /** @description Sending accounts (acc_...), up to 100. Replaced whole on update. */
+                    account_ids?: string[];
+                    /** @description When actions may run. Merged key by key on update. */
+                    schedule?: {
+                        /** @description IANA zone the days and hours are read in, e.g. Europe/Berlin. Required to start. Default null. */
+                        timezone?: string | null;
+                        /** @description Days actions may run on. Default mon to fri. */
+                        days?: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
+                        /** @description Daily window in the timezone; start before end. Replaced whole on update. */
+                        hours?: {
+                            /** @description Default 09:00. */
+                            start: string;
+                            /** @description Default 18:00. */
+                            end: string;
+                        };
+                        /** @description ISO 8601 with offset. A start before this leaves the Motion scheduled. Default null. */
+                        start_at?: string | null;
+                        /** @description ISO 8601 with offset, after start_at. Default null. */
+                        end_at?: string | null;
+                    };
+                    /** @description Merged key by key on update. */
+                    settings?: {
+                        /** @description How many sending accounts may contact one Contact (1 to 10). Default 1. */
+                        accounts_per_contact?: number;
+                        /**
+                         * @description How Contacts are assigned to sending accounts: auto, even or already_connected. Default auto.
+                         * @enum {string}
+                         */
+                        assign?: "auto" | "even" | "already_connected";
+                        /** @description New Enrollments per sending account per day (1 to 1000). Default 15. */
+                        new_enrollments_per_account_per_day?: number;
+                        exclude?: {
+                            /** @description Skip Contacts already in another Motion. Default true. */
+                            other_motions?: boolean;
+                            /** @description Skip Contacts the account already chats with. Default true. */
+                            known_chats?: boolean;
+                        };
+                        /** @description Pauses the Motion when the invitation acceptance rate falls below percent. null disables it. */
+                        acceptance_floor?: {
+                            /** @description Default 20. */
+                            percent?: number;
+                            /** @description Invitations before the floor is evaluated (10 to 1000). Default 30. */
+                            min_invites?: number;
+                        } | null;
+                        /** @description Motion variables, rendered as `{{motion.<key>}}`. Up to 50 keys matching ^[a-z][a-z0-9_]{0,39}$; values up to 2000 characters, without variables. On update a null value removes the key. */
+                        variables?: {
+                            [key: string]: string | null;
+                        };
+                        /** @description true (default): a reply, or a message you send by hand, ends the Contact's Enrollment at once and on_reply is not used. false: the Sequence's reply rule applies. */
+                        stop_on_engagement?: boolean;
+                    };
+                    /** @description Up to 20 contact.* predicates, all of which a Contact must pass to enroll, e.g. [{"contact.has_photo":true}]. Replaced whole on update. */
+                    where?: unknown[];
+                    /** @description The Sequence document (GET /schemas/sequence/v1.json), validated whole; every error comes back at once. Replaced whole on update. null clears a draft's. */
+                    sequence?: components["schemas"]["SequenceDocument"];
+                };
+            };
+        };
+        responses: {
+            /** @description The Motion, as a draft. */
+            201: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "motion";
+                        /** @description Motion id (mot_...). */
+                        id: string;
+                        name: string;
+                        /** @enum {string} */
+                        status: "draft" | "scheduled" | "active" | "paused" | "completed" | "archived";
+                        /**
+                         * @description Why it is paused; null unless status is paused.
+                         * @enum {string|null}
+                         */
+                        pause_reason: "user" | "acceptance_floor" | "no_sending_account" | "tier_required" | null;
+                        /** @description Contact lists (cl_...) whose Contacts enroll. */
+                        contact_list_ids: string[];
+                        /** @description Contact lists (cl_...) whose Contacts never enroll. */
+                        exclusion_list_ids: string[];
+                        /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
+                        account_ids: string[];
+                        schedule: {
+                            /** @description IANA zone. */
+                            timezone: string | null;
+                            days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
+                            hours: {
+                                start: string;
+                                end: string;
+                            };
+                            /** @description ISO 8601. */
+                            start_at: string | null;
+                            /** @description ISO 8601. */
+                            end_at: string | null;
+                        };
+                        settings: {
+                            accounts_per_contact: number;
+                            /** @enum {string} */
+                            assign: "auto" | "even" | "already_connected";
+                            new_enrollments_per_account_per_day: number;
+                            exclude: {
+                                other_motions: boolean;
+                                known_chats: boolean;
+                            };
+                            /** @description null: disabled. */
+                            acceptance_floor: {
+                                percent: number;
+                                min_invites: number;
+                            } | null;
+                            variables: {
+                                [key: string]: string;
+                            };
+                            stop_on_engagement: boolean;
+                        };
+                        /** @description contact.* predicates a Contact must all pass to enroll. */
+                        where: {
+                            [key: string]: unknown;
+                        }[];
+                        /** @description The current Sequence document; null until one is set. */
+                        sequence: components["schemas"]["SequenceDocument"] | null;
+                        /** @description The current Sequence version. 1 until a structural edit after start. */
+                        sequence_version: number;
+                        /** @description Enrollments by status. */
+                        counts: {
+                            pending: number;
+                            active: number;
+                            paused: number;
+                            finished: number;
+                            skipped: number;
+                        };
+                        /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
+                        warnings: {
+                            code: string;
+                            path: string;
+                            rule: string;
+                        }[];
+                        /** @description The user who created the Motion. */
+                        created_by_user_id: string | null;
+                        /** @description ISO 8601. */
+                        created_at: string;
+                        /** @description ISO 8601. */
+                        updated_at: string;
+                        /** @description When it first became active. */
+                        started_at: string | null;
+                        /** @description When it completed. */
+                        completed_at: string | null;
+                        /** @description When it was archived. */
+                        archived_at: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Invalid input; the message starts with the field. An unknown query parameter, an unknown key or a read-only field, a value over its cap, a list id that is not yours (contact_list_ids: unknown list cl_...), one list as both source and exclusion, an invalid schedule or setting, or an unknown where predicate (where[0]: ...). Checked before the sequence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Motion's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Motion sends from to pause or archive, and removes only their own. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_NOT_FOUND: an id in account_ids is not one of your accounts (the message names it). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description REAUTH_REQUIRED: an account in account_ids is disconnected. Reconnect it or leave it out. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description SEQUENCE_INVALID: the sequence breaks one or more rules. errors[] lists them as {path, rule} in step order (the first 100; the message counts them all). Nothing is saved. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1MotionsId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Motion id (mot_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The Motion. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "motion";
+                        /** @description Motion id (mot_...). */
+                        id: string;
+                        name: string;
+                        /** @enum {string} */
+                        status: "draft" | "scheduled" | "active" | "paused" | "completed" | "archived";
+                        /**
+                         * @description Why it is paused; null unless status is paused.
+                         * @enum {string|null}
+                         */
+                        pause_reason: "user" | "acceptance_floor" | "no_sending_account" | "tier_required" | null;
+                        /** @description Contact lists (cl_...) whose Contacts enroll. */
+                        contact_list_ids: string[];
+                        /** @description Contact lists (cl_...) whose Contacts never enroll. */
+                        exclusion_list_ids: string[];
+                        /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
+                        account_ids: string[];
+                        schedule: {
+                            /** @description IANA zone. */
+                            timezone: string | null;
+                            days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
+                            hours: {
+                                start: string;
+                                end: string;
+                            };
+                            /** @description ISO 8601. */
+                            start_at: string | null;
+                            /** @description ISO 8601. */
+                            end_at: string | null;
+                        };
+                        settings: {
+                            accounts_per_contact: number;
+                            /** @enum {string} */
+                            assign: "auto" | "even" | "already_connected";
+                            new_enrollments_per_account_per_day: number;
+                            exclude: {
+                                other_motions: boolean;
+                                known_chats: boolean;
+                            };
+                            /** @description null: disabled. */
+                            acceptance_floor: {
+                                percent: number;
+                                min_invites: number;
+                            } | null;
+                            variables: {
+                                [key: string]: string;
+                            };
+                            stop_on_engagement: boolean;
+                        };
+                        /** @description contact.* predicates a Contact must all pass to enroll. */
+                        where: {
+                            [key: string]: unknown;
+                        }[];
+                        /** @description The current Sequence document; null until one is set. */
+                        sequence: components["schemas"]["SequenceDocument"] | null;
+                        /** @description The current Sequence version. 1 until a structural edit after start. */
+                        sequence_version: number;
+                        /** @description Enrollments by status. */
+                        counts: {
+                            pending: number;
+                            active: number;
+                            paused: number;
+                            finished: number;
+                            skipped: number;
+                        };
+                        /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
+                        warnings: {
+                            code: string;
+                            path: string;
+                            rule: string;
+                        }[];
+                        /** @description The user who created the Motion. */
+                        created_by_user_id: string | null;
+                        /** @description ISO 8601. */
+                        created_at: string;
+                        /** @description ISO 8601. */
+                        updated_at: string;
+                        /** @description When it first became active. */
+                        started_at: string | null;
+                        /** @description When it completed. */
+                        completed_at: string | null;
+                        /** @description When it was archived. */
+                        archived_at: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Motion. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    deleteV1MotionsId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Motion id (mot_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The draft and its Sequence are deleted. No response body. */
+            204: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description INVALID_REQUEST: this call takes no query parameters and no request body (none, or {}). Anything else is refused, never ignored. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Motion's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Motion sends from to pause or archive, and removes only their own. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Motion. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MOTION_STATUS_CONFLICT: only draft Motions can be deleted. Archive it instead. The message names the current status and the operations it allows. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    patchV1MotionsId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Motion id (mot_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description 1 to 100 characters. */
+                    name?: string;
+                    /** @description Contact lists (cl_...) whose Contacts enroll, up to 20. Replaced whole on update. */
+                    contact_list_ids?: string[];
+                    /** @description Contact lists (cl_...) whose Contacts never enroll, up to 20. Replaced whole on update. */
+                    exclusion_list_ids?: string[];
+                    /** @description Sending accounts (acc_...), up to 100. Replaced whole on update. */
+                    account_ids?: string[];
+                    /** @description When actions may run. Merged key by key on update. */
+                    schedule?: {
+                        /** @description IANA zone the days and hours are read in, e.g. Europe/Berlin. Required to start. Default null. */
+                        timezone?: string | null;
+                        /** @description Days actions may run on. Default mon to fri. */
+                        days?: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
+                        /** @description Daily window in the timezone; start before end. Replaced whole on update. */
+                        hours?: {
+                            /** @description Default 09:00. */
+                            start: string;
+                            /** @description Default 18:00. */
+                            end: string;
+                        };
+                        /** @description ISO 8601 with offset. A start before this leaves the Motion scheduled. Default null. */
+                        start_at?: string | null;
+                        /** @description ISO 8601 with offset, after start_at. Default null. */
+                        end_at?: string | null;
+                    };
+                    /** @description Merged key by key on update. */
+                    settings?: {
+                        /** @description How many sending accounts may contact one Contact (1 to 10). Default 1. */
+                        accounts_per_contact?: number;
+                        /**
+                         * @description How Contacts are assigned to sending accounts: auto, even or already_connected. Default auto.
+                         * @enum {string}
+                         */
+                        assign?: "auto" | "even" | "already_connected";
+                        /** @description New Enrollments per sending account per day (1 to 1000). Default 15. */
+                        new_enrollments_per_account_per_day?: number;
+                        exclude?: {
+                            /** @description Skip Contacts already in another Motion. Default true. */
+                            other_motions?: boolean;
+                            /** @description Skip Contacts the account already chats with. Default true. */
+                            known_chats?: boolean;
+                        };
+                        /** @description Pauses the Motion when the invitation acceptance rate falls below percent. null disables it. */
+                        acceptance_floor?: {
+                            /** @description Default 20. */
+                            percent?: number;
+                            /** @description Invitations before the floor is evaluated (10 to 1000). Default 30. */
+                            min_invites?: number;
+                        } | null;
+                        /** @description Motion variables, rendered as `{{motion.<key>}}`. Up to 50 keys matching ^[a-z][a-z0-9_]{0,39}$; values up to 2000 characters, without variables. On update a null value removes the key. */
+                        variables?: {
+                            [key: string]: string | null;
+                        };
+                        /** @description true (default): a reply, or a message you send by hand, ends the Contact's Enrollment at once and on_reply is not used. false: the Sequence's reply rule applies. */
+                        stop_on_engagement?: boolean;
+                    };
+                    /** @description Up to 20 contact.* predicates, all of which a Contact must pass to enroll, e.g. [{"contact.has_photo":true}]. Replaced whole on update. */
+                    where?: unknown[];
+                    /** @description The Sequence document (GET /schemas/sequence/v1.json), validated whole; every error comes back at once. Replaced whole on update. null clears a draft's. */
+                    sequence?: components["schemas"]["SequenceDocument"];
+                };
+            };
+        };
+        responses: {
+            /** @description The updated Motion, plus sequence_change: none, copy (applied in place) or structural (a new Sequence version). A draft's Sequence is rewritten freely and reports none. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "motion";
+                        /** @description Motion id (mot_...). */
+                        id: string;
+                        name: string;
+                        /** @enum {string} */
+                        status: "draft" | "scheduled" | "active" | "paused" | "completed" | "archived";
+                        /**
+                         * @description Why it is paused; null unless status is paused.
+                         * @enum {string|null}
+                         */
+                        pause_reason: "user" | "acceptance_floor" | "no_sending_account" | "tier_required" | null;
+                        /** @description Contact lists (cl_...) whose Contacts enroll. */
+                        contact_list_ids: string[];
+                        /** @description Contact lists (cl_...) whose Contacts never enroll. */
+                        exclusion_list_ids: string[];
+                        /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
+                        account_ids: string[];
+                        schedule: {
+                            /** @description IANA zone. */
+                            timezone: string | null;
+                            days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
+                            hours: {
+                                start: string;
+                                end: string;
+                            };
+                            /** @description ISO 8601. */
+                            start_at: string | null;
+                            /** @description ISO 8601. */
+                            end_at: string | null;
+                        };
+                        settings: {
+                            accounts_per_contact: number;
+                            /** @enum {string} */
+                            assign: "auto" | "even" | "already_connected";
+                            new_enrollments_per_account_per_day: number;
+                            exclude: {
+                                other_motions: boolean;
+                                known_chats: boolean;
+                            };
+                            /** @description null: disabled. */
+                            acceptance_floor: {
+                                percent: number;
+                                min_invites: number;
+                            } | null;
+                            variables: {
+                                [key: string]: string;
+                            };
+                            stop_on_engagement: boolean;
+                        };
+                        /** @description contact.* predicates a Contact must all pass to enroll. */
+                        where: {
+                            [key: string]: unknown;
+                        }[];
+                        /** @description The current Sequence document; null until one is set. */
+                        sequence: components["schemas"]["SequenceDocument"] | null;
+                        /** @description The current Sequence version. 1 until a structural edit after start. */
+                        sequence_version: number;
+                        /** @description Enrollments by status. */
+                        counts: {
+                            pending: number;
+                            active: number;
+                            paused: number;
+                            finished: number;
+                            skipped: number;
+                        };
+                        /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
+                        warnings: {
+                            code: string;
+                            path: string;
+                            rule: string;
+                        }[];
+                        /** @description The user who created the Motion. */
+                        created_by_user_id: string | null;
+                        /** @description ISO 8601. */
+                        created_at: string;
+                        /** @description ISO 8601. */
+                        updated_at: string;
+                        /** @description When it first became active. */
+                        started_at: string | null;
+                        /** @description When it completed. */
+                        completed_at: string | null;
+                        /** @description When it was archived. */
+                        archived_at: string | null;
+                        /** @enum {string} */
+                        sequence_change: "none" | "copy" | "structural";
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Invalid input, as on create. On a started Motion also: sequence null, a schedule.end_at that is not in the future, and a changed schedule.start_at once it has been active. An unknown query parameter. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Motion's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Motion sends from to pause or archive, and removes only their own. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Motion. ACCOUNT_NOT_FOUND: an id in account_ids is not one of your accounts (the message names it). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MOTION_STATUS_CONFLICT: the Motion is archived and read-only. REAUTH_REQUIRED: a newly added account is disconnected. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description SEQUENCE_INVALID: the sequence breaks one or more rules. errors[] lists them as {path, rule} in step order (the first 100; the message counts them all). Nothing is saved. Changing settings.variables re-checks the stored sequence, so removing a variable it uses is refused here too. MOTION_NOT_STARTABLE: on a scheduled, active or paused Motion the result must still pass what start checks; errors[] lists the gaps. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1MotionsIdStart: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Motion id (mot_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The Motion, now active or scheduled. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "motion";
+                        /** @description Motion id (mot_...). */
+                        id: string;
+                        name: string;
+                        /** @enum {string} */
+                        status: "draft" | "scheduled" | "active" | "paused" | "completed" | "archived";
+                        /**
+                         * @description Why it is paused; null unless status is paused.
+                         * @enum {string|null}
+                         */
+                        pause_reason: "user" | "acceptance_floor" | "no_sending_account" | "tier_required" | null;
+                        /** @description Contact lists (cl_...) whose Contacts enroll. */
+                        contact_list_ids: string[];
+                        /** @description Contact lists (cl_...) whose Contacts never enroll. */
+                        exclusion_list_ids: string[];
+                        /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
+                        account_ids: string[];
+                        schedule: {
+                            /** @description IANA zone. */
+                            timezone: string | null;
+                            days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
+                            hours: {
+                                start: string;
+                                end: string;
+                            };
+                            /** @description ISO 8601. */
+                            start_at: string | null;
+                            /** @description ISO 8601. */
+                            end_at: string | null;
+                        };
+                        settings: {
+                            accounts_per_contact: number;
+                            /** @enum {string} */
+                            assign: "auto" | "even" | "already_connected";
+                            new_enrollments_per_account_per_day: number;
+                            exclude: {
+                                other_motions: boolean;
+                                known_chats: boolean;
+                            };
+                            /** @description null: disabled. */
+                            acceptance_floor: {
+                                percent: number;
+                                min_invites: number;
+                            } | null;
+                            variables: {
+                                [key: string]: string;
+                            };
+                            stop_on_engagement: boolean;
+                        };
+                        /** @description contact.* predicates a Contact must all pass to enroll. */
+                        where: {
+                            [key: string]: unknown;
+                        }[];
+                        /** @description The current Sequence document; null until one is set. */
+                        sequence: components["schemas"]["SequenceDocument"] | null;
+                        /** @description The current Sequence version. 1 until a structural edit after start. */
+                        sequence_version: number;
+                        /** @description Enrollments by status. */
+                        counts: {
+                            pending: number;
+                            active: number;
+                            paused: number;
+                            finished: number;
+                            skipped: number;
+                        };
+                        /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
+                        warnings: {
+                            code: string;
+                            path: string;
+                            rule: string;
+                        }[];
+                        /** @description The user who created the Motion. */
+                        created_by_user_id: string | null;
+                        /** @description ISO 8601. */
+                        created_at: string;
+                        /** @description ISO 8601. */
+                        updated_at: string;
+                        /** @description When it first became active. */
+                        started_at: string | null;
+                        /** @description When it completed. */
+                        completed_at: string | null;
+                        /** @description When it was archived. */
+                        archived_at: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: this call takes no query parameters and no request body (none, or {}). Anything else is refused, never ignored. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Motion's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Motion sends from to pause or archive, and removes only their own. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Motion. ACCOUNT_NOT_FOUND: an id in account_ids is not one of your accounts (the message names it). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MOTION_STATUS_CONFLICT: the Motion is not a draft. The message names the current status and the operations it allows. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MOTION_NOT_STARTABLE: the draft is not complete. errors[] lists every gap as {path, rule}, for example {path: "schedule.timezone", rule: "required to start"}. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1MotionsIdPause: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Motion id (mot_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The Motion, now paused with pause_reason user. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "motion";
+                        /** @description Motion id (mot_...). */
+                        id: string;
+                        name: string;
+                        /** @enum {string} */
+                        status: "draft" | "scheduled" | "active" | "paused" | "completed" | "archived";
+                        /**
+                         * @description Why it is paused; null unless status is paused.
+                         * @enum {string|null}
+                         */
+                        pause_reason: "user" | "acceptance_floor" | "no_sending_account" | "tier_required" | null;
+                        /** @description Contact lists (cl_...) whose Contacts enroll. */
+                        contact_list_ids: string[];
+                        /** @description Contact lists (cl_...) whose Contacts never enroll. */
+                        exclusion_list_ids: string[];
+                        /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
+                        account_ids: string[];
+                        schedule: {
+                            /** @description IANA zone. */
+                            timezone: string | null;
+                            days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
+                            hours: {
+                                start: string;
+                                end: string;
+                            };
+                            /** @description ISO 8601. */
+                            start_at: string | null;
+                            /** @description ISO 8601. */
+                            end_at: string | null;
+                        };
+                        settings: {
+                            accounts_per_contact: number;
+                            /** @enum {string} */
+                            assign: "auto" | "even" | "already_connected";
+                            new_enrollments_per_account_per_day: number;
+                            exclude: {
+                                other_motions: boolean;
+                                known_chats: boolean;
+                            };
+                            /** @description null: disabled. */
+                            acceptance_floor: {
+                                percent: number;
+                                min_invites: number;
+                            } | null;
+                            variables: {
+                                [key: string]: string;
+                            };
+                            stop_on_engagement: boolean;
+                        };
+                        /** @description contact.* predicates a Contact must all pass to enroll. */
+                        where: {
+                            [key: string]: unknown;
+                        }[];
+                        /** @description The current Sequence document; null until one is set. */
+                        sequence: components["schemas"]["SequenceDocument"] | null;
+                        /** @description The current Sequence version. 1 until a structural edit after start. */
+                        sequence_version: number;
+                        /** @description Enrollments by status. */
+                        counts: {
+                            pending: number;
+                            active: number;
+                            paused: number;
+                            finished: number;
+                            skipped: number;
+                        };
+                        /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
+                        warnings: {
+                            code: string;
+                            path: string;
+                            rule: string;
+                        }[];
+                        /** @description The user who created the Motion. */
+                        created_by_user_id: string | null;
+                        /** @description ISO 8601. */
+                        created_at: string;
+                        /** @description ISO 8601. */
+                        updated_at: string;
+                        /** @description When it first became active. */
+                        started_at: string | null;
+                        /** @description When it completed. */
+                        completed_at: string | null;
+                        /** @description When it was archived. */
+                        archived_at: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: this call takes no query parameters and no request body (none, or {}). Anything else is refused, never ignored. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Motion's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Motion sends from to pause or archive, and removes only their own. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Motion. ACCOUNT_NOT_FOUND: an id in account_ids is not one of your accounts (the message names it). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MOTION_STATUS_CONFLICT: the Motion is not scheduled or active. The message names the current status and the operations it allows. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1MotionsIdResume: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Motion id (mot_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The Motion, now active or scheduled. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "motion";
+                        /** @description Motion id (mot_...). */
+                        id: string;
+                        name: string;
+                        /** @enum {string} */
+                        status: "draft" | "scheduled" | "active" | "paused" | "completed" | "archived";
+                        /**
+                         * @description Why it is paused; null unless status is paused.
+                         * @enum {string|null}
+                         */
+                        pause_reason: "user" | "acceptance_floor" | "no_sending_account" | "tier_required" | null;
+                        /** @description Contact lists (cl_...) whose Contacts enroll. */
+                        contact_list_ids: string[];
+                        /** @description Contact lists (cl_...) whose Contacts never enroll. */
+                        exclusion_list_ids: string[];
+                        /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
+                        account_ids: string[];
+                        schedule: {
+                            /** @description IANA zone. */
+                            timezone: string | null;
+                            days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
+                            hours: {
+                                start: string;
+                                end: string;
+                            };
+                            /** @description ISO 8601. */
+                            start_at: string | null;
+                            /** @description ISO 8601. */
+                            end_at: string | null;
+                        };
+                        settings: {
+                            accounts_per_contact: number;
+                            /** @enum {string} */
+                            assign: "auto" | "even" | "already_connected";
+                            new_enrollments_per_account_per_day: number;
+                            exclude: {
+                                other_motions: boolean;
+                                known_chats: boolean;
+                            };
+                            /** @description null: disabled. */
+                            acceptance_floor: {
+                                percent: number;
+                                min_invites: number;
+                            } | null;
+                            variables: {
+                                [key: string]: string;
+                            };
+                            stop_on_engagement: boolean;
+                        };
+                        /** @description contact.* predicates a Contact must all pass to enroll. */
+                        where: {
+                            [key: string]: unknown;
+                        }[];
+                        /** @description The current Sequence document; null until one is set. */
+                        sequence: components["schemas"]["SequenceDocument"] | null;
+                        /** @description The current Sequence version. 1 until a structural edit after start. */
+                        sequence_version: number;
+                        /** @description Enrollments by status. */
+                        counts: {
+                            pending: number;
+                            active: number;
+                            paused: number;
+                            finished: number;
+                            skipped: number;
+                        };
+                        /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
+                        warnings: {
+                            code: string;
+                            path: string;
+                            rule: string;
+                        }[];
+                        /** @description The user who created the Motion. */
+                        created_by_user_id: string | null;
+                        /** @description ISO 8601. */
+                        created_at: string;
+                        /** @description ISO 8601. */
+                        updated_at: string;
+                        /** @description When it first became active. */
+                        started_at: string | null;
+                        /** @description When it completed. */
+                        completed_at: string | null;
+                        /** @description When it was archived. */
+                        archived_at: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: this call takes no query parameters and no request body (none, or {}). Anything else is refused, never ignored. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Motion's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Motion sends from to pause or archive, and removes only their own. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Motion. ACCOUNT_NOT_FOUND: an id in account_ids is not one of your accounts (the message names it). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MOTION_STATUS_CONFLICT: the Motion is not paused. The message names the current status and the operations it allows. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MOTION_NOT_STARTABLE: the Motion no longer passes what start checks. errors[] lists every gap as {path, rule}, for example {path: "schedule.timezone", rule: "required to start"}. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1MotionsIdArchive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Motion id (mot_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The Motion, now archived and read-only. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "motion";
+                        /** @description Motion id (mot_...). */
+                        id: string;
+                        name: string;
+                        /** @enum {string} */
+                        status: "draft" | "scheduled" | "active" | "paused" | "completed" | "archived";
+                        /**
+                         * @description Why it is paused; null unless status is paused.
+                         * @enum {string|null}
+                         */
+                        pause_reason: "user" | "acceptance_floor" | "no_sending_account" | "tier_required" | null;
+                        /** @description Contact lists (cl_...) whose Contacts enroll. */
+                        contact_list_ids: string[];
+                        /** @description Contact lists (cl_...) whose Contacts never enroll. */
+                        exclusion_list_ids: string[];
+                        /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
+                        account_ids: string[];
+                        schedule: {
+                            /** @description IANA zone. */
+                            timezone: string | null;
+                            days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
+                            hours: {
+                                start: string;
+                                end: string;
+                            };
+                            /** @description ISO 8601. */
+                            start_at: string | null;
+                            /** @description ISO 8601. */
+                            end_at: string | null;
+                        };
+                        settings: {
+                            accounts_per_contact: number;
+                            /** @enum {string} */
+                            assign: "auto" | "even" | "already_connected";
+                            new_enrollments_per_account_per_day: number;
+                            exclude: {
+                                other_motions: boolean;
+                                known_chats: boolean;
+                            };
+                            /** @description null: disabled. */
+                            acceptance_floor: {
+                                percent: number;
+                                min_invites: number;
+                            } | null;
+                            variables: {
+                                [key: string]: string;
+                            };
+                            stop_on_engagement: boolean;
+                        };
+                        /** @description contact.* predicates a Contact must all pass to enroll. */
+                        where: {
+                            [key: string]: unknown;
+                        }[];
+                        /** @description The current Sequence document; null until one is set. */
+                        sequence: components["schemas"]["SequenceDocument"] | null;
+                        /** @description The current Sequence version. 1 until a structural edit after start. */
+                        sequence_version: number;
+                        /** @description Enrollments by status. */
+                        counts: {
+                            pending: number;
+                            active: number;
+                            paused: number;
+                            finished: number;
+                            skipped: number;
+                        };
+                        /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
+                        warnings: {
+                            code: string;
+                            path: string;
+                            rule: string;
+                        }[];
+                        /** @description The user who created the Motion. */
+                        created_by_user_id: string | null;
+                        /** @description ISO 8601. */
+                        created_at: string;
+                        /** @description ISO 8601. */
+                        updated_at: string;
+                        /** @description When it first became active. */
+                        started_at: string | null;
+                        /** @description When it completed. */
+                        completed_at: string | null;
+                        /** @description When it was archived. */
+                        archived_at: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: this call takes no query parameters and no request body (none, or {}). Anything else is refused, never ignored. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Motion's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Motion sends from to pause or archive, and removes only their own. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Motion. ACCOUNT_NOT_FOUND: an id in account_ids is not one of your accounts (the message names it). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MOTION_STATUS_CONFLICT: the Motion is already archived. The message names the current status and the operations it allows. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1MotionsIdSequence: {
+        parameters: {
+            query?: {
+                /** @description Sequence version. Default: the current one. */
+                version?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Motion id (mot_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One Sequence version. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "sequence_version";
+                        motion_id: string;
+                        version: number;
+                        document: components["schemas"]["SequenceDocument"];
+                        /** @description ISO 8601. */
+                        created_at: string;
+                        /** @description Enrollments still running on this version. */
+                        open_enrollments: number;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description version is not a whole number of 1 or more. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Motion, or no such version (a draft without a sequence has none). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1MotionsIdPreview: {
+        parameters: {
+            query?: {
+                /** @description How many Contacts to render, the first enrollable ones by list order. 1 to 20, default 5. Not with contact_ids. */
+                sample?: string;
+                /** @description Comma list of Contact ids (con_...) to render, up to 20, in the order given. Not with sample. */
+                contact_ids?: string[];
+            };
+            header?: never;
+            path: {
+                /** @description Motion id (mot_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The preview. Nothing is sent, nothing is saved and no budget is spent; whatever only LinkedIn can answer is unknown. Rendered text is shown here and never stored. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "motion_preview";
+                        /** @description The Sequence version previewed. */
+                        sequence_version: number;
+                        /** @description Every distinct route through the Sequence, from the first step and from on_reply, as step ids in order. A step that branched carries the exit taken (has_post:then). Every route ends with end. */
+                        paths: string[][];
+                        /** @description true when there are more routes than the 200 listed, or when some rendered text was omitted (a response carries at most 1 MiB of it). */
+                        truncated: boolean;
+                        samples: {
+                            contact_id: string;
+                            /** @description The sending account this Contact would be assigned, from stored data; null when none can act or assignment needs LinkedIn. */
+                            account_id: string | null;
+                            /**
+                             * @description Why the Contact would not be enrolled, from stored data: an Exclusion list holds it, it is or was within 90 days in another Motion, or an account already chats with it. null: nothing excludes it.
+                             * @enum {string|null}
+                             */
+                            excluded: "in_exclusion_list" | "in_other_motion" | "known_chat" | null;
+                            filters: {
+                                index: number;
+                                /**
+                                 * @description unknown: only LinkedIn can answer it.
+                                 * @enum {string}
+                                 */
+                                result: "pass" | "fail" | "unknown";
+                            }[];
+                            /** @description Every step that sends text, rendered for this Contact. */
+                            steps: {
+                                step_id: string;
+                                variants: {
+                                    variant_id: string;
+                                    /** @description The text as it would go out; null when the fallback is drop or skip, or when omitted is true. */
+                                    rendered: string | null;
+                                    /** @description The InMail subject; null otherwise, and when omitted is true. */
+                                    subject: string | null;
+                                    /** @description true when the text exists but the response already carries 1 MiB of rendered text, so rendered and subject are null. used_fallback and would_skip are still judged. */
+                                    omitted: boolean;
+                                    /** @description true when a variable had no value or the text was over the account's length limit. */
+                                    used_fallback: boolean;
+                                }[];
+                                /** @description A reason the step would be skipped that stored data settles (inmail_unavailable, missing_variable, text_too_long), else unknown. */
+                                would_skip: string;
+                            }[];
+                        }[];
+                        /** @description An estimate of how long the list takes, from each account's current budget ceilings (warm-up applied). It splits Contacts evenly over the sending accounts that can act and ignores what other Motions spend. */
+                        projection: {
+                            /** @description Contacts that would enroll: in a source list and in no exclusion list. null when the Motion has no Sequence. */
+                            contacts: number | null;
+                            accounts: {
+                                account_id: string;
+                                /** @description This account's share of the Contacts. */
+                                contacts: number;
+                                /** @description Schedule days to enroll that share; null when a ceiling of 0 admits none. */
+                                enroll_days: number | null;
+                                /** @description The limit that set this account's pace: daily_cap, or a budget row such as connection_requests_no_note. */
+                                binding: string;
+                            }[];
+                            /** @description Calendar days of waits and timeouts on the longest route, rounded up. null when the Motion has no Sequence. */
+                            longest_path_days: number | null;
+                            /** @description Schedule days until the last Contact finishes: the slowest account's enroll_days plus the longest route in schedule days. null when nothing can run. */
+                            finish_working_days: number | null;
+                            /** @description Whether every Contact finishes before schedule.end_at, counting schedule days from now (or schedule.start_at if later). null when the schedule has no end_at or the Motion has no Sequence. schedule.hours is not modelled: the estimate assumes each day's actions fit the daily window. */
+                            fits_before_end_at: boolean | null;
+                            /** @description The slowest account and its limiter; null when no sending account can act. */
+                            binding: {
+                                account_id: string;
+                                limiter: string;
+                            } | null;
+                            /** @description One line that says it is an estimate at the account's steady-state ceiling, for example: 100 Contacts finish in 27 working days; binding row daily_cap (an estimate at each Account's steady-state ceiling). When fits_before_end_at is false it says the Motion ends first and how many Contacts can enroll by then. */
+                            summary: string;
+                        };
+                        /** @description Lint warnings, as on the Motion. */
+                        warnings: {
+                            code: string;
+                            path: string;
+                            rule: string;
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: sample is not a whole number from 1 to 20, contact_ids holds more than 20 ids, a blank or repeated id, a parameter given twice or empty, a blank unknown parameter, both sample and contact_ids, or an unknown query parameter. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Motion, or a contact_ids entry that is not one of your Contacts (a merged Contact names its survivor). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1MotionsIdContacts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Motion id (mot_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Contact ids (con_...), up to 1000. */
+                    contact_ids: string[];
+                    /** @description Enroll them on this sending account (acc_...) of the Motion. Default: Curviate assigns one. */
+                    account_id?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description One result per Contact id, in the order sent (an id sent twice is answered once). queued: a pending Enrollment was created, or one that was skipped or ended before it started was re-queued. already_enrolled: nothing changed (enrollment_ids leaves out an Enrollment on a teammate's account you cannot operate). in_exclusion_list, in_other_motion, known_chat: the Contact is recorded as skipped. filtered_out: the Contact fails the Motion's where filters, no Enrollment. not_found: not one of your Contacts. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "motion_contacts_result";
+                        results: {
+                            contact_id: string;
+                            /** @enum {string} */
+                            outcome: "queued" | "already_enrolled" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered_out" | "not_found";
+                            /** @description The Contact's Enrollments this answer is about; empty for not_found. */
+                            enrollment_ids: string[];
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: an unknown key or query parameter, no contact_ids or more than 1000, or an account_id that is not a sending account of this Motion. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description In a team, for an account the Motion sends from, or the account_id you name. INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Motion. ACCOUNT_NOT_FOUND: account_id is not one of your accounts. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MOTION_STATUS_CONFLICT: the Motion is archived, or its schedule.end_at has passed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1MotionsIdContactsRemove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Motion id (mot_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Contact ids (con_...), up to 1000. */
+                    contact_ids: string[];
+                };
+            };
+        };
+        responses: {
+            /** @description removed counts the Contacts whose pending or running Enrollments in this Motion ended (reason removed). not_found lists every other id, also a Contact whose Enrollment runs on a teammate's account you cannot operate: it is left as it is. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        removed: number;
+                        not_found: string[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: an unknown key or query parameter, no contact_ids or more than 1000. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description In a team, for an account the Motion sends from, or the account_id you name. INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Motion. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MOTION_STATUS_CONFLICT: the Motion is archived. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1Enrollments: {
+        parameters: {
+            query?: {
+                /** @description Only Enrollments of this Motion (mot_...). */
+                motion_id?: string;
+                /** @description Only Enrollments of this Contact (con_...). */
+                contact_id?: string;
+                /** @description Only Enrollments on this account (acc_...). */
+                account_id?: string;
+                /** @description Comma list of pending, active, paused, finished, skipped. Default: all. */
+                status?: ("pending" | "active" | "paused" | "finished" | "skipped")[];
+                /** @description Only Enrollments currently at this Step. */
+                step_id?: string;
+                /** @description Max items per page (1-100, default 20). */
+                limit?: number;
+                /** @description Pagination cursor from a previous response; pass it back verbatim with the same filters. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Enrollments, newest first. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "enrollment_list";
+                        items: {
+                            /**
+                             * @description Response type discriminator.
+                             * @enum {string}
+                             */
+                            object: "enrollment";
+                            /** @description Enrollment id (enr_...). */
+                            id: string;
+                            /** @description The Motion (mot_...). */
+                            motion_id: string;
+                            /** @description The Contact (con_...); null once the Contact is deleted. */
+                            contact_id: string | null;
+                            /** @description The sending account (acc_...); null until one is assigned. */
+                            account_id: string | null;
+                            /** @description The Sequence version this Enrollment runs on. */
+                            sequence_version: number;
+                            /** @enum {string} */
+                            status: "pending" | "active" | "paused" | "finished" | "skipped";
+                            /** @description The Step it is at; null before it starts. */
+                            current_step_id: string | null;
+                            /** @description What it waits for; null when nothing holds it. */
+                            waiting: {
+                                /** @enum {string} */
+                                kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch";
+                                step_id: string;
+                                /** @description ISO 8601, when the wait ends; null when open-ended. */
+                                until: string | null;
+                            } | null;
+                            /**
+                             * @description Why it finished; null unless status is finished.
+                             * @enum {string|null}
+                             */
+                            finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | null;
+                            /**
+                             * @description Why the Contact was not enrolled; null unless status is skipped.
+                             * @enum {string|null}
+                             */
+                            skip_reason: "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                            /** @description More on the skip, for example the index of the where filter that failed. */
+                            skip_detail: string | null;
+                            /** @description True once the Contact replied. */
+                            replied: boolean;
+                            /** @description The variant chosen per Step: step id to variant id. */
+                            variants: {
+                                [key: string]: string;
+                            };
+                            /** @description ISO 8601. */
+                            created_at: string;
+                            /** @description When it started. */
+                            started_at: string | null;
+                            /** @description When it finished. */
+                            finished_at: string | null;
+                        }[];
+                        /** @description Pass back as cursor for the next page; null on the last page. */
+                        cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Invalid filter, a query key given twice, an empty value, or a malformed cursor. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Only with account_id, in a team. ACCOUNT_NOT_SHARED: the teammate turned team access off for the account, so only they filter by it. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_NOT_FOUND: account_id is not one of your accounts. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1EnrollmentsId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Enrollment id (enr_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The Enrollment with its history: what each Step did, in order. Metadata only; the text that was sent is never stored. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "enrollment";
+                        /** @description Enrollment id (enr_...). */
+                        id: string;
+                        /** @description The Motion (mot_...). */
+                        motion_id: string;
+                        /** @description The Contact (con_...); null once the Contact is deleted. */
+                        contact_id: string | null;
+                        /** @description The sending account (acc_...); null until one is assigned. */
+                        account_id: string | null;
+                        /** @description The Sequence version this Enrollment runs on. */
+                        sequence_version: number;
+                        /** @enum {string} */
+                        status: "pending" | "active" | "paused" | "finished" | "skipped";
+                        /** @description The Step it is at; null before it starts. */
+                        current_step_id: string | null;
+                        /** @description What it waits for; null when nothing holds it. */
+                        waiting: {
+                            /** @enum {string} */
+                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch";
+                            step_id: string;
+                            /** @description ISO 8601, when the wait ends; null when open-ended. */
+                            until: string | null;
+                        } | null;
+                        /**
+                         * @description Why it finished; null unless status is finished.
+                         * @enum {string|null}
+                         */
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | null;
+                        /**
+                         * @description Why the Contact was not enrolled; null unless status is skipped.
+                         * @enum {string|null}
+                         */
+                        skip_reason: "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        /** @description More on the skip, for example the index of the where filter that failed. */
+                        skip_detail: string | null;
+                        /** @description True once the Contact replied. */
+                        replied: boolean;
+                        /** @description The variant chosen per Step: step id to variant id. */
+                        variants: {
+                            [key: string]: string;
+                        };
+                        /** @description ISO 8601. */
+                        created_at: string;
+                        /** @description When it started. */
+                        started_at: string | null;
+                        /** @description When it finished. */
+                        finished_at: string | null;
+                        history: {
+                            /** @description The Step; null for requeued. */
+                            step_id: string | null;
+                            /**
+                             * @description requeued: the Enrollment ended before it started and was added again.
+                             * @enum {string}
+                             */
+                            outcome: "executed" | "skipped" | "failed" | "taken" | "requeued";
+                            /**
+                             * @description The exit taken.
+                             * @enum {string|null}
+                             */
+                            exit: "next" | "then" | "else" | null;
+                            /** @description The variant used. */
+                            variant_id: string | null;
+                            used_fallback: boolean;
+                            /** @description Why it was skipped or failed. */
+                            reason: string | null;
+                            /** @description ISO 8601. */
+                            at: string;
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Enrollment. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1EnrollmentsIdStop: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Enrollment id (enr_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The Enrollment, finished with finish_reason stopped. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "enrollment";
+                        /** @description Enrollment id (enr_...). */
+                        id: string;
+                        /** @description The Motion (mot_...). */
+                        motion_id: string;
+                        /** @description The Contact (con_...); null once the Contact is deleted. */
+                        contact_id: string | null;
+                        /** @description The sending account (acc_...); null until one is assigned. */
+                        account_id: string | null;
+                        /** @description The Sequence version this Enrollment runs on. */
+                        sequence_version: number;
+                        /** @enum {string} */
+                        status: "pending" | "active" | "paused" | "finished" | "skipped";
+                        /** @description The Step it is at; null before it starts. */
+                        current_step_id: string | null;
+                        /** @description What it waits for; null when nothing holds it. */
+                        waiting: {
+                            /** @enum {string} */
+                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch";
+                            step_id: string;
+                            /** @description ISO 8601, when the wait ends; null when open-ended. */
+                            until: string | null;
+                        } | null;
+                        /**
+                         * @description Why it finished; null unless status is finished.
+                         * @enum {string|null}
+                         */
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | null;
+                        /**
+                         * @description Why the Contact was not enrolled; null unless status is skipped.
+                         * @enum {string|null}
+                         */
+                        skip_reason: "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        /** @description More on the skip, for example the index of the where filter that failed. */
+                        skip_detail: string | null;
+                        /** @description True once the Contact replied. */
+                        replied: boolean;
+                        /** @description The variant chosen per Step: step id to variant id. */
+                        variants: {
+                            [key: string]: string;
+                        };
+                        /** @description ISO 8601. */
+                        created_at: string;
+                        /** @description When it started. */
+                        started_at: string | null;
+                        /** @description When it finished. */
+                        finished_at: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: this call takes no query parameters and no request body (none, or {}). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Motion sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Motion sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Enrollment. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ENROLLMENT_NOT_ACTIVE: the Enrollment's status does not take this call; it needs pending, active or paused. The message names the current status. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1EnrollmentsIdResume: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Enrollment id (enr_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The Step id to continue at. It must exist in the Sequence version the Enrollment runs on. */
+                    at: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The Enrollment at the named Step: active, or paused while its account or Motion is. One that ended before it started is pending again. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "enrollment";
+                        /** @description Enrollment id (enr_...). */
+                        id: string;
+                        /** @description The Motion (mot_...). */
+                        motion_id: string;
+                        /** @description The Contact (con_...); null once the Contact is deleted. */
+                        contact_id: string | null;
+                        /** @description The sending account (acc_...); null until one is assigned. */
+                        account_id: string | null;
+                        /** @description The Sequence version this Enrollment runs on. */
+                        sequence_version: number;
+                        /** @enum {string} */
+                        status: "pending" | "active" | "paused" | "finished" | "skipped";
+                        /** @description The Step it is at; null before it starts. */
+                        current_step_id: string | null;
+                        /** @description What it waits for; null when nothing holds it. */
+                        waiting: {
+                            /** @enum {string} */
+                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch";
+                            step_id: string;
+                            /** @description ISO 8601, when the wait ends; null when open-ended. */
+                            until: string | null;
+                        } | null;
+                        /**
+                         * @description Why it finished; null unless status is finished.
+                         * @enum {string|null}
+                         */
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | null;
+                        /**
+                         * @description Why the Contact was not enrolled; null unless status is skipped.
+                         * @enum {string|null}
+                         */
+                        skip_reason: "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        /** @description More on the skip, for example the index of the where filter that failed. */
+                        skip_detail: string | null;
+                        /** @description True once the Contact replied. */
+                        replied: boolean;
+                        /** @description The variant chosen per Step: step id to variant id. */
+                        variants: {
+                            [key: string]: string;
+                        };
+                        /** @description ISO 8601. */
+                        created_at: string;
+                        /** @description When it started. */
+                        started_at: string | null;
+                        /** @description When it finished. */
+                        finished_at: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: at is missing, or no Step with that id exists in the Sequence version the Enrollment runs on. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Motion sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Motion sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Enrollment. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ENROLLMENT_NOT_ACTIVE: a pending or skipped Enrollment, one whose Contact is gone, or one that finished with account_removed, account_unavailable, contact_deleted or contact_merged. MOTION_STATUS_CONFLICT: the Motion is archived, or its schedule.end_at has passed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1EnrollmentsIdSignal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Enrollment id (enr_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The signal name a Step of the Enrollment's Sequence waits for (`until signal.<name>`). */
+                    name: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The Enrollment. The signal is recorded with its time. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "enrollment";
+                        /** @description Enrollment id (enr_...). */
+                        id: string;
+                        /** @description The Motion (mot_...). */
+                        motion_id: string;
+                        /** @description The Contact (con_...); null once the Contact is deleted. */
+                        contact_id: string | null;
+                        /** @description The sending account (acc_...); null until one is assigned. */
+                        account_id: string | null;
+                        /** @description The Sequence version this Enrollment runs on. */
+                        sequence_version: number;
+                        /** @enum {string} */
+                        status: "pending" | "active" | "paused" | "finished" | "skipped";
+                        /** @description The Step it is at; null before it starts. */
+                        current_step_id: string | null;
+                        /** @description What it waits for; null when nothing holds it. */
+                        waiting: {
+                            /** @enum {string} */
+                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch";
+                            step_id: string;
+                            /** @description ISO 8601, when the wait ends; null when open-ended. */
+                            until: string | null;
+                        } | null;
+                        /**
+                         * @description Why it finished; null unless status is finished.
+                         * @enum {string|null}
+                         */
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | null;
+                        /**
+                         * @description Why the Contact was not enrolled; null unless status is skipped.
+                         * @enum {string|null}
+                         */
+                        skip_reason: "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        /** @description More on the skip, for example the index of the where filter that failed. */
+                        skip_detail: string | null;
+                        /** @description True once the Contact replied. */
+                        replied: boolean;
+                        /** @description The variant chosen per Step: step id to variant id. */
+                        variants: {
+                            [key: string]: string;
+                        };
+                        /** @description ISO 8601. */
+                        created_at: string;
+                        /** @description When it started. */
+                        started_at: string | null;
+                        /** @description When it finished. */
+                        finished_at: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: name is missing, or no Step of the Enrollment's Sequence waits for it. The message lists the awaited names. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Motion sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Motion sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Enrollment. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ENROLLMENT_NOT_ACTIVE: the Enrollment's status does not take this call; it needs active or paused. The message names the current status. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -32990,7 +42224,14 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @description Amount collected right now, or null when nothing was collected today. */
+                        /** @description Amount collected right now, in major units of `currency` (12.5 is 12.50), or null when nothing was collected today. */
+                        charged_today: number | null;
+                        /** @description Lowercase ISO 4217 code of the subscription's price (for example `usd` or `eur`). Read from the price, never assumed. */
+                        currency: string;
+                        /**
+                         * @deprecated
+                         * @description Deprecated, removed in the next release: use `charged_today` and `currency`. The same amount for a subscription billed in EUR, null for any other currency.
+                         */
                         charged_today_eur: number | null;
                         /**
                          * Format: date-time
@@ -33023,6 +42264,15 @@ export interface operations {
             };
             /** @description No active subscription, a past-due subscription, an account under dispute review, or the card was declined (no seats added). */
             402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description In a team, only an Owner changes seats. Not fixed by retrying. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -33137,6 +42387,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description In a team, only an Owner changes seats. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description The workspace is on a free trial and cannot change seats. Buy a seat to convert to a paid subscription first. */
             409: {
                 headers: {
@@ -33226,6 +42485,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description In a team, only an Owner changes seats. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description The workspace is on a free trial and cannot change seats. Buy a seat to convert to a paid subscription first. */
             409: {
                 headers: {
@@ -33250,6 +42518,116 @@ export interface operations {
             /** @description Another change to this subscription is in progress (retry shortly), or the seat price is misconfigured on our side (nothing charged; contact support, retrying fails the same way). */
             503: {
                 headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1BillingTier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The Team's Tier. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "tier";
+                        /**
+                         * @description The Tier the Team has now: the highest of the Tier it bought, its trial's Tier while the trial runs, and a Tier granted to it. Null when it has none.
+                         * @enum {string|null}
+                         */
+                        tier: "build" | "automate" | "enhance" | null;
+                        /**
+                         * @description The Tier of the Team's subscription. Null without a live subscription.
+                         * @enum {string|null}
+                         */
+                        bought_tier: "build" | "automate" | "enhance" | null;
+                        /**
+                         * @description How often the subscription renews. Null without a subscription.
+                         * @enum {string|null}
+                         */
+                        period: "monthly" | "annual" | null;
+                        /** @description The free trial, while it runs. Null before it starts and once it has ended. */
+                        trial: {
+                            /**
+                             * @description The Tier the trial carries.
+                             * @enum {string}
+                             */
+                            tier: "build" | "automate" | "enhance";
+                            /**
+                             * Format: date-time
+                             * @description When the trial ends.
+                             */
+                            expires_at: string;
+                        } | null;
+                        /** @description A Tier Curviate granted this Team regardless of its subscription, while it holds. Null otherwise. */
+                        override: {
+                            /**
+                             * @description The Tier granted.
+                             * @enum {string}
+                             */
+                            tier: "build" | "automate" | "enhance";
+                            /**
+                             * Format: date-time
+                             * @description When the grant ends. Null when it has no end.
+                             */
+                            expires_at: string | null;
+                        } | null;
+                        /** @description A Tier change that takes effect at the next renewal. Null when none is scheduled. */
+                        pending: {
+                            /**
+                             * @description The Tier the subscription moves to.
+                             * @enum {string}
+                             */
+                            tier: "build" | "automate" | "enhance";
+                            /**
+                             * Format: date-time
+                             * @description When it takes effect.
+                             */
+                            effective_at: string;
+                        } | null;
+                        /** @description The features the Team has now. Empty when it has no Tier, and for a Tier that adds none. */
+                        features: ("drafts" | "contacts" | "motions" | "network" | "unibox" | "keep_connected")[];
+                        /** @description One entry per Tier that is announced and not yet sold. */
+                        early_access: {
+                            /**
+                             * @description The Tier.
+                             * @enum {string}
+                             */
+                            tier: "build" | "automate" | "enhance";
+                            /**
+                             * Format: date-time
+                             * @description When this Team asked for early access to it. Null when it has not.
+                             */
+                            requested_at: string | null;
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
                     [name: string]: unknown;
                 };
                 content: {
