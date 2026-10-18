@@ -189,7 +189,11 @@ describe("check:cli-notice — main() actually runs from a path with special cha
   // still finds this package's real node_modules by walking up parent
   // directories; a bare `tmpdir()` location would need its own node_modules
   // just to resolve the script's `semver` import, which is irrelevant to
-  // what this test is actually proving.
+  // what this test is actually proving. The nest is `test/`, which check:copy
+  // never walks: a copy at the package root was scanned by
+  // check-copy.integration.test.ts running in another worker (its copied
+  // scripts carry the typographic tells the scan exists to find), red at
+  // random, more often with more workers.
   const pkgRoot = dirname(dirname(REAL_SCRIPT_PATH));
   const specialDirNames = [
     "has space",
@@ -208,7 +212,7 @@ describe("check:cli-notice — main() actually runs from a path with special cha
   });
 
   it.each(specialDirNames)("produces output and exits non-zero when run from a path containing %s", async (specialName) => {
-    const base = await mkdtemp(join(pkgRoot, ".tmp-f1-regression-"));
+    const base = await mkdtemp(join(pkgRoot, "test", ".tmp-f1-regression-"));
     tmpBases.push(base);
     const targetDir = join(base, specialName);
     await cp(join(pkgRoot, "scripts"), targetDir, { recursive: true });
