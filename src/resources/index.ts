@@ -1,7 +1,7 @@
 /**
  * Resource namespace assembly.
  *
- * The surface is split cleanly in two, with no overlap:
+ * The surface is split in two:
  * - **Root-scoped** (`accounts`, `auth`, `connectRequests`, `webhooks`, `drafts`,
  *   `teams`, `notifications`) hang off the root client only. Connected-account
  *   management, connect/reconnect, webhook registration, Drafts (a Draft's
