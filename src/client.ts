@@ -38,6 +38,9 @@ import {
   type MotionsResource,
   type EnrollmentsResource,
   type TierResource,
+  type NetworkResource,
+  type UniboxResource,
+  type AnalyticsResource,
 } from "./resources/index.js";
 
 export class Curviate {
@@ -68,6 +71,12 @@ export class Curviate {
   readonly enrollments: EnrollmentsResource;
   /** The Team's Tier and its features; `TIER_REQUIRED` explained. */
   readonly tier: TierResource;
+  /** Your accounts' stored LinkedIn Connections and their sync. */
+  readonly network: NetworkResource;
+  /** One inbox over every account you can operate; full-inbox sync per account. */
+  readonly unibox: UniboxResource;
+  /** Read-only Motion results, activity in budget units, the Motion events feed. */
+  readonly analytics: AnalyticsResource;
 
   constructor(config: CurviateConfig) {
     this.config = resolveConfig(config);
@@ -86,6 +95,9 @@ export class Curviate {
     this.motions = ns.motions;
     this.enrollments = ns.enrollments;
     this.tier = ns.tier;
+    this.network = ns.network;
+    this.unibox = ns.unibox;
+    this.analytics = ns.analytics;
   }
 
   /**

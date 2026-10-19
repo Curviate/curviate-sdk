@@ -207,10 +207,10 @@ describe("list iterators page through the cursor", () => {
   });
 
   it("network.connections.list and unibox.list iterate the same way", async () => {
-    const conn = (cursor: string | null, id: string) => ({ object: "connection_list", items: [{ id }], cursor, coverage: {} }) as unknown as ConnectionsPage;
+    const conn = (cursor: string | null, id: string) => ({ object: "connection_list", items: [{ member_id: id }], cursor, coverage: {} }) as unknown as ConnectionsPage;
     const c = recorder([conn("n2", "c1"), conn(null, "c2")]);
     const got: unknown[] = [];
-    for await (const item of client(c.fetchImpl).network.connections.list({ account_id: ["acc_1"] })) got.push((item as { id: string }).id);
+    for await (const item of client(c.fetchImpl).network.connections.list({ account_id: ["acc_1"] })) got.push(item.member_id);
     expect(got).toEqual(["c1", "c2"]);
     expect(c.sent.map((s) => s.search)).toEqual(["?account_id=acc_1", "?account_id=acc_1&cursor=n2"]);
 

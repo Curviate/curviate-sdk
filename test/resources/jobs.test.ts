@@ -161,7 +161,7 @@ describe("jobs.get", () => {
     expect((caught as CurviateError).code).toBe("INVALID_REQUEST");
   });
 
-  it("forwards with_sections as a query param", async () => {
+  it("sends with_sections as one comma value (a repeated key keeps only the last)", async () => {
     let url: string | undefined;
     server.use(
       http.get(`${BASE}/v1/${ACC}/jobs/4428113858`, ({ request }) => {
@@ -171,7 +171,7 @@ describe("jobs.get", () => {
     );
     await jobs().get("4428113858", { with_sections: ["hiring_team", "salary"] });
     const params = new URL(url!).searchParams;
-    expect(params.getAll("with_sections")).toEqual(["hiring_team", "salary"]);
+    expect(params.getAll("with_sections")).toEqual(["hiring_team,salary"]);
   });
 });
 

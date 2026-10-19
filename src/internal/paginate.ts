@@ -69,3 +69,28 @@ export async function* paginate<
     if (cursor == null) break;
   }
 }
+
+/**
+ * A list call that is both its first page and an iterator over every item:
+ * `await list()` resolves with one page (one request); `for await (const x of
+ * list())` yields every item, reusing that first page, then following `cursor`
+ * with the same params until it is null.
+ */
+export type Pageable<TPage extends PageEnvelope> = Promise<TPage> & AsyncIterable<ItemOf<TPage>>;
+
+export function pageable<TParams extends object, TPage extends PageEnvelope>(
+  fetchPage: (params: TParams | undefined) => Promise<TPage>,
+  params: TParams | undefined,
+): Pageable<TPage> {
+  const first = fetchPage(params);
+  return Object.assign(first, {
+    async *[Symbol.asyncIterator]() {
+      let page = await first;
+      for (;;) {
+        yield* (page.items ?? page.data ?? []) as ItemOf<TPage>[];
+        if (page.cursor == null) return;
+        page = await fetchPage({ ...params, cursor: page.cursor } as TParams);
+      }
+    },
+  });
+}

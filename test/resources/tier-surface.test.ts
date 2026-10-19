@@ -146,18 +146,17 @@ describe("JSDoc sweep: every gated write that exists says it needs Automate", ()
     const at = src.search(new RegExp("`" + m + " " + p.replace(/[{}]/g, "\\$&") + "[`?]"));
     return at < 0 ? undefined : src.slice(src.lastIndexOf("/**", at), src.indexOf("*/", at));
   };
-  // Not in the SDK yet: the `network` and `unibox` namespaces arrive later and write the note on their own gated writes.
-  const LATER = /^\/v1\/(network|unibox)\b/;
+  // Gated by direction, so untagged: turning full-inbox sync on is refused below the Tier, off passes.
+  const BY_HANDLER: [string, string][] = [["PATCH", "/v1/unibox/accounts/{account_id}"]];
 
-  it("derives a non-empty set, with the later namespaces as the only absentees", () => {
-    expect(tagged.length).toBeGreaterThanOrEqual(23);
-    for (const [m, p] of tagged) {
-      if (LATER.test(p)) expect(block(m, p), `${m} ${p} arrived: drop it from LATER`).toBeUndefined();
-      else expect(block(m, p), `${m} ${p} has no SDK method`).toBeDefined();
-    }
+  it("derives a non-empty set, every tagged write has an SDK method", () => {
+    expect(tagged.length).toBe(23);
+    for (const [m, p] of [...tagged, ...BY_HANDLER]) expect(block(m, p), `${m} ${p} has no SDK method`).toBeDefined();
+    // The four network and unibox writes are in the derived set, not added by hand.
+    expect(tagged.filter(([, p]) => /^\/v1\/(network|unibox)\//.test(p)).length).toBe(4);
   });
 
-  it.each(tagged.filter(([, p]) => !LATER.test(p)))("%s %s", (m, p) => {
+  it.each([...tagged, ...BY_HANDLER])("%s %s", (m, p) => {
     expect(block(m, p)).toContain("Needs Automate");
   });
 
