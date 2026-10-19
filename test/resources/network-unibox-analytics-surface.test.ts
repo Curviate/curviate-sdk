@@ -1,5 +1,4 @@
-// The root `network` (core/022), `unibox` (core/023) and `analytics` (api/041
-// FR-023) namespaces, against a recorded transport (an injected `fetch`). One
+// The root `network`, `unibox` and `analytics` namespaces, against a recorded transport (an injected `fetch`). One
 // row per method: method, path, query and body on the wire. The comma-list
 // rows cover every filter the API reads as one comma list (`explode: false`)
 // and the empty-array fold. The paging block drives the list iterators over a

@@ -528,8 +528,8 @@ describe("error-code decode coverage", () => {
 });
 
 describe("timeout", () => {
-  // The per-attempt client timeout is its own code, never INTERNAL (#2386 item
-  // 1: a slow call read as a server fault). A network failure stays INTERNAL.
+  // The per-attempt client timeout is its own code, never INTERNAL (a slow
+  // call used to read as a server fault). A network failure stays INTERNAL.
   // Real timers: a 50 ms timeout vs a 5 s handler.
   const slow = (method: "get" | "post") =>
     server.use(

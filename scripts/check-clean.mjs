@@ -48,9 +48,9 @@
 // clean, which is a false assurance, not a pass), and every verdict states how
 // many files and lines it examined. Read that number before reading the result.
 //
-// src/generated/types.ts is no longer skipped. It is listed in this package's
-// published `files` array, so it ships to npm; excluding a published file from
-// the publish guard is the same hole one level down.
+// src/generated/types.ts is no longer skipped. It no longer ships (its types
+// are bundled into dist/index.d.ts, which --dist scans), but it is the source
+// of what ships, so the source pass keeps reading it.
 
 import { readdir, readFile, stat } from "node:fs/promises";
 import { join, relative, extname } from "node:path";
