@@ -17,6 +17,7 @@
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
 import { apiPath } from "../internal/path.js";
+import { commaLists } from "../internal/query.js";
 
 // ─── Type aliases from generated OpenAPI snapshot ──────────────────────────
 
@@ -104,12 +105,10 @@ export class DraftsResource {
    * const page = await curviate.drafts.list({ status: ["scheduled"], order: "asc" });
    */
   list(params?: DraftListParams): Promise<DraftListResult> {
-    // The API takes `status` as one comma-separated value; the typed array is joined here.
-    const { status, ...rest } = params ?? {};
     return this.ctx.request<DraftListResult>({
       method: "GET",
       path: "/v1/drafts",
-      query: { ...rest, ...(status !== undefined ? { status: status.join(",") } : {}) },
+      query: commaLists(params, "status"),
     });
   }
 

@@ -133,6 +133,29 @@ export type {
 export type { Tag, TagListParams, TagListPage, TagUpdateBody } from "./resources/tags.js";
 
 export type {
+  Motion,
+  MotionCreateBody,
+  MotionUpdateBody,
+  MotionListParams,
+  MotionListPage,
+  MotionPreviewParams,
+  MotionPreview,
+  SequenceVersionParams,
+  SequenceVersion,
+  MotionAddContactsBody,
+  MotionRemoveContactsBody,
+  MotionContactsResult,
+  MotionRemoveContactsResult,
+  SequenceInput,
+  Enrollment,
+  EnrollmentDetail,
+  EnrollmentListParams,
+  EnrollmentListPage,
+  EnrollmentResumeBody,
+  EnrollmentSignalBody,
+} from "./resources/motions.js";
+
+export type {
   ResourceNamespaces,
   RootNamespaces,
   AccountScopedNamespaces,

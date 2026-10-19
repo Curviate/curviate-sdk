@@ -37408,6 +37408,8 @@
                 "type": "string"
               }
             },
+            "style": "form",
+            "explode": false,
             "description": "Only chats of these accounts: a comma list of 1 to 50 account ids (acc_...). Omitted: every account you can operate."
           },
           {
@@ -37422,6 +37424,8 @@
                 "maxLength": 200
               }
             },
+            "style": "form",
+            "explode": false,
             "description": "Only chats linked to any of these Motions: a comma list of Motion ids."
           },
           {
@@ -37436,6 +37440,8 @@
                 "maxLength": 200
               }
             },
+            "style": "form",
+            "explode": false,
             "description": "Only chats whose Contact has any of these Tags (names, case-insensitive): a comma list."
           },
           {
@@ -38395,6 +38401,8 @@
                 "type": "string"
               }
             },
+            "style": "form",
+            "explode": false,
             "description": "Only chats of these accounts: a comma list of 1 to 50 account ids (acc_...). Omitted: every account you can operate."
           }
         ],
@@ -80725,6 +80733,18 @@
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "required": [
+                    "object",
+                    "id",
+                    "kind",
+                    "status",
+                    "account_id",
+                    "error_code",
+                    "url",
+                    "expires_at",
+                    "created_at",
+                    "completed_at"
+                  ],
                   "properties": {
                     "object": {
                       "type": "string",
@@ -81038,6 +81058,18 @@
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "required": [
+                    "object",
+                    "id",
+                    "kind",
+                    "status",
+                    "account_id",
+                    "error_code",
+                    "url",
+                    "expires_at",
+                    "created_at",
+                    "completed_at"
+                  ],
                   "properties": {
                     "object": {
                       "type": "string",
@@ -81244,6 +81276,18 @@
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "required": [
+                    "object",
+                    "id",
+                    "kind",
+                    "status",
+                    "account_id",
+                    "error_code",
+                    "url",
+                    "expires_at",
+                    "created_at",
+                    "completed_at"
+                  ],
                   "properties": {
                     "object": {
                       "type": "string",
@@ -94243,6 +94287,8 @@
                 ]
               }
             },
+            "style": "form",
+            "explode": false,
             "description": "With motion_id: comma list of pending, active, paused, finished, skipped, Contacts whose Enrollment in that Motion has one of them."
           },
           {
@@ -94843,6 +94889,8 @@
                 ]
               }
             },
+            "style": "form",
+            "explode": false,
             "description": "With motion_id: comma list of pending, active, paused, finished, skipped, Contacts whose Enrollment in that Motion has one of them."
           },
           {
@@ -94873,11 +94921,290 @@
         ],
         "responses": {
           "200": {
-            "description": "The whole matching set in one streamed download (Content-Disposition: attachment). CSV is UTF-8 with a BOM; a cell starting with = + - @, tab or CR is prefixed with '.",
+            "description": "The whole matching set in one streamed download (Content-Disposition: attachment), in the format asked for: NDJSON (default), CSV or JSON. CSV is UTF-8 with a BOM; a cell starting with = + - @, tab, CR or ' is prefixed with '.",
             "content": {
               "application/x-ndjson": {
                 "schema": {
-                  "type": "string"
+                  "type": "string",
+                  "description": "One Contact object per line; with fields, only the picked columns."
+                }
+              },
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "description": "A header row, then one row per Contact."
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "object": {
+                        "type": "string",
+                        "enum": [
+                          "contact"
+                        ],
+                        "description": "Response type discriminator."
+                      },
+                      "id": {
+                        "type": "string",
+                        "description": "Contact id (con_...)."
+                      },
+                      "linkedin_url": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "`https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person."
+                      },
+                      "public_identifier": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "The profile slug, when known."
+                      },
+                      "provider_id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "LinkedIn's profile id, when known."
+                      },
+                      "member_id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "LinkedIn's member id, when observed."
+                      },
+                      "full_name": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Full name."
+                      },
+                      "first_name": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "First name."
+                      },
+                      "last_name": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Last name."
+                      },
+                      "headline": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Profile headline."
+                      },
+                      "job_title": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Current job title."
+                      },
+                      "company": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Current company."
+                      },
+                      "email": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Email, only ever what you supplied."
+                      },
+                      "location": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Location."
+                      },
+                      "about": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "About text."
+                      },
+                      "extra": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "description": "Your own fields."
+                      },
+                      "sources": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string",
+                          "enum": [
+                            "tenant",
+                            "linkedin"
+                          ]
+                        },
+                        "description": "Per non-empty standard field: tenant (you supplied it) or linkedin (Curviate filled it). A tenant value is never overwritten by LinkedIn data."
+                      },
+                      "tags": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Tag names."
+                      },
+                      "list_ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Contact lists (cl_...) holding this Contact."
+                      },
+                      "connected_account_ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Your accounts this person is a Connection of."
+                      },
+                      "enrichment": {
+                        "type": "object",
+                        "properties": {
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "none",
+                              "queued",
+                              "done",
+                              "failed"
+                            ]
+                          },
+                          "enriched_at": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "When observed profile data last changed this Contact."
+                          },
+                          "failure_code": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "enum": [
+                              "profile_not_found",
+                              "expired",
+                              "account_unavailable",
+                              "platform_error",
+                              "tier_required",
+                              null
+                            ],
+                            "description": "Why the last enrich visit failed: profile_not_found (no such profile, or it is not this person), expired (not visited within 7 days), account_unavailable (the account was removed), platform_error, or tier_required (the team's plan no longer includes Contacts)."
+                          }
+                        },
+                        "required": [
+                          "status",
+                          "enriched_at",
+                          "failure_code"
+                        ]
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "description": "ISO 8601."
+                      },
+                      "updated_at": {
+                        "type": "string",
+                        "description": "ISO 8601."
+                      }
+                    },
+                    "required": [
+                      "object",
+                      "id",
+                      "linkedin_url",
+                      "public_identifier",
+                      "provider_id",
+                      "member_id",
+                      "full_name",
+                      "first_name",
+                      "last_name",
+                      "headline",
+                      "job_title",
+                      "company",
+                      "email",
+                      "location",
+                      "about",
+                      "extra",
+                      "sources",
+                      "tags",
+                      "list_ids",
+                      "connected_account_ids",
+                      "enrichment",
+                      "created_at",
+                      "updated_at"
+                    ]
+                  },
+                  "description": "Contact objects; with fields, each holds only the picked columns."
+                },
+                "examples": {
+                  "contacts": {
+                    "summary": "format=json",
+                    "value": [
+                      {
+                        "object": "contact",
+                        "id": "con_01J8Z3K9P0Q1R2S3T4V5W6X7Y8",
+                        "linkedin_url": "https://www.linkedin.com/in/jane-doe/",
+                        "public_identifier": "jane-doe",
+                        "provider_id": null,
+                        "member_id": null,
+                        "full_name": "Jane Doe",
+                        "first_name": "Jane",
+                        "last_name": "Doe",
+                        "headline": null,
+                        "job_title": "Head of Platform",
+                        "company": "Acme",
+                        "email": null,
+                        "location": null,
+                        "about": null,
+                        "extra": {
+                          "note": "Met at the agent meetup."
+                        },
+                        "sources": {
+                          "full_name": "tenant",
+                          "first_name": "tenant",
+                          "last_name": "tenant",
+                          "job_title": "tenant",
+                          "company": "tenant"
+                        },
+                        "tags": [
+                          "Interested"
+                        ],
+                        "list_ids": [
+                          "cl_01J8Z3K9P0Q1R2S3T4V5W6X7Y8"
+                        ],
+                        "connected_account_ids": [],
+                        "enrichment": {
+                          "status": "none",
+                          "enriched_at": null,
+                          "failure_code": null
+                        },
+                        "created_at": "2026-10-08T09:30:00.000Z",
+                        "updated_at": "2026-10-08T09:30:00.000Z"
+                      }
+                    ]
+                  }
                 }
               }
             },
@@ -95007,7 +95334,7 @@
             }
           }
         },
-        "description": "Streams every Contact matching the listing's filters in one download, as CSV, JSON or NDJSON (default). No cursor. fields picks and orders the columns. A CSV export re-imports without changes.",
+        "description": "Streams every Contact matching the listing's filters in one download, as CSV, JSON or NDJSON (default). No cursor. fields picks and orders the columns. A CSV export re-imports unchanged: a cell starting with =, +, -, @, a tab, CR or ' gets a leading ' (formula guard), removed on import.",
         "x-order": 3
       }
     },
@@ -107278,6 +107605,8 @@
                 "maxLength": 64
               }
             },
+            "style": "form",
+            "explode": false,
             "description": "Comma list of Contact ids (con_...) to render, up to 20, in the order given. Not with sample."
           }
         ],
@@ -108427,6 +108756,8 @@
                 ]
               }
             },
+            "style": "form",
+            "explode": false,
             "description": "Comma list of pending, active, paused, finished, skipped. Default: all."
           },
           {
@@ -113568,6 +113899,8 @@
                 ]
               }
             },
+            "style": "form",
+            "explode": false,
             "description": "Comma list of step.executed, step.failed, invite.accepted, message.replied. Default: all."
           },
           {

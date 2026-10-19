@@ -10,7 +10,8 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 ## [Unreleased]
 
 Fixture and types regenerated from deployed staging (server
-`091f53a69decbc55c53336bbbbfa1dc5fd56e859`, 193 paths; earlier regens at
+`16b2eaf1473e4fb2a7b7b4a0308b9e248b30a93e`, 193 paths; earlier regens at
+`091f53a69decbc55c53336bbbbfa1dc5fd56e859`, 193 paths,
 `13d5357a7f74772782872c791ec8a5835060e9fe`, 191 paths, and
 `3b0b7503a516f6a1f39622bd40ec6fec9c217c38`, 176 paths). The previous fixture
 was older, so this regen also carries earlier, unrelated server changes (see
@@ -67,6 +68,21 @@ Changed). Regenerate from production and confirm an empty diff before publishing
 - **Error codes** for Contacts, lists and Tags: `NAME_TAKEN` (409),
   `RESOURCE_IN_USE` (409, a live Motion or running import uses the list or
   Tag), `CONTACT_LIMIT_REACHED` (422), `IMPORT_QUEUE_FULL` (429).
+- **`motions`** (root, 13 methods): `create`, `list`, `get`, `update`,
+  `delete`, `start`, `pause`, `resume`, `archive`, `preview`,
+  `getSequenceVersion`, `addContacts`, `removeContacts`. `sequence` in
+  `create` and `update` takes a `Sequence` builder besides a document: the
+  builder is converted with `toDocument()` first, so an invalid one rejects
+  with `SEQUENCE_INVALID` and nothing is sent, and one with a jump to a step
+  never added does not compile. A plain object is sent as is (the API
+  validates it); `null` clears a draft's Sequence. `preview` is a read: it
+  never reaches LinkedIn.
+- **`enrollments`** (root, 5 methods): `list`, `get` (with the Step
+  history), `stop`, `resume` (`at` a Step), `signal`.
+- **Error codes** for Motions: `MOTION_NOT_STARTABLE` (422, every gap in
+  `errors`), `MOTION_STATUS_CONFLICT` (409), `ENROLLMENT_NOT_ACTIVE` (409),
+  `CONTACT_NOT_ENROLLABLE` (422).
+
 - **Unibox types** (no SDK method yet): `POST
   /v1/unibox/chats/{account_id}/{chat_id}/contact` and `.../enrollments`, and
   the typed `motion_context` on Unibox chats (was an empty object type).
@@ -109,6 +125,11 @@ Changed). Regenerate from production and confirm an empty diff before publishing
 
 ### Changed
 
+- **Connect request types**: every field of the object `connectRequests`
+  returns is required (`id`, `url`, `status`, ...), so `req.id` needs no `!`.
+- **Contacts export types**: the `csv` and `json` response media types are
+  typed beside `ndjson`.
+
 - **`SequenceDocument` type**: `post`, `newer_than` and `reaction` in a
   `post.react` or `post.comment` step's `with` are optional (the API applies
   their defaults), and a `contact.extra.<key>` predicate compiles. Before, a
@@ -143,6 +164,14 @@ Changed). Regenerate from production and confirm an empty diff before publishing
   loose `MotionPayload` (`motion_id`, `account_id` nullable), and the error
   codes `INSUFFICIENT_ROLE` and `TIER_REQUIRED` join `ERROR_CODES` instead of
   decoding to `INTERNAL`.
+
+### Fixed
+
+- **An empty array in a comma-list filter is no filter.** `status: []`
+  (`drafts.list`, `motions.list`, `enrollments.list`), `enrollment_status: []`
+  (`contacts.list`, `contacts.export`) and `contact_ids: []`
+  (`motions.preview`) leave the parameter out instead of sending it empty,
+  which the API refused.
 
 ## [0.42.0] - 2026-10-07
 
