@@ -82,12 +82,17 @@ interface WireErrorEnvelope {
   errors?: unknown;
 }
 
-/** Wire `errors[]` → `{path, rule}` entries; not an array → undefined, a malformed entry dropped, extra keys dropped. */
+/**
+ * Wire `errors[]` as `{path, rule}` entries (document paths, not request
+ * paths): not an array gives undefined, an entry without string `path` and
+ * `rule` is dropped, any other key (`suggestion`) is dropped.
+ */
 function toErrorDetails(errors: unknown): CurviateErrorDetail[] | undefined {
   if (!Array.isArray(errors)) return undefined;
-  return errors.flatMap((e) =>
-    typeof e === "object" && e !== null && typeof e.path === "string" && typeof e.rule === "string" ? [{ path: e.path, rule: e.rule }] : [],
-  );
+  return errors.flatMap((e: { path?: unknown; rule?: unknown } | null) => {
+    const { path, rule } = typeof e === "object" && e !== null ? e : {};
+    return typeof path === "string" && typeof rule === "string" ? [{ path, rule }] : [];
+  });
 }
 
 // Backoff defaults.
@@ -216,7 +221,7 @@ async function errorFromResponse(res: Response): Promise<{ err: CurviateError; r
     ...(env?.connection_location !== null && typeof env?.connection_location === "object"
       ? { connectionLocation: env.connection_location as ConnectionLocation }
       : {}),
-    ...(Array.isArray(env?.errors) ? { errors: toErrorDetails(env?.errors) } : {}),
+    ...(Array.isArray(env?.errors) ? { errors: toErrorDetails(env.errors) } : {}),
   });
   return { err, refusesRetry: env?.retry_likely_to_succeed === false };
 }

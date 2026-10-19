@@ -80,7 +80,7 @@ const str = (v: unknown, at: string): string => {
   if (typeof v !== "string") throw new Error(`Sequence schema: expected a string at ${at}`);
   return v;
 };
-/** `^<prefix><rest>` → `^<rest>`: the part of a pattern after a fixed prefix. */
+/** `^<prefix><rest>` to `^<rest>`: the part of a pattern after a fixed prefix. */
 const after = (pattern: string, prefix: string): string => {
   if (!pattern.startsWith(prefix)) throw new Error(`Sequence schema: pattern ${pattern} does not start with ${prefix}`);
   return "^" + pattern.slice(prefix.length);

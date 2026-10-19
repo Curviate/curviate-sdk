@@ -102,8 +102,8 @@ export class Sequence<S = never, R extends string = never, O extends boolean = f
 
   /**
    * Loads a parsed Sequence document (a fetched Motion's `sequence`, a version's
-   * `document`, JSON you wrote). Valid → a builder whose `toDocument()`
-   * deep-equals the input, keys in canonical order. Invalid → throws
+   * `document`, JSON you wrote). Valid: a builder whose `toDocument()`
+   * deep-equals the input, keys in canonical order. Invalid: throws
    * `SEQUENCE_INVALID` with every error. A string is not parsed. The input is
    * never mutated.
    *
