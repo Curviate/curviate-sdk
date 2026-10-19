@@ -30,6 +30,8 @@ export class ContactListsResource {
    * Create an empty Contact list.
    * `POST /v1/contact-lists`
    *
+   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   *
    * @example
    * const list = await curviate.contactLists.create({ name: "Q4 webinar" });
    */
@@ -74,6 +76,8 @@ export class ContactListsResource {
   /**
    * Rename a Contact list or change its `description`.
    * `PATCH /v1/contact-lists/{id}`
+   *
+   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
    *
    * @example
    * await curviate.contactLists.update("cl_123", { name: "Q4 webinar (attended)" });

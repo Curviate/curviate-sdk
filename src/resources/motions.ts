@@ -78,6 +78,8 @@ export class MotionsResource {
    * of hand-written JSON pass `Sequence.fromDocument(json)`.
    * `POST /v1/motions`
    *
+   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   *
    * @example
    * const motion = await curviate.motions.create({
    *   name: "Q4 webinar follow-up",
@@ -123,6 +125,8 @@ export class MotionsResource {
    * change makes a new version; running Enrollments keep theirs.
    * `PATCH /v1/motions/{id}`
    *
+   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   *
    * @example
    * const motion = await curviate.motions.get("mot_123");
    * await curviate.motions.update("mot_123", {
@@ -152,6 +156,8 @@ export class MotionsResource {
    * run is refused with `MOTION_NOT_STARTABLE`, every gap in `err.errors`.
    * `POST /v1/motions/{id}/start`
    *
+   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   *
    * @example
    * const motion = await curviate.motions.start("mot_123");
    */
@@ -174,6 +180,8 @@ export class MotionsResource {
    * Resume a `paused` Motion. Runs `start`'s checks again
    * (`MOTION_NOT_STARTABLE`).
    * `POST /v1/motions/{id}/resume`
+   *
+   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
    *
    * @example
    * await curviate.motions.resume("mot_123");
@@ -235,6 +243,8 @@ export class MotionsResource {
    * Contact's `outcome` says what happened (`queued`, `already_enrolled`,
    * `filtered_out`, ...). Not on an `archived` Motion.
    * `POST /v1/motions/{id}/contacts`
+   *
+   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
    *
    * @example
    * const { results } = await curviate.motions.addContacts("mot_123", { contact_ids: ["con_123"] });
@@ -306,6 +316,8 @@ export class EnrollmentsResource {
    * `finished` Enrollments; else `ENROLLMENT_NOT_ACTIVE`.
    * `POST /v1/enrollments/{id}/resume`
    *
+   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   *
    * @example
    * await curviate.enrollments.resume("enr_123", { at: "bump" });
    */
@@ -318,6 +330,8 @@ export class EnrollmentsResource {
    * or `paused` Enrollment. A name no Step of its version awaits is
    * `INVALID_REQUEST`, listing the awaited names.
    * `POST /v1/enrollments/{id}/signal`
+   *
+   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
    *
    * @example
    * await curviate.enrollments.signal("enr_123", { name: "demo_booked" });

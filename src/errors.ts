@@ -14,6 +14,8 @@
  * `WebhookSignatureError`) is exported separately from `webhooks.ts`.
  */
 
+import type { TierFeature, TierName } from "./resources/tier.js";
+
 /**
  * The complete set of error codes observable by API callers, the single
  * source of truth for the SDK's error taxonomy.
@@ -280,8 +282,12 @@ export const ERROR_CODES = [
   // - `INSUFFICIENT_ROLE` (403): your role in the team may not do this on an
   //   account a teammate connected.
   // - `TIER_REQUIRED` (403): the team's Tier does not include the feature. The
-  //   error body names it (`feature`) and the lowest Tier that has it
-  //   (`required_tier`); a team Owner upgrades.
+  //   error body names it (`feature`), the lowest Tier that has it
+  //   (`required_tier`) and the Tier the team has (`current_tier`), read as
+  //   `feature`, `requiredTier` and `currentTier` on {@link CurviateError}; a
+  //   team Owner also gets `upgradeUrl`. Writes in Drafts, Contacts and Motions
+  //   (and Network and Unibox) need Automate; reads, exports, deletes and
+  //   stopping running work pass on any Tier.
   "INSUFFICIENT_ROLE",
   "TIER_REQUIRED",
   // - `TEAM_ACCESS_DENIED` (403): the request names a team (the `team` client
@@ -527,6 +533,28 @@ export interface CurviateErrorInit {
    * `SEQUENCE_INVALID` a Sequence builder throws. `message` repeats the first.
    */
   errors?: CurviateErrorDetail[];
+  /**
+   * On a `TIER_REQUIRED`: the feature the team's Tier does not include.
+   * Wire field `feature`. A feature added later arrives as its own string,
+   * so keep a default branch.
+   */
+  feature?: TierFeature;
+  /**
+   * On a `TIER_REQUIRED`: the lowest Tier that includes {@link CurviateErrorInit.feature}.
+   * Wire field `required_tier`. `null` when no Tier includes it.
+   */
+  requiredTier?: TierName | null;
+  /**
+   * On a `TIER_REQUIRED`: the Tier the team has now. Wire field `current_tier`.
+   * `null` when the team has none.
+   */
+  currentTier?: TierName | null;
+  /**
+   * On a `TIER_REQUIRED` for a team Owner only: the dashboard page where the
+   * Tier is changed. Wire field `upgrade_url`. Absent for any other role, who
+   * should ask an Owner.
+   */
+  upgradeUrl?: string;
 }
 
 /** Plain-object shape produced by {@link CurviateError.toJSON}. */
@@ -547,6 +575,10 @@ export interface CurviateErrorJSON {
   blocked?: boolean;
   connectionLocation?: ConnectionLocation;
   errors?: CurviateErrorDetail[];
+  feature?: TierFeature;
+  requiredTier?: TierName | null;
+  currentTier?: TierName | null;
+  upgradeUrl?: string;
 }
 
 /**
@@ -585,6 +617,14 @@ export class CurviateError extends Error {
   readonly connectionLocation: ConnectionLocation | undefined;
   /** Every failure as `{path, rule}`. See {@link CurviateErrorInit.errors}. */
   readonly errors: CurviateErrorDetail[] | undefined;
+  /** The feature the Tier lacks, on `TIER_REQUIRED`. See {@link CurviateErrorInit.feature}. */
+  readonly feature: TierFeature | undefined;
+  /** The lowest Tier with that feature; `null` when none has it. See {@link CurviateErrorInit.requiredTier}. */
+  readonly requiredTier: TierName | null | undefined;
+  /** The team's Tier now; `null` when it has none. See {@link CurviateErrorInit.currentTier}. */
+  readonly currentTier: TierName | null | undefined;
+  /** Where an Owner changes the Tier; absent for other roles. See {@link CurviateErrorInit.upgradeUrl}. */
+  readonly upgradeUrl: string | undefined;
 
   constructor(init: CurviateErrorInit) {
     super(init.message);
@@ -602,6 +642,10 @@ export class CurviateError extends Error {
     this.blocked = init.blocked;
     this.connectionLocation = init.connectionLocation;
     this.errors = init.errors;
+    this.feature = init.feature;
+    this.requiredTier = init.requiredTier;
+    this.currentTier = init.currentTier;
+    this.upgradeUrl = init.upgradeUrl;
     // Maintains a correct prototype chain when targeting ES5-class semantics.
     Object.setPrototypeOf(this, CurviateError.prototype);
   }
@@ -634,6 +678,11 @@ export class CurviateError extends Error {
     if (this.blocked !== undefined) json.blocked = this.blocked;
     if (this.connectionLocation !== undefined) json.connectionLocation = this.connectionLocation;
     if (this.errors !== undefined) json.errors = this.errors;
+    if (this.feature !== undefined) json.feature = this.feature;
+    // Null-bearing like `resetAt`: `null` says no Tier has it / the team has none.
+    if (this.requiredTier !== undefined) json.requiredTier = this.requiredTier;
+    if (this.currentTier !== undefined) json.currentTier = this.currentTier;
+    if (this.upgradeUrl !== undefined) json.upgradeUrl = this.upgradeUrl;
     return json;
   }
 }

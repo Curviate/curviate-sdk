@@ -98,6 +98,25 @@ if (unread_count > 0) {
 
 `curviate.teams` manages the team the credential acts in: `getCurrent`, `updateCurrent`, `listMembers`, `updateMember` (role), `removeMember` (`"me"` leaves), `createInvites`, `listInvites`, `resendInvite`, `revokeInvite`, plus `list` for every team you belong to. Member and invite writes are for Owners (`INSUFFICIENT_ROLE` otherwise). `curviate.accounts.setTeamAccess(accountId, false)` keeps an account you connected to yourself.
 
+## Tiers
+
+A Team's Tier decides which features it has. Drafts, Contacts, Motions (and Network and Unibox) need Automate: a write in one of those groups on a Team below it is refused with `TIER_REQUIRED`, before the request is even validated. Reads, exports, deletes and stopping running work (`motions.pause`, `motions.archive`, `enrollments.stop`) pass on any Tier. The refusal names what is missing:
+
+```ts
+try {
+  await curviate.motions.start("mot_123");
+} catch (err) {
+  if (isCurviateError(err) && err.code === "TIER_REQUIRED") {
+    console.warn(`${err.feature} needs ${err.requiredTier}; this team has ${err.currentTier ?? "no Tier"}.`);
+    // A team Owner also gets err.upgradeUrl; any other role has none and should ask an Owner.
+  }
+}
+
+const { tier, features } = await curviate.tier.get(); // check first: no write is sent
+```
+
+`curviate.tier.get()` returns the Tier now (`null` for none), the bought Tier, the free trial or granted Tier that raises it, a downgrade due at the next renewal (`pending`), and the `features` it includes. It reports no prices. A Motion or a sync that stopped for the Tier reads `pause_reason` / `paused_reason: "tier_required"`.
+
 ## Contacts, lists and Tags
 
 `curviate.contacts` keeps the people your team works with: a LinkedIn URL plus your own fields, Tags and Contact lists. Any spelling of one person's URL resolves to one Contact, so `upsert` is safe to repeat:
@@ -278,6 +297,11 @@ try {
       // backlog, and an InMail credit pool LinkedIn regrants on its own schedule.
       console.warn(`${err.budgetRow} is spent until ${err.resetAt ?? "no fixed time"}`);
       console.warn(`change ${err.safetyHint?.parameter} to lift it`);
+      break;
+    case "TIER_REQUIRED":
+      // The team's Tier lacks err.feature; err.requiredTier has it. A team
+      // Owner also gets err.upgradeUrl. See "Tiers" above.
+      console.warn(`${err.feature} needs ${err.requiredTier}`);
       break;
     case "ACCOUNT_NOT_FOUND":
       console.error("Account does not exist for this tenant.");

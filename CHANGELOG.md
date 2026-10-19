@@ -83,6 +83,25 @@ Changed). Regenerate from production and confirm an empty diff before publishing
   `errors`), `MOTION_STATUS_CONFLICT` (409), `ENROLLMENT_NOT_ACTIVE` (409),
   `CONTACT_NOT_ENROLLABLE` (422).
 
+- **`tier`** (root, 1 method): `get` reads `GET /v1/billing/tier`: the Tier the
+  team has now (`null` for none), the bought Tier, `period`, the free `trial`,
+  a granted `override`, a downgrade `pending` for the next renewal, the
+  `features` it includes and `early_access` per announced Tier. No prices.
+- **`TIER_REQUIRED` details** on `CurviateError`: `feature`, `requiredTier`,
+  `currentTier` (both `null` when no Tier has the feature / the team has none)
+  and `upgradeUrl` (team Owners only), decoded from the 403 and emitted by
+  `toJSON()`. Writes in Drafts, Contacts, Motions (and later Network and
+  Unibox) on a team below Automate are refused with it; reads, exports,
+  deletes and stopping running work pass. The "Needs Automate" note is now in
+  the JSDoc of the 19 gated write methods: `drafts.create`, `update`,
+  `publish`, `uploadAttachment`; `contacts.upsert`, `update`, `updateMany`,
+  `enrich`, `imports.create`; `contactLists.create`, `update`; `tags.update`;
+  `motions.create`, `update`, `start`, `resume`, `addContacts`;
+  `enrollments.resume`, `signal`.
+- **`tier_required`** is a member of the Motion `pause_reason`, the sync
+  `paused_reason` and the Contact enrichment `failure_code` types, and the
+  reason a `motion.status_changed` event carries when the team loses the Tier.
+
 - **Unibox types** (no SDK method yet): `POST
   /v1/unibox/chats/{account_id}/{chat_id}/contact` and `.../enrollments`, and
   the typed `motion_context` on Unibox chats (was an empty object type).

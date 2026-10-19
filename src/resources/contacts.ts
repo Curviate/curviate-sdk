@@ -70,6 +70,8 @@ export class ContactImportsResource {
    * list, `tags`/`remove_tags` add or remove Tags on every row's Contact.
    * `POST /v1/contacts/imports`
    *
+   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   *
    * A malformed request (an unknown key, a wrong type) is refused whole; a row
    * with a bad value is skipped and named in the report. Not retry-safe: a
    * retry makes a second import, whose rows report `unchanged`.
@@ -188,6 +190,8 @@ export class ContactsResource {
    * adds it to a list (a new name creates the list).
    * `POST /v1/contacts`
    *
+   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   *
    * @example
    * const { id, outcome } = await curviate.contacts.upsert({
    *   linkedin_url: "https://www.linkedin.com/in/ana/",
@@ -208,6 +212,8 @@ export class ContactsResource {
    * again from a profile read) and removes an `extra` key; `""` is refused.
    * `linkedin_url` cannot change.
    * `PATCH /v1/contacts/{id}`
+   *
+   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
    *
    * @example
    * await curviate.contacts.update("con_123", { company: "Acme", extra: { plan: "pro" } });
@@ -258,6 +264,8 @@ export class ContactsResource {
    * new), `remove_list_id`.
    * `POST /v1/contacts/update`
    *
+   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   *
    * @example
    * await curviate.contacts.updateMany({ contact_ids: ["con_1", "con_2"], add_tags: ["vip"], add_list_name: "Q4" });
    */
@@ -277,6 +285,8 @@ export class ContactsResource {
    * (default; stored data newer than `max_age` seconds, else a visit),
    * `refill`, `cache_only` (never a visit, no `account_id` needed) or `live`.
    * `POST /v1/contacts/enrich`
+   *
+   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
    *
    * @example
    * const { counts } = await curviate.contacts.enrich({ list_id: "cl_123", account_id: "acc_123" });

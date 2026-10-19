@@ -150,6 +150,10 @@ export interface PostPublishFailedPayload extends EventPayloadBase {
  * https://docs.curviate.com/reference/webhooks/events (`contact` is the Contact
  * record, `null` once deleted).
  *
+ * `motion.status_changed` carries `reason`, which is `tier_required` when the
+ * Team lost the Tier that includes Motions: the Motion reads `paused` with
+ * `pause_reason: "tier_required"` until the Tier returns and you `resume` it.
+ *
  * `account_id` is `null` on an event of no single account (`motion.status_changed`,
  * and an `enrollment.skipped` with none assigned yet), which is why this does
  * not extend {@link EventPayloadBase}.
