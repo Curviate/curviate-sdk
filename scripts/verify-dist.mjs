@@ -29,7 +29,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 // Import from the built dist — this is the whole point.
-import { constructEvent, WebhookSignatureError } from "../dist/index.js";
+import { constructEvent, WebhookSignatureError, Sequence, validateSequence, CurviateError } from "../dist/index.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -212,6 +212,37 @@ async function main() {
     assert(
       !msg.includes("header") && !msg.includes("secret") && !msg.includes("signature"),
       "verified but unparseable: message does not misdirect at the header or the secret",
+    );
+  }
+
+  // 7. The offline Sequence module, built: the normative example the server's
+  //    corpus holds round-trips byte for byte (canonical order survived the
+  //    bundle), and an invalid document is refused with the server's errors.
+  {
+    const corpusEntry = (name) =>
+      JSON.parse(readFileSync(resolve(__dirname, `../test/fixtures/sequence-corpus/${name}.json`), "utf8"));
+    const example = corpusEntry("valid-fr018-normative-example").document;
+    const shuffled = JSON.parse(JSON.stringify(example), (_, v) =>
+      v && typeof v === "object" && !Array.isArray(v) ? Object.fromEntries(Object.entries(v).reverse()) : v,
+    );
+    assert(
+      JSON.stringify(Sequence.fromDocument(shuffled).toDocument()) === JSON.stringify(example),
+      "sequence: a key-reversed normative example comes back byte for byte in canonical order",
+    );
+    const invalid = corpusEntry("six-errors-in-step-order");
+    let refused = null;
+    try {
+      Sequence.fromDocument(invalid.document);
+    } catch (err) {
+      refused = err instanceof CurviateError ? err : null;
+    }
+    assert(
+      refused !== null && refused.code === "SEQUENCE_INVALID" && JSON.stringify(refused.errors) === JSON.stringify(invalid.errors),
+      "sequence: an invalid document is refused with exactly the corpus errors",
+    );
+    assert(
+      JSON.stringify(validateSequence(invalid.document).errors) === JSON.stringify(invalid.errors),
+      "sequence: validateSequence gives the corpus errors",
     );
   }
 

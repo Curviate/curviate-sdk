@@ -122,6 +122,44 @@ const all = await curviate.contacts.export({ format: "json", tag: "vip" });
 
 `contacts.enrich` fills profile fields from what Curviate already stores, else queues paced live profile views from an account you name: a live view is a real profile view the person may see. `curviate.contactLists` and `curviate.tags` rename and delete; a Tag has no create call, the first write naming it creates it. Refusals: `NAME_TAKEN`, `RESOURCE_IN_USE` (a live Motion or a running import uses it), `CONTACT_LIMIT_REACHED`, `IMPORT_QUEUE_FULL`. Deletes are for Owners and Managers.
 
+## Sequences
+
+A Motion runs one Sequence: a JSON document of steps (`do`, `wait`, `until`, `if`, `emit`, `tag`), run from the first step and ended explicitly with `"end"`. The SDK has an offline module for it: a typed builder that emits exactly that document, and `validateSequence`, which gives the verdict the API gives. Nothing in it touches the network, a key or the file system, so it runs in CI, browsers and edge functions. It needs TypeScript 5.0 or later.
+
+```ts
+import { Sequence, step } from "@curviate/sdk";
+
+const seq = Sequence.create({ on_reply: "end" }).add(
+  step.do("invite", "invite.send", { with: { note: null, withdraw_after: "21d" } }),
+  step.until("accepted", "invite.accepted", { timeout: "21d", then: "opener", else: "end" }),
+  step.do("opener", "message.send", {
+    with: { text: "Hi {{contact.first_name}}, thanks for connecting.", fallback: "Hi, thanks for connecting." },
+    next: "end",
+  }),
+);
+
+const document = seq.toDocument(); // the Sequence document, keys in canonical order
+```
+
+Field names are the document's keys (`on_reply`, `note_fallback`, `withdraw_after`). With literal arguments, the type checker refuses what the API would: a typo'd action, event, reaction or predicate, a `{{...}}` that is not a v1 variable (`{{firstName}}`, a `| default:` filter), a text with a variable and no fallback, a duration like `"1w"`, the reserved id `"end"`, and a jump to a step you never added (at `toDocument()`). Text the type checker cannot see (a `string` variable) is checked when you call `validate()` or `toDocument()`.
+
+Every builder operation (`add`, `insertBefore`, `replace`, `remove`, `onReply`) returns a new builder. `toDocument()` throws `SEQUENCE_INVALID` with every error in `err.errors` as `{path, rule}`, the same list the API returns; warnings never block, read them with `validate()`. `JSON.stringify(seq)` equals `JSON.stringify(seq.toDocument())`.
+
+Raw JSON stays first class. Validate a document you wrote by hand, or load one (a Motion's `sequence`) to edit it:
+
+```ts
+import { Sequence, step, validateSequence } from "@curviate/sdk";
+
+const { errors, warnings } = validateSequence(JSON.parse(text));
+for (const e of errors) console.error(`${e.path}: ${e.rule}`);
+
+const edited = Sequence.fromDocument(motion.sequence) // throws SEQUENCE_INVALID when invalid
+  .insertBefore("opener", step.wait("settle", "1d"))
+  .toDocument();
+```
+
+`{{motion.<key>}}` is warning `W9` offline: only the API knows the Motion's `settings.variables`. Warnings that need the Motion's sending accounts or settings come from the API only. `SEQUENCE_SCHEMA_V1` is the published JSON Schema (`SEQUENCE_SCHEMA_URL`) for editors and tooling. The validator knows the vocabulary of the schema it ships with: a document using an action or event added to the API later is refused offline while the API accepts it; upgrade the SDK.
+
 ## Drafts and scheduled posts
 
 A Draft is a stored, editable, unpublished post. Give it an account and a `scheduled_at` and Curviate publishes it at that time. Drafts are tenant-wide, so `drafts` hangs off the root client (a Draft's `account_id` is a field, and optional). `acc.posts.create()` still publishes immediately and does not schedule.
