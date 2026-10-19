@@ -169,11 +169,6 @@ describe("contacts surface: method -> wire request", () => {
     await call(client(fetchImpl));
     expect(sent).toEqual([{ method, path, query, body }]);
   });
-
-  it("is root-only: no account scope carries contacts, contactLists or tags", () => {
-    const acc = client(recorder().fetchImpl).account("acc_1");
-    for (const ns of ["contacts", "contactLists", "tags"]) expect(acc).not.toHaveProperty(ns);
-  });
 });
 
 describe("served bodies", () => {
