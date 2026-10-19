@@ -225,7 +225,7 @@ export class MotionsResource {
     return this.ctx.request<SequenceVersion>({
       method: "GET",
       path: apiPath`/v1/motions/${motionId}/sequence`,
-      ...(params ? { query: params } : {}),
+      query: params,
     });
   }
 

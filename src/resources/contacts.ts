@@ -162,7 +162,7 @@ export class ContactsResource {
     return this.ctx.request<ContactListPage>({
       method: "GET",
       path: "/v1/contacts",
-      ...(params ? { query: commaLists(params, "enrollment_status") } : {}),
+      query: commaLists(params, "enrollment_status"),
     });
   }
 
@@ -308,7 +308,7 @@ export class ContactsResource {
     return this.ctx.request<Contact[] | ArrayBuffer>({
       method: "GET",
       path: "/v1/contacts/export",
-      ...(params ? { query: commaLists(params, "enrollment_status") } : {}),
+      query: commaLists(params, "enrollment_status"),
     });
   }
 }
