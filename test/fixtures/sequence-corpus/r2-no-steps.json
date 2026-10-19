@@ -1,0 +1,18 @@
+{
+  "about": "r2 no steps",
+  "rules": [
+    "R2"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": []
+  },
+  "errors": [
+    {
+      "path": "steps",
+      "rule": "required: an array of 1 to 100 steps"
+    }
+  ],
+  "warnings": []
+}

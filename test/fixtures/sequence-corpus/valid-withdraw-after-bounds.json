@@ -1,0 +1,27 @@
+{
+  "about": "valid withdraw after bounds",
+  "rules": [],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "a",
+        "do": "invite.send",
+        "with": {
+          "withdraw_after": "14d"
+        }
+      },
+      {
+        "id": "b",
+        "do": "invite.send",
+        "with": {
+          "withdraw_after": "180d"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": []
+}

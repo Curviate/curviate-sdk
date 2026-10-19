@@ -1,0 +1,28 @@
+{
+  "about": "r22 51 variable references in one text",
+  "rules": [
+    "R22"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "with": {
+          "text": "{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}{{contact.first_name}}",
+          "fallback": "Hello"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "m.with.text",
+      "rule": "51 variables; the limit is 50 per text"
+    }
+  ],
+  "warnings": []
+}

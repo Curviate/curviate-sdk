@@ -1,0 +1,50 @@
+{
+  "about": "r23 six variants",
+  "rules": [
+    "R23"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "variants": [
+          {
+            "id": "v0",
+            "text": "Hi"
+          },
+          {
+            "id": "v1",
+            "text": "Hi"
+          },
+          {
+            "id": "v2",
+            "text": "Hi"
+          },
+          {
+            "id": "v3",
+            "text": "Hi"
+          },
+          {
+            "id": "v4",
+            "text": "Hi"
+          },
+          {
+            "id": "v5",
+            "text": "Hi"
+          }
+        ],
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "m.variants",
+      "rule": "needs 2 to 5 variants; found 6"
+    }
+  ],
+  "warnings": []
+}

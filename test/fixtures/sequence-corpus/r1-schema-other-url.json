@@ -1,0 +1,25 @@
+{
+  "about": "r1 schema other url",
+  "rules": [
+    "R1"
+  ],
+  "schema_valid": false,
+  "document": {
+    "$schema": "https://example.com/sequence.json",
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "a",
+        "wait": "1d",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "$schema",
+      "rule": "must be https://docs.curviate.com/schemas/sequence/v1.json"
+    }
+  ],
+  "warnings": []
+}

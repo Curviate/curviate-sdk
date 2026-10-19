@@ -12,6 +12,8 @@ import { dirname, resolve, join } from "node:path";
 import openapiTS, { astToString } from "openapi-typescript";
 import {
   stripLocalDiscriminatorMappings,
+  sequenceTypegenFixups,
+  sequenceSchemaJson,
   forbiddenVendorPattern,
   GENERATED_HEADER as HEADER,
 } from "./openapi-sanitize.mjs";
@@ -20,8 +22,22 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkgRoot = resolve(__dirname, "..");
 const COMMITTED = resolve(pkgRoot, "src/generated/types.ts");
 const FIXTURE = resolve(pkgRoot, "fixtures/openapi.json");
+const SCHEMA = resolve(pkgRoot, "src/sequence/schema.v1.json");
 
 const doc = JSON.parse(await readFile(FIXTURE, "utf8"));
+// The embedded Sequence schema equals the fixture component.
+const freshSchema = sequenceSchemaJson(doc);
+let committedSchema;
+try {
+  committedSchema = await readFile(SCHEMA, "utf8");
+} catch {
+  committedSchema = undefined;
+}
+if (committedSchema !== freshSchema) {
+  console.error(`FAIL: ${SCHEMA} differs from components.schemas.SequenceDocument in the fixture. Regenerate with \`pnpm gen:types:fixture\`.`);
+  process.exit(1);
+}
+sequenceTypegenFixups(doc);
 stripLocalDiscriminatorMappings(doc);
 const ast = await openapiTS(doc);
 const fresh = HEADER + astToString(ast);
@@ -55,4 +71,4 @@ if (fresh !== committed) {
   process.exit(1);
 }
 
-console.error("check:types OK — committed types match the fixture; no vendor name.");
+console.error("check:types OK — committed types and the embedded Sequence schema match the fixture; no vendor name.");

@@ -1,0 +1,25 @@
+{
+  "about": "r14 missing timeout",
+  "rules": [
+    "R14"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "u",
+        "until": "message.replied",
+        "then": "end",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "u.timeout",
+      "rule": "required on an until step"
+    }
+  ],
+  "warnings": []
+}

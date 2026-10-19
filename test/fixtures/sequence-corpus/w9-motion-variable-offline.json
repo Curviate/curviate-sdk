@@ -1,0 +1,30 @@
+{
+  "about": "w9 motion variable offline",
+  "rules": [
+    "W9"
+  ],
+  "only": "lint",
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{motion.x}}",
+          "fallback": "Hi"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "code": "W9",
+      "path": "m.with.text",
+      "rule": "{{motion.x}} is checked against settings.variables by the server only"
+    }
+  ]
+}

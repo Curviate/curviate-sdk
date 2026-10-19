@@ -1,0 +1,775 @@
+{
+  "about": "102 errors: the first 100 are listed, the message counts all 102",
+  "rules": [
+    "R16",
+    "R19"
+  ],
+  "error_count": 102,
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m0",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m1",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m2",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m3",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m4",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m5",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m6",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m7",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m8",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m9",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m10",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m11",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m12",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m13",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m14",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m15",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m16",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m17",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m18",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m19",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m20",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m21",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m22",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m23",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m24",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m25",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m26",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m27",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m28",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m29",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m30",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m31",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m32",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m33",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m34",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m35",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m36",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m37",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m38",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m39",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m40",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m41",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m42",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m43",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m44",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m45",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m46",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m47",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m48",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m49",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        }
+      },
+      {
+        "id": "m50",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{x}}"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "m0.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m0.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m1.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m1.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m2.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m2.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m3.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m3.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m4.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m4.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m5.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m5.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m6.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m6.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m7.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m7.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m8.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m8.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m9.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m9.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m10.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m10.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m11.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m11.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m12.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m12.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m13.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m13.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m14.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m14.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m15.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m15.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m16.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m16.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m17.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m17.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m18.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m18.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m19.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m19.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m20.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m20.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m21.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m21.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m22.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m22.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m23.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m23.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m24.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m24.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m25.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m25.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m26.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m26.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m27.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m27.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m28.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m28.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m29.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m29.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m30.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m30.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m31.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m31.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m32.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m32.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m33.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m33.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m34.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m34.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m35.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m35.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m36.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m36.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m37.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m37.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m38.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m38.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m39.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m39.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m40.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m40.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m41.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m41.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m42.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m42.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m43.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m43.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m44.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m44.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m45.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m45.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m46.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m46.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m47.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m47.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m48.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m48.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "m49.with.text",
+      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "m49.with.fallback",
+      "rule": "required because the text uses a variable"
+    }
+  ],
+  "warnings": []
+}

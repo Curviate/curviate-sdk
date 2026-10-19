@@ -1,0 +1,24 @@
+{
+  "about": "r24 tag separator",
+  "rules": [
+    "R24"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "t",
+        "tag": "a;b",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "t.tag",
+      "rule": "a Tag name is 1 to 64 characters, without , or ;"
+    }
+  ],
+  "warnings": []
+}

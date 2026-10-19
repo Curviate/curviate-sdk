@@ -1,0 +1,15 @@
+{
+  "about": "r1 not an object",
+  "rules": [
+    "R1"
+  ],
+  "schema_valid": false,
+  "document": [],
+  "errors": [
+    {
+      "path": "$",
+      "rule": "a Sequence document is a JSON object"
+    }
+  ],
+  "warnings": []
+}

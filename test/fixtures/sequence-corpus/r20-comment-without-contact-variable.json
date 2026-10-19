@@ -1,0 +1,28 @@
+{
+  "about": "r20 comment without contact variable",
+  "rules": [
+    "R20"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "c",
+        "do": "post.comment",
+        "with": {
+          "text": "Great post!",
+          "fallback": "skip"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "c.with.text",
+      "rule": "a comment must use a contact variable, such as {{contact.extra.comment}}"
+    }
+  ],
+  "warnings": []
+}

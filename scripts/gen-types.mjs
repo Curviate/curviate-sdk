@@ -15,6 +15,8 @@ import { dirname, resolve } from "node:path";
 import openapiTS, { astToString } from "openapi-typescript";
 import {
   stripLocalDiscriminatorMappings,
+  sequenceTypegenFixups,
+  sequenceSchemaJson,
   forbiddenVendorPattern,
   GENERATED_HEADER as HEADER,
 } from "./openapi-sanitize.mjs";
@@ -23,6 +25,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkgRoot = resolve(__dirname, "..");
 const OUTPUT = resolve(pkgRoot, "src/generated/types.ts");
 const FIXTURE = resolve(pkgRoot, "fixtures/openapi.json");
+const SCHEMA_OUTPUT = resolve(pkgRoot, "src/sequence/schema.v1.json");
 
 const useFixture = process.argv.includes("--fixture");
 
@@ -48,6 +51,8 @@ async function loadDocument() {
 }
 
 const doc = await loadDocument();
+const schemaJson = sequenceSchemaJson(doc);
+sequenceTypegenFixups(doc);
 const stripped = stripLocalDiscriminatorMappings(doc);
 if (stripped > 0 && !useFixture) {
   console.error(`note: stripped ${stripped} unresolvable discriminator mapping(s) from the document`);
@@ -63,4 +68,5 @@ if (forbiddenVendorPattern().test(HEADER + body)) {
   process.exit(1);
 }
 
-console.error(`wrote ${OUTPUT}`);
+await writeFile(SCHEMA_OUTPUT, schemaJson, "utf8");
+console.error(`wrote ${OUTPUT}, ${SCHEMA_OUTPUT}`);

@@ -48,9 +48,12 @@ export const SRC_ROOT = join(PKG_ROOT, "src");
 /**
  * Directories under src/ that are excluded from the scan, with the reason.
  * `generated` holds the openapi-typescript output: pure type declarations with
- * no runtime path construction in them at all.
+ * no runtime path construction in them at all. `sequence` is the offline
+ * Sequence module: its `path:` values are paths INTO a Sequence document
+ * (`opener.with.text`), never a request path, and it builds no request at all
+ * (test/sequence/schema.test.ts pins it free of fetch, node: and process).
  */
-const SKIP_DIRS = new Set(["generated"]);
+const SKIP_DIRS = new Set(["generated", "sequence"]);
 
 /** Call expressions that count as percent-encoding a value. */
 const ENCODER_NAMES = new Set(["encodeURIComponent", "encodePathParam"]);

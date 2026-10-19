@@ -1,0 +1,2048 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://docs.curviate.com/schemas/sequence/v1.json",
+  "title": "Sequence document v1",
+  "description": "A Motion's Sequence: a flat steps array run from the first step, ending explicitly in \"end\". Served documents use this key order: $schema, on_reply, steps; in a step id, the kind key, timeout, variants, with, then, else, next, note; in with post, newer_than, reaction, subject, text, note, note_fallback, fallback, withdraw_after; in a variant id, subject, text. A text holds at most 50 variables.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "on_reply",
+    "steps"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "const": "https://docs.curviate.com/schemas/sequence/v1.json"
+    },
+    "on_reply": {
+      "type": "string",
+      "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+      "description": "Where a reply interrupts to. Used only while stop_on_engagement is false."
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "do"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^(?!end$)[a-z][a-z0-9_]{0,39}$",
+                "description": "Step id, unique in the document. \"end\" is reserved."
+              },
+              "do": {
+                "type": "string",
+                "const": "profile.view"
+              },
+              "with": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {}
+              },
+              "next": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "A step id, or \"end\"."
+              },
+              "else": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "Taken when the action cannot run or fails. Absent: same as success."
+              },
+              "note": {
+                "type": "string",
+                "maxLength": 500,
+                "description": "Annotation shown in the builder graph. Never sent."
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "do"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^(?!end$)[a-z][a-z0-9_]{0,39}$",
+                "description": "Step id, unique in the document. \"end\" is reserved."
+              },
+              "do": {
+                "type": "string",
+                "const": "profile.follow"
+              },
+              "with": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {}
+              },
+              "next": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "A step id, or \"end\"."
+              },
+              "else": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "Taken when the action cannot run or fails. Absent: same as success."
+              },
+              "note": {
+                "type": "string",
+                "maxLength": 500,
+                "description": "Annotation shown in the builder graph. Never sent."
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "do"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^(?!end$)[a-z][a-z0-9_]{0,39}$",
+                "description": "Step id, unique in the document. \"end\" is reserved."
+              },
+              "do": {
+                "type": "string",
+                "const": "profile.unfollow"
+              },
+              "with": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {}
+              },
+              "next": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "A step id, or \"end\"."
+              },
+              "else": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "Taken when the action cannot run or fails. Absent: same as success."
+              },
+              "note": {
+                "type": "string",
+                "maxLength": 500,
+                "description": "Annotation shown in the builder graph. Never sent."
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "do"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^(?!end$)[a-z][a-z0-9_]{0,39}$",
+                "description": "Step id, unique in the document. \"end\" is reserved."
+              },
+              "do": {
+                "type": "string",
+                "const": "invite.send"
+              },
+              "with": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "note": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "minLength": 1,
+                    "description": "Invitation note; null or absent sends no note. Variables need note_fallback."
+                  },
+                  "note_fallback": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Variable-free note used when a variable is missing, or \"drop\" to send without a note."
+                  },
+                  "withdraw_after": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]*(m|h|d)$",
+                    "description": "Withdraw the invitation if still pending after this long (14d to 180d). Absent: never."
+                  }
+                }
+              },
+              "variants": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 5,
+                "description": "A/B variants, split evenly and sticky per Enrollment. Exclusive with the text in with.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "text"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^(?!end$)[a-z][a-z0-9_]{0,39}$",
+                      "description": "Step id, unique in the document. \"end\" is reserved."
+                    },
+                    "text": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
+              },
+              "next": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "A step id, or \"end\"."
+              },
+              "else": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "Taken when the action cannot run or fails. Absent: same as success."
+              },
+              "note": {
+                "type": "string",
+                "maxLength": 500,
+                "description": "Annotation shown in the builder graph. Never sent."
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "do"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^(?!end$)[a-z][a-z0-9_]{0,39}$",
+                "description": "Step id, unique in the document. \"end\" is reserved."
+              },
+              "do": {
+                "type": "string",
+                "const": "invite.withdraw"
+              },
+              "with": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {}
+              },
+              "next": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "A step id, or \"end\"."
+              },
+              "else": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "Taken when the action cannot run or fails. Absent: same as success."
+              },
+              "note": {
+                "type": "string",
+                "maxLength": 500,
+                "description": "Annotation shown in the builder graph. Never sent."
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "do"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^(?!end$)[a-z][a-z0-9_]{0,39}$",
+                "description": "Step id, unique in the document. \"end\" is reserved."
+              },
+              "do": {
+                "type": "string",
+                "const": "message.send"
+              },
+              "with": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Message text. Variables need a fallback."
+                  },
+                  "fallback": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Variable-free text used when a variable is missing."
+                  }
+                }
+              },
+              "variants": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 5,
+                "description": "A/B variants, split evenly and sticky per Enrollment. Exclusive with the text in with.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "text"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^(?!end$)[a-z][a-z0-9_]{0,39}$",
+                      "description": "Step id, unique in the document. \"end\" is reserved."
+                    },
+                    "text": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
+              },
+              "next": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "A step id, or \"end\"."
+              },
+              "else": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "Taken when the action cannot run or fails. Absent: same as success."
+              },
+              "note": {
+                "type": "string",
+                "maxLength": 500,
+                "description": "Annotation shown in the builder graph. Never sent."
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "do"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^(?!end$)[a-z][a-z0-9_]{0,39}$",
+                "description": "Step id, unique in the document. \"end\" is reserved."
+              },
+              "do": {
+                "type": "string",
+                "const": "inmail.send"
+              },
+              "with": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "subject": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "InMail subject."
+                  },
+                  "text": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Message text. Variables need a fallback."
+                  },
+                  "fallback": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "subject",
+                      "text"
+                    ],
+                    "properties": {
+                      "subject": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "description": "Variable-free subject and text, required when either uses a variable."
+                  }
+                }
+              },
+              "variants": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 5,
+                "description": "A/B variants, split evenly and sticky per Enrollment. Exclusive with the text in with.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "subject",
+                    "text"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^(?!end$)[a-z][a-z0-9_]{0,39}$",
+                      "description": "Step id, unique in the document. \"end\" is reserved."
+                    },
+                    "subject": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "text": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
+              },
+              "next": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "A step id, or \"end\"."
+              },
+              "else": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "Taken when the action cannot run or fails. Absent: same as success."
+              },
+              "note": {
+                "type": "string",
+                "maxLength": 500,
+                "description": "Annotation shown in the builder graph. Never sent."
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "do"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^(?!end$)[a-z][a-z0-9_]{0,39}$",
+                "description": "Step id, unique in the document. \"end\" is reserved."
+              },
+              "do": {
+                "type": "string",
+                "const": "post.react"
+              },
+              "with": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "post": {
+                    "type": "string",
+                    "const": "latest",
+                    "default": "latest",
+                    "description": "Which post. Only \"latest\" in v1."
+                  },
+                  "newer_than": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]*(m|h|d)$",
+                    "description": "Only a post newer than this (1h to 365d).",
+                    "default": "30d"
+                  },
+                  "reaction": {
+                    "type": "string",
+                    "enum": [
+                      "like",
+                      "celebrate",
+                      "support",
+                      "love",
+                      "insightful",
+                      "funny"
+                    ],
+                    "default": "like"
+                  }
+                }
+              },
+              "next": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "A step id, or \"end\"."
+              },
+              "else": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "Taken when the action cannot run or fails. Absent: same as success."
+              },
+              "note": {
+                "type": "string",
+                "maxLength": 500,
+                "description": "Annotation shown in the builder graph. Never sent."
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "do"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^(?!end$)[a-z][a-z0-9_]{0,39}$",
+                "description": "Step id, unique in the document. \"end\" is reserved."
+              },
+              "do": {
+                "type": "string",
+                "const": "post.comment"
+              },
+              "with": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "post": {
+                    "type": "string",
+                    "const": "latest",
+                    "default": "latest",
+                    "description": "Which post. Only \"latest\" in v1."
+                  },
+                  "newer_than": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]*(m|h|d)$",
+                    "description": "Only a post newer than this (1h to 365d).",
+                    "default": "30d"
+                  },
+                  "text": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Message text. Variables need a fallback."
+                  },
+                  "fallback": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Variable-free comment, or \"skip\" to skip the step when a variable is missing."
+                  }
+                }
+              },
+              "variants": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 5,
+                "description": "A/B variants, split evenly and sticky per Enrollment. Exclusive with the text in with.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "text"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^(?!end$)[a-z][a-z0-9_]{0,39}$",
+                      "description": "Step id, unique in the document. \"end\" is reserved."
+                    },
+                    "text": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
+              },
+              "next": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "A step id, or \"end\"."
+              },
+              "else": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "Taken when the action cannot run or fails. Absent: same as success."
+              },
+              "note": {
+                "type": "string",
+                "maxLength": 500,
+                "description": "Annotation shown in the builder graph. Never sent."
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "do"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^(?!end$)[a-z][a-z0-9_]{0,39}$",
+                "description": "Step id, unique in the document. \"end\" is reserved."
+              },
+              "do": {
+                "type": "string",
+                "const": "skill.endorse"
+              },
+              "with": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {}
+              },
+              "next": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "A step id, or \"end\"."
+              },
+              "else": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "Taken when the action cannot run or fails. Absent: same as success."
+              },
+              "note": {
+                "type": "string",
+                "maxLength": 500,
+                "description": "Annotation shown in the builder graph. Never sent."
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "wait"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^(?!end$)[a-z][a-z0-9_]{0,39}$",
+                "description": "Step id, unique in the document. \"end\" is reserved."
+              },
+              "wait": {
+                "type": "string",
+                "pattern": "^[1-9][0-9]*(m|h|d)$",
+                "description": "Calendar time to wait (1m to 365d)."
+              },
+              "next": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "A step id, or \"end\"."
+              },
+              "note": {
+                "type": "string",
+                "maxLength": 500,
+                "description": "Annotation shown in the builder graph. Never sent."
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "until",
+              "timeout",
+              "then"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^(?!end$)[a-z][a-z0-9_]{0,39}$",
+                "description": "Step id, unique in the document. \"end\" is reserved."
+              },
+              "until": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "invite.accepted",
+                      "message.replied",
+                      "message.read"
+                    ]
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^signal\\.[a-z][a-z0-9_]{0,39}$"
+                  }
+                ],
+                "description": "`invite.accepted`, `message.replied`, `message.read`, or `signal.<name>`."
+              },
+              "timeout": {
+                "type": "string",
+                "pattern": "^[1-9][0-9]*(m|h|d)$",
+                "description": "Give up waiting after this long (1h to 180d)."
+              },
+              "then": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "A step id, or \"end\"."
+              },
+              "else": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "A step id, or \"end\"."
+              },
+              "note": {
+                "type": "string",
+                "maxLength": 500,
+                "description": "Annotation shown in the builder graph. Never sent."
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "if",
+              "then"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^(?!end$)[a-z][a-z0-9_]{0,39}$",
+                "description": "Step id, unique in the document. \"end\" is reserved."
+              },
+              "if": {
+                "description": "One key per predicate. No all/any: chain if steps. A predicate nests at most 10 levels.",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "contact.connected"
+                    ],
+                    "properties": {
+                      "contact.connected": {
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "contact.open_profile"
+                    ],
+                    "properties": {
+                      "contact.open_profile": {
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "contact.premium"
+                    ],
+                    "properties": {
+                      "contact.premium": {
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "contact.has_photo"
+                    ],
+                    "properties": {
+                      "contact.has_photo": {
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "contact.degree"
+                    ],
+                    "properties": {
+                      "contact.degree": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "eq"
+                            ],
+                            "properties": {
+                              "eq": {
+                                "type": "integer",
+                                "enum": [
+                                  1,
+                                  2,
+                                  3
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "in"
+                            ],
+                            "properties": {
+                              "in": {
+                                "type": "array",
+                                "minItems": 1,
+                                "items": {
+                                  "type": "integer",
+                                  "enum": [
+                                    1,
+                                    2,
+                                    3
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "contact.connections_gte"
+                    ],
+                    "properties": {
+                      "contact.connections_gte": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "contact.posted_within"
+                    ],
+                    "properties": {
+                      "contact.posted_within": {
+                        "type": "string",
+                        "pattern": "^[1-9][0-9]*(m|h|d)$",
+                        "description": "Posted within this long."
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "contact.tag"
+                    ],
+                    "properties": {
+                      "contact.tag": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64,
+                        "pattern": "^[^,;]*[^,;\\s][^,;]*$"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "minProperties": 1,
+                    "maxProperties": 1,
+                    "additionalProperties": false,
+                    "properties": {
+                      "contact.full_name": {
+                        "type": "object",
+                        "minProperties": 1,
+                        "maxProperties": 1,
+                        "additionalProperties": false,
+                        "properties": {
+                          "eq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "neq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "in": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                              "type": [
+                                "string",
+                                "number",
+                                "boolean"
+                              ]
+                            }
+                          },
+                          "contains": {
+                            "type": "string"
+                          },
+                          "exists": {
+                            "type": "boolean"
+                          }
+                        },
+                        "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                      },
+                      "contact.first_name": {
+                        "type": "object",
+                        "minProperties": 1,
+                        "maxProperties": 1,
+                        "additionalProperties": false,
+                        "properties": {
+                          "eq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "neq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "in": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                              "type": [
+                                "string",
+                                "number",
+                                "boolean"
+                              ]
+                            }
+                          },
+                          "contains": {
+                            "type": "string"
+                          },
+                          "exists": {
+                            "type": "boolean"
+                          }
+                        },
+                        "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                      },
+                      "contact.last_name": {
+                        "type": "object",
+                        "minProperties": 1,
+                        "maxProperties": 1,
+                        "additionalProperties": false,
+                        "properties": {
+                          "eq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "neq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "in": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                              "type": [
+                                "string",
+                                "number",
+                                "boolean"
+                              ]
+                            }
+                          },
+                          "contains": {
+                            "type": "string"
+                          },
+                          "exists": {
+                            "type": "boolean"
+                          }
+                        },
+                        "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                      },
+                      "contact.headline": {
+                        "type": "object",
+                        "minProperties": 1,
+                        "maxProperties": 1,
+                        "additionalProperties": false,
+                        "properties": {
+                          "eq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "neq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "in": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                              "type": [
+                                "string",
+                                "number",
+                                "boolean"
+                              ]
+                            }
+                          },
+                          "contains": {
+                            "type": "string"
+                          },
+                          "exists": {
+                            "type": "boolean"
+                          }
+                        },
+                        "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                      },
+                      "contact.job_title": {
+                        "type": "object",
+                        "minProperties": 1,
+                        "maxProperties": 1,
+                        "additionalProperties": false,
+                        "properties": {
+                          "eq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "neq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "in": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                              "type": [
+                                "string",
+                                "number",
+                                "boolean"
+                              ]
+                            }
+                          },
+                          "contains": {
+                            "type": "string"
+                          },
+                          "exists": {
+                            "type": "boolean"
+                          }
+                        },
+                        "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                      },
+                      "contact.company": {
+                        "type": "object",
+                        "minProperties": 1,
+                        "maxProperties": 1,
+                        "additionalProperties": false,
+                        "properties": {
+                          "eq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "neq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "in": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                              "type": [
+                                "string",
+                                "number",
+                                "boolean"
+                              ]
+                            }
+                          },
+                          "contains": {
+                            "type": "string"
+                          },
+                          "exists": {
+                            "type": "boolean"
+                          }
+                        },
+                        "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                      },
+                      "contact.email": {
+                        "type": "object",
+                        "minProperties": 1,
+                        "maxProperties": 1,
+                        "additionalProperties": false,
+                        "properties": {
+                          "eq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "neq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "in": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                              "type": [
+                                "string",
+                                "number",
+                                "boolean"
+                              ]
+                            }
+                          },
+                          "contains": {
+                            "type": "string"
+                          },
+                          "exists": {
+                            "type": "boolean"
+                          }
+                        },
+                        "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                      },
+                      "contact.location": {
+                        "type": "object",
+                        "minProperties": 1,
+                        "maxProperties": 1,
+                        "additionalProperties": false,
+                        "properties": {
+                          "eq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "neq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "in": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                              "type": [
+                                "string",
+                                "number",
+                                "boolean"
+                              ]
+                            }
+                          },
+                          "contains": {
+                            "type": "string"
+                          },
+                          "exists": {
+                            "type": "boolean"
+                          }
+                        },
+                        "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                      },
+                      "contact.linkedin_url": {
+                        "type": "object",
+                        "minProperties": 1,
+                        "maxProperties": 1,
+                        "additionalProperties": false,
+                        "properties": {
+                          "eq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "neq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "in": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                              "type": [
+                                "string",
+                                "number",
+                                "boolean"
+                              ]
+                            }
+                          },
+                          "contains": {
+                            "type": "string"
+                          },
+                          "exists": {
+                            "type": "boolean"
+                          }
+                        },
+                        "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                      },
+                      "contact.about": {
+                        "type": "object",
+                        "minProperties": 1,
+                        "maxProperties": 1,
+                        "additionalProperties": false,
+                        "properties": {
+                          "eq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "neq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "in": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                              "type": [
+                                "string",
+                                "number",
+                                "boolean"
+                              ]
+                            }
+                          },
+                          "contains": {
+                            "type": "string"
+                          },
+                          "exists": {
+                            "type": "boolean"
+                          }
+                        },
+                        "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "minProperties": 1,
+                    "maxProperties": 1,
+                    "additionalProperties": false,
+                    "patternProperties": {
+                      "^contact\\.extra\\.[A-Za-z0-9_]{1,64}$": {
+                        "type": "object",
+                        "minProperties": 1,
+                        "maxProperties": 1,
+                        "additionalProperties": false,
+                        "properties": {
+                          "eq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "neq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "in": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                              "type": [
+                                "string",
+                                "number",
+                                "boolean"
+                              ]
+                            }
+                          },
+                          "contains": {
+                            "type": "string"
+                          },
+                          "exists": {
+                            "type": "boolean"
+                          }
+                        },
+                        "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "account.premium"
+                    ],
+                    "properties": {
+                      "account.premium": {
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "not"
+                    ],
+                    "properties": {
+                      "not": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "contact.connected"
+                            ],
+                            "properties": {
+                              "contact.connected": {
+                                "type": "boolean"
+                              }
+                            }
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "contact.open_profile"
+                            ],
+                            "properties": {
+                              "contact.open_profile": {
+                                "type": "boolean"
+                              }
+                            }
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "contact.premium"
+                            ],
+                            "properties": {
+                              "contact.premium": {
+                                "type": "boolean"
+                              }
+                            }
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "contact.has_photo"
+                            ],
+                            "properties": {
+                              "contact.has_photo": {
+                                "type": "boolean"
+                              }
+                            }
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "contact.degree"
+                            ],
+                            "properties": {
+                              "contact.degree": {
+                                "oneOf": [
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "required": [
+                                      "eq"
+                                    ],
+                                    "properties": {
+                                      "eq": {
+                                        "type": "integer",
+                                        "enum": [
+                                          1,
+                                          2,
+                                          3
+                                        ]
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "required": [
+                                      "in"
+                                    ],
+                                    "properties": {
+                                      "in": {
+                                        "type": "array",
+                                        "minItems": 1,
+                                        "items": {
+                                          "type": "integer",
+                                          "enum": [
+                                            1,
+                                            2,
+                                            3
+                                          ]
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "contact.connections_gte"
+                            ],
+                            "properties": {
+                              "contact.connections_gte": {
+                                "type": "integer",
+                                "minimum": 0
+                              }
+                            }
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "contact.posted_within"
+                            ],
+                            "properties": {
+                              "contact.posted_within": {
+                                "type": "string",
+                                "pattern": "^[1-9][0-9]*(m|h|d)$",
+                                "description": "Posted within this long."
+                              }
+                            }
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "contact.tag"
+                            ],
+                            "properties": {
+                              "contact.tag": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 64,
+                                "pattern": "^[^,;]*[^,;\\s][^,;]*$"
+                              }
+                            }
+                          },
+                          {
+                            "type": "object",
+                            "minProperties": 1,
+                            "maxProperties": 1,
+                            "additionalProperties": false,
+                            "properties": {
+                              "contact.full_name": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "maxProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "eq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "neq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "in": {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "items": {
+                                      "type": [
+                                        "string",
+                                        "number",
+                                        "boolean"
+                                      ]
+                                    }
+                                  },
+                                  "contains": {
+                                    "type": "string"
+                                  },
+                                  "exists": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                              },
+                              "contact.first_name": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "maxProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "eq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "neq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "in": {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "items": {
+                                      "type": [
+                                        "string",
+                                        "number",
+                                        "boolean"
+                                      ]
+                                    }
+                                  },
+                                  "contains": {
+                                    "type": "string"
+                                  },
+                                  "exists": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                              },
+                              "contact.last_name": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "maxProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "eq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "neq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "in": {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "items": {
+                                      "type": [
+                                        "string",
+                                        "number",
+                                        "boolean"
+                                      ]
+                                    }
+                                  },
+                                  "contains": {
+                                    "type": "string"
+                                  },
+                                  "exists": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                              },
+                              "contact.headline": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "maxProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "eq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "neq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "in": {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "items": {
+                                      "type": [
+                                        "string",
+                                        "number",
+                                        "boolean"
+                                      ]
+                                    }
+                                  },
+                                  "contains": {
+                                    "type": "string"
+                                  },
+                                  "exists": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                              },
+                              "contact.job_title": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "maxProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "eq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "neq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "in": {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "items": {
+                                      "type": [
+                                        "string",
+                                        "number",
+                                        "boolean"
+                                      ]
+                                    }
+                                  },
+                                  "contains": {
+                                    "type": "string"
+                                  },
+                                  "exists": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                              },
+                              "contact.company": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "maxProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "eq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "neq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "in": {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "items": {
+                                      "type": [
+                                        "string",
+                                        "number",
+                                        "boolean"
+                                      ]
+                                    }
+                                  },
+                                  "contains": {
+                                    "type": "string"
+                                  },
+                                  "exists": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                              },
+                              "contact.email": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "maxProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "eq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "neq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "in": {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "items": {
+                                      "type": [
+                                        "string",
+                                        "number",
+                                        "boolean"
+                                      ]
+                                    }
+                                  },
+                                  "contains": {
+                                    "type": "string"
+                                  },
+                                  "exists": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                              },
+                              "contact.location": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "maxProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "eq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "neq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "in": {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "items": {
+                                      "type": [
+                                        "string",
+                                        "number",
+                                        "boolean"
+                                      ]
+                                    }
+                                  },
+                                  "contains": {
+                                    "type": "string"
+                                  },
+                                  "exists": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                              },
+                              "contact.linkedin_url": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "maxProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "eq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "neq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "in": {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "items": {
+                                      "type": [
+                                        "string",
+                                        "number",
+                                        "boolean"
+                                      ]
+                                    }
+                                  },
+                                  "contains": {
+                                    "type": "string"
+                                  },
+                                  "exists": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                              },
+                              "contact.about": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "maxProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "eq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "neq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "in": {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "items": {
+                                      "type": [
+                                        "string",
+                                        "number",
+                                        "boolean"
+                                      ]
+                                    }
+                                  },
+                                  "contains": {
+                                    "type": "string"
+                                  },
+                                  "exists": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                              }
+                            }
+                          },
+                          {
+                            "type": "object",
+                            "minProperties": 1,
+                            "maxProperties": 1,
+                            "additionalProperties": false,
+                            "patternProperties": {
+                              "^contact\\.extra\\.[A-Za-z0-9_]{1,64}$": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "maxProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "eq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "neq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "in": {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "items": {
+                                      "type": [
+                                        "string",
+                                        "number",
+                                        "boolean"
+                                      ]
+                                    }
+                                  },
+                                  "contains": {
+                                    "type": "string"
+                                  },
+                                  "exists": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                              }
+                            }
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "account.premium"
+                            ],
+                            "properties": {
+                              "account.premium": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              },
+              "then": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "A step id, or \"end\"."
+              },
+              "else": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "A step id, or \"end\"."
+              },
+              "note": {
+                "type": "string",
+                "maxLength": 500,
+                "description": "Annotation shown in the builder graph. Never sent."
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "emit"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^(?!end$)[a-z][a-z0-9_]{0,39}$",
+                "description": "Step id, unique in the document. \"end\" is reserved."
+              },
+              "emit": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_.]{0,63}$",
+                "description": "Signal name for the motion.signal webhook."
+              },
+              "next": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "A step id, or \"end\"."
+              },
+              "note": {
+                "type": "string",
+                "maxLength": 500,
+                "description": "Annotation shown in the builder graph. Never sent."
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "tag"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^(?!end$)[a-z][a-z0-9_]{0,39}$",
+                "description": "Step id, unique in the document. \"end\" is reserved."
+              },
+              "tag": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[^,;]*[^,;\\s][^,;]*$",
+                "description": "Tag added to the Contact."
+              },
+              "next": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "A step id, or \"end\"."
+              },
+              "note": {
+                "type": "string",
+                "maxLength": 500,
+                "description": "Annotation shown in the builder graph. Never sent."
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

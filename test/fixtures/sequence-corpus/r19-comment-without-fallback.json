@@ -1,0 +1,27 @@
+{
+  "about": "r19 comment without fallback",
+  "rules": [
+    "R19"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "c",
+        "do": "post.comment",
+        "with": {
+          "text": "{{contact.extra.comment}}"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "c.with.fallback",
+      "rule": "required on a comment: text, or \"skip\""
+    }
+  ],
+  "warnings": []
+}

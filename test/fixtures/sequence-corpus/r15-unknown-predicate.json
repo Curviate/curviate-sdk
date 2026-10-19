@@ -1,0 +1,29 @@
+{
+  "about": "r15 unknown predicate",
+  "rules": [
+    "R15"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "c",
+        "if": {
+          "contact.age": {
+            "eq": 3
+          }
+        },
+        "then": "end",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "c.if",
+      "rule": "unknown predicate contact.age"
+    }
+  ],
+  "warnings": []
+}

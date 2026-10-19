@@ -29,6 +29,7 @@ import { readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve, relative, join } from "node:path";
 import { describe, expect, it } from "vitest";
+import ts from "typescript";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkgRoot = resolve(__dirname, "..");
@@ -462,5 +463,97 @@ describe("every beta operation carries an @beta marker, and only those", () => {
         "badge them beta. If one graduated, drop the tag: a stale @beta teaches " +
         "callers to ignore the marker everywhere.",
     ).toEqual([]);
+  });
+});
+
+// ─── README "Sequences" examples compile ─────────────────────────────────────
+
+/**
+ * The README's Sequence examples are code a reader pastes. Each `ts` block of
+ * the "Sequences" section is compiled with the TypeScript compiler API against
+ * src/ (strict, the package's own options), with `@curviate/sdk` resolved to
+ * src/index.ts. The values a block names but does not build (`text`, a fetched
+ * `motion`) are declared by the preamble.
+ */
+const PREAMBLE = "declare const text: string;\ndeclare const motion: { sequence: unknown };\n";
+
+function sectionBlocks(heading: string): string[] {
+  const readme = read("README.md");
+  const start = readme.indexOf(`\n## ${heading}\n`);
+  if (start < 0) return [];
+  const end = readme.indexOf("\n## ", start + 1);
+  const section = readme.slice(start, end < 0 ? undefined : end);
+  return [...section.matchAll(/```ts\n([\s\S]*?)```/g)].map((m) => m[1]!);
+}
+
+function compileErrors(code: string): string[] {
+  const configPath = resolve(pkgRoot, "tsconfig.json");
+  const parsed = ts.parseJsonConfigFileContent(ts.readConfigFile(configPath, ts.sys.readFile).config, ts.sys, pkgRoot);
+  const options: ts.CompilerOptions = {
+    ...parsed.options,
+    noEmit: true,
+    baseUrl: pkgRoot,
+    paths: { "@curviate/sdk": ["src/index.ts"] },
+  };
+  const file = resolve(pkgRoot, "test/__readme_example__.ts");
+  const host = ts.createCompilerHost(options);
+  const getSourceFile = host.getSourceFile.bind(host);
+  host.getSourceFile = (name, lang, ...rest) =>
+    name === file ? ts.createSourceFile(name, PREAMBLE + code, lang) : getSourceFile(name, lang, ...rest);
+  const fileExists = host.fileExists.bind(host);
+  host.fileExists = (name) => name === file || fileExists(name);
+  const program = ts.createProgram([file], options, host);
+  return ts
+    .getPreEmitDiagnostics(program, program.getSourceFile(file))
+    .map((d) => ts.flattenDiagnosticMessageText(d.messageText, "\n"));
+}
+
+describe("README Sequences examples type-check", () => {
+  const blocks = sectionBlocks("Sequences");
+
+  it("finds the section's examples", () => {
+    expect(blocks.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it.each(blocks.map((b, i) => [i, b] as const))("block %i compiles", (_, code) => {
+    expect(compileErrors(code)).toEqual([]);
+  }, 60_000);
+
+  it("control: a broken example reds", () => {
+    const broken = blocks[0]!.replace('"21d", then', '"3 weeks", then');
+    expect(broken).not.toBe(blocks[0]);
+    expect(compileErrors(broken).length).toBeGreaterThan(0);
+  }, 60_000);
+});
+
+describe("Sequence JSDoc carries an @example on every constructor and operation", () => {
+  /** Names of the members of `node`'s class or type literal whose JSDoc lacks @example (overloads: any one signature). */
+  function membersWithoutExample(rel: string): { all: string[]; missing: string[] } {
+    const sf = ts.createSourceFile(rel, read(rel), ts.ScriptTarget.ES2020, true);
+    const has = new Map<string, boolean>();
+    const visit = (n: ts.Node): void => {
+      const isMember = (ts.isMethodDeclaration(n) || ts.isMethodSignature(n)) && n.name && ts.isIdentifier(n.name);
+      const isPrivate = ts.isMethodDeclaration(n) && (ts.isPrivateIdentifier(n.name) || n.modifiers?.some((m) => m.kind === ts.SyntaxKind.PrivateKeyword));
+      if (isMember && !isPrivate) {
+        const name = (n.name as ts.Identifier).text;
+        const ok = ts.getJSDocTags(n).some((t) => t.tagName.text === "example");
+        has.set(name, (has.get(name) ?? false) || ok);
+      }
+      ts.forEachChild(n, visit);
+    };
+    visit(sf);
+    return { all: [...has.keys()], missing: [...has].filter(([, ok]) => !ok).map(([k]) => k) };
+  }
+
+  it("step constructors", () => {
+    const { all, missing } = membersWithoutExample("src/sequence/step.ts");
+    expect(new Set(all)).toEqual(new Set(["do", "wait", "until", "if", "emit", "tag"]));
+    expect(missing).toEqual([]);
+  });
+
+  it("Sequence operations", () => {
+    const { all, missing } = membersWithoutExample("src/sequence/builder.ts");
+    expect(new Set(all)).toEqual(new Set(["create", "fromDocument", "add", "insertBefore", "replace", "remove", "onReply", "validate", "toDocument", "toJSON"]));
+    expect(missing).toEqual([]);
   });
 });

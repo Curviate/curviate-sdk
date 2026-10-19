@@ -1,0 +1,35 @@
+{
+  "about": "w3 invite note basic account",
+  "rules": [
+    "W3"
+  ],
+  "only": "server",
+  "context": {
+    "stop_on_engagement": false,
+    "account_profiles": [
+      "basic"
+    ]
+  },
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "inv",
+        "do": "invite.send",
+        "with": {
+          "note": "Loved your post on pricing."
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "code": "W3",
+      "path": "inv.with.note_fallback",
+      "rule": "a basic sending Account sends only a few noted invitations a month; set note_fallback to \"drop\" to send without a note after that"
+    }
+  ]
+}

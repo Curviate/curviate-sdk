@@ -1,0 +1,27 @@
+{
+  "about": "valid motion defined",
+  "rules": [],
+  "only": "server",
+  "context": {
+    "variables": {
+      "x": "Berlin"
+    }
+  },
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{motion.x}}",
+          "fallback": "Hi"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": []
+}

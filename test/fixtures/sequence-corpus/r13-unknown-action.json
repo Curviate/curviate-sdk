@@ -1,0 +1,24 @@
+{
+  "about": "r13 unknown action",
+  "rules": [
+    "R13"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "a",
+        "do": "post.save",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "a.do",
+      "rule": "unknown action; use profile.view, profile.follow, profile.unfollow, invite.send, invite.withdraw, message.send, inmail.send, post.react, post.comment, skill.endorse"
+    }
+  ],
+  "warnings": []
+}

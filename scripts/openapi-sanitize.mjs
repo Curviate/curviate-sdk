@@ -70,3 +70,55 @@ export function stripLocalDiscriminatorMappings(node) {
   visit(node);
   return stripped;
 }
+
+/**
+ * Type-generation fixups, scoped to `components.schemas.SequenceDocument`
+ * (the rest of the document is untouched). openapi-typescript 7.6.1:
+ *
+ * - types a property carrying a `default` as REQUIRED, so `post`,
+ *   `newer_than` and `reaction` (the API applies their defaults) were required
+ *   and a valid document omitting them did not compile: `default` is dropped;
+ * - ignores `patternProperties` and renders the object `Record<string, never>`,
+ *   so the `contact.extra.<key>` predicate did not compile: a lone pattern's
+ *   schema becomes `additionalProperties` (`validateSequence` checks the key).
+ *
+ * Mutates `doc`; the embedded schema is extracted before this runs.
+ * @param {any} doc the OpenAPI document
+ * @returns {number} nodes rewritten
+ */
+export function sequenceTypegenFixups(doc) {
+  let rewritten = 0;
+  const visit = (n) => {
+    if (!n || typeof n !== "object") return;
+    if (Array.isArray(n)) {
+      for (const item of n) visit(item);
+      return;
+    }
+    if ("default" in n && typeof n.type === "string") {
+      delete n.default;
+      rewritten += 1;
+    }
+    const pp = n.patternProperties;
+    if (pp && typeof pp === "object" && !n.properties && Object.keys(pp).length === 1) {
+      n.additionalProperties = Object.values(pp)[0];
+      delete n.patternProperties;
+      rewritten += 1;
+    }
+    for (const key of Object.keys(n)) visit(n[key]);
+  };
+  visit(doc?.components?.schemas?.SequenceDocument);
+  return rewritten;
+}
+
+/**
+ * The Sequence document v1 JSON Schema as `src/sequence/schema.v1.json` holds
+ * it: `components.schemas.SequenceDocument` of the OpenAPI document, key for
+ * key. Read before any transform above mutates the document.
+ * @param {any} doc the raw OpenAPI document
+ * @returns {string} pretty JSON plus a trailing newline
+ */
+export function sequenceSchemaJson(doc) {
+  const schema = doc?.components?.schemas?.SequenceDocument;
+  if (!schema) throw new Error("components.schemas.SequenceDocument missing from the OpenAPI document");
+  return JSON.stringify(schema, null, 2) + "\n";
+}

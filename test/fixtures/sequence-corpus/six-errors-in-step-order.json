@@ -1,0 +1,73 @@
+{
+  "about": "six errors in step order",
+  "rules": [
+    "R5",
+    "R12",
+    "R13",
+    "R16",
+    "R24"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "a",
+        "do": "post.save"
+      },
+      {
+        "id": "b",
+        "wait": "2w"
+      },
+      {
+        "id": "c",
+        "emit": "Bad Name"
+      },
+      {
+        "id": "d",
+        "tag": "x,y"
+      },
+      {
+        "id": "e",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{firstName}}",
+          "fallback": "Hi"
+        }
+      },
+      {
+        "id": "f",
+        "by": "acc_1",
+        "wait": "1d",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "a.do",
+      "rule": "unknown action; use profile.view, profile.follow, profile.unfollow, invite.send, invite.withdraw, message.send, inmail.send, post.react, post.comment, skill.endorse"
+    },
+    {
+      "path": "b.wait",
+      "rule": "must be a duration between 1m and 365d: a number then m, h or d, like 30d"
+    },
+    {
+      "path": "c.emit",
+      "rule": "must match ^[a-z][a-z0-9_.]{0,63}$, like reply.received"
+    },
+    {
+      "path": "d.tag",
+      "rule": "a Tag name is 1 to 64 characters, without , or ;"
+    },
+    {
+      "path": "e.with.text",
+      "rule": "unknown variable {{firstName}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "f.by",
+      "rule": "step-level by is not supported; use settings.assign"
+    }
+  ],
+  "warnings": []
+}

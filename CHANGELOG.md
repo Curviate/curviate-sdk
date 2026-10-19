@@ -18,6 +18,32 @@ Changed). Regenerate from production and confirm an empty diff before publishing
 
 ### Added
 
+- **Offline Sequence module** (no network, key or file system; TypeScript 5.0
+  or later): `Sequence` (an immutable builder: `create`, `add`,
+  `insertBefore`, `replace`, `remove`, `onReply`, `validate`, `toDocument`,
+  `fromDocument`), `step` (one constructor per step kind: `do`, `wait`,
+  `until`, `if`, `emit`, `tag`), `validateSequence` and the published JSON
+  Schema `SEQUENCE_SCHEMA_V1` with `SEQUENCE_SCHEMA_URL`. The builder emits
+  exactly the Sequence document a Motion runs, keys in one canonical order, so
+  diffs show only real changes; `fromDocument` loads a fetched document and
+  re-emits it unchanged. With literal arguments a typo'd action, event,
+  reaction or predicate, a `{{...}}` that is not a v1 variable, a text with a
+  variable and no fallback, a malformed duration and a jump to a step you never
+  added fail to compile. `validateSequence` and `toDocument()` give the API's
+  own verdict offline: every error as `{path, rule}`, in step order, and the
+  warnings (`W1`, `W5` to `W9`). A document using an action or event added to
+  the API after this release is refused offline while the API accepts it:
+  upgrade the SDK. Not on the client: no request is ever sent. Like the API,
+  the first 100 errors are listed (the message counts all), an oversized
+  document gets the size error alone, and a NUL or lone surrogate in any
+  string is refused (`toDocument()` throws `INVALID_REQUEST`, as the API's 400).
+- **`CurviateError.errors`**: every failure as `{path, rule}` on a refusal that
+  lists them (`SEQUENCE_INVALID`, `MOTION_NOT_STARTABLE`), decoded from the
+  response's `errors[]` and emitted by `toJSON()`. The offline `SEQUENCE_INVALID`
+  a builder throws carries the same list.
+- **Error code** `SEQUENCE_INVALID` (422): the Sequence document breaks one or
+  more rules; nothing is saved.
+
 - **`contacts`** (root, 9 methods): `list`, `get`, `upsert`, `update`,
   `delete`, `deleteMany`, `updateMany`, `enrich`, `export`, plus
   **`contacts.imports`** (4 methods): `create`, `get`, `list`, `rows`. Your
@@ -82,6 +108,11 @@ Changed). Regenerate from production and confirm an empty diff before publishing
   read in; `source` is `account`, `browser`, `location` or `default`.
 
 ### Changed
+
+- **`SequenceDocument` type**: `post`, `newer_than` and `reaction` in a
+  `post.react` or `post.comment` step's `with` are optional (the API applies
+  their defaults), and a `contact.extra.<key>` predicate compiles. Before, a
+  valid document omitting them, or using one, did not type-check.
 
 - **The activity window applies to every account, with or without a
   `timezone`.** It is no longer switched off when no zone is set: the zone is

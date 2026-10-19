@@ -1,0 +1,26 @@
+{
+  "about": "r14 unknown event",
+  "rules": [
+    "R14"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "u",
+        "until": "comment.replied",
+        "timeout": "1d",
+        "then": "end",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "u.until",
+      "rule": "unknown event; use invite.accepted, message.replied, message.read or signal.<name>"
+    }
+  ],
+  "warnings": []
+}

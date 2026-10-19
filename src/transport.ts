@@ -19,6 +19,7 @@ import {
   type SafetyHint,
   type SafetyReason,
   type ConnectionLocation,
+  type CurviateErrorDetail,
 } from "./errors.js";
 
 /** HTTP methods the transport issues. */
@@ -77,6 +78,21 @@ interface WireErrorEnvelope {
   blocked?: boolean;
   /** `CONNECTION_LOCATION_UNAVAILABLE` after an applied change: where the account connects from now. */
   connection_location?: unknown;
+  /** `SEQUENCE_INVALID`, `MOTION_NOT_STARTABLE`: every failure as `{path, rule}`. */
+  errors?: unknown;
+}
+
+/**
+ * Wire `errors[]` as `{path, rule}` entries (document paths, not request
+ * paths): not an array gives undefined, an entry without string `path` and
+ * `rule` is dropped, any other key (`suggestion`) is dropped.
+ */
+function toErrorDetails(errors: unknown): CurviateErrorDetail[] | undefined {
+  if (!Array.isArray(errors)) return undefined;
+  return errors.flatMap((e: { path?: unknown; rule?: unknown } | null) => {
+    const { path, rule } = typeof e === "object" && e !== null ? e : {};
+    return typeof path === "string" && typeof rule === "string" ? [{ path, rule }] : [];
+  });
 }
 
 // Backoff defaults.
@@ -205,6 +221,7 @@ async function errorFromResponse(res: Response): Promise<{ err: CurviateError; r
     ...(env?.connection_location !== null && typeof env?.connection_location === "object"
       ? { connectionLocation: env.connection_location as ConnectionLocation }
       : {}),
+    ...(Array.isArray(env?.errors) ? { errors: toErrorDetails(env.errors) } : {}),
   });
   return { err, refusesRetry: env?.retry_likely_to_succeed === false };
 }

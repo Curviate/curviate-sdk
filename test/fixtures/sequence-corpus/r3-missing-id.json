@@ -1,0 +1,23 @@
+{
+  "about": "r3 missing id",
+  "rules": [
+    "R3"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "wait": "1d",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "steps[0].id",
+      "rule": "required: matching ^[a-z][a-z0-9_]{0,39}$"
+    }
+  ],
+  "warnings": []
+}

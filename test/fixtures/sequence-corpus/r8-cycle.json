@@ -1,0 +1,28 @@
+{
+  "about": "r8 cycle",
+  "rules": [
+    "R8"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "a",
+        "wait": "1d"
+      },
+      {
+        "id": "b",
+        "wait": "1d",
+        "next": "a"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "b.next",
+      "rule": "cycle: a -> b -> a"
+    }
+  ],
+  "warnings": []
+}

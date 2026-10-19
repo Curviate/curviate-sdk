@@ -368,3 +368,25 @@ describe("removed methods are gone", () => {
     expect(true).toBe(true);
   });
 });
+
+describe("root value exports", () => {
+  it("are exactly the client, the error model, the webhook surface and the offline Sequence module", async () => {
+    const entry = await import("../src/index.js");
+    expect(Object.keys(entry).sort()).toEqual(
+      [
+        "Curviate",
+        "CurviateError",
+        "ERROR_CODES",
+        "WebhookSignatureError",
+        "constructEvent",
+        "isCurviateError",
+        // offline, never on the client
+        "SEQUENCE_SCHEMA_URL",
+        "SEQUENCE_SCHEMA_V1",
+        "Sequence",
+        "step",
+        "validateSequence",
+      ].sort(),
+    );
+  });
+});

@@ -1,0 +1,27 @@
+{
+  "about": "r18 single brace",
+  "rules": [
+    "R18"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {FIRST_NAME}, quick one"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "m.with.text",
+      "rule": "{FIRST_NAME} is not a variable; write {{contact.<field>}} or remove the braces"
+    }
+  ],
+  "warnings": []
+}
