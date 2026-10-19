@@ -58,7 +58,32 @@ export type {
 } from "./resources/drafts.js";
 
 export type {
+  Notification,
+  NotificationListPage,
+  NotificationListQuery,
+  NotificationUnreadCount,
+  NotificationUpdateBody,
+  NotificationMarkAllReadBody,
+} from "./resources/notifications.js";
+
+export type {
+  ConnectRequest,
+  ConnectRequestCreateBody,
+} from "./resources/connect-requests.js";
+
+export type {
+  Team,
+  TeamListPage,
+  TeamUpdateBody,
+  TeamMemberListPage,
+  TeamMemberUpdateBody,
+  TeamInviteCreateBody,
+  TeamInviteListPage,
+} from "./resources/teams.js";
+
+export type {
   ResourceNamespaces,
+  RootNamespaces,
   AccountScopedNamespaces,
 } from "./resources/index.js";
 

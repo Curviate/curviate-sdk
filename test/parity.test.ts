@@ -57,7 +57,7 @@ const ROOT_SURFACE: Record<string, readonly string[]> = {
     "revokeInvite",
   ],
   // Curviate's own Notifications. Same key as the account-scoped LinkedIn
-  // notifications below, different class (api/037 FR-016).
+  // notifications below, different class.
   notifications: ["list", "unreadCount", "update", "markAllRead"],
 };
 

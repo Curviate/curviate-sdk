@@ -174,7 +174,7 @@ describe("notifications.showLess", () => {
 });
 
 describe("notifications namespace mounting", () => {
-  it("account(id).notifications is LinkedIn's; the root key is Curviate's own (api/037 FR-016)", () => {
+  it("account(id).notifications is LinkedIn's; the root key is Curviate's own", () => {
     expect(acc.notifications).toHaveProperty("showLess");
     expect(client.notifications).toHaveProperty("unreadCount");
     expect(client.notifications).not.toHaveProperty("showLess");

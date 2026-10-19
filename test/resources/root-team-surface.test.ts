@@ -1,4 +1,4 @@
-// api/037 TS-020, api/038, identity/007 FR-024: the root `notifications`,
+// The root `notifications`,
 // `connectRequests` and `teams` namespaces, `accounts.setTeamAccess`, and the
 // `team` client option, against a recorded transport (an injected `fetch`).
 // One row per method: method, path, query and body on the wire.
@@ -48,7 +48,7 @@ type Row = [
 const ODD = "a/b?c";
 
 const ROWS: Row[] = [
-  // Curviate Notifications (root) — api/037 FR-016
+  // Curviate Notifications (root)
   ["notifications.list()", (c) => c.notifications.list(), "GET", "/v1/notifications", {}, undefined],
   [
     "notifications.list(query)",
@@ -77,10 +77,10 @@ const ROWS: Row[] = [
     {},
     { before: "2026-10-01T00:00:00Z" },
   ],
-  // LinkedIn notifications stay account-scoped (AC-020 second half)
+  // LinkedIn notifications stay account-scoped
   ["account(id).notifications.list", (c) => c.account("acc_1").notifications.list(), "GET", "/v1/acc_1/notifications", {}, undefined],
 
-  // Connect requests — api/038
+  // Connect requests
   ["connectRequests.create()", (c) => c.connectRequests.create(), "POST", "/v1/auth/connect-requests", {}, {}],
   [
     "connectRequests.create({account_id})",
@@ -93,7 +93,7 @@ const ROWS: Row[] = [
   ["connectRequests.get", (c) => c.connectRequests.get("cr_1"), "GET", "/v1/auth/connect-requests/cr_1", {}, undefined],
   ["connectRequests.cancel", (c) => c.connectRequests.cancel(ODD), "POST", "/v1/auth/connect-requests/a%2Fb%3Fc/cancel", {}, undefined],
 
-  // Teams — identity/007 FR-024
+  // Teams
   ["teams.list", (c) => c.teams.list({ limit: 2 }), "GET", "/v1/teams", { limit: "2" }, undefined],
   ["teams.getCurrent", (c) => c.teams.getCurrent(), "GET", "/v1/teams/current", {}, undefined],
   ["teams.updateCurrent", (c) => c.teams.updateCurrent({ name: "Ops" }), "PATCH", "/v1/teams/current", {}, { name: "Ops" }],
