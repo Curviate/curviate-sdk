@@ -1,0 +1,85 @@
+{
+  "about": "motion research counter-example: a step-level sender, single-brace and camelCase placeholders, a default, a comment without a Contact variable, no on_reply",
+  "rules": [
+    "R5",
+    "R11",
+    "R16",
+    "R17",
+    "R18",
+    "R19",
+    "R20",
+    "R21"
+  ],
+  "schema_valid": false,
+  "document": {
+    "steps": [
+      {
+        "id": "invite",
+        "do": "invite.send",
+        "by": "acc_1",
+        "with": {
+          "note": "Hi {FIRST_NAME}, let's connect",
+          "withdraw_after": "10d"
+        }
+      },
+      {
+        "id": "msg",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{firstName}}, thanks for connecting"
+        }
+      },
+      {
+        "id": "msg2",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{contact.first_name | default:'there'}}",
+          "fallback": "Hi there"
+        }
+      },
+      {
+        "id": "comment",
+        "do": "post.comment",
+        "with": {
+          "text": "Great post!",
+          "fallback": "skip"
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "on_reply",
+      "rule": "required: a step id or \"end\""
+    },
+    {
+      "path": "invite.by",
+      "rule": "step-level by is not supported; use settings.assign"
+    },
+    {
+      "path": "invite.with.withdraw_after",
+      "rule": "must be a duration between 14d and 180d: a number then m, h or d, like 30d"
+    },
+    {
+      "path": "invite.with.note",
+      "rule": "{FIRST_NAME} is not a variable; write {{contact.<field>}} or remove the braces"
+    },
+    {
+      "path": "msg.with.text",
+      "rule": "unknown variable {{firstName}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+    },
+    {
+      "path": "msg.with.fallback",
+      "rule": "required because the text uses a variable"
+    },
+    {
+      "path": "msg2.with.text",
+      "rule": "variable defaults are not supported; add a fallback"
+    },
+    {
+      "path": "comment.with.text",
+      "rule": "a comment must use a contact variable, such as {{contact.extra.comment}}"
+    }
+  ],
+  "warnings": []
+}

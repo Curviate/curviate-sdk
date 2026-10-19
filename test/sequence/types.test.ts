@@ -234,6 +234,15 @@ const literal = {
       step.tag("replied", "in-conversation"),
       step.emit("handoff", "reply.received", {"next":"end"}),
     ),
+  "role-switch-engagement": () =>
+    Sequence.create({ on_reply: "end" }).add(
+      step.do("visit", "profile.view"),
+      step.if("connected", {"contact.connected":true}, {"then":"r_msg","else":"invite"}),
+      step.do("invite", "invite.send", {"with":{"note":null,"withdraw_after":"21d"}}),
+      step.until("accepted", "invite.accepted", {"timeout":"21d","then":"settle","else":"end"}),
+      step.wait("settle", "1d"),
+      step.do("r_msg", "message.send", {"with":{"text":"Congrats on the new role at {{contact.company}}, {{contact.first_name}}. How are the first weeks going?","fallback":"Congrats on the new role. How are the first weeks going?"},"next":"end"}),
+    ),
   chain: () =>
     Sequence.create({ on_reply: "end" }).add(
     step.wait("s0", "1d"),
@@ -351,6 +360,7 @@ describe("literal documents", () => {
     ["connect-and-converse", "template-connect-and-converse.json"],
     ["engage-then-connect", "template-engage-then-connect.json"],
     ["nurture-connections", "template-nurture-connections.json"],
+    ["role-switch-engagement", "role-switch-engagement.json"],
   ] as const)("%s built from literal constructor calls emits the corpus document", (name, f) => {
     const { $schema: _, ...want } = file(f) as Record<string, unknown>;
     const { $schema: __, ...got } = literal[name]().toDocument();

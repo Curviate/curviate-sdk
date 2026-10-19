@@ -1,5 +1,5 @@
 {
-  "about": "AC-033 control: a template left on the default stop_on_engagement (true) with on_reply replied",
+  "about": "control: a template left on the default stop_on_engagement (true) with on_reply replied",
   "rules": [
     "W10"
   ],

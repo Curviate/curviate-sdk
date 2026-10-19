@@ -1,0 +1,60 @@
+{
+  "about": "motion research example: engage a Contact who changed roles; connected Contacts jump straight to the message",
+  "rules": [
+    "W1"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "visit",
+        "do": "profile.view"
+      },
+      {
+        "id": "connected",
+        "if": {
+          "contact.connected": true
+        },
+        "then": "r_msg",
+        "else": "invite"
+      },
+      {
+        "id": "invite",
+        "do": "invite.send",
+        "with": {
+          "note": null,
+          "withdraw_after": "21d"
+        }
+      },
+      {
+        "id": "accepted",
+        "until": "invite.accepted",
+        "timeout": "21d",
+        "then": "settle",
+        "else": "end"
+      },
+      {
+        "id": "settle",
+        "wait": "1d"
+      },
+      {
+        "id": "r_msg",
+        "do": "message.send",
+        "with": {
+          "text": "Congrats on the new role at {{contact.company}}, {{contact.first_name}}. How are the first weeks going?",
+          "fallback": "Congrats on the new role. How are the first weeks going?"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "code": "W1",
+      "path": "r_msg",
+      "rule": "merge point: reached by fall-through from settle and by a jump from connected"
+    }
+  ]
+}

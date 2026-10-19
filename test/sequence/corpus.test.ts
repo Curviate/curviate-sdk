@@ -49,8 +49,8 @@ const invalid = offline.filter(([, e]) => e.errors.length > 0);
 
 describe("corpus verdicts", () => {
   it("runs the whole vendored corpus: every entry but the server-only ones", () => {
-    expect(corpus.length).toBe(120);
-    expect(offline.length).toBe(110);
+    expect(corpus.length).toBe(133);
+    expect(offline.length).toBe(123);
     expect(valid.length).toBeGreaterThan(0);
     expect(invalid.length).toBeGreaterThan(0);
   });
@@ -146,4 +146,73 @@ describe("fromDocument refusals", () => {
       expect(err.retryHint).toBeNull();
     });
   }
+});
+
+/**
+ * Each value of the constants module (the bounds JSON Schema cannot state) is
+ * pinned by a corpus pair: the entry at the bound passes, the one past it is
+ * refused, both written by the server's corpus owner.
+ */
+const PAIRS: [constant: string, atBound: string, pastBound: string][] = [
+  ["DURATION_BOUNDS.wait (365d)", "valid-wait-bounds.json", "r12-wait-366d.json"],
+  ["DURATION_BOUNDS.timeout (1h)", "valid-timeout-bounds.json", "r12-timeout-59m.json"],
+  ["DURATION_BOUNDS.timeout (180d)", "valid-timeout-bounds.json", "r12-timeout-181d.json"],
+  ["DURATION_BOUNDS.withdraw_after (14d)", "valid-withdraw-after-bounds.json", "r21-withdraw-after-13d.json"],
+  ["DURATION_BOUNDS.withdraw_after (180d)", "valid-withdraw-after-bounds.json", "r21-withdraw-after-181d.json"],
+  ["DURATION_BOUNDS.newer_than (1h)", "valid-every-action.json", "r12-newer-than-59m.json"],
+  ["DURATION_BOUNDS.newer_than (365d)", "valid-every-action.json", "r12-newer-than-366d.json"],
+  ["TEXT_LIMITS.message", "valid-message-8000.json", "r22-message-8001.json"],
+  ["TEXT_LIMITS.message, with a variable", "valid-message-8000-plus-variable.json", "r22-message-8001-plus-variable.json"],
+  ["TEXT_LIMITS.invite_note", "valid-invite-note-300.json", "r22-invite-note-301.json"],
+  ["TEXT_LIMITS.invite_note, with a variable", "valid-invite-note-300-plus-variable.json", "r22-invite-note-301-plus-variable.json"],
+  ["TEXT_LIMITS.inmail_subject + inmail_text", "valid-inmail-200-1900.json", "r22-inmail-subject-201.json"],
+  ["TEXT_LIMITS.inmail_subject + inmail_text, with variables", "valid-inmail-200-1900-plus-variable.json", "r22-inmail-201-1901-plus-variable.json"],
+  ["TEXT_LIMITS.comment, with a variable", "valid-comment-1250.json", "r22-comment-1251.json"],
+  ["MAX_SEQUENCE_BYTES", "valid-size-256kib.json", "r2-size-256kib-plus-one.json"],
+  ["MAX_PREDICATE_DEPTH", "r15-predicate-depth-10.json", "r15-predicate-depth-11.json"],
+  ["MAX_VARIABLE_REFS_PER_TEXT", "r22-variables-50-valid.json", "r22-variables-51.json"],
+  ["MAX_QUOTED_TOKEN_CHARS", "r18-token-cut-to-64.json", "r18-token-cut-to-64.json"],
+];
+const entry = (f: string) => {
+  const found = corpus.find(([n]) => n === f);
+  if (!found) throw new Error(`corpus entry ${f} is missing`);
+  return found[1];
+};
+
+describe("constants boundary pairs", () => {
+  it.each(PAIRS)("%s: %s at the bound, %s past it", (_, at, past) => {
+    const a = entry(at);
+    const p = entry(past);
+    expect(validateSequence(sequenceOf(a)).errors).toEqual(a.errors);
+    expect(validateSequence(sequenceOf(p)).errors).toEqual(p.errors);
+    expect(p.errors.length).toBeGreaterThan(0);
+  });
+
+  it("the at-bound side passes on the bound it pins (depth 10 is refused for its operand, not its depth)", () => {
+    for (const [, at] of PAIRS) {
+      const rules = validateSequence(sequenceOf(entry(at))).errors.map((e) => e.rule);
+      expect(rules.filter((r) => /limit is|nests at most|duration between/.test(r)), at).toEqual([]);
+    }
+  });
+
+  it("the quoted token is cut to 64 characters", () => {
+    const rule = entry("r18-token-cut-to-64.json").errors[0]!.rule;
+    expect(rule.split(" ")[0]).toHaveLength(64);
+  });
+});
+
+describe("motion-research examples", () => {
+  it("role-switch-engagement: no error, warnings exactly W1 at r_msg", () => {
+    const r = validateSequence(sequenceOf(entry("role-switch-engagement.json")));
+    expect(r.errors).toEqual([]);
+    expect(r.warnings.map(({ code, path }) => ({ code, path }))).toEqual([{ code: "W1", path: "r_msg" }]);
+  });
+
+  it("invalid-heyreach-style: R5 invite.by, R11 on_reply, R18 invite.with.note among its corpus errors", () => {
+    const e = entry("invalid-heyreach-style.json");
+    const errors = validateSequence(sequenceOf(e)).errors;
+    expect(errors).toEqual(e.errors);
+    expect(errors.map((x) => x.path)).toEqual(expect.arrayContaining(["invite.by", "on_reply", "invite.with.note"]));
+    expect(e.rules).toEqual(["R5", "R11", "R16", "R17", "R18", "R19", "R20", "R21"]);
+  });
 });
