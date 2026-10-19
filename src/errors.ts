@@ -343,6 +343,13 @@ export const ERROR_CODES = [
   "CONTACT_LIMIT_REACHED",
   "IMPORT_QUEUE_FULL",
 
+  // Sequences (`Sequence`, `validateSequence`). `SEQUENCE_INVALID` (422 from
+  // the API, or thrown offline by `toDocument()` / `Sequence.fromDocument`):
+  // the Sequence document breaks one or more rules. `errors` lists every one as
+  // `{path, rule}` in step order, so one fix round covers them all. Nothing is
+  // saved. user_fixable, never retryable as sent.
+  "SEQUENCE_INVALID",
+
   // Generic
   "INTERNAL",
 ] as const;
@@ -409,6 +416,12 @@ export type SafetyReason = "ceiling" | "activity_window";
 export interface SafetyHint {
   parameter: string;
   message: string;
+}
+
+/** One failure of a refused document: `path` into it, `rule` saying what to change. Wire `errors[]` entry. */
+export interface CurviateErrorDetail {
+  path: string;
+  rule: string;
 }
 
 /** Constructor input for {@link CurviateError}. */
@@ -489,6 +502,12 @@ export interface CurviateErrorInit {
    * `connection_location`. Absent when nothing was changed.
    */
   connectionLocation?: ConnectionLocation;
+  /**
+   * Every failure, as `{path, rule}`, on a refusal that lists them: wire field
+   * `errors` (`SEQUENCE_INVALID`, `MOTION_NOT_STARTABLE`), or the offline
+   * `SEQUENCE_INVALID` a Sequence builder throws. `message` repeats the first.
+   */
+  errors?: CurviateErrorDetail[];
 }
 
 /** Plain-object shape produced by {@link CurviateError.toJSON}. */
@@ -508,6 +527,7 @@ export interface CurviateErrorJSON {
   safetyReason?: SafetyReason;
   blocked?: boolean;
   connectionLocation?: ConnectionLocation;
+  errors?: CurviateErrorDetail[];
 }
 
 /**
@@ -544,6 +564,8 @@ export class CurviateError extends Error {
   readonly blocked: boolean | undefined;
   /** Where the account connects from now. See {@link CurviateErrorInit.connectionLocation}. */
   readonly connectionLocation: ConnectionLocation | undefined;
+  /** Every failure as `{path, rule}`. See {@link CurviateErrorInit.errors}. */
+  readonly errors: CurviateErrorDetail[] | undefined;
 
   constructor(init: CurviateErrorInit) {
     super(init.message);
@@ -560,6 +582,7 @@ export class CurviateError extends Error {
     this.safetyReason = init.safetyReason;
     this.blocked = init.blocked;
     this.connectionLocation = init.connectionLocation;
+    this.errors = init.errors;
     // Maintains a correct prototype chain when targeting ES5-class semantics.
     Object.setPrototypeOf(this, CurviateError.prototype);
   }
@@ -591,6 +614,7 @@ export class CurviateError extends Error {
     if (this.safetyReason !== undefined) json.safetyReason = this.safetyReason;
     if (this.blocked !== undefined) json.blocked = this.blocked;
     if (this.connectionLocation !== undefined) json.connectionLocation = this.connectionLocation;
+    if (this.errors !== undefined) json.errors = this.errors;
     return json;
   }
 }

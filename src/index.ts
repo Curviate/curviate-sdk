@@ -25,6 +25,7 @@ export {
   type ConnectionLocation,
   type CurviateErrorInit,
   type CurviateErrorJSON,
+  type CurviateErrorDetail,
 } from "./errors.js";
 
 export type {
@@ -138,6 +139,30 @@ export type {
 } from "./resources/index.js";
 
 export type { paths, components, operations } from "./generated/types.js";
+
+// Offline Sequence module: builder, step constructors, validator, schema (no network)
+export {
+  Sequence,
+  step,
+  validateSequence,
+  SEQUENCE_SCHEMA_V1,
+  SEQUENCE_SCHEMA_URL,
+  type SequenceDocument,
+  type SequenceDocumentOut,
+  type SequenceStep,
+  type SequenceValidationResult,
+  type SequenceError,
+  type SequenceWarning,
+  type SequenceEvent,
+  type SequenceTypeError,
+  type Action as SequenceAction,
+  type Duration as SequenceDuration,
+  type FieldOperand as SequenceFieldOperand,
+  type Predicate as SequencePredicate,
+  type Reaction as SequenceReaction,
+  type Variant as SequenceVariant,
+  type JsonSchema,
+} from "./sequence/index.js";
 
 // Webhook signature verification and typed event surface
 export {

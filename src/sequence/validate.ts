@@ -25,7 +25,8 @@ import {
   NAME_FIELDS,
   TEXT_LIMITS,
 } from "./constants.js";
-import { isObject, type Vocabulary } from "./vocab.js";
+import { SEQUENCE_SCHEMA_V1 } from "./schema.js";
+import { isObject, vocabulary, type Vocabulary } from "./vocab.js";
 
 /** One reason a Sequence document is refused: `path` into the document, `rule` saying what to change. */
 export interface SequenceError {
@@ -218,6 +219,24 @@ export function createValidator(v: Vocabulary): (doc: unknown) => SequenceValida
   };
   return (doc) => run(doc, { v, re, issues: [], warnings: [] });
 }
+
+/**
+ * Validates a Sequence document offline: every error (rules R1-R24, in step
+ * order, with `<step id>.<field>` paths) and every warning (W1, W5-W9) the API
+ * reports, with the same `path` and `rule` text. Takes any value, never
+ * throws, never mutates it. Nothing is sent anywhere.
+ *
+ * `{{motion.<key>}}` yields warning W9 (only the server knows the Motion's
+ * `settings.variables`). A document using vocabulary newer than this SDK is
+ * refused here while the API accepts it: upgrade the SDK.
+ *
+ * @example
+ * import { validateSequence } from "@curviate/sdk";
+ *
+ * const { errors, warnings } = validateSequence(JSON.parse(text));
+ * for (const e of errors) console.error(`${e.path}: ${e.rule}`);
+ */
+export const validateSequence: (value: unknown) => SequenceValidationResult = createValidator(vocabulary(SEQUENCE_SCHEMA_V1));
 
 function run(doc: unknown, ctx: Ctx): SequenceValidationResult {
   const { v } = ctx;
