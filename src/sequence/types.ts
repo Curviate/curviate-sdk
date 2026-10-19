@@ -147,15 +147,14 @@ export type CheckDuration<S> = IsLiteral<S> extends true ? (S extends Duration ?
 /** G12: a literal step id is not `"end"`. */
 export type CheckId<S> = S extends "end" ? SequenceTypeError<'"end" is reserved'> : unknown;
 
-type Get<T, K extends PropertyKey> = T extends { readonly [P in K]?: infer V } ? V : undefined;
+export type Get<T, K extends PropertyKey> = T extends { readonly [P in K]?: infer V } ? V : undefined;
 type VariantTexts<F> = Get<F, "variants"> extends readonly (infer V)[] ? Get<V, "text"> | Get<V, "subject"> : never;
 /** The literal texts of a messaging step: `with` text fields and every variant's. */
 type Texts<A extends Action, W> =
-  | (A extends "invite.send" ? Get<W, "note"> : A extends "inmail.send" ? Get<W, "subject"> | Get<W, "text"> : Get<W, "text">)
-  | never;
+  (A extends "invite.send" ? Get<W, "note"> : A extends "inmail.send" ? Get<W, "subject"> | Get<W, "text"> : Get<W, "text">);
 type AnyVar<T> = T extends unknown ? HasVar<T> : never;
 
-type Exact<T, Allowed extends PropertyKey> = { [K in Exclude<keyof T, Allowed>]: SequenceTypeError<`unknown key ${K & string}`> };
+export type Exact<T, Allowed extends PropertyKey> = { [K in Exclude<keyof T, Allowed>]: SequenceTypeError<`unknown key ${K & string}`> };
 
 type DoKeys = "with" | "variants" | "next" | "else" | "note";
 type TextFields = "text" | "subject" | "note";

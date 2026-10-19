@@ -16,12 +16,11 @@ import type {
   CheckDuration,
   CheckId,
   DoFields,
+  Exact,
   Predicate,
   SequenceEvent,
-  SequenceTypeError,
 } from "./types.js";
 
-type Exact<T, Allowed extends PropertyKey> = { [K in Exclude<keyof T, Allowed>]: SequenceTypeError<`unknown key ${K & string}`> };
 type Flow = { next?: string; note?: string };
 type Branch = { then: string; else?: string; note?: string };
 type Timed = Branch & { timeout: string };

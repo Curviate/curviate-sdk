@@ -9,7 +9,7 @@
 import { CurviateError, type CurviateErrorDetail } from "../errors.js";
 import { canonical } from "./order.js";
 import { SEQUENCE_SCHEMA_URL } from "./schema.js";
-import type { Lit, SequenceDocumentOut, SequenceStep, SequenceTypeError, Summary } from "./types.js";
+import type { Get, Lit, SequenceDocumentOut, SequenceStep, SequenceTypeError, Summary } from "./types.js";
 import { validateSequence, type SequenceValidationResult } from "./validate.js";
 
 /** What a builder knows at compile time: each literal step id with the literal targets its step names. */
@@ -17,7 +17,6 @@ type Track = { id: unknown; t: unknown };
 type Ids<S> = S extends Track ? S["id"] : never;
 type Targets<S> = S extends Track ? S["t"] : never;
 type Unresolved<S, R> = Exclude<Targets<S> | R, Ids<S> | "end">;
-type Get<T, K extends PropertyKey> = T extends { readonly [P in K]?: infer V } ? V : undefined;
 /** Literal ids `steps` would duplicate (among themselves, with `taken`, or `"end"`). */
 type Dups<T extends readonly unknown[], Taken> = T extends readonly [infer H, ...infer Rest]
   ? [Lit<Get<H, "id">>] extends [never]
