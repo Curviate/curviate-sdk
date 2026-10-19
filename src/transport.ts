@@ -336,12 +336,14 @@ export async function execute<T = unknown>(
       clearTimeout(timer);
       // Distinguish a timeout (AbortError) from a generic network failure.
       const aborted = controller.signal.aborted;
-      const err = new CurviateError({
-        code: "INTERNAL",
-        message: aborted ? "Request timed out." : "Network error.",
-        userFixable: false,
-        retryLikelyToSucceed: true,
-      });
+      const err = aborted
+        ? new CurviateError({
+            code: "CLIENT_TIMEOUT",
+            message: `No response within ${opts.timeout} ms (the client-side timeout; raise \`timeout\` in the client config). A write may still have reached the API.`,
+            userFixable: true,
+            retryLikelyToSucceed: true,
+          })
+        : new CurviateError({ code: "INTERNAL", message: "Network error.", userFixable: false, retryLikelyToSucceed: true });
       // A timeout/network failure is only retried for reads.
       if (!isWrite && attempt < opts.maxRetries) {
         await sleep(backoffDelay(attempt + 1, jitterFn()));

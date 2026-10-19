@@ -528,25 +528,55 @@ describe("error-code decode coverage", () => {
 });
 
 describe("timeout", () => {
-  // per-attempt timeout fires AbortError → INTERNAL 'timed out'.
-  it("aborts and throws INTERNAL 'timed out' when the request exceeds timeout", async () => {
+  // The per-attempt client timeout is its own code, never INTERNAL (#2386 item
+  // 1: a slow call read as a server fault). A network failure stays INTERNAL.
+  // Real timers: a 50 ms timeout vs a 5 s handler.
+  const slow = (method: "get" | "post") =>
     server.use(
-      http.get(`${BASE}/v1/slow`, async () => {
+      http[method](`${BASE}/v1/slow`, async () => {
         await new Promise((r) => setTimeout(r, 5_000));
         return HttpResponse.json({ ok: true });
       }),
     );
-    // Real timers here: a 50ms timeout vs a 5s handler. Uses the real sleep so
-    // the AbortController actually fires; no retry so the test stays fast.
-    const err = await execute("GET", "/v1/slow", {
+
+  it.each([
+    ["GET", "get"],
+    ["POST", "post"],
+  ] as const)("%s past the timeout throws CLIENT_TIMEOUT naming the client timeout", async (method, h) => {
+    slow(h);
+    const err = await execute(method, "/v1/slow", { apiKey: "k", baseUrl: BASE, timeout: 50, maxRetries: 0, body: method === "POST" ? {} : undefined }).catch((e) => e);
+    expect(isCurviateError(err)).toBe(true);
+    const e = err as CurviateError;
+    expect([e.code, e.httpStatus, e.retryLikelyToSucceed]).toEqual(["CLIENT_TIMEOUT", undefined, true]);
+    expect(e.message).toContain("50 ms");
+    expect(e.message).toContain("client-side timeout");
+    expect(ERROR_CODES).toContain("CLIENT_TIMEOUT");
+  });
+
+  it("a read is retried after a timeout, then throws CLIENT_TIMEOUT", async () => {
+    let calls = 0;
+    server.use(
+      http.get(`${BASE}/v1/slow`, async () => {
+        calls += 1;
+        await new Promise((r) => setTimeout(r, 5_000));
+        return HttpResponse.json({ ok: true });
+      }),
+    );
+    const err = await execute("GET", "/v1/slow", { apiKey: "k", baseUrl: BASE, timeout: 30, maxRetries: 1, _sleepFn: async () => {} }).catch((e) => e);
+    expect([calls, (err as CurviateError).code]).toEqual([2, "CLIENT_TIMEOUT"]);
+  });
+
+  it("control: a network failure (no response, no abort) stays INTERNAL", async () => {
+    const err = await execute("GET", "/v1/down", {
       apiKey: "k",
       baseUrl: BASE,
-      timeout: 50,
+      timeout: 5_000,
       maxRetries: 0,
+      fetch: (async () => {
+        throw new TypeError("fetch failed");
+      }) as typeof fetch,
     }).catch((e) => e);
-    expect(isCurviateError(err)).toBe(true);
-    expect((err as CurviateError).code).toBe("INTERNAL");
-    expect((err as CurviateError).message.toLowerCase()).toContain("timed out");
+    expect([(err as CurviateError).code, (err as CurviateError).message]).toEqual(["INTERNAL", "Network error."]);
   });
 });
 

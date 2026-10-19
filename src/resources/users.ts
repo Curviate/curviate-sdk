@@ -109,6 +109,9 @@ export class UsersResource {
    * List the account's 1st-degree connections.
    * `GET /v1/{account_id}/profiles/relations` (served URL keeps `profiles/`).
    * Was `profiles.listConnections`.
+   *
+   * A live read through the account. For the stored Connections of several
+   * accounts at once, with no LinkedIn call, use `curviate.network.connections.list`.
    */
   listRelations(params?: RelationListQuery): Promise<RelationListPage> {
     return this.ctx.request<RelationListPage>({

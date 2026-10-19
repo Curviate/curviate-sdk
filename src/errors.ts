@@ -375,6 +375,12 @@ export const ERROR_CODES = [
   "ENROLLMENT_NOT_ACTIVE",
   "CONTACT_NOT_ENROLLABLE",
 
+  // Client-side, never sent by the API. `CLIENT_TIMEOUT`: no response within
+  // the client's `timeout` (default 30 s, per attempt). A read is retried
+  // first; a write is not, and may still have reached the API, so read back
+  // before sending it again. Raise `timeout` for a slow call.
+  "CLIENT_TIMEOUT",
+
   // Generic
   "INTERNAL",
 ] as const;
