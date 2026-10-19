@@ -42,6 +42,9 @@ import { ContactListsResource } from "./contact-lists.js";
 import { TagsResource } from "./tags.js";
 import { MotionsResource, EnrollmentsResource } from "./motions.js";
 import { TierResource } from "./tier.js";
+import { NetworkResource } from "./network.js";
+import { UniboxResource } from "./unibox.js";
+import { AnalyticsResource } from "./analytics.js";
 import { SalesNavigatorResource } from "./sales-navigator.js";
 import { RecruiterResource } from "./recruiter.js";
 import { JobsResource } from "./jobs.js";
@@ -70,6 +73,9 @@ export { ContactListsResource } from "./contact-lists.js";
 export { TagsResource } from "./tags.js";
 export { MotionsResource, EnrollmentsResource } from "./motions.js";
 export { TierResource } from "./tier.js";
+export { NetworkResource, NetworkConnectionsResource } from "./network.js";
+export { UniboxResource, UniboxAccountsResource } from "./unibox.js";
+export { AnalyticsResource, AnalyticsMotionsResource, AnalyticsEventsResource } from "./analytics.js";
 export { SalesNavigatorResource } from "./sales-navigator.js";
 export { RecruiterResource } from "./recruiter.js";
 export { JobsResource } from "./jobs.js";
@@ -144,6 +150,9 @@ export interface RootNamespaces
   motions: MotionsResource;
   enrollments: EnrollmentsResource;
   tier: TierResource;
+  network: NetworkResource;
+  unibox: UniboxResource;
+  analytics: AnalyticsResource;
 }
 
 /** Build the root-client namespace bag. */
@@ -162,6 +171,9 @@ export function buildRootNamespaces(ctx: RequestContext): RootNamespaces {
     motions: new MotionsResource(ctx),
     enrollments: new EnrollmentsResource(ctx),
     tier: new TierResource(ctx),
+    network: new NetworkResource(ctx),
+    unibox: new UniboxResource(ctx),
+    analytics: new AnalyticsResource(ctx),
   };
 }
 

@@ -48,9 +48,9 @@
 // clean, which is a false assurance, not a pass), and every verdict states how
 // many files and lines it examined. Read that number before reading the result.
 //
-// src/generated/types.ts is no longer skipped. It is listed in this package's
-// published `files` array, so it ships to npm; excluding a published file from
-// the publish guard is the same hole one level down.
+// src/generated/types.ts is no longer skipped. It no longer ships (its types
+// are bundled into dist/index.d.ts, which --dist scans), but it is the source
+// of what ships, so the source pass keeps reading it.
 
 import { readdir, readFile, stat } from "node:fs/promises";
 import { join, relative, extname } from "node:path";
@@ -97,7 +97,7 @@ const SCAN_EXTS = new Set([".ts", ".mts", ".cts", ".mjs", ".cjs", ".js", ".md", 
 // already carried this exact SCAN_BASENAMES fix and its own comment naming
 // the hazard). Proven by mutation: appending the vendor name to LICENSE
 // passed every gate green until this fix. The rest of the `files` array
-// (README.md/CHANGELOG.md, src/generated/types.ts, dist/) was checked too —
+// (README.md/CHANGELOG.md, dist/; src/generated/types.ts shipped then) was checked too —
 // all already extensioned or covered by --dist mode; LICENSE was the only gap.
 const SCAN_DOTFILES = new Set([".gitignore", ".npmrc", ".nvmrc", ".env.example", ".editorconfig", "LICENSE"]);
 

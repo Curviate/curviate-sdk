@@ -158,6 +158,48 @@ export type {
 export type { TierResult, TierName, TierFeature } from "./resources/tier.js";
 
 export type {
+  Connection,
+  ConnectionListParams,
+  ConnectionListPage,
+  NetworkSyncStatusParams,
+  NetworkSyncStatus,
+  NetworkResyncBody,
+  NetworkResyncResult,
+} from "./resources/network.js";
+
+export type {
+  UniboxChat,
+  UniboxChatListParams,
+  UniboxChatListPage,
+  UniboxUnreadCountParams,
+  UniboxUnreadCount,
+  UniboxRefreshBody,
+  UniboxRefreshResult,
+  UniboxTagContactBody,
+  UniboxTagContactResult,
+  UniboxEnrollBody,
+  UniboxEnrollResult,
+  UniboxAccount,
+  UniboxAccountList,
+  UniboxAccountUpdateBody,
+} from "./resources/unibox.js";
+
+export type {
+  MotionAnalyticsParams,
+  MotionAnalyticsOverview,
+  MotionAnalyticsDetailParams,
+  MotionAnalyticsDetail,
+  ActivityParams,
+  Activity,
+  AnalyticsEvent,
+  AnalyticsEventListParams,
+  AnalyticsEventListPage,
+  BudgetRow,
+} from "./resources/analytics.js";
+
+export type { Pageable } from "./internal/paginate.js";
+
+export type {
   ResourceNamespaces,
   RootNamespaces,
   AccountScopedNamespaces,

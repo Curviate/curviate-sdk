@@ -7,10 +7,11 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
-## [Unreleased]
+## [0.43.0] - Unreleased
 
 Fixture and types regenerated from deployed staging (server
-`16b2eaf1473e4fb2a7b7b4a0308b9e248b30a93e`, 193 paths; earlier regens at
+`7359b1b1be0584f7f368f1367d39261f2de8f079`, 193 paths; earlier regens at
+`16b2eaf1473e4fb2a7b7b4a0308b9e248b30a93e`, 193 paths,
 `091f53a69decbc55c53336bbbbfa1dc5fd56e859`, 193 paths,
 `13d5357a7f74772782872c791ec8a5835060e9fe`, 191 paths, and
 `3b0b7503a516f6a1f39622bd40ec6fec9c217c38`, 176 paths). The previous fixture
@@ -18,6 +19,33 @@ was older, so this regen also carries earlier, unrelated server changes (see
 Changed). Regenerate from production and confirm an empty diff before publishing.
 
 ### Added
+
+- **`network`** (root, 2 methods plus **`network.connections`**, 1 method):
+  `connections.list`, `syncStatus`, `resync`. The stored LinkedIn Connections
+  of your accounts, read with no LinkedIn call and no limit used; `account_id`
+  takes several accounts. `resync` re-reads one account's Connections, once
+  per account per 24 hours.
+- **`unibox`** (root, 6 methods plus **`unibox.accounts`**, 2 methods):
+  `list`, `get`, `unreadCount`, `refresh`, `tagContact`, `enroll`,
+  `accounts.list`, `accounts.update`. One inbox over every account you can
+  operate, from what Curviate stores; `accounts.update` turns full-inbox sync
+  on or off for an account. Messages and chat actions stay on `messaging`.
+- **`analytics`** (root, 1 method plus **`analytics.motions`**, 2 methods,
+  and **`analytics.events`**, 1 method): `activity`, `motions.list`,
+  `motions.get`, `events.list`. Read-only, any Tier.
+- **List iterators**: `network.connections.list`, `unibox.list` and
+  `analytics.events.list` resolve to their first page when awaited and yield
+  every item across pages under `for await` (type `Pageable`).
+- **`BudgetRow`** type: the budget rows, `connections_sync` and `inbox_sync`
+  included.
+- **Needs Automate** in the JSDoc of `network.resync`, `unibox.refresh`,
+  `unibox.tagContact`, `unibox.enroll` and `unibox.accounts.update` (turning
+  full-inbox sync on; off passes on any Tier).
+- **Error code** `CLIENT_TIMEOUT`: no response within the client's `timeout`.
+  Before, it was `INTERNAL` ("Request timed out."), which read like a server
+  fault. A read is retried first; a write is not, may still have reached the
+  API, and carries `retryLikelyToSucceed: false` so a generic retry loop
+  does not resend it. A network failure with no response stays `INTERNAL`.
 
 - **Offline Sequence module** (no network, key or file system; TypeScript 5.0
   or later): `Sequence` (an immutable builder: `create`, `add`,
@@ -186,6 +214,14 @@ Changed). Regenerate from production and confirm an empty diff before publishing
 
 ### Fixed
 
+- **`jobs.get` `with_sections`** goes as one comma value. Several sections
+  were sent as a repeated key, of which the API keeps only the last.
+- **Package size**: the tarball no longer ships `src/generated/types.ts`. The
+  same types are in `dist/index.d.ts`, and `paths`, `components` and
+  `operations` are exported from the package root; the file was not
+  importable through the package's `exports` anyway.
+- **`motions.preview` `sample` and `motions.getSequenceVersion` `version`**
+  are typed as numbers, as the API reads them.
 - **An empty array in a comma-list filter is no filter.** `status: []`
   (`drafts.list`, `motions.list`, `enrollments.list`), `enrollment_status: []`
   (`contacts.list`, `contacts.export`) and `contact_ids: []`

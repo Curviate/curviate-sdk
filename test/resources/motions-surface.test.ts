@@ -61,7 +61,7 @@ const ROWS: Row[] = [
   ["motions.resume", (c) => c.motions.resume("mot_1"), "POST", "/v1/motions/mot_1/resume", "", undefined],
   ["motions.archive", (c) => c.motions.archive("mot_1"), "POST", "/v1/motions/mot_1/archive", "", undefined],
   ["motions.preview()", (c) => c.motions.preview(ODD), "GET", `/v1/motions/${ODD_PATH}/preview`, "", undefined],
-  ["motions.preview(sample)", (c) => c.motions.preview("mot_1", { sample: "3" }), "GET", "/v1/motions/mot_1/preview", "?sample=3", undefined],
+  ["motions.preview(sample)", (c) => c.motions.preview("mot_1", { sample: 3 }), "GET", "/v1/motions/mot_1/preview", "?sample=3", undefined],
   [
     "motions.preview(contact_ids) sends one comma list, order kept",
     (c) => c.motions.preview("mot_1", { contact_ids: ["con_2", "con_1"] }),
@@ -72,7 +72,7 @@ const ROWS: Row[] = [
   ],
   ["motions.preview(contact_ids: []) omits it", (c) => c.motions.preview("mot_1", { contact_ids: [] }), "GET", "/v1/motions/mot_1/preview", "", undefined],
   ["motions.getSequenceVersion()", (c) => c.motions.getSequenceVersion(ODD), "GET", `/v1/motions/${ODD_PATH}/sequence`, "", undefined],
-  ["motions.getSequenceVersion(version)", (c) => c.motions.getSequenceVersion("mot_1", { version: "2" }), "GET", "/v1/motions/mot_1/sequence", "?version=2", undefined],
+  ["motions.getSequenceVersion(version)", (c) => c.motions.getSequenceVersion("mot_1", { version: 2 }), "GET", "/v1/motions/mot_1/sequence", "?version=2", undefined],
   [
     "motions.addContacts",
     (c) => c.motions.addContacts(ODD, { contact_ids: ["con_1"], account_id: "acc_1" }),

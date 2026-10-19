@@ -210,7 +210,7 @@ export class MotionsResource {
    * `GET /v1/motions/{id}/preview`
    *
    * @example
-   * const { paths, samples, projection } = await curviate.motions.preview("mot_123", { sample: "3" });
+   * const { paths, samples, projection } = await curviate.motions.preview("mot_123", { sample: 3 });
    */
   preview(motionId: string, params?: MotionPreviewParams): Promise<MotionPreview> {
     return this.ctx.request<MotionPreview>({
@@ -226,7 +226,7 @@ export class MotionsResource {
    * `GET /v1/motions/{id}/sequence`
    *
    * @example
-   * const v1 = await curviate.motions.getSequenceVersion("mot_123", { version: "1" });
+   * const v1 = await curviate.motions.getSequenceVersion("mot_123", { version: 1 });
    * const builder = Sequence.fromDocument(v1.document);
    */
   getSequenceVersion(motionId: string, params?: SequenceVersionParams): Promise<SequenceVersion> {

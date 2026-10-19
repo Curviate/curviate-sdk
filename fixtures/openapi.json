@@ -15345,7 +15345,7 @@
             }
           },
           "502": {
-            "description": "A temporary upstream error occurred, or the upstream response could not be interpreted. Please try again.",
+            "description": "A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {\"kind\": \"never\"}`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -15777,7 +15777,7 @@
             }
           },
           "502": {
-            "description": "A temporary upstream error occurred, or the upstream response could not be interpreted. Please try again.",
+            "description": "A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {\"kind\": \"never\"}`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -16199,7 +16199,7 @@
             }
           },
           "502": {
-            "description": "A temporary upstream error occurred, or the upstream response could not be interpreted. Please try again.",
+            "description": "A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {\"kind\": \"never\"}`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -40725,7 +40725,7 @@
                 "minLength": 1
               }
             },
-            "description": "Extra sections to include (e.g. hiring_team, salary, benefits), comma-separated for more than one. Omit for base fields only."
+            "description": "Sections to add, e.g. hiring_team,salary. Several: one comma-separated value; a repeated key keeps only the last. Omit for base fields only."
           }
         ],
         "responses": {
@@ -101892,7 +101892,14 @@
                     "description": "Up to 20 contact.* predicates, all of which a Contact must pass to enroll, e.g. [{\"contact.has_photo\":true}]. Replaced whole on update."
                   },
                   "sequence": {
-                    "$ref": "#/components/schemas/SequenceDocument",
+                    "anyOf": [
+                      {
+                        "$ref": "#/components/schemas/SequenceDocument"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
                     "description": "The Sequence document (GET /schemas/sequence/v1.json), validated whole; every error comes back at once. Replaced whole on update. null clears a draft's."
                   }
                 },
@@ -104230,7 +104237,14 @@
                     "description": "Up to 20 contact.* predicates, all of which a Contact must pass to enroll, e.g. [{\"contact.has_photo\":true}]. Replaced whole on update."
                   },
                   "sequence": {
-                    "$ref": "#/components/schemas/SequenceDocument",
+                    "anyOf": [
+                      {
+                        "$ref": "#/components/schemas/SequenceDocument"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
                     "description": "The Sequence document (GET /schemas/sequence/v1.json), validated whole; every error comes back at once. Replaced whole on update. null clears a draft's."
                   }
                 },
@@ -107284,7 +107298,8 @@
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "minimum": 1
             },
             "description": "Sequence version. Default: the current one."
           }
@@ -107589,7 +107604,9 @@
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20
             },
             "description": "How many Contacts to render, the first enrollable ones by list order. 1 to 20, default 5. Not with contact_ids."
           },

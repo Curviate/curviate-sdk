@@ -25,6 +25,7 @@ import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
 import { resolveJobId } from "../internal/job-id.js";
 import { apiPath } from "../internal/path.js";
+import { commaLists } from "../internal/query.js";
 
 // ─── Type aliases from generated OpenAPI snapshot ──────────────────────────
 
@@ -117,7 +118,8 @@ export class JobsResource {
     return this.ctx.request<JobDetail>({
       method: "GET",
       path: apiPath`/v1/{account_id}/jobs/${jobId}`,
-      ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
+      // One comma value: the API keeps only the last of a repeated key.
+      query: commaLists(params, "with_sections"),
     });
   }
 

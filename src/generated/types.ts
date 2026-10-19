@@ -9873,7 +9873,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -10049,7 +10049,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -10212,7 +10212,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Please try again. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -19780,7 +19780,7 @@ export interface operations {
     getV1AccountIdJobsJobId: {
         parameters: {
             query?: {
-                /** @description Extra sections to include (e.g. hiring_team, salary, benefits), comma-separated for more than one. Omit for base fields only. */
+                /** @description Sections to add, e.g. hiring_team,salary. Several: one comma-separated value; a repeated key keeps only the last. Omit for base fields only. */
                 with_sections?: string[];
             };
             header?: never;
@@ -41835,7 +41835,7 @@ export interface operations {
                     /** @description Up to 20 contact.* predicates, all of which a Contact must pass to enroll, e.g. [{"contact.has_photo":true}]. Replaced whole on update. */
                     where?: unknown[];
                     /** @description The Sequence document (GET /schemas/sequence/v1.json), validated whole; every error comes back at once. Replaced whole on update. null clears a draft's. */
-                    sequence?: components["schemas"]["SequenceDocument"];
+                    sequence?: components["schemas"]["SequenceDocument"] | null;
                 };
             };
         };
@@ -42314,7 +42314,7 @@ export interface operations {
                     /** @description Up to 20 contact.* predicates, all of which a Contact must pass to enroll, e.g. [{"contact.has_photo":true}]. Replaced whole on update. */
                     where?: unknown[];
                     /** @description The Sequence document (GET /schemas/sequence/v1.json), validated whole; every error comes back at once. Replaced whole on update. null clears a draft's. */
-                    sequence?: components["schemas"]["SequenceDocument"];
+                    sequence?: components["schemas"]["SequenceDocument"] | null;
                 };
             };
         };
@@ -43204,7 +43204,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Sequence version. Default: the current one. */
-                version?: string;
+                version?: number;
             };
             header?: never;
             path: {
@@ -43282,7 +43282,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description How many Contacts to render, the first enrollable ones by list order. 1 to 20, default 5. Not with contact_ids. */
-                sample?: string;
+                sample?: number;
                 /** @description Comma list of Contact ids (con_...) to render, up to 20, in the order given. Not with sample. */
                 contact_ids?: string[];
             };

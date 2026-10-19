@@ -206,6 +206,34 @@ await curviate.motions.update(motion.id, {
 
 A plain object goes as is and the API validates it; wrap hand-written JSON in `Sequence.fromDocument(json)` to have it checked offline first. `sequence: null` clears a draft's. Status operations: `start`, `pause`, `resume`, `archive` (irreversible), `delete` (drafts only); `addContacts` / `removeContacts` enroll or take out Contacts directly; `getSequenceVersion` reads a past version. `curviate.enrollments` lists one Contact's run per account (`list`, `get` with its Step history) and acts on it: `stop`, `resume({ at })`, `signal({ name })`. Refusals: `MOTION_NOT_STARTABLE` (every gap in `err.errors`), `MOTION_STATUS_CONFLICT`, `ENROLLMENT_NOT_ACTIVE`, `SEQUENCE_INVALID`.
 
+## Network, Unibox and Analytics
+
+Reads here come from what Curviate has stored: no LinkedIn call, no limit used. Lists with a cursor resolve to their first page when awaited and yield every item across pages under `for await`:
+
+```ts
+// Stored Connections of several accounts; read coverage before trusting an empty page.
+const { items, coverage } = await curviate.network.connections.list({ account_id: ["acc_1", "acc_2"] });
+for await (const c of curviate.network.connections.list({ q: "founder" })) console.log(c.public_profile_url);
+const { items: sync } = await curviate.network.syncStatus();
+await curviate.network.resync({ account_id: "acc_1" }); // once per account per 24 h
+
+// One inbox over every account you can operate.
+for await (const chat of curviate.unibox.list({ unread: true })) console.log(chat.chat_id);
+const { unread_chats } = await curviate.unibox.unreadCount();
+await curviate.unibox.accounts.update("acc_1", { sync_full_inbox: true }); // by the person who connected it
+await curviate.unibox.refresh();
+await curviate.unibox.tagContact("acc_1", "chat_1", { tags: ["warm"] });
+await curviate.unibox.enroll("acc_1", "chat_1", { motion_id: "mot_1" });
+
+// Motion results, activity in budget units, the events feed.
+const overview = await curviate.analytics.motions.list({ from: "2026-10-01", to: "2026-10-31" });
+const detail = await curviate.analytics.motions.get("mot_1");
+const { types } = await curviate.analytics.activity(); // per BudgetRow; never add rows together
+for await (const event of curviate.analytics.events.list({ kind: ["message.replied"] })) console.log(event.motion_name);
+```
+
+Needs Automate: `network.resync`, `unibox.refresh`, `unibox.tagContact`, `unibox.enroll` and turning full-inbox sync on (off passes on any Tier). Messages and actions on a chat stay on `curviate.account(id).messaging`.
+
 ## Drafts and scheduled posts
 
 A Draft is a stored, editable, unpublished post. Give it an account and a `scheduled_at` and Curviate publishes it at that time. Drafts are tenant-wide, so `drafts` hangs off the root client (a Draft's `account_id` is a field, and optional). `acc.posts.create()` still publishes immediately and does not schedule.
@@ -321,6 +349,8 @@ try {
   }
 }
 ```
+
+No response within the client's `timeout` throws `CLIENT_TIMEOUT` (not `INTERNAL`): a read is retried first and carries `retryLikelyToSucceed: true`; a write is not retried, carries `false`, and may still have reached the API, so read back before resending. A network failure with no response is `INTERNAL` with no `httpStatus`.
 
 Every error code is documented in the [API reference](https://docs.curviate.com). The
 exported `ErrorCode` type is the complete set, so `tsc` tells you when a `switch` over
@@ -461,7 +491,7 @@ may fetch.
 
 ## Cursor pagination
 
-Resources that return lists support cursor pagination. `curviate.paginate()` is an async iterator that follows the `cursor` field automatically, so you pull items one at a time without managing cursors:
+`network.connections.list`, `unibox.list` and `analytics.events.list` iterate themselves (`for await (const x of curviate.unibox.list())`). For the other lists, `curviate.paginate()` is an async iterator that follows the `cursor` field automatically, so you pull items one at a time without managing cursors:
 
 ```ts
 // Iterate over every chat across all pages
