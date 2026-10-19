@@ -146,6 +146,29 @@ describe("the API's answer (ruling 2026-10-19)", () => {
     expect(validateSequence({ on_reply: "end", steps: [{ id: "w", wait: "1d", next: "end", note: "\udc4b" }] }).errors).toEqual([{ path: "steps[0].note", rule: expect.stringContaining("NUL") }]);
   });
 
+  it.each([
+    ["a NUL", "https://x\u0000"],
+    ["a lone surrogate", "https://x\ud800"],
+  ])("$schema holding %s: named sequence.$schema, as the route names it", (_, value) => {
+    const doc = { $schema: value, on_reply: "end", steps: [{ id: "w", wait: "1d", next: "end" }] };
+    expect(validateSequence(doc).errors).toEqual([{ path: "$schema", rule: expect.stringContaining("NUL") }]);
+    expect(() => Sequence.fromDocument(doc)).toThrow(
+      "sequence.$schema: must be well-formed Unicode and must not contain a NUL (\\u0000) character.",
+    );
+  });
+
+  it("names the first bad string in the route's order: each key, then its whole value, before the next key", () => {
+    // Key-first would name the later root key or the step's bad key; the route reaches the note first.
+    const doc = { on_reply: "end", steps: [{ id: "w", wait: "1d", note: "x\u0000", "k\u0000": 1 }], "z\u0000": 1 };
+    expect(validateSequence(doc).errors.map((e) => e.path)).toEqual(["steps[0].note"]);
+    // control: with the note clean, the step's bad key comes next, then the root key
+    doc.steps[0]!.note = "ok";
+    expect(validateSequence(doc).errors.map((e) => e.path)).toEqual(["steps[0] key"]);
+    expect(() => Sequence.fromDocument(doc)).toThrow("sequence.steps[0] key: must be well-formed");
+    // a bad key holding a bad value: the key is named first
+    expect(validateSequence({ on_reply: "end", steps: [{ "n\u0000": "v\u0000" }] }).errors.map((e) => e.path)).toEqual(["steps[0] key"]);
+  });
+
   it("a document nested over 1,000 levels is refused (R15 here, a 400 from the API), never accepted", () => {
     expect(validateSequence(sequenceOf(entry("r15-not-20000-deep.json"))).errors.length).toBeGreaterThan(0);
   });

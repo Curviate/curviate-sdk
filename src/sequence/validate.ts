@@ -259,17 +259,23 @@ const UNSTORABLE_RE = /\u0000|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uD
  * under `sequence.`; a bad key is `<path> key`. Iterative: any depth.
  */
 function firstUnstorable(doc: unknown): string | null {
-  const stack: [unknown, string][] = [[doc, ""]];
+  // The route's order: each key, then its whole value, before the next key.
+  // Iterative (a key is a "key" item on the stack), so depth cannot overflow.
+  const stack: [kind: "value" | "key", value: unknown, path: string][] = [["value", doc, ""]];
   while (stack.length) {
-    const [value, path] = stack.pop()!;
-    if (typeof value === "string") {
+    const [kind, value, path] = stack.pop()!;
+    if (kind === "key") {
+      if (UNSTORABLE_RE.test(value as string)) return path ? `${path} key` : "$ key";
+    } else if (typeof value === "string") {
       if (UNSTORABLE_RE.test(value)) return path || "$";
     } else if (Array.isArray(value)) {
-      for (let i = value.length - 1; i >= 0; i--) stack.push([value[i], `${path}[${i}]`]);
+      for (let i = value.length - 1; i >= 0; i--) stack.push(["value", value[i], `${path}[${i}]`]);
     } else if (typeof value === "object" && value !== null) {
       const entries = Object.entries(value);
-      for (const [k] of entries) if (UNSTORABLE_RE.test(k)) return path ? `${path} key` : "$ key";
-      for (let i = entries.length - 1; i >= 0; i--) stack.push([entries[i]![1], path ? `${path}.${entries[i]![0]}` : entries[i]![0]]);
+      for (let i = entries.length - 1; i >= 0; i--) {
+        const [k, v] = entries[i]!;
+        stack.push(["value", v, path ? `${path}.${k}` : k], ["key", k, path]);
+      }
     }
   }
   return null;

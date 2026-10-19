@@ -57,7 +57,7 @@ const refuse = (errors: CurviateErrorDetail[]): CurviateError =>
     ? new CurviateError({
         code: "INVALID_REQUEST",
         // The API's 400 names the body path and carries no errors[].
-        message: `${errors[0]!.path.startsWith("$") ? "sequence" + errors[0]!.path.slice(1) : `sequence.${errors[0]!.path}`}: ${UNSTORABLE_RULE}.`,
+        message: `${errors[0]!.path === "$" || errors[0]!.path === "$ key" ? "sequence" + errors[0]!.path.slice(1) : `sequence.${errors[0]!.path}`}: ${UNSTORABLE_RULE}.`,
         userFixable: true,
         retryLikelyToSucceed: false,
       })
