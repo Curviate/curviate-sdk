@@ -31,6 +31,8 @@ Changed). Regenerate from production and confirm an empty diff before publishing
   and `ndjson` (default) with the raw bytes. Imports take `rows` or a `csv`
   string, up to 10,000 rows; up to 500 run inline, larger ones in the
   background (poll `imports.get`, read the report with `imports.rows`).
+  `list` and `export` send an `enrollment_status` array as the one comma
+  list the API reads.
 - **`contactLists`** (root, 5 methods): `create`, `list`, `get`, `update`,
   `delete`. Static lists; membership changes go through
   `contacts.updateMany` (`add_list_id`, `remove_list_id`).

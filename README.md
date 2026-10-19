@@ -113,6 +113,7 @@ const { id, outcome } = await curviate.contacts.upsert({
 // Bulk: rows or a CSV string, up to 10,000 rows. Over 500 runs in the background.
 const csv = await readFile("leads.csv", "utf8"); // node:fs/promises
 const imp = await curviate.contacts.imports.create({ csv, list_name: "Q4 webinar" });
+// Once `status` is `completed` (poll `imports.get` for a background import):
 const { items: skipped } = await curviate.contacts.imports.rows(imp.id, { outcome: "skipped" });
 
 await curviate.contacts.updateMany({ contact_ids: [id], add_tags: ["vip"] });

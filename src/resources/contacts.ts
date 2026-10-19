@@ -49,6 +49,18 @@ export type ContactImportGetResult = paths["/v1/contacts/imports/{id}"]["get"]["
 export type ContactImportRowsParams = NonNullable<paths["/v1/contacts/imports/{id}/rows"]["get"]["parameters"]["query"]>;
 export type ContactImportRowsPage = paths["/v1/contacts/imports/{id}/rows"]["get"]["responses"]["200"]["content"]["application/json"];
 
+/**
+ * The server reads `enrollment_status` as one comma list and refuses a
+ * repeated key; the document types it as an array, which the transport would
+ * send as repeated keys. Join it.
+ */
+function contactQuery(params: ContactListParams | ContactExportParams) {
+  const { enrollment_status, ...rest } = params;
+  return enrollment_status === undefined
+    ? rest
+    : { ...rest, enrollment_status: enrollment_status.join(",") };
+}
+
 // ─── Resource classes ─────────────────────────────────────────────────────────
 
 /**
@@ -109,7 +121,7 @@ export class ContactImportsResource {
    * `GET /v1/contacts/imports/{id}`
    *
    * @example
-   * const { status } = await curviate.contacts.imports.get("cimp_123");
+   * const { status } = await curviate.contacts.imports.get("imp_123");
    */
   get(importId: string): Promise<ContactImportGetResult> {
     return this.ctx.request<ContactImportGetResult>({
@@ -125,7 +137,7 @@ export class ContactImportsResource {
    * `GET /v1/contacts/imports/{id}/rows`
    *
    * @example
-   * const { items } = await curviate.contacts.imports.rows("cimp_123", { outcome: "skipped" });
+   * const { items } = await curviate.contacts.imports.rows("imp_123", { outcome: "skipped" });
    */
   rows(importId: string, params?: ContactImportRowsParams): Promise<ContactImportRowsPage> {
     return this.ctx.request<ContactImportRowsPage>({
@@ -149,7 +161,8 @@ export class ContactsResource {
    * `list_id`, `tag` (comma list, any of them), `import_id`, `linkedin_url`,
    * `q` (substring over names, headline, job title, company, email,
    * location), `enrichment_status`, `connected`, `account_id` (Connections of
-   * that account), `motion_id` + `enrollment_status`. Pages with an opaque
+   * that account), `motion_id` + `enrollment_status` (any of the statuses
+   * given). Pages with an opaque
    * `cursor` until it is `null`.
    * `GET /v1/contacts`
    *
@@ -160,7 +173,7 @@ export class ContactsResource {
     return this.ctx.request<ContactListPage>({
       method: "GET",
       path: "/v1/contacts",
-      ...(params ? { query: params } : {}),
+      ...(params ? { query: contactQuery(params) } : {}),
     });
   }
 
@@ -306,7 +319,7 @@ export class ContactsResource {
     return this.ctx.request<Contact[] | ArrayBuffer>({
       method: "GET",
       path: "/v1/contacts/export",
-      ...(params ? { query: params } : {}),
+      ...(params ? { query: contactQuery(params) } : {}),
     });
   }
 }
