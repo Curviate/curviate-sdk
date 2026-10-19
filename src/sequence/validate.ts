@@ -235,13 +235,62 @@ export function createValidator(v: Vocabulary): (doc: unknown) => SequenceValida
  * for (const e of errors) console.error(`${e.path}: ${e.rule}`);
  */
 export function validateSequence(value: unknown): SequenceValidationResult {
+  const out = verdict(value);
+  return { errors: out.errors.slice(0, MAX_ERRORS_LISTED), warnings: out.warnings };
+}
+
+/** The full verdict, every error: what a refusal's message counts. */
+export function verdict(value: unknown): SequenceValidationResult {
   // Built on first use, so importing the SDK never walks the schema.
   shipped ??= createValidator(vocabulary(SEQUENCE_SCHEMA_V1));
   return shipped(value);
 }
 let shipped: ((doc: unknown) => SequenceValidationResult) | undefined;
 
+/** The rule of a string the API cannot store (its `400 INVALID_REQUEST`), offline. */
+export const UNSTORABLE_RULE = "must be well-formed Unicode and must not contain a NUL (\\u0000) character";
+/** The most errors the API lists; the message still counts them all. */
+export const MAX_ERRORS_LISTED = 100;
+const UNSTORABLE_RE = /\u0000|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
+
+/**
+ * The first string, key or value, the API refuses before reading the document
+ * (a NUL or a lone surrogate), named by its document path, as the API names it
+ * under `sequence.`; a bad key is `<path> key`. Iterative: any depth.
+ */
+function firstUnstorable(doc: unknown): string | null {
+  const stack: [unknown, string][] = [[doc, ""]];
+  while (stack.length) {
+    const [value, path] = stack.pop()!;
+    if (typeof value === "string") {
+      if (UNSTORABLE_RE.test(value)) return path || "$";
+    } else if (Array.isArray(value)) {
+      for (let i = value.length - 1; i >= 0; i--) stack.push([value[i], `${path}[${i}]`]);
+    } else if (typeof value === "object" && value !== null) {
+      const entries = Object.entries(value);
+      for (const [k] of entries) if (UNSTORABLE_RE.test(k)) return path ? `${path} key` : "$ key";
+      for (let i = entries.length - 1; i >= 0; i--) stack.push([entries[i]![1], path ? `${path}.${entries[i]![0]}` : entries[i]![0]]);
+    }
+  }
+  return null;
+}
+
+/**
+ * The API's answer, in its order: an unstorable string first (alone), then an
+ * oversized document (R2 alone, nothing else is read), then every rule, the
+ * errors all listed (`validateSequence` lists the first {@link MAX_ERRORS_LISTED}).
+ */
 function run(doc: unknown, ctx: Ctx): SequenceValidationResult {
+  const bad = firstUnstorable(doc);
+  if (bad !== null) return { errors: [{ path: bad, rule: UNSTORABLE_RULE }], warnings: [] };
+  const size = compactBytes(doc);
+  if (size > MAX_SEQUENCE_BYTES) {
+    return { errors: [{ path: "$", rule: `the document is ${size} bytes; the limit is ${MAX_SEQUENCE_BYTES}, UTF-8 compact JSON` }], warnings: [] };
+  }
+  return rules(doc, ctx);
+}
+
+function rules(doc: unknown, ctx: Ctx): SequenceValidationResult {
   const { v } = ctx;
   const DOC = -1;
   if (!isObject(doc)) return { errors: [{ path: "$", rule: "a Sequence document is a JSON object" }], warnings: [] };
@@ -255,11 +304,7 @@ function run(doc: unknown, ctx: Ctx): SequenceValidationResult {
   if (has(doc, "$schema") && doc["$schema"] !== v.schemaUrl) {
     ctx.issues.push({ order: DOC, path: "$schema", rule: `must be ${v.schemaUrl}` });
   }
-  // R2
-  const bytes = compactBytes(doc);
-  if (bytes > MAX_SEQUENCE_BYTES) {
-    ctx.issues.push({ order: DOC, path: "$", rule: `the document is ${bytes} bytes; the limit is ${MAX_SEQUENCE_BYTES}, UTF-8 compact JSON` });
-  }
+  // R2 (size: answered in `run`, alone)
   const rawSteps = doc["steps"];
   const stepsArr = Array.isArray(rawSteps) ? rawSteps : [];
   if (!Array.isArray(rawSteps) || rawSteps.length < v.minSteps) {

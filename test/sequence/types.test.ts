@@ -113,6 +113,35 @@ function guarantees(): void {
   step.do("m", "message.send", { with: { text: "Hi {{ contact.first_name }}", fallback: "Hi" } });
   step.do("m", "message.send", { with: { text: "Hi {{account.full_name}} {{motion.offer}}", fallback: "Hi" } });
 
+  // G10: the server trims a variable's inner text with String.prototype.trim: every one of its characters
+  step.do("m", "message.send", { with: { text: "Hi {{\tcontact.first_name\t}}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{\ncontact.first_name\n}}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{\vcontact.first_name\v}}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{\fcontact.first_name\f}}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{\rcontact.first_name\r}}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{ contact.first_name }}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{\u00a0contact.first_name\u00a0}}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{\u1680contact.first_name\u1680}}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{\u2000contact.first_name\u2000}}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{\u2001contact.first_name\u2001}}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{\u2002contact.first_name\u2002}}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{\u2003contact.first_name\u2003}}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{\u2004contact.first_name\u2004}}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{\u2005contact.first_name\u2005}}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{\u2006contact.first_name\u2006}}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{\u2007contact.first_name\u2007}}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{\u2008contact.first_name\u2008}}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{\u2009contact.first_name\u2009}}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{\u200acontact.first_name\u200a}}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{\u2028contact.first_name\u2028}}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{\u2029contact.first_name\u2029}}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{\u202fcontact.first_name\u202f}}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{\u205fcontact.first_name\u205f}}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{\u3000contact.first_name\u3000}}", fallback: "Hi" } });
+  step.do("m", "message.send", { with: { text: "Hi {{\ufeffcontact.first_name\ufeff}}", fallback: "Hi" } });
+  // @ts-expect-error G10: a zero-width space is not whitespace to trim()
+  step.do("m", "message.send", { with: { text: "Hi {{\u200bcontact.first_name}}", fallback: "Hi" } });
+
   // G11: durations are <number><m|h|d>
   // @ts-expect-error G11 week
   step.wait("w", "1w");
@@ -375,7 +404,19 @@ describe("literal documents", () => {
   });
 });
 
+/** Every character String.prototype.trim strips, as the type-level Trim lists them (cases in `guarantees`). */
+const TRIMMED = ["\t", "\n", "\v", "\f", "\r", " ", "\u00a0", "\u1680", "\u2000", "\u2001", "\u2002", "\u2003", "\u2004", "\u2005", "\u2006", "\u2007", "\u2008", "\u2009", "\u200a", "\u2028", "\u2029", "\u202f", "\u205f", "\u3000", "\ufeff"];
+
 describe("types (G14, pinned vocabulary)", () => {
+  it("the type-level Trim covers exactly what String.prototype.trim strips", () => {
+    const stripped: string[] = [];
+    for (let c = 0; c <= 0xffff; c++) {
+      const ch = String.fromCharCode(c);
+      if ((ch + "x").trim() === "x") stripped.push(ch);
+    }
+    expect(new Set(stripped)).toEqual(new Set(TRIMMED));
+  });
+
   it("toDocument() is assignable to the generated SequenceDocument; post.save is not", () => {
     expectTypeOf<SequenceDocumentOut>().toMatchTypeOf<SequenceDocument>();
     expectTypeOf<SequenceDocument>().toEqualTypeOf<components["schemas"]["SequenceDocument"]>();

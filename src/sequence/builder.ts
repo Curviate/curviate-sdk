@@ -10,7 +10,7 @@ import { CurviateError, type CurviateErrorDetail } from "../errors.js";
 import { canonical } from "./order.js";
 import { SEQUENCE_SCHEMA_URL } from "./schema.js";
 import type { Get, Lit, SequenceDocumentOut, SequenceStep, SequenceTypeError, Summary } from "./types.js";
-import { validateSequence, type SequenceValidationResult } from "./validate.js";
+import { MAX_ERRORS_LISTED, UNSTORABLE_RULE, validateSequence, verdict, type SequenceValidationResult } from "./validate.js";
 
 /** What a builder knows at compile time: each literal step id with the literal targets its step names. */
 type Track = { id: unknown; t: unknown };
@@ -47,14 +47,27 @@ interface Doc {
   steps: readonly unknown[];
 }
 
+/**
+ * The refusal the API would answer: a string it cannot store is its
+ * `INVALID_REQUEST` (sent, a 400); anything else `SEQUENCE_INVALID` (a 422),
+ * listing the first 100 errors while the message counts them all.
+ */
 const refuse = (errors: CurviateErrorDetail[]): CurviateError =>
-  new CurviateError({
-    code: "SEQUENCE_INVALID",
-    message: `${errors[0]!.path}: ${errors[0]!.rule}${errors.length > 1 ? ` and ${errors.length - 1} more` : ""}`,
-    userFixable: true,
-    retryLikelyToSucceed: false,
-    errors,
-  });
+  errors[0]!.rule === UNSTORABLE_RULE
+    ? new CurviateError({
+        code: "INVALID_REQUEST",
+        // The API's 400 names the body path and carries no errors[].
+        message: `${errors[0]!.path.startsWith("$") ? "sequence" + errors[0]!.path.slice(1) : `sequence.${errors[0]!.path}`}: ${UNSTORABLE_RULE}.`,
+        userFixable: true,
+        retryLikelyToSucceed: false,
+      })
+    : new CurviateError({
+        code: "SEQUENCE_INVALID",
+        message: `${errors[0]!.path}: ${errors[0]!.rule}${errors.length > 1 ? ` and ${errors.length - 1} more` : ""}`,
+        userFixable: true,
+        retryLikelyToSucceed: false,
+        errors: errors.slice(0, MAX_ERRORS_LISTED),
+      });
 
 /** A plain JSON copy: what the builder holds never aliases what the caller holds. */
 const clone = <T>(v: T): T => (v === undefined ? v : (JSON.parse(JSON.stringify(v)) as T));
@@ -111,7 +124,7 @@ export class Sequence<S = never, R extends string = never, O extends boolean = f
    * const edited = Sequence.fromDocument(motion.sequence).remove("bump");
    */
   static fromDocument(value: unknown): Sequence<{ id: string; t: never }, never, true> {
-    const { errors } = validateSequence(value);
+    const { errors } = verdict(value);
     if (errors.length) throw refuse(errors);
     return new Sequence(canonical(value as Record<string, unknown>) as unknown as Doc);
   }
@@ -214,7 +227,7 @@ export class Sequence<S = never, R extends string = never, O extends boolean = f
    */
   toDocument(this: ResolvedSequence<S, R, O>): SequenceDocumentOut;
   toDocument(): SequenceDocumentOut {
-    const { errors } = validateSequence(this.#doc);
+    const { errors } = verdict(this.#doc);
     if (errors.length) throw refuse(errors);
     return canonical(this.#doc as unknown as Record<string, unknown>) as unknown as SequenceDocumentOut;
   }

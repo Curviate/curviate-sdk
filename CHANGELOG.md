@@ -33,7 +33,10 @@ Changed). Regenerate from production and confirm an empty diff before publishing
   own verdict offline: every error as `{path, rule}`, in step order, and the
   warnings (`W1`, `W5` to `W9`). A document using an action or event added to
   the API after this release is refused offline while the API accepts it:
-  upgrade the SDK. Not on the client: no request is ever sent.
+  upgrade the SDK. Not on the client: no request is ever sent. Like the API,
+  the first 100 errors are listed (the message counts all), an oversized
+  document gets the size error alone, and a NUL or lone surrogate in any
+  string is refused (`toDocument()` throws `INVALID_REQUEST`, as the API's 400).
 - **`CurviateError.errors`**: every failure as `{path, rule}` on a refusal that
   lists them (`SEQUENCE_INVALID`, `MOTION_NOT_STARTABLE`), decoded from the
   response's `errors[]` and emitted by `toJSON()`. The offline `SEQUENCE_INVALID`

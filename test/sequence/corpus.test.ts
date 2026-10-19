@@ -44,13 +44,19 @@ const snapshot = (v: unknown): string => {
     return "(too deep to serialise)";
   }
 };
+const entry = (f: string) => {
+  const found = corpus.find(([n]) => n === f);
+  if (!found) throw new Error(`corpus entry ${f} is missing`);
+  return found[1];
+};
 const valid = offline.filter(([, e]) => e.errors.length === 0);
-const invalid = offline.filter(([, e]) => e.errors.length > 0);
+const invalid = offline.filter(([, e]) => e.errors.length > 0 && e.code === undefined);
+const unstorable = offline.filter(([, e]) => e.code === "INVALID_REQUEST");
 
 describe("corpus verdicts", () => {
   it("runs the whole vendored corpus: every entry but the server-only ones", () => {
-    expect(corpus.length).toBe(133);
-    expect(offline.length).toBe(123);
+    expect(corpus.length).toBe(137);
+    expect(offline.length).toBe(127);
     expect(valid.length).toBeGreaterThan(0);
     expect(invalid.length).toBeGreaterThan(0);
   });
@@ -106,6 +112,45 @@ describe("coverage", () => {
   });
 });
 
+describe("the API's answer (ruling 2026-10-19)", () => {
+  it("lists the first 100 errors; the refusal's message counts them all", () => {
+    const e = entry("r16-102-errors-listed-100.json");
+    expect(validateSequence(sequenceOf(e)).errors).toHaveLength(100);
+    expect(e.error_count).toBe(102);
+  });
+
+  it("answers an oversized document with R2 alone", () => {
+    const e = entry("r2-oversize-answered-alone.json");
+    expect(validateSequence(sequenceOf(e)).errors).toEqual(e.errors);
+    expect(e.errors.map((x) => x.path)).toEqual(["$"]);
+  });
+
+  it.each(unstorable.map(([f, e]) => [f, e] as const))("%s: refused, as the API's 400 INVALID_REQUEST", (_, e) => {
+    expect(validateSequence(sequenceOf(e)).errors).toEqual(e.errors);
+    let caught: unknown;
+    try {
+      Sequence.fromDocument(sequenceOf(e));
+    } catch (err) {
+      caught = err;
+    }
+    const err = caught as CurviateError;
+    expect(err).toBeInstanceOf(CurviateError);
+    expect(err.code).toBe("INVALID_REQUEST");
+    expect(err.message).toBe(`sequence.${e.errors[0]!.path}: ${e.errors[0]!.rule}.`);
+    expect(err.errors).toBeUndefined();
+  });
+
+  it("a NUL or lone surrogate in a key is refused too; a valid surrogate pair is not", () => {
+    expect(validateSequence({ on_reply: "end", "a\u0000": 1, steps: [] }).errors).toEqual([{ path: "$ key", rule: expect.stringContaining("NUL") }]);
+    expect(validateSequence({ on_reply: "end", steps: [{ id: "w", wait: "1d", next: "end", note: "ok \ud83d\udc4b" }] }).errors).toEqual([]);
+    expect(validateSequence({ on_reply: "end", steps: [{ id: "w", wait: "1d", next: "end", note: "\udc4b" }] }).errors).toEqual([{ path: "steps[0].note", rule: expect.stringContaining("NUL") }]);
+  });
+
+  it("a document nested over 1,000 levels is refused (R15 here, a 400 from the API), never accepted", () => {
+    expect(validateSequence(sequenceOf(entry("r15-not-20000-deep.json"))).errors.length).toBeGreaterThan(0);
+  });
+});
+
 describe("round trip", () => {
   for (const [file, e] of valid) {
     it(file, () => {
@@ -138,7 +183,7 @@ describe("fromDocument refusals", () => {
       expect(err.code).toBe("SEQUENCE_INVALID");
       expect(err.errors).toEqual(e.errors);
       expect(err.errors).toEqual(validateSequence(input).errors);
-      const more = e.errors.length - 1;
+      const more = (e.error_count ?? e.errors.length) - 1;
       expect(err.message).toBe(`${e.errors[0]!.path}: ${e.errors[0]!.rule}${more > 0 ? ` and ${more} more` : ""}`);
       expect(err.httpStatus).toBeUndefined();
       expect(err.userFixable).toBe(true);
@@ -173,11 +218,6 @@ const PAIRS: [constant: string, atBound: string, pastBound: string][] = [
   ["MAX_VARIABLE_REFS_PER_TEXT", "r22-variables-50-valid.json", "r22-variables-51.json"],
   ["MAX_QUOTED_TOKEN_CHARS", "r18-token-cut-to-64.json", "r18-token-cut-to-64.json"],
 ];
-const entry = (f: string) => {
-  const found = corpus.find(([n]) => n === f);
-  if (!found) throw new Error(`corpus entry ${f} is missing`);
-  return found[1];
-};
 
 describe("constants boundary pairs", () => {
   it.each(PAIRS)("%s: %s at the bound, %s past it", (_, at, past) => {

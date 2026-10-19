@@ -113,9 +113,11 @@ export type SequenceDocumentOut = {
 export type SequenceTypeError<M extends string> = `Sequence: ${M}`;
 type IsLiteral<S> = S extends string ? (string extends S ? false : true) : false;
 
-// ponytail: trims space, tab, CR, LF only; another Unicode space inside braces
-// over-reports, widen Trim when that ever shows up in a real document.
-type WS = " " | "\n" | "\t" | "\r";
+/** What `String.prototype.trim` strips, as the server trims a variable's inner text. */
+type WS =
+  | " " | "\t" | "\n" | "\v" | "\f" | "\r" | "\u00a0" | "\u1680"
+  | "\u2000" | "\u2001" | "\u2002" | "\u2003" | "\u2004" | "\u2005" | "\u2006" | "\u2007" | "\u2008" | "\u2009" | "\u200a"
+  | "\u2028" | "\u2029" | "\u202f" | "\u205f" | "\u3000" | "\ufeff";
 type Trim<S extends string> = S extends `${WS}${infer R}` ? Trim<R> : S extends `${infer L}${WS}` ? Trim<L> : S;
 /** Inner text of every closed `{{...}}`; a candidate holding a brace is left to run time. */
 type Inners<S extends string, Acc = never> = S extends `${string}{{${infer I}}}${infer Rest}`

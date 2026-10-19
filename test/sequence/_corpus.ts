@@ -9,6 +9,10 @@ export interface CorpusEntry {
   about: string;
   rules: string[];
   only?: "server" | "lint";
+  /** The API refuses the document before reading it (a string it cannot store). */
+  code?: "INVALID_REQUEST";
+  /** The full error count when the API lists only the first 100. */
+  error_count?: number;
   context?: unknown;
   schema_valid: boolean;
   document: unknown;
