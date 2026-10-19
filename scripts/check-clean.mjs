@@ -97,7 +97,7 @@ const SCAN_EXTS = new Set([".ts", ".mts", ".cts", ".mjs", ".cjs", ".js", ".md", 
 // already carried this exact SCAN_BASENAMES fix and its own comment naming
 // the hazard). Proven by mutation: appending the vendor name to LICENSE
 // passed every gate green until this fix. The rest of the `files` array
-// (README.md/CHANGELOG.md, src/generated/types.ts, dist/) was checked too —
+// (README.md/CHANGELOG.md, dist/; src/generated/types.ts shipped then) was checked too —
 // all already extensioned or covered by --dist mode; LICENSE was the only gap.
 const SCAN_DOTFILES = new Set([".gitignore", ".npmrc", ".nvmrc", ".env.example", ".editorconfig", "LICENSE"]);
 

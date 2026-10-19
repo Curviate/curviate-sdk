@@ -547,7 +547,8 @@ describe("timeout", () => {
     const err = await execute(method, "/v1/slow", { apiKey: "k", baseUrl: BASE, timeout: 50, maxRetries: 0, body: method === "POST" ? {} : undefined }).catch((e) => e);
     expect(isCurviateError(err)).toBe(true);
     const e = err as CurviateError;
-    expect([e.code, e.httpStatus, e.retryLikelyToSucceed]).toEqual(["CLIENT_TIMEOUT", undefined, true]);
+    // A write may have landed: never marked retry-safe.
+    expect([e.code, e.httpStatus, e.retryLikelyToSucceed]).toEqual(["CLIENT_TIMEOUT", undefined, method === "GET"]);
     expect(e.message).toContain("50 ms");
     expect(e.message).toContain("client-side timeout");
     expect(ERROR_CODES).toContain("CLIENT_TIMEOUT");

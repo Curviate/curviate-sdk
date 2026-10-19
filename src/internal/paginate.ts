@@ -83,6 +83,8 @@ export function pageable<TParams extends object, TPage extends PageEnvelope>(
   params: TParams | undefined,
 ): Pageable<TPage> {
   const first = fetchPage(params);
+  // Still surfaces through await or iteration; only stops a deferred or unused call crashing Node.
+  first.catch(() => {});
   return Object.assign(first, {
     async *[Symbol.asyncIterator]() {
       let page = await first;

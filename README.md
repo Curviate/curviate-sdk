@@ -350,7 +350,7 @@ try {
 }
 ```
 
-No response within the client's `timeout` throws `CLIENT_TIMEOUT` (not `INTERNAL`): a read is retried first, a write is not and may still have reached the API, so read back before resending. A network failure with no response is `INTERNAL` with no `httpStatus`.
+No response within the client's `timeout` throws `CLIENT_TIMEOUT` (not `INTERNAL`): a read is retried first and carries `retryLikelyToSucceed: true`; a write is not retried, carries `false`, and may still have reached the API, so read back before resending. A network failure with no response is `INTERNAL` with no `httpStatus`.
 
 Every error code is documented in the [API reference](https://docs.curviate.com). The
 exported `ErrorCode` type is the complete set, so `tsc` tells you when a `switch` over

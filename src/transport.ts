@@ -341,7 +341,8 @@ export async function execute<T = unknown>(
             code: "CLIENT_TIMEOUT",
             message: `No response within ${opts.timeout} ms (the client-side timeout; raise \`timeout\` in the client config). A write may still have reached the API.`,
             userFixable: true,
-            retryLikelyToSucceed: true,
+            // A write may have landed, and there is no idempotency: never invite a blind resend.
+            retryLikelyToSucceed: !isWrite,
           })
         : new CurviateError({ code: "INTERNAL", message: "Network error.", userFixable: false, retryLikelyToSucceed: true });
       // A timeout/network failure is only retried for reads.

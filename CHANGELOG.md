@@ -43,8 +43,9 @@ Changed). Regenerate from production and confirm an empty diff before publishing
   full-inbox sync on; off passes on any Tier).
 - **Error code** `CLIENT_TIMEOUT`: no response within the client's `timeout`.
   Before, it was `INTERNAL` ("Request timed out."), which read like a server
-  fault. A read is retried first; a write is not and may still have reached
-  the API. A network failure with no response stays `INTERNAL`.
+  fault. A read is retried first; a write is not, may still have reached the
+  API, and carries `retryLikelyToSucceed: false` so a generic retry loop
+  does not resend it. A network failure with no response stays `INTERNAL`.
 
 - **Offline Sequence module** (no network, key or file system; TypeScript 5.0
   or later): `Sequence` (an immutable builder: `create`, `add`,

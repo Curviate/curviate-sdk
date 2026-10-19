@@ -205,6 +205,30 @@ describe("list iterators page through the cursor", () => {
     await expect(run()).rejects.toMatchObject({ code: "INVALID_REQUEST" });
   });
 
+  it("a failed first page iterated later (or never) raises no unhandled rejection", async () => {
+    const unhandled: unknown[] = [];
+    const onUnhandled = (r: unknown) => unhandled.push(r);
+    process.on("unhandledRejection", onUnhandled);
+    try {
+      const fetchImpl = (async () =>
+        new Response(JSON.stringify({ code: "UNAUTHORIZED", message: "no", user_fixable: true, retry_likely_to_succeed: false }), {
+          status: 401,
+          headers: { "content-type": "application/json" },
+        })) as typeof fetch;
+      const later = client(fetchImpl).unibox.list();
+      client(fetchImpl).unibox.list(); // never used
+      await new Promise((r) => setTimeout(r, 20));
+      const run = async () => {
+        for await (const _ of later) void _;
+      };
+      await expect(run()).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+      await new Promise((r) => setTimeout(r, 20));
+      expect(unhandled).toEqual([]);
+    } finally {
+      process.off("unhandledRejection", onUnhandled);
+    }
+  });
+
   it("network.connections.list and unibox.list iterate the same way", async () => {
     const conn = (cursor: string | null, id: string) => ({ object: "connection_list", items: [{ member_id: id }], cursor, coverage: {} }) as unknown as ConnectionsPage;
     const c = recorder([conn("n2", "c1"), conn(null, "c2")]);
