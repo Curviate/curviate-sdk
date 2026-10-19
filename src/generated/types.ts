@@ -1454,6 +1454,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/unibox/chats/{account_id}/{chat_id}/contact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Save a chat's person as a Contact
+         * @description Saves the other person of a one-to-one chat as a Contact (or finds the one you hold) and adds Tags, never removing any. Name and headline come from LinkedIn and keep updating. Reads the chat once only when Curviate holds nothing about the person yet. Needs Automate.
+         */
+        post: operations["postV1UniboxChatsAccountIdChatIdContact"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/unibox/chats/{account_id}/{chat_id}/enrollments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add a chat's person to a Motion
+         * @description Saves the other person of a one-to-one chat as a Contact, then enrolls them in the Motion through this chat's account. A direct add: the rule that skips people you already chat with does not apply; every other rule does. Needs Automate.
+         */
+        post: operations["postV1UniboxChatsAccountIdChatIdEnrollments"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/{account_id}/jobs": {
         parameters: {
             query?: never;
@@ -18623,8 +18663,26 @@ export interface operations {
                                 /** @description When it was sent. */
                                 at?: string;
                             } | null;
-                            /** @description The Motion this chat belongs to. Null for a chat no Motion links. */
-                            motion_context: Record<string, never> | null;
+                            /** @description The Motion this chat belongs to: the most recently started Enrollment linked to it. Null for a chat no Motion links. An Enrollment that finished with finish_reason messaged_manually stopped because you messaged this person; replied, because they replied. */
+                            motion_context: {
+                                /** @description The Motion. */
+                                motion_id: string;
+                                /** @description Its name. */
+                                motion_name: string;
+                                /** @description The Enrollment of this person in that Motion. */
+                                enrollment_id: string;
+                                /**
+                                 * @description The Enrollment's status.
+                                 * @enum {string}
+                                 */
+                                enrollment_status: "pending" | "active" | "paused" | "finished" | "skipped";
+                                /** @description Why the Enrollment finished, as on the Enrollment. Null while it has not finished. */
+                                finish_reason: string | null;
+                                /** @description The Step the Enrollment is at, or ended on. */
+                                step_id: string | null;
+                                /** @description The variant its last message or invitation Step sent. Null without variants. */
+                                variant_id: string | null;
+                            } | null;
                         }[];
                         /** @description Pass it back as cursor, with the same filters, for the next page. Null on the last page. */
                         cursor: string | null;
@@ -18765,8 +18823,26 @@ export interface operations {
                             /** @description When it was sent. */
                             at?: string;
                         } | null;
-                        /** @description The Motion this chat belongs to. Null for a chat no Motion links. */
-                        motion_context: Record<string, never> | null;
+                        /** @description The Motion this chat belongs to: the most recently started Enrollment linked to it. Null for a chat no Motion links. An Enrollment that finished with finish_reason messaged_manually stopped because you messaged this person; replied, because they replied. */
+                        motion_context: {
+                            /** @description The Motion. */
+                            motion_id: string;
+                            /** @description Its name. */
+                            motion_name: string;
+                            /** @description The Enrollment of this person in that Motion. */
+                            enrollment_id: string;
+                            /**
+                             * @description The Enrollment's status.
+                             * @enum {string}
+                             */
+                            enrollment_status: "pending" | "active" | "paused" | "finished" | "skipped";
+                            /** @description Why the Enrollment finished, as on the Enrollment. Null while it has not finished. */
+                            finish_reason: string | null;
+                            /** @description The Step the Enrollment is at, or ended on. */
+                            step_id: string | null;
+                            /** @description The variant its last message or invitation Step sent. Null without variants. */
+                            variant_id: string | null;
+                        } | null;
                         safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
@@ -18983,6 +19059,281 @@ export interface operations {
             };
             /** @description Payload too large, the request body exceeds the size limit. */
             413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1UniboxChatsAccountIdChatIdContact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The account the chat belongs to (acc_...). */
+                account_id: string;
+                /** @description The chat. */
+                chat_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Tag names to add to the Contact (never removes). Up to 50 Tags per Contact; a new name creates the Tag. Omit for the Contact only. */
+                    tags?: string[];
+                };
+            };
+        };
+        responses: {
+            /** @description The Contact and all its Tags. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "unibox_contact";
+                        /** @description The Contact (con_...). Read it with GET /v1/contacts/{id}. */
+                        contact_id: string;
+                        /** @description true when this call created the Contact; false when you already held it. */
+                        created: boolean;
+                        /** @description Every Tag the Contact holds now, by name. */
+                        tags: string[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: tags is not a list of Tag names (1 to 64 characters, no , or ;), or the body has another field. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: your role does not reach a teammate's account named in account_ids. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. NO_ACTIVE_SEAT: the account has no active seat. TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team's Tier does not include Unibox (Unibox is part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_NOT_FOUND: the account is not one of your team's accounts. RESOURCE_NOT_FOUND: no such chat in your Unibox, the same answer for a chat that does not exist and for one you cannot see. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description CHAT_NOT_ONE_TO_ONE: a group chat, or a chat with a company page, has no one person to save. CONTACT_LIMIT_REACHED: a new Contact would pass your team's Contact limit, or a Tag would pass 50 Tags on the Contact or your team's Tag limit; nothing was saved. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1UniboxChatsAccountIdChatIdEnrollments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The account the chat belongs to (acc_...). It must be a sending account of the Motion. */
+                account_id: string;
+                /** @description The chat. */
+                chat_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The Motion to add the chat's person to (mot_...). This chat's account must be one of its sending accounts. */
+                    motion_id: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The Enrollment, pending until the Motion starts it. */
+            201: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "enrollment";
+                        /** @description Enrollment id (enr_...). */
+                        id: string;
+                        /** @description The Motion (mot_...). */
+                        motion_id: string;
+                        /** @description The Contact (con_...); null once the Contact is deleted. */
+                        contact_id: string | null;
+                        /** @description The sending account (acc_...); null until one is assigned. */
+                        account_id: string | null;
+                        /** @description The Sequence version this Enrollment runs on. */
+                        sequence_version: number;
+                        /** @enum {string} */
+                        status: "pending" | "active" | "paused" | "finished" | "skipped";
+                        /** @description The Step it is at; null before it starts. */
+                        current_step_id: string | null;
+                        /** @description What it waits for; null when nothing holds it. */
+                        waiting: {
+                            /** @enum {string} */
+                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch";
+                            step_id: string;
+                            /** @description ISO 8601, when the wait ends; null when open-ended. */
+                            until: string | null;
+                        } | null;
+                        /**
+                         * @description Why it finished; null unless status is finished.
+                         * @enum {string|null}
+                         */
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | null;
+                        /**
+                         * @description Why the Contact was not enrolled; null unless status is skipped.
+                         * @enum {string|null}
+                         */
+                        skip_reason: "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        /** @description More on the skip, for example the index of the where filter that failed. */
+                        skip_detail: string | null;
+                        /** @description True once the Contact replied. */
+                        replied: boolean;
+                        /** @description The variant chosen per Step: step id to variant id. */
+                        variants: {
+                            [key: string]: string;
+                        };
+                        /** @description ISO 8601. */
+                        created_at: string;
+                        /** @description When it started. */
+                        started_at: string | null;
+                        /** @description When it finished. */
+                        finished_at: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: motion_id is missing, or this chat's account is not a sending account of the Motion. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: your role does not reach a teammate's account named in account_ids. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. NO_ACTIVE_SEAT: the account has no active seat. TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team's Tier does not include Unibox (Unibox is part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_NOT_FOUND: the account is not one of your team's accounts. RESOURCE_NOT_FOUND: no such Motion, or no such chat in your Unibox (the same answer for a chat that does not exist and for one you cannot see). Nothing was saved. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MOTION_STATUS_CONFLICT: the Motion is archived or its schedule has ended, so it takes no Contacts. Nothing was saved. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description CHAT_NOT_ONE_TO_ONE: a group chat, or a chat with a company page, has no one person to add. CONTACT_LIMIT_REACHED: a new Contact would pass your team's Contact limit. CONTACT_NOT_ENROLLABLE: reason already_enrolled, in_exclusion_list, in_other_motion or filtered_out (the person does not pass the Motion's filters); no Contact or Enrollment was made. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
