@@ -45,6 +45,8 @@ export class TagsResource {
    * `archived`) is refused with `RESOURCE_IN_USE`.
    * `PATCH /v1/tags/{id}`
    *
+   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   *
    * @example
    * await curviate.tags.update("ctg_123", { name: "hot lead" });
    */

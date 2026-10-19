@@ -80,6 +80,11 @@ interface WireErrorEnvelope {
   connection_location?: unknown;
   /** `SEQUENCE_INVALID`, `MOTION_NOT_STARTABLE`: every failure as `{path, rule}`. */
   errors?: unknown;
+  /** `TIER_REQUIRED`: the feature, the lowest Tier with it, the team's Tier, an Owner's upgrade page. */
+  feature?: unknown;
+  required_tier?: unknown;
+  current_tier?: unknown;
+  upgrade_url?: unknown;
 }
 
 /**
@@ -222,6 +227,17 @@ async function errorFromResponse(res: Response): Promise<{ err: CurviateError; r
       ? { connectionLocation: env.connection_location as ConnectionLocation }
       : {}),
     ...(Array.isArray(env?.errors) ? { errors: toErrorDetails(env.errors) } : {}),
+    // `TIER_REQUIRED` details. `required_tier` / `current_tier` are null-BEARING
+    // (no Tier has it / the team has none), so null survives; a non-string
+    // value (neither a name nor null) is dropped rather than mistyped.
+    ...(typeof env?.feature === "string" ? { feature: env.feature } : {}),
+    ...(typeof env?.required_tier === "string" || env?.required_tier === null
+      ? { requiredTier: env.required_tier }
+      : {}),
+    ...(typeof env?.current_tier === "string" || env?.current_tier === null
+      ? { currentTier: env.current_tier }
+      : {}),
+    ...(typeof env?.upgrade_url === "string" ? { upgradeUrl: env.upgrade_url } : {}),
   });
   return { err, refusesRetry: env?.retry_likely_to_succeed === false };
 }

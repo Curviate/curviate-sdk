@@ -37,6 +37,7 @@ import {
   type TagsResource,
   type MotionsResource,
   type EnrollmentsResource,
+  type TierResource,
 } from "./resources/index.js";
 
 export class Curviate {
@@ -65,6 +66,8 @@ export class Curviate {
   readonly motions: MotionsResource;
   /** One Contact x Motion x account run of a Motion. */
   readonly enrollments: EnrollmentsResource;
+  /** The Team's Tier and its features; `TIER_REQUIRED` explained. */
+  readonly tier: TierResource;
 
   constructor(config: CurviateConfig) {
     this.config = resolveConfig(config);
@@ -82,6 +85,7 @@ export class Curviate {
     this.tags = ns.tags;
     this.motions = ns.motions;
     this.enrollments = ns.enrollments;
+    this.tier = ns.tier;
   }
 
   /**

@@ -4,7 +4,7 @@
  * The surface is split in two:
  * - **Root-scoped** (`accounts`, `auth`, `connectRequests`, `webhooks`, `drafts`,
  *   `teams`, `notifications`, `contacts`, `contactLists`, `tags`, `motions`,
- *   `enrollments`) hang off the
+ *   `enrollments`, `tier`) hang off the
  *   root client only. Connected-account management, connect/reconnect, webhook
  *   registration, Drafts (a Draft's account is optional), teams, Curviate's own
  *   Notifications and the team's Contacts, lists, Tags, Motions and Enrollments are
@@ -41,6 +41,7 @@ import { ContactsResource } from "./contacts.js";
 import { ContactListsResource } from "./contact-lists.js";
 import { TagsResource } from "./tags.js";
 import { MotionsResource, EnrollmentsResource } from "./motions.js";
+import { TierResource } from "./tier.js";
 import { SalesNavigatorResource } from "./sales-navigator.js";
 import { RecruiterResource } from "./recruiter.js";
 import { JobsResource } from "./jobs.js";
@@ -68,6 +69,7 @@ export { ContactsResource, ContactImportsResource } from "./contacts.js";
 export { ContactListsResource } from "./contact-lists.js";
 export { TagsResource } from "./tags.js";
 export { MotionsResource, EnrollmentsResource } from "./motions.js";
+export { TierResource } from "./tier.js";
 export { SalesNavigatorResource } from "./sales-navigator.js";
 export { RecruiterResource } from "./recruiter.js";
 export { JobsResource } from "./jobs.js";
@@ -141,6 +143,7 @@ export interface RootNamespaces
   tags: TagsResource;
   motions: MotionsResource;
   enrollments: EnrollmentsResource;
+  tier: TierResource;
 }
 
 /** Build the root-client namespace bag. */
@@ -158,6 +161,7 @@ export function buildRootNamespaces(ctx: RequestContext): RootNamespaces {
     tags: new TagsResource(ctx),
     motions: new MotionsResource(ctx),
     enrollments: new EnrollmentsResource(ctx),
+    tier: new TierResource(ctx),
   };
 }
 

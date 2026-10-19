@@ -155,6 +155,8 @@ export type {
   EnrollmentSignalBody,
 } from "./resources/motions.js";
 
+export type { TierResult, TierName, TierFeature } from "./resources/tier.js";
+
 export type {
   ResourceNamespaces,
   RootNamespaces,
