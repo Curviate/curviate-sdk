@@ -360,7 +360,8 @@ export const ERROR_CODES = [
   //   Only a draft can be deleted: archive instead.
   // - `ENROLLMENT_NOT_ACTIVE` (409): the Enrollment's status does not take
   //   this operation (stop: pending, active or paused; signal: active or
-  //   paused).
+  //   paused; resume: active, paused or finished, not when the account or
+  //   Contact is gone).
   // - `CONTACT_NOT_ENROLLABLE` (422): adding a Contact to a Motion from a chat
   //   was refused (already enrolled, excluded, in another Motion, filtered).
   "MOTION_NOT_STARTABLE",
