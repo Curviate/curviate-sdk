@@ -44,6 +44,8 @@ export interface ExecuteOptions {
   rawBody?: { data: Blob | ArrayBuffer | Uint8Array; contentType: string };
   /** Injectable fetch (edge runtimes / tests). Defaults to global fetch. */
   fetch?: typeof fetch;
+  /** Sent as `X-Curviate-Team` when set. */
+  team?: string;
   /** @internal deterministic jitter for tests; defaults to Math.random()*200. */
   _jitterFn?: () => number;
   /** @internal deterministic sleep for tests; defaults to setTimeout. */
@@ -221,6 +223,7 @@ function buildInit(method: HttpMethod, opts: ExecuteOptions, signal: AbortSignal
   const headers: Record<string, string> = {
     authorization: `Bearer ${opts.apiKey}`,
   };
+  if (opts.team !== undefined) headers["x-curviate-team"] = opts.team;
   const init: RequestInit = { method, headers, signal };
 
   if (opts.rawBody !== undefined && method !== "GET" && method !== "HEAD") {

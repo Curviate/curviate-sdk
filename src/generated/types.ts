@@ -2670,6 +2670,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/accounts/{account_id}/team-access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Turn team access on or off for an account
+         * @description team_access: false opts the account out: nobody else can operate it, it leaves every Motion that held it, and its queued enrichment visits are dropped. true shares it again. Only the person who connected the account can do this, whatever its seat or the team's payment state.
+         */
+        put: operations["putV1AccountsAccountIdTeamAccess"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/auth/intent": {
         parameters: {
             query?: never;
@@ -2764,6 +2784,66 @@ export interface paths {
         get: operations["getV1AuthSessionsSessionId"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/connect-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask a person to connect or reconnect a LinkedIn account
+         * @description Credential-free connect: omit account_id for a new account, or name one to reconnect. Relay url to the person, who connects in their own Curviate dashboard. Never ask for a LinkedIn password, cookie or code. Read the request until status leaves pending. A retry makes a second request.
+         */
+        post: operations["postV1AuthConnectRequests"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/connect-requests/{request_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a connect request
+         * @description Returns a connect request's status, the error code of its last failed sign-in attempt and, once completed, the account it connected. Carries no credential, code or challenge detail.
+         */
+        get: operations["getV1AuthConnectRequestsRequestId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/connect-requests/{request_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel a connect request
+         * @description Cancels a pending connect request; a sign-in in progress on it is ended so nothing connects. A cancelled request answers the same again.
+         */
+        post: operations["postV1AuthConnectRequestsRequestIdCancel"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3008,6 +3088,158 @@ export interface paths {
          * @description Updates tenant-wide safety defaults per limit profile and budget row; affects every account that hasn't overridden the field, immediately. Fields, posture and precedence: /reference/safety.
          */
         patch: operations["patchV1SafetyPolicy"];
+        trace?: never;
+    };
+    "/v1/teams": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List your teams
+         * @description The teams you are a member of, with your role in each. is_current marks the team this credential acts in; an API key acts in exactly one team.
+         */
+        get: operations["getV1Teams"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/teams/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the current team
+         * @description The team this credential acts in: its name, your role, and the Owner who receives invoices.
+         */
+        get: operations["getV1TeamsCurrent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update the current team
+         * @description Renames the team, or sets billing_owner_user_id: the Owner whose email receives invoices. The user named must be an Owner of this team. Owners only.
+         */
+        patch: operations["patchV1TeamsCurrent"];
+        trace?: never;
+    };
+    "/v1/teams/current/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the team's members
+         * @description Everyone in the current team, oldest membership first, with their role. Every role may read it.
+         */
+        get: operations["getV1TeamsCurrentMembers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/teams/current/members/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove a member, or leave the team
+         * @description An Owner removes a member; anyone leaves with user_id me. Nobody leaves or is removed from their own default team, the last Owner stays, and the Owner who receives invoices stays until billing_owner_user_id names another Owner. The member's API key and connectors for this team stop working at once.
+         */
+        delete: operations["deleteV1TeamsCurrentMembersUserId"];
+        options?: never;
+        head?: never;
+        /**
+         * Change a member's role
+         * @description Sets a member's role. The team always keeps one Owner, a user keeps Owner in their own default team, and the Owner who receives invoices stays an Owner until billing_owner_user_id names another Owner. Demoting an Owner revokes the pending invites they sent. Owners only.
+         */
+        patch: operations["patchV1TeamsCurrentMembersUserId"];
+        trace?: never;
+    };
+    "/v1/teams/current/invites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the team's invites
+         * @description Invites of the current team, newest first. Never includes the invite link. Owners only.
+         */
+        get: operations["getV1TeamsCurrentInvites"];
+        put?: never;
+        /**
+         * Invite people to the team
+         * @description Invites up to 20 people by email, each with a role (member by default), and emails each a link valid for 7 days. All or nothing: if any row fails, nothing is created or sent, and the error names the row. The invitee accepts in the dashboard, signed in with the invited email. Owners only.
+         */
+        post: operations["postV1TeamsCurrentInvites"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/teams/current/invites/{invite_id}/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Re-send an invite
+         * @description Emails a pending or expired invite again with a new link; the previous link stops working and the 7 days start again. Owners only.
+         */
+        post: operations["postV1TeamsCurrentInvitesInviteIdResend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/teams/current/invites/{invite_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Revoke an invite
+         * @description Revokes a pending or expired invite; its link stops working. Owners only.
+         */
+        delete: operations["deleteV1TeamsCurrentInvitesInviteId"];
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/v1/contacts": {
@@ -3608,6 +3840,86 @@ export interface paths {
          * @description Records a signal for an active or paused Enrollment whose Sequence has a Step waiting for it (`until signal.<name>`). Typical use: write the researched text to the Contact's extra fields, then signal. A name no Step waits for is refused, with the awaited names in the message. Needs Automate.
          */
         post: operations["postV1EnrollmentsIdSignal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/analytics/motions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Motion analytics overview
+         * @description Results of your Motions, in total, per Motion and per account: Enrollments by state, invitations, messages, replies, engagement and a daily series. Two rates, never a score, each over cohorts at least 7 days old. Read-only, no LinkedIn call.
+         */
+        get: operations["getV1AnalyticsMotions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/analytics/motions/{motion_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Motion analytics for one motion
+         * @description One Motion's results with a row per step and per variant: queued, executed, skipped, failed, then and else counts, and the acceptance or reply rate of each messaging step (last touch). Variants are listed in document order, never ranked. Read-only, makes no LinkedIn call.
+         */
+        get: operations["getV1AnalyticsMotionsMotionId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/analytics/activity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Core activity in budget units
+         * @description Every budgeted LinkedIn call your accounts made, by budget row, account and day: used, failed and refused, beside each account's current budget. Each row counts its own unit; no figure adds rows together. Covers the accounts you may operate. Read-only.
+         */
+        get: operations["getV1AnalyticsActivity"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/analytics/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Motion events feed
+         * @description Recent Motion events, newest first: steps executed, skipped or failed, invitations accepted and replies, with the person's name. Keyset paging: events recorded after your first page never shift later pages. Read-only, no LinkedIn call.
+         */
+        get: operations["getV1AnalyticsEvents"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -31902,7 +32214,10 @@ export interface operations {
                              * @enum {string}
                              */
                             status?: "active" | "reconnect_needed" | "restricted" | "connecting" | "disconnected";
-                            /** @enum {string} */
+                            /**
+                             * @description How the account last connected or reconnected successfully.
+                             * @enum {string}
+                             */
                             auth_method?: "credentials" | "cookie" | "hosted";
                             full_name?: string | null;
                             headline?: string | null;
@@ -32019,6 +32334,7 @@ export interface operations {
                         account_id?: string;
                         /** @enum {string} */
                         status?: "active" | "reconnect_needed" | "restricted" | "connecting" | "disconnected";
+                        /** @description How the account last connected or reconnected successfully. */
                         auth_method?: string;
                         full_name?: string | null;
                         headline?: string | null;
@@ -32374,6 +32690,7 @@ export interface operations {
                         account_id?: string;
                         /** @enum {string} */
                         status?: "active" | "reconnect_needed" | "restricted" | "connecting" | "disconnected";
+                        /** @description How the account last connected or reconnected successfully. */
                         auth_method?: string;
                         full_name?: string | null;
                         headline?: string | null;
@@ -32620,6 +32937,104 @@ export interface operations {
             };
         };
     };
+    putV1AccountsAccountIdTeamAccess: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The account ID (`acc_...`). */
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Whether your team may use this account. false opts it out: nobody else can operate it, it leaves every Motion that held it, and its queued profile enrichment visits are dropped. true shares it again (it does not rejoin a Motion). */
+                    team_access: boolean;
+                };
+            };
+        };
+        responses: {
+            /** @description The account's team access after the change. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "account_team_access";
+                        account_id: string;
+                        team_access: boolean;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: team_access is missing or not a boolean. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_OWNER_ONLY: only the person who connected the account can change this. INSUFFICIENT_ROLE: your role does not reach a teammate's account. ACCOUNT_NOT_SHARED: the account is already opted out and you are not its person. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_NOT_FOUND: the account is not one of your team's accounts. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     postV1AuthIntent: {
         parameters: {
             query?: never;
@@ -32646,9 +33061,9 @@ export interface operations {
                     };
                     /** @description Session-cookie authentication, supplied as a NESTED object (li_at does not go at the top level). Required when auth_method=cookie, which also requires a top-level user_agent. */
                     cookie?: {
-                        /** @description LinkedIn session cookie (li_at). Encrypted at rest, never logged. */
+                        /** @description LinkedIn session cookie (li_at). Used for this connect only; never stored or logged. */
                         li_at: string;
-                        /** @description Optional premium-session cookie for Sales Navigator / Recruiter sessions. Encrypted at rest, never logged. */
+                        /** @description Optional premium-session cookie (li_a) for Sales Navigator / Recruiter sessions. Used for this connect only; never stored or logged. */
                         li_a?: string;
                     };
                     /** @description Present = re-authenticate this existing account in place (reconnect); omit = connect a new account. */
@@ -32764,7 +33179,10 @@ export interface operations {
                         account_id?: string;
                         /** @enum {string} */
                         status?: "active" | "reconnect_needed" | "restricted" | "disconnected";
-                        /** @enum {string} */
+                        /**
+                         * @description How the account last connected or reconnected successfully.
+                         * @enum {string}
+                         */
                         auth_method?: "credentials" | "cookie";
                         full_name?: string | null;
                         headline?: string | null;
@@ -32884,7 +33302,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ACCOUNT_ALREADY_LINKED: this LinkedIn account is already linked. It names your own account_id when your tenant owns it; otherwise no id is named, it is not one you can manage here, and retrying will not help. CONNECTION_IN_PROGRESS: another connection attempt for this identity is open; wait for it to finish or expire. */
+            /** @description ACCOUNT_ALREADY_LINKED: this LinkedIn account is already linked. It names your own account_id when your tenant owns it; otherwise no id is named, it is not one you can manage here, and retrying will not help. CONNECTION_IN_PROGRESS: another connection attempt for this identity is open; wait for it to finish or expire. LINKEDIN_ACCOUNT_MISMATCH (a reconnect, account_id given): the sign-in is a different LinkedIn account than the one being reconnected, which is unchanged; sign in to LinkedIn as that account's person, then try again. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -33633,6 +34051,304 @@ export interface operations {
             /** @description Gateway timeout. */
             504: {
                 headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1AuthConnectRequests: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Omit to ask for a new account. An existing account's id (acc_...) asks for its reconnect. */
+                    account_id?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The request. Relay url and expires_at to the person; read the request until it leaves pending. */
+            201: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object?: "connect_request";
+                        /** @description The connect request id (creq_...). Opaque. */
+                        id?: string;
+                        /**
+                         * @description connect asks for a new account; reconnect for the named one.
+                         * @enum {string}
+                         */
+                        kind?: "connect" | "reconnect";
+                        /**
+                         * @description pending until the person completes it in their dashboard. completed: account_id is the connected account. expired: not started within 15 minutes. failed: three failed sign-ins, or the account to reconnect is gone. cancelled: someone cancelled it.
+                         * @enum {string}
+                         */
+                        status?: "pending" | "completed" | "expired" | "cancelled" | "failed";
+                        /** @description reconnect: the named account, from creation. connect: the new account once completed, else null. */
+                        account_id?: string | null;
+                        /** @description The error code that ended the last failed sign-in attempt (for example CHECKPOINT_EXPIRED), else null. Never a message. */
+                        error_code?: string | null;
+                        /** @description The dashboard link that opens the request. It works only for the person it is for, signed in to their own Curviate dashboard in this team; it carries no secret. */
+                        url?: string;
+                        /** @description ISO-8601 UTC: a sign-in must start before this, 15 minutes after creation. */
+                        expires_at?: string;
+                        /** @description ISO-8601 UTC creation time. */
+                        created_at?: string;
+                        /** @description ISO-8601 UTC completion time, else null. */
+                        completed_at?: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: an unknown body key (the error names it) or a malformed account_id. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description In a team, a reconnect for an account you may not operate: INSUFFICIENT_ROLE (a Member naming a teammate's account) or ACCOUNT_NOT_SHARED (team access is off for it). Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_NOT_FOUND: the account to reconnect is unknown, another team's, or disconnected. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1AuthConnectRequestsRequestId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connect request id (creq_...) returned when it was created. */
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The request. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object?: "connect_request";
+                        /** @description The connect request id (creq_...). Opaque. */
+                        id?: string;
+                        /**
+                         * @description connect asks for a new account; reconnect for the named one.
+                         * @enum {string}
+                         */
+                        kind?: "connect" | "reconnect";
+                        /**
+                         * @description pending until the person completes it in their dashboard. completed: account_id is the connected account. expired: not started within 15 minutes. failed: three failed sign-ins, or the account to reconnect is gone. cancelled: someone cancelled it.
+                         * @enum {string}
+                         */
+                        status?: "pending" | "completed" | "expired" | "cancelled" | "failed";
+                        /** @description reconnect: the named account, from creation. connect: the new account once completed, else null. */
+                        account_id?: string | null;
+                        /** @description The error code that ended the last failed sign-in attempt (for example CHECKPOINT_EXPIRED), else null. Never a message. */
+                        error_code?: string | null;
+                        /** @description The dashboard link that opens the request. It works only for the person it is for, signed in to their own Curviate dashboard in this team; it carries no secret. */
+                        url?: string;
+                        /** @description ISO-8601 UTC: a sign-in must start before this, 15 minutes after creation. */
+                        expires_at?: string;
+                        /** @description ISO-8601 UTC creation time. */
+                        created_at?: string;
+                        /** @description ISO-8601 UTC completion time, else null. */
+                        completed_at?: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND. No such connect request in this team (unknown, another team's, removed a day after it ended, or not visible to you). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1AuthConnectRequestsRequestIdCancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The connect request id (creq_...) returned when it was created. */
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The request, cancelled. Cancelling an already cancelled request answers the same. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object?: "connect_request";
+                        /** @description The connect request id (creq_...). Opaque. */
+                        id?: string;
+                        /**
+                         * @description connect asks for a new account; reconnect for the named one.
+                         * @enum {string}
+                         */
+                        kind?: "connect" | "reconnect";
+                        /**
+                         * @description pending until the person completes it in their dashboard. completed: account_id is the connected account. expired: not started within 15 minutes. failed: three failed sign-ins, or the account to reconnect is gone. cancelled: someone cancelled it.
+                         * @enum {string}
+                         */
+                        status?: "pending" | "completed" | "expired" | "cancelled" | "failed";
+                        /** @description reconnect: the named account, from creation. connect: the new account once completed, else null. */
+                        account_id?: string | null;
+                        /** @description The error code that ended the last failed sign-in attempt (for example CHECKPOINT_EXPIRED), else null. Never a message. */
+                        error_code?: string | null;
+                        /** @description The dashboard link that opens the request. It works only for the person it is for, signed in to their own Curviate dashboard in this team; it carries no secret. */
+                        url?: string;
+                        /** @description ISO-8601 UTC: a sign-in must start before this, 15 minutes after creation. */
+                        expires_at?: string;
+                        /** @description ISO-8601 UTC creation time. */
+                        created_at?: string;
+                        /** @description ISO-8601 UTC completion time, else null. */
+                        completed_at?: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND. No such connect request in this team (unknown, another team's, removed a day after it ended, or not visible to you). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description CONNECT_REQUEST_NOT_PENDING: it is completed, expired or failed (the message names which). CONNECT_REQUEST_IN_USE: the person is completing it right now; try again in a minute. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -36969,6 +37685,1020 @@ export interface operations {
                 };
             };
             /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1Teams: {
+        parameters: {
+            query?: {
+                /** @description Max items per page (1-100, default 20). */
+                limit?: number;
+                /** @description Pagination cursor from a previous response; pass it back verbatim. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Your teams, oldest membership first. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "team_list";
+                        /** @description One page of teams. */
+                        items: {
+                            /**
+                             * @description Response type discriminator.
+                             * @enum {string}
+                             */
+                            object: "team";
+                            /** @description Team id (tnt_...). */
+                            team_id: string;
+                            /** @description The team's name. */
+                            name: string | null;
+                            /**
+                             * @description Your role in the team.
+                             * @enum {string}
+                             */
+                            role: "owner" | "manager" | "member";
+                            /** @description Whether this is your own default team, created with your login. You can never leave it. */
+                            is_default: boolean;
+                            /** @description Whether this credential acts in this team. */
+                            is_current: boolean;
+                        }[];
+                        /** @description Pass back as cursor for the next page; null on the last page. */
+                        cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: limit out of range, or a cursor that is not from a previous response. The message names the parameter. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1TeamsCurrent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The current team. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "team";
+                        /** @description Team id (tnt_...). */
+                        team_id: string;
+                        /** @description The team's name. */
+                        name: string | null;
+                        /**
+                         * @description Your role in the team.
+                         * @enum {string}
+                         */
+                        role: "owner" | "manager" | "member";
+                        /** @description Whether this is your own default team, created with your login. You can never leave it. */
+                        is_default: boolean;
+                        /** @description Whether this credential acts in this team. */
+                        is_current: boolean;
+                        /** @description The Owner whose email receives invoices. */
+                        billing_owner_user_id: string | null;
+                        /** @description When the team was created (UTC). */
+                        created_at: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: an empty or too long name, a billing_owner_user_id that is not an Owner of this team, or an unknown field. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: only an Owner of the team may do this. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    patchV1TeamsCurrent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The team's name, 1 to 80 characters. Leading and trailing spaces are removed. */
+                    name?: string;
+                    /** @description The user id of an Owner of this team. */
+                    billing_owner_user_id?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The current team. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "team";
+                        /** @description Team id (tnt_...). */
+                        team_id: string;
+                        /** @description The team's name. */
+                        name: string | null;
+                        /**
+                         * @description Your role in the team.
+                         * @enum {string}
+                         */
+                        role: "owner" | "manager" | "member";
+                        /** @description Whether this is your own default team, created with your login. You can never leave it. */
+                        is_default: boolean;
+                        /** @description Whether this credential acts in this team. */
+                        is_current: boolean;
+                        /** @description The Owner whose email receives invoices. */
+                        billing_owner_user_id: string | null;
+                        /** @description When the team was created (UTC). */
+                        created_at: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: an empty or too long name, a billing_owner_user_id that is not an Owner of this team, or an unknown field. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: only an Owner of the team may do this. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1TeamsCurrentMembers: {
+        parameters: {
+            query?: {
+                /** @description Max items per page (1-100, default 20). */
+                limit?: number;
+                /** @description Pagination cursor from a previous response; pass it back verbatim. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The team's members, oldest membership first. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "team_member_list";
+                        /** @description One page of members. */
+                        items: {
+                            /**
+                             * @description Response type discriminator.
+                             * @enum {string}
+                             */
+                            object: "team_member";
+                            /** @description The member's user id. */
+                            user_id: string;
+                            /** @description The member's login email. */
+                            email: string | null;
+                            /** @description The member's name, when they set one. */
+                            name: string | null;
+                            /**
+                             * @description The role in the team.
+                             * @enum {string}
+                             */
+                            role: "owner" | "manager" | "member";
+                            /** @description Whether invoices go to this member's email. */
+                            is_billing_owner: boolean;
+                            /** @description Whether this team is the member's own default team (they cannot be demoted or removed in it). */
+                            is_default_team: boolean;
+                            /** @description When they joined (UTC). */
+                            joined_at: string;
+                        }[];
+                        /** @description Pass back as cursor for the next page; null on the last page. */
+                        cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: limit out of range, or a cursor that is not from a previous response. The message names the parameter. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    deleteV1TeamsCurrentMembersUserId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The member's user id, or me to leave the team yourself. */
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The member is no longer in the team. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "team_member";
+                        /** @description The user who left or was removed. */
+                        user_id: string;
+                        /**
+                         * @description Always true.
+                         * @enum {boolean}
+                         */
+                        deleted: true;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: only an Owner may remove someone else. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no member with this user id in the current team. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description LAST_OWNER: the team would have no Owner. DEFAULT_TEAM_PROTECTED: nobody leaves or is removed from their own default team. BILLING_OWNER_REQUIRED: invoices go to this member; point billing_owner_user_id at another Owner first. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    patchV1TeamsCurrentMembersUserId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The member's user id. */
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description owner, manager or member.
+                     * @enum {string}
+                     */
+                    role: "owner" | "manager" | "member";
+                };
+            };
+        };
+        responses: {
+            /** @description The member, with the new role. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "team_member";
+                        /** @description The member's user id. */
+                        user_id: string;
+                        /** @description The member's login email. */
+                        email: string | null;
+                        /** @description The member's name, when they set one. */
+                        name: string | null;
+                        /**
+                         * @description The role in the team.
+                         * @enum {string}
+                         */
+                        role: "owner" | "manager" | "member";
+                        /** @description Whether invoices go to this member's email. */
+                        is_billing_owner: boolean;
+                        /** @description Whether this team is the member's own default team (they cannot be demoted or removed in it). */
+                        is_default_team: boolean;
+                        /** @description When they joined (UTC). */
+                        joined_at: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: role is not owner, manager or member. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: only an Owner of the team may do this. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no member with this user id in the current team. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description LAST_OWNER: the team would have no Owner. DEFAULT_TEAM_PROTECTED: this is the member's own default team. BILLING_OWNER_REQUIRED: invoices go to this member; point billing_owner_user_id at another Owner first. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1TeamsCurrentInvites: {
+        parameters: {
+            query?: {
+                /** @description Max items per page (1-100, default 20). */
+                limit?: number;
+                /** @description Pagination cursor from a previous response; pass it back verbatim. */
+                cursor?: string;
+                /** @description Only invites in this status. */
+                status?: "pending" | "expired" | "accepted" | "revoked";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The team's invites, newest first. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "team_invite_list";
+                        /** @description One page of invites. */
+                        items: {
+                            /**
+                             * @description Response type discriminator.
+                             * @enum {string}
+                             */
+                            object: "team_invite";
+                            /** @description Invite id (tinv_...). */
+                            invite_id: string;
+                            /** @description The invited email, lower case. */
+                            email: string;
+                            /**
+                             * @description The role the invitee gets on accepting.
+                             * @enum {string}
+                             */
+                            role: "owner" | "manager" | "member";
+                            /**
+                             * @description pending until accepted, revoked or 7 days pass (then expired; re-send it to renew).
+                             * @enum {string}
+                             */
+                            status: "pending" | "expired" | "accepted" | "revoked";
+                            /** @description The Owner who sent it last. */
+                            invited_by_user_id: string;
+                            /** @description When the link stops working (UTC). */
+                            expires_at: string;
+                            /** @description When the invite was created (UTC). */
+                            created_at: string;
+                        }[];
+                        /** @description Pass back as cursor for the next page; null on the last page. */
+                        cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: an unknown status, limit out of range, or a cursor that is not from a previous response. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: only an Owner of the team may do this. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1TeamsCurrentInvites: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description 1 to 20 invites. */
+                    invites: {
+                        /** @description The invitee's email address. */
+                        email: string;
+                        /**
+                         * @description owner, manager or member (default).
+                         * @enum {string}
+                         */
+                        role?: "owner" | "manager" | "member";
+                    }[];
+                };
+            };
+        };
+        responses: {
+            /** @description The invites, each pending, and an email sent for each. The link is only in the email. */
+            201: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "team_invite_list";
+                        /** @description The invites created, in request order. */
+                        items: {
+                            /**
+                             * @description Response type discriminator.
+                             * @enum {string}
+                             */
+                            object: "team_invite";
+                            /** @description Invite id (tinv_...). */
+                            invite_id: string;
+                            /** @description The invited email, lower case. */
+                            email: string;
+                            /**
+                             * @description The role the invitee gets on accepting.
+                             * @enum {string}
+                             */
+                            role: "owner" | "manager" | "member";
+                            /**
+                             * @description pending until accepted, revoked or 7 days pass (then expired; re-send it to renew).
+                             * @enum {string}
+                             */
+                            status: "pending" | "expired" | "accepted" | "revoked";
+                            /** @description The Owner who sent it last. */
+                            invited_by_user_id: string;
+                            /** @description When the link stops working (UTC). */
+                            expires_at: string;
+                            /** @description When the invite was created (UTC). */
+                            created_at: string;
+                        }[];
+                        /** @description Pass back as cursor for the next page; null on the last page. */
+                        cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: 0 or more than 20 rows, a malformed email, the same email twice in the batch, or an unknown role. The message names the row, for example invites[2].email. Nothing is created or sent. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: only an Owner of the team may do this. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ALREADY_MEMBER: an email already belongs to a member. INVITE_ALREADY_PENDING: an invite to an email already exists (re-send or revoke it). INVITE_LIMIT_REACHED: the team has 50 pending invites. The message names the row; nothing is created or sent. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RATE_LIMIT_TENANT: at most 100 invite emails per team and 50 per inviter in 24 hours. retry_hint says when to retry. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1TeamsCurrentInvitesInviteIdResend: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The invite id (tinv_...). */
+                invite_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The invite. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "team_invite";
+                        /** @description Invite id (tinv_...). */
+                        invite_id: string;
+                        /** @description The invited email, lower case. */
+                        email: string;
+                        /**
+                         * @description The role the invitee gets on accepting.
+                         * @enum {string}
+                         */
+                        role: "owner" | "manager" | "member";
+                        /**
+                         * @description pending until accepted, revoked or 7 days pass (then expired; re-send it to renew).
+                         * @enum {string}
+                         */
+                        status: "pending" | "expired" | "accepted" | "revoked";
+                        /** @description The Owner who sent it last. */
+                        invited_by_user_id: string;
+                        /** @description When the link stops working (UTC). */
+                        expires_at: string;
+                        /** @description When the invite was created (UTC). */
+                        created_at: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: only an Owner of the team may do this. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no invite with this id in the current team. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INVITE_NOT_PENDING: the invite was already accepted or revoked; send a new one. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RATE_LIMIT_TENANT: at most 5 sends of one invite, 100 per team and 50 per inviter in 24 hours. retry_hint says when to retry. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    deleteV1TeamsCurrentInvitesInviteId: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The invite id (tinv_...). */
+                invite_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The invite. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "team_invite";
+                        /** @description Invite id (tinv_...). */
+                        invite_id: string;
+                        /** @description The invited email, lower case. */
+                        email: string;
+                        /**
+                         * @description The role the invitee gets on accepting.
+                         * @enum {string}
+                         */
+                        role: "owner" | "manager" | "member";
+                        /**
+                         * @description pending until accepted, revoked or 7 days pass (then expired; re-send it to renew).
+                         * @enum {string}
+                         */
+                        status: "pending" | "expired" | "accepted" | "revoked";
+                        /** @description The Owner who sent it last. */
+                        invited_by_user_id: string;
+                        /** @description When the link stops working (UTC). */
+                        expires_at: string;
+                        /** @description When the invite was created (UTC). */
+                        created_at: string;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: only an Owner of the team may do this. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no invite with this id in the current team. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INVITE_NOT_PENDING: the invite was already accepted or revoked; send a new one. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RATE_LIMIT_TENANT: at most 5 sends of one invite, 100 per team and 50 per inviter in 24 hours. retry_hint says when to retry. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -42179,6 +43909,1044 @@ export interface operations {
             };
             /** @description Payload too large, the request body exceeds the size limit. */
             413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1AnalyticsMotions: {
+        parameters: {
+            query?: {
+                /** @description First day of the window, YYYY-MM-DD, read in timezone. Default: 29 days before to. */
+                from?: string;
+                /** @description Last day of the window, inclusive, YYYY-MM-DD, read in timezone. Default: today (29 days after from when only from is set); a later day is clamped to today. */
+                to?: string;
+                /** @description IANA zone the days are read in, e.g. Europe/Berlin. Default: UTC. */
+                timezone?: string;
+                /** @description Only this account's records (acc_...). Default: every account you can see, plus records with no account. */
+                account_id?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Motion results across your Motions. totals counts every visible record, archived Motions included; motions lists every Motion but drafts (archived ones only with records in the window), latest activity first, at most 100 (motions_truncated). Lags: a step counts once it settles, a reply within a minute, an acceptance about 2 hours after it happens. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "analytics_motions";
+                        scope: {
+                            /** @description The account_id filter; null when every visible account counts. */
+                            account_id: string | null;
+                        };
+                        /** @description The window as applied. */
+                        window: {
+                            /** @description First day, YYYY-MM-DD. */
+                            from: string;
+                            /** @description Last day, inclusive. */
+                            to: string;
+                            /** @description IANA zone the days are read in. */
+                            timezone: string;
+                            /** @description Days in the window. */
+                            days: number;
+                        };
+                        /** @description UTC instant of the read; maturity is measured from it. */
+                        generated_at: string;
+                        totals: {
+                            /** @description Enrollments by state right now; the window does not apply. A Contact enrolled with two accounts counts twice. */
+                            enrollments: {
+                                /** @description Waiting to start (pending). */
+                                queued: number;
+                                /** @description Running (active). */
+                                in_progress: number;
+                                /** @description Paused. */
+                                paused: number;
+                                /** @description Finished, for any reason but a lost account (replied and messaged_manually included). */
+                                finished: number;
+                                /** @description Finished because the account became unavailable or was removed. */
+                                failed: number;
+                                /** @description Skipped at admission or start. */
+                                skipped: number;
+                            };
+                            /** @description Invitations, each on its send day. */
+                            invites: {
+                                /** @description Invitations sent in the window. One whose send result was unknown counts once it is accepted. */
+                                sent: number;
+                                /** @description Of those, accepted so far, whenever detected. */
+                                accepted: number;
+                                /** @description Of those, sent less than 7 days ago: not yet in the rate. */
+                                maturing: number;
+                            };
+                            /** @description Acceptance rate over invitations sent in the window that are at least 7 days old, each counted on its own send day (the acceptance floor's rule). Withdrawn invitations stay in the denominator. */
+                            acceptance: {
+                                /** @description Numerator: the accepted part of sent. */
+                                accepted: number;
+                                /** @description Denominator. */
+                                sent: number;
+                                /** @description accepted / sent, 4 decimals; null when sent is 0. */
+                                rate: number | null;
+                                /** @description True when sent is below 30. The rate is still returned. */
+                                low_sample: boolean;
+                            };
+                            messages: {
+                                /** @description message.send and inmail.send steps executed in the window (messages, not people). */
+                                sent: number;
+                                /** @description Enrollments whose first message falls in the window, with no reply before it. */
+                                messaged: number;
+                                /** @description Of those, first messaged less than 7 days ago. */
+                                maturing: number;
+                            };
+                            /** @description Reply rate over Enrollments first messaged in the window at least 7 days ago, with no reply before that message. replied: those that replied at or after it. */
+                            reply: {
+                                /** @description Numerator: the replied part of messaged. */
+                                replied: number;
+                                /** @description Denominator. */
+                                messaged: number;
+                                /** @description replied / messaged, 4 decimals; null when messaged is 0. */
+                                rate: number | null;
+                                /** @description True when messaged is below 30. The rate is still returned. */
+                                low_sample: boolean;
+                            };
+                            /** @description Enrollments whose first reply came in the window. A reply is an inbound 1:1 message from the enrolled person on the Enrollment's account, counted once per Enrollment; any other inbound message is not counted. A reply up to 30 days after the Enrollment finished still counts. */
+                            replies: number;
+                            /** @description Engagement steps executed in the window. A first-step profile visit that also identified the person counts once. */
+                            engagement: {
+                                /** @description profile.view steps executed. */
+                                views: number;
+                                /** @description post.react steps executed, any reaction. */
+                                reactions: number;
+                                /** @description profile.follow steps executed. */
+                                follows: number;
+                                /** @description post.comment steps executed. */
+                                comments: number;
+                                /** @description skill.endorse steps executed. */
+                                endorsements: number;
+                            };
+                        };
+                        /** @description One entry per day of the window, oldest first, zeros included. Each event on its own day; no rates. */
+                        daily: {
+                            /** @description YYYY-MM-DD in timezone. */
+                            date: string;
+                            /** @description Invitations sent that day. */
+                            invites_sent: number;
+                            /** @description Acceptances detected that day. */
+                            accepted: number;
+                            /** @description Messages sent that day. */
+                            messages_sent: number;
+                            /** @description First replies that day. */
+                            replies: number;
+                            /** @description profile.view steps. */
+                            views: number;
+                            /** @description post.react steps. */
+                            reactions: number;
+                            /** @description profile.follow steps. */
+                            follows: number;
+                            /** @description post.comment steps. */
+                            comments: number;
+                            /** @description skill.endorse steps. */
+                            endorsements: number;
+                        }[];
+                        motions: {
+                            motion_id: string;
+                            name: string;
+                            status: string;
+                            /** @description Why it is paused; null unless paused. */
+                            pause_reason: string | null;
+                            /** @description The Motion's latest visible record; null when it has none. */
+                            last_activity_at: string | null;
+                            /** @description Enrollments by state right now; the window does not apply. A Contact enrolled with two accounts counts twice. */
+                            enrollments: {
+                                /** @description Waiting to start (pending). */
+                                queued: number;
+                                /** @description Running (active). */
+                                in_progress: number;
+                                /** @description Paused. */
+                                paused: number;
+                                /** @description Finished, for any reason but a lost account (replied and messaged_manually included). */
+                                finished: number;
+                                /** @description Finished because the account became unavailable or was removed. */
+                                failed: number;
+                                /** @description Skipped at admission or start. */
+                                skipped: number;
+                            };
+                            /** @description Invitations, each on its send day. */
+                            invites: {
+                                /** @description Invitations sent in the window. One whose send result was unknown counts once it is accepted. */
+                                sent: number;
+                                /** @description Of those, accepted so far, whenever detected. */
+                                accepted: number;
+                                /** @description Of those, sent less than 7 days ago: not yet in the rate. */
+                                maturing: number;
+                            };
+                            /** @description Acceptance rate over invitations sent in the window that are at least 7 days old, each counted on its own send day (the acceptance floor's rule). Withdrawn invitations stay in the denominator. */
+                            acceptance: {
+                                /** @description Numerator: the accepted part of sent. */
+                                accepted: number;
+                                /** @description Denominator. */
+                                sent: number;
+                                /** @description accepted / sent, 4 decimals; null when sent is 0. */
+                                rate: number | null;
+                                /** @description True when sent is below 30. The rate is still returned. */
+                                low_sample: boolean;
+                            };
+                            messages: {
+                                /** @description message.send and inmail.send steps executed in the window (messages, not people). */
+                                sent: number;
+                                /** @description Enrollments whose first message falls in the window, with no reply before it. */
+                                messaged: number;
+                                /** @description Of those, first messaged less than 7 days ago. */
+                                maturing: number;
+                            };
+                            /** @description Reply rate over Enrollments first messaged in the window at least 7 days ago, with no reply before that message. replied: those that replied at or after it. */
+                            reply: {
+                                /** @description Numerator: the replied part of messaged. */
+                                replied: number;
+                                /** @description Denominator. */
+                                messaged: number;
+                                /** @description replied / messaged, 4 decimals; null when messaged is 0. */
+                                rate: number | null;
+                                /** @description True when messaged is below 30. The rate is still returned. */
+                                low_sample: boolean;
+                            };
+                            /** @description Enrollments whose first reply came in the window. A reply is an inbound 1:1 message from the enrolled person on the Enrollment's account, counted once per Enrollment; any other inbound message is not counted. A reply up to 30 days after the Enrollment finished still counts. */
+                            replies: number;
+                            /** @description Engagement steps executed in the window. A first-step profile visit that also identified the person counts once. */
+                            engagement: {
+                                /** @description profile.view steps executed. */
+                                views: number;
+                                /** @description post.react steps executed, any reaction. */
+                                reactions: number;
+                                /** @description profile.follow steps executed. */
+                                follows: number;
+                                /** @description post.comment steps executed. */
+                                comments: number;
+                                /** @description skill.endorse steps executed. */
+                                endorsements: number;
+                            };
+                        }[];
+                        motions_truncated: boolean;
+                        /** @description Per account with records in the window or any Enrollment. Enrollment and window figures of totals equal the sum over these plus records with no account. */
+                        accounts: {
+                            account_id: string;
+                            /** @description null once the account is removed. */
+                            account_name: string | null;
+                            /** @description Enrollments by state right now; the window does not apply. A Contact enrolled with two accounts counts twice. */
+                            enrollments: {
+                                /** @description Waiting to start (pending). */
+                                queued: number;
+                                /** @description Running (active). */
+                                in_progress: number;
+                                /** @description Paused. */
+                                paused: number;
+                                /** @description Finished, for any reason but a lost account (replied and messaged_manually included). */
+                                finished: number;
+                                /** @description Finished because the account became unavailable or was removed. */
+                                failed: number;
+                                /** @description Skipped at admission or start. */
+                                skipped: number;
+                            };
+                            /** @description Invitations, each on its send day. */
+                            invites: {
+                                /** @description Invitations sent in the window. One whose send result was unknown counts once it is accepted. */
+                                sent: number;
+                                /** @description Of those, accepted so far, whenever detected. */
+                                accepted: number;
+                                /** @description Of those, sent less than 7 days ago: not yet in the rate. */
+                                maturing: number;
+                            };
+                            /** @description Acceptance rate over invitations sent in the window that are at least 7 days old, each counted on its own send day (the acceptance floor's rule). Withdrawn invitations stay in the denominator. */
+                            acceptance: {
+                                /** @description Numerator: the accepted part of sent. */
+                                accepted: number;
+                                /** @description Denominator. */
+                                sent: number;
+                                /** @description accepted / sent, 4 decimals; null when sent is 0. */
+                                rate: number | null;
+                                /** @description True when sent is below 30. The rate is still returned. */
+                                low_sample: boolean;
+                            };
+                            messages: {
+                                /** @description message.send and inmail.send steps executed in the window (messages, not people). */
+                                sent: number;
+                                /** @description Enrollments whose first message falls in the window, with no reply before it. */
+                                messaged: number;
+                                /** @description Of those, first messaged less than 7 days ago. */
+                                maturing: number;
+                            };
+                            /** @description Reply rate over Enrollments first messaged in the window at least 7 days ago, with no reply before that message. replied: those that replied at or after it. */
+                            reply: {
+                                /** @description Numerator: the replied part of messaged. */
+                                replied: number;
+                                /** @description Denominator. */
+                                messaged: number;
+                                /** @description replied / messaged, 4 decimals; null when messaged is 0. */
+                                rate: number | null;
+                                /** @description True when messaged is below 30. The rate is still returned. */
+                                low_sample: boolean;
+                            };
+                            /** @description Enrollments whose first reply came in the window. A reply is an inbound 1:1 message from the enrolled person on the Enrollment's account, counted once per Enrollment; any other inbound message is not counted. A reply up to 30 days after the Enrollment finished still counts. */
+                            replies: number;
+                            /** @description Engagement steps executed in the window. A first-step profile visit that also identified the person counts once. */
+                            engagement: {
+                                /** @description profile.view steps executed. */
+                                views: number;
+                                /** @description post.react steps executed, any reaction. */
+                                reactions: number;
+                                /** @description profile.follow steps executed. */
+                                follows: number;
+                                /** @description post.comment steps executed. */
+                                comments: number;
+                                /** @description skill.endorse steps executed. */
+                                endorsements: number;
+                            };
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: an unknown query parameter, a malformed date (message starts from: or to:), from after to or a window over 365 days (from:), or an unknown zone (timezone:). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Only with account_id, in a team. ACCOUNT_NOT_SHARED: the teammate turned team access off for the account, so only they read its numbers. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_NOT_FOUND: account_id is not one of your accounts, or was removed. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1AnalyticsMotionsMotionId: {
+        parameters: {
+            query?: {
+                /** @description First day of the window, YYYY-MM-DD, read in timezone. Default: 29 days before to. */
+                from?: string;
+                /** @description Last day of the window, inclusive, YYYY-MM-DD, read in timezone. Default: today (29 days after from when only from is set); a later day is clamped to today. */
+                to?: string;
+                /** @description IANA zone the days are read in, e.g. Europe/Berlin. Default: UTC. */
+                timezone?: string;
+                /** @description Only this account's records (acc_...). Default: every account you can see, plus records with no account. */
+                account_id?: string;
+                /** @description Only Enrollments pinned to this Sequence version count; step rows follow its document order. Default: every version. */
+                version?: number;
+            };
+            header?: never;
+            path: {
+                /** @description Motion id (mot_...). */
+                motion_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One Motion's results, with a row per step (current version first, then steps only older versions have) and per variant. Lags as for the overview. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "analytics_motion";
+                        motion: {
+                            id: string;
+                            name: string;
+                            status: string;
+                            /** @description null unless paused. */
+                            pause_reason: string | null;
+                            /** @description The current Sequence version. */
+                            sequence_version: number;
+                        };
+                        scope: {
+                            /** @description The account_id filter; null when every visible account counts. */
+                            account_id: string | null;
+                        };
+                        /** @description The window as applied. */
+                        window: {
+                            /** @description First day, YYYY-MM-DD. */
+                            from: string;
+                            /** @description Last day, inclusive. */
+                            to: string;
+                            /** @description IANA zone the days are read in. */
+                            timezone: string;
+                            /** @description Days in the window. */
+                            days: number;
+                        };
+                        /** @description UTC instant of the read; maturity is measured from it. */
+                        generated_at: string;
+                        totals: {
+                            /** @description Enrollments by state right now; the window does not apply. A Contact enrolled with two accounts counts twice. */
+                            enrollments: {
+                                /** @description Waiting to start (pending). */
+                                queued: number;
+                                /** @description Running (active). */
+                                in_progress: number;
+                                /** @description Paused. */
+                                paused: number;
+                                /** @description Finished, for any reason but a lost account (replied and messaged_manually included). */
+                                finished: number;
+                                /** @description Finished because the account became unavailable or was removed. */
+                                failed: number;
+                                /** @description Skipped at admission or start. */
+                                skipped: number;
+                            };
+                            /** @description Invitations, each on its send day. */
+                            invites: {
+                                /** @description Invitations sent in the window. One whose send result was unknown counts once it is accepted. */
+                                sent: number;
+                                /** @description Of those, accepted so far, whenever detected. */
+                                accepted: number;
+                                /** @description Of those, sent less than 7 days ago: not yet in the rate. */
+                                maturing: number;
+                            };
+                            /** @description Acceptance rate over invitations sent in the window that are at least 7 days old, each counted on its own send day (the acceptance floor's rule). Withdrawn invitations stay in the denominator. */
+                            acceptance: {
+                                /** @description Numerator: the accepted part of sent. */
+                                accepted: number;
+                                /** @description Denominator. */
+                                sent: number;
+                                /** @description accepted / sent, 4 decimals; null when sent is 0. */
+                                rate: number | null;
+                                /** @description True when sent is below 30. The rate is still returned. */
+                                low_sample: boolean;
+                            };
+                            messages: {
+                                /** @description message.send and inmail.send steps executed in the window (messages, not people). */
+                                sent: number;
+                                /** @description Enrollments whose first message falls in the window, with no reply before it. */
+                                messaged: number;
+                                /** @description Of those, first messaged less than 7 days ago. */
+                                maturing: number;
+                            };
+                            /** @description Reply rate over Enrollments first messaged in the window at least 7 days ago, with no reply before that message. replied: those that replied at or after it. */
+                            reply: {
+                                /** @description Numerator: the replied part of messaged. */
+                                replied: number;
+                                /** @description Denominator. */
+                                messaged: number;
+                                /** @description replied / messaged, 4 decimals; null when messaged is 0. */
+                                rate: number | null;
+                                /** @description True when messaged is below 30. The rate is still returned. */
+                                low_sample: boolean;
+                            };
+                            /** @description Enrollments whose first reply came in the window. A reply is an inbound 1:1 message from the enrolled person on the Enrollment's account, counted once per Enrollment; any other inbound message is not counted. A reply up to 30 days after the Enrollment finished still counts. */
+                            replies: number;
+                            /** @description Engagement steps executed in the window. A first-step profile visit that also identified the person counts once. */
+                            engagement: {
+                                /** @description profile.view steps executed. */
+                                views: number;
+                                /** @description post.react steps executed, any reaction. */
+                                reactions: number;
+                                /** @description profile.follow steps executed. */
+                                follows: number;
+                                /** @description post.comment steps executed. */
+                                comments: number;
+                                /** @description skill.endorse steps executed. */
+                                endorsements: number;
+                            };
+                        };
+                        /** @description One entry per day of the window, oldest first, zeros included. Each event on its own day; no rates. */
+                        daily: {
+                            /** @description YYYY-MM-DD in timezone. */
+                            date: string;
+                            /** @description Invitations sent that day. */
+                            invites_sent: number;
+                            /** @description Acceptances detected that day. */
+                            accepted: number;
+                            /** @description Messages sent that day. */
+                            messages_sent: number;
+                            /** @description First replies that day. */
+                            replies: number;
+                            /** @description profile.view steps. */
+                            views: number;
+                            /** @description post.react steps. */
+                            reactions: number;
+                            /** @description profile.follow steps. */
+                            follows: number;
+                            /** @description post.comment steps. */
+                            comments: number;
+                            /** @description skill.endorse steps. */
+                            endorsements: number;
+                        }[];
+                        steps: {
+                            step_id: string;
+                            /** @enum {string} */
+                            kind: "do" | "wait" | "if" | "until" | "tag" | "emit";
+                            /** @description The action of a do step; null for the others. */
+                            action: string | null;
+                            /** @description False for a step only an older Sequence version has; it is listed after the current ones. */
+                            in_current_version: boolean;
+                            /** @description Running or paused Enrollments at this step now. */
+                            queued: number;
+                            /** @description Executions in the window. */
+                            executed: number;
+                            /** @description Skipped in the window. */
+                            skipped: number;
+                            /** @description Failed in the window; an unknown send result counts here. */
+                            failed: number;
+                            /** @description wait, tag and emit passes in the window. */
+                            taken: number;
+                            /** @description if and until exits through then in the window. */
+                            then: number;
+                            /** @description if and until exits through else in the window (an until timeout). */
+                            else: number;
+                            /** @description Executions that used a fallback value. */
+                            fallback_used: number;
+                            /** @description invite.send only, else null. Acceptance rate over invitations sent in the window that are at least 7 days old, each counted on its own send day (the acceptance floor's rule). Withdrawn invitations stay in the denominator. */
+                            acceptance: {
+                                /** @description Numerator: the accepted part of sent. */
+                                accepted: number;
+                                /** @description Denominator. */
+                                sent: number;
+                                /** @description accepted / sent, 4 decimals; null when sent is 0. */
+                                rate: number | null;
+                                /** @description True when sent is below 30. The rate is still returned. */
+                                low_sample: boolean;
+                            } | null;
+                            /** @description message.send and inmail.send only, else null. Last touch: a reply counts for the message step it followed, before the next message. Over executions at least 7 days old, with no reply before them. */
+                            reply: {
+                                /** @description Numerator: the replied part of messaged. */
+                                replied: number;
+                                /** @description Denominator. */
+                                messaged: number;
+                                /** @description replied / messaged, 4 decimals; null when messaged is 0. */
+                                rate: number | null;
+                                /** @description True when messaged is below 30. The rate is still returned. */
+                                low_sample: boolean;
+                            } | null;
+                            /** @description A messaging step with two or more variants: one row per variant, in document order. Never sorted by result. */
+                            variants: {
+                                variant_id: string;
+                                /** @description Executions in the window. */
+                                executed: number;
+                                /** @description Skipped in the window. */
+                                skipped: number;
+                                /** @description Failed in the window; an unknown send result counts here. */
+                                failed: number;
+                                /** @description Executions that used a fallback value. */
+                                fallback_used: number;
+                                /** @description invite.send only, else null. Acceptance rate over invitations sent in the window that are at least 7 days old, each counted on its own send day (the acceptance floor's rule). Withdrawn invitations stay in the denominator. */
+                                acceptance: {
+                                    /** @description Numerator: the accepted part of sent. */
+                                    accepted: number;
+                                    /** @description Denominator. */
+                                    sent: number;
+                                    /** @description accepted / sent, 4 decimals; null when sent is 0. */
+                                    rate: number | null;
+                                    /** @description True when sent is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                } | null;
+                                /** @description message.send and inmail.send only, else null. Last touch: a reply counts for the message step it followed, before the next message. Over executions at least 7 days old, with no reply before them. */
+                                reply: {
+                                    /** @description Numerator: the replied part of messaged. */
+                                    replied: number;
+                                    /** @description Denominator. */
+                                    messaged: number;
+                                    /** @description replied / messaged, 4 decimals; null when messaged is 0. */
+                                    rate: number | null;
+                                    /** @description True when messaged is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                } | null;
+                            }[];
+                        }[];
+                        /** @description Per account with records in the window or any Enrollment. Enrollment and window figures of totals equal the sum over these plus records with no account. */
+                        accounts: {
+                            account_id: string;
+                            /** @description null once the account is removed. */
+                            account_name: string | null;
+                            /** @description Enrollments by state right now; the window does not apply. A Contact enrolled with two accounts counts twice. */
+                            enrollments: {
+                                /** @description Waiting to start (pending). */
+                                queued: number;
+                                /** @description Running (active). */
+                                in_progress: number;
+                                /** @description Paused. */
+                                paused: number;
+                                /** @description Finished, for any reason but a lost account (replied and messaged_manually included). */
+                                finished: number;
+                                /** @description Finished because the account became unavailable or was removed. */
+                                failed: number;
+                                /** @description Skipped at admission or start. */
+                                skipped: number;
+                            };
+                            /** @description Invitations, each on its send day. */
+                            invites: {
+                                /** @description Invitations sent in the window. One whose send result was unknown counts once it is accepted. */
+                                sent: number;
+                                /** @description Of those, accepted so far, whenever detected. */
+                                accepted: number;
+                                /** @description Of those, sent less than 7 days ago: not yet in the rate. */
+                                maturing: number;
+                            };
+                            /** @description Acceptance rate over invitations sent in the window that are at least 7 days old, each counted on its own send day (the acceptance floor's rule). Withdrawn invitations stay in the denominator. */
+                            acceptance: {
+                                /** @description Numerator: the accepted part of sent. */
+                                accepted: number;
+                                /** @description Denominator. */
+                                sent: number;
+                                /** @description accepted / sent, 4 decimals; null when sent is 0. */
+                                rate: number | null;
+                                /** @description True when sent is below 30. The rate is still returned. */
+                                low_sample: boolean;
+                            };
+                            messages: {
+                                /** @description message.send and inmail.send steps executed in the window (messages, not people). */
+                                sent: number;
+                                /** @description Enrollments whose first message falls in the window, with no reply before it. */
+                                messaged: number;
+                                /** @description Of those, first messaged less than 7 days ago. */
+                                maturing: number;
+                            };
+                            /** @description Reply rate over Enrollments first messaged in the window at least 7 days ago, with no reply before that message. replied: those that replied at or after it. */
+                            reply: {
+                                /** @description Numerator: the replied part of messaged. */
+                                replied: number;
+                                /** @description Denominator. */
+                                messaged: number;
+                                /** @description replied / messaged, 4 decimals; null when messaged is 0. */
+                                rate: number | null;
+                                /** @description True when messaged is below 30. The rate is still returned. */
+                                low_sample: boolean;
+                            };
+                            /** @description Enrollments whose first reply came in the window. A reply is an inbound 1:1 message from the enrolled person on the Enrollment's account, counted once per Enrollment; any other inbound message is not counted. A reply up to 30 days after the Enrollment finished still counts. */
+                            replies: number;
+                            /** @description Engagement steps executed in the window. A first-step profile visit that also identified the person counts once. */
+                            engagement: {
+                                /** @description profile.view steps executed. */
+                                views: number;
+                                /** @description post.react steps executed, any reaction. */
+                                reactions: number;
+                                /** @description profile.follow steps executed. */
+                                follows: number;
+                                /** @description post.comment steps executed. */
+                                comments: number;
+                                /** @description skill.endorse steps executed. */
+                                endorsements: number;
+                            };
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: an unknown query parameter, a malformed date (message starts from: or to:), from after to or a window over 365 days (from:), or an unknown zone (timezone:). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Only with account_id, in a team. ACCOUNT_NOT_SHARED: the teammate turned team access off for the account, so only they read its numbers. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Motion, or no such Sequence version. ACCOUNT_NOT_FOUND: account_id is not one of your accounts, or was removed. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1AnalyticsActivity: {
+        parameters: {
+            query?: {
+                /** @description First day of the window, YYYY-MM-DD, read in timezone. Default: 29 days before to. */
+                from?: string;
+                /** @description Last day of the window, inclusive, YYYY-MM-DD, read in timezone. Default: today (29 days after from when only from is set); a later day is clamped to today. */
+                to?: string;
+                /** @description IANA zone the days are read in, e.g. Europe/Berlin. Default: UTC. */
+                timezone?: string;
+                /** @description Only this account's records (acc_...). Default: every account you can see, plus records with no account. */
+                account_id?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Core activity in budget units for the accounts you may operate (yours; an Owner or Manager also the team's shared accounts). Every budgeted LinkedIn call counts, reads and Motion steps included. Each budget row counts its own unit, so figures are per row and never added across rows. quotas is exactly the quotas array of GET /v1/accounts/{account_id}: the current budget window, not the requested one. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "analytics_activity";
+                        scope: {
+                            /** @description The account_id filter; null when every visible account counts. */
+                            account_id: string | null;
+                        };
+                        /** @description The window as applied. */
+                        window: {
+                            /** @description First day, YYYY-MM-DD. */
+                            from: string;
+                            /** @description Last day, inclusive. */
+                            to: string;
+                            /** @description IANA zone the days are read in. */
+                            timezone: string;
+                            /** @description Days in the window. */
+                            days: number;
+                        };
+                        /** @description UTC instant of the read; maturity is measured from it. */
+                        generated_at: string;
+                        /** @description One row per budget row with at least one counted call in the window, in the Safety row order. */
+                        types: {
+                            /**
+                             * @description The budget row. Units differ per row: connection_requests_with_note, one invitation sent with a note; connection_requests_no_note, one invitation sent without a note; messages_first_degree, one message to a 1st-degree connection; inmail, one InMail sent; open_profile_inmail, one free message to an Open Profile; profile_views, one profile read; search, one search result line, not one query; comments, one comment posted; post_likes, one reaction to a post, a comment or a message; follows, one follow; content_poll, one content read: a page of posts, a feed, a company page or its followers; job_poll, one read of job postings; posts, one post published; endorsements, one skill endorsed; invite_responses, one received invitation accepted or declined; withdrawal_sweep, one sent invitation withdrawn; connections_sync, one background read of the connection list; inbox_sync, one background read of the inbox.
+                             * @enum {string}
+                             */
+                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync";
+                            /** @description Units the row counted in the window: successful and failed calls, as its quotas counter holds them. */
+                            used: number;
+                            /** @description Of used, units of calls that failed. */
+                            failed: number;
+                            /** @description Calls refused before reaching LinkedIn: a ceiling, the activity window or a platform pause. Count of calls, not units. */
+                            refused: number;
+                        }[];
+                        /** @description One entry per day of the window, oldest first, zeros included. used holds each budget row of types, never a total. */
+                        daily: {
+                            /** @description YYYY-MM-DD in timezone. */
+                            date: string;
+                            /** @description Units used that day, keyed by budget row. */
+                            used: {
+                                [key: string]: number;
+                            };
+                        }[];
+                        /** @description Each account you may operate (one with account_id), by name. */
+                        accounts: {
+                            account_id: string;
+                            /** @description The account's name. */
+                            account_name: string | null;
+                            types: {
+                                /**
+                                 * @description The budget row. Units differ per row: connection_requests_with_note, one invitation sent with a note; connection_requests_no_note, one invitation sent without a note; messages_first_degree, one message to a 1st-degree connection; inmail, one InMail sent; open_profile_inmail, one free message to an Open Profile; profile_views, one profile read; search, one search result line, not one query; comments, one comment posted; post_likes, one reaction to a post, a comment or a message; follows, one follow; content_poll, one content read: a page of posts, a feed, a company page or its followers; job_poll, one read of job postings; posts, one post published; endorsements, one skill endorsed; invite_responses, one received invitation accepted or declined; withdrawal_sweep, one sent invitation withdrawn; connections_sync, one background read of the connection list; inbox_sync, one background read of the inbox.
+                                 * @enum {string}
+                                 */
+                                budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync";
+                                /** @description Units the row counted in the window: successful and failed calls, as its quotas counter holds them. */
+                                used: number;
+                                /** @description Of used, units of calls that failed. */
+                                failed: number;
+                                /** @description Calls refused before reaching LinkedIn: a ceiling, the activity window or a platform pause. Count of calls, not units. */
+                                refused: number;
+                            }[];
+                            /** @description The account's quotas[], exactly as GET /v1/accounts/{account_id} serves it: the current budget window. */
+                            quotas: {
+                                /**
+                                 * @description The safety row. `search` counts result LINES, not queries issued; `content_poll` also debits `profile_views`. Two rows are not counters and say so in `kind`: `total_actions` is a tally of everything this account did in the window, and `pending_invites` is the outstanding invitation backlog read from the platform rather than something this account spends.
+                                 * @enum {string}
+                                 */
+                                budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "total_actions" | "pending_invites";
+                                /**
+                                 * @description Which arithmetic produced `used`. `debit`: actions this account spent, counted as they happen. `tally`: a sum across the debit rows in the window, which is why it has a warn threshold and no ceiling. `gauge`: a level read from the platform rather than counted here, so it falls on its own as invitations are accepted or withdrawn.
+                                 * @enum {string}
+                                 */
+                                kind: "debit" | "tally" | "gauge";
+                                /**
+                                 * @description Calendar grain this row is counted in. UTC, not account-local. `null` on the gauge, which has no window at all.
+                                 * @enum {string|null}
+                                 */
+                                window: "day" | "week" | "month" | null;
+                                /** @description ISO-8601 UTC start of the current window; `null` on the gauge. */
+                                window_start: string | null;
+                                /** @description ISO-8601 UTC instant the current window rolls over and `used` returns to 0. `null` on the gauge: a backlog falls when invitations are accepted or withdrawn, not at a window edge, so naming an instant would promise something nothing keeps. */
+                                resets_at: string | null;
+                                /** @description Where the account stands: actions counted in the current window for a debit row, the summed tally for `total_actions`, the observed backlog for the gauge. A debit row with no activity reports 0, never null. Only the gauge can be `null`, and only before anything has observed it: 0 there would be a backlog nobody looked at. */
+                                used: number | null;
+                                /** @description What this account is allowed on this row in this window, as configured. `null` where the row deliberately has no ceiling: the tally is reported and never enforced, and an uncalibrated row has no figure at all. Change it on the safety policy; Curviate never clamps what you set. */
+                                ceiling: number | null;
+                                /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While an account is new, thinly connected, dormant or recovering from a restriction the two differ, and on a five-day-old account they differ by a factor of about seven. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
+                                effective_ceiling?: number | null;
+                                /** @description What a call through the matching ELEVATED interface is held to on this row: the `/v1/{account_id}/sales-navigator/...` and `/v1/{account_id}/recruiter/...` operations. Null when this row and limit profile have no such figure, which is every row on `basic` and `premium` and most rows everywhere. Everything else on this row (`ceiling`, `effective_ceiling`, `band` and `over_default`) is the STANDARD-interface figure, because one counter serves both interfaces and the standard side is the conservative one to band against. The consequence is worth reading: on a `sales_navigator` or `recruiter` account a row can report `band: "over"` with `posture: "enforce"` while a call through the elevated interface still succeeds; the refusal the band predicts is the one a standard call gets. */
+                                interface_ceiling?: number | null;
+                                /** @description `interface_ceiling` with the account's warm-up ramp applied, and null wherever `interface_ceiling` is null. Read THIS to know where an elevated-interface call stops, for the same reason `effective_ceiling` rather than `ceiling` answers that for a standard one. */
+                                effective_interface_ceiling?: number | null;
+                                /**
+                                 * @description Where `used` sits against this row's own bands. `green` routine, `amber` at or past the routine band, `hard` at or past the warn-louder band, `over` at or past the ceiling. `over` is what `posture` acts on: `warn` reports it and lets the action through, `enforce` refuses. A row with no figures reports `green` at every value, because there is nothing to be past.
+                                 * @enum {string}
+                                 */
+                                band: "green" | "amber" | "hard" | "over";
+                                /**
+                                 * @description What happens when this row is `over`. `warn`: the action goes through and the response carries the breach. `enforce`: the action is refused before it reaches the platform. Set per row, per account or workspace-wide on the safety policy; the default is `warn`. One exception worth knowing: on `pending_invites` this field is not the one that acts. That row blocks invitations rather than being spent itself, and the posture that decides whether a full backlog warns or refuses is the one on the invitation row, so setting `enforce` on invitations is enough and you never have to find a posture on a row nothing spends.
+                                 * @enum {string}
+                                 */
+                                posture: "warn" | "enforce";
+                                /** @description Whether something on this row is configured above Curviate's own default. The safety policy carries the detail: which field, the value, the default and how well calibrated that default is. */
+                                over_default: boolean;
+                                /** @description An active pause on this row because the platform refused a recent request on it, or `null`. A halt is not a ceiling: no limit you raise lifts it, and it clears itself when it expires. To lift one before it expires, send this row in `clear_halts` on `PATCH /v1/{account_id}/safety-policy`; that is recorded, and the pause returns if the platform refuses the account again. */
+                                halt: {
+                                    /** @description What the platform did: `rate_limited`, `platform_fault`, or `resend_cooldown` (the same invitation was sent too recently). */
+                                    reason?: string;
+                                    /** @description Whole seconds until the pause expires. */
+                                    retry_after_seconds?: number;
+                                } | null;
+                                /**
+                                 * Format: date-time
+                                 * @description When the gauge's level was read from the platform. `null` on every other row, whose numbers are read live from Curviate's own records. Read it before acting on the backlog: the level is refreshed in the background, so it can be up to an hour old.
+                                 */
+                                observed_at: string | null;
+                                /**
+                                 * @description How well calibrated this row is, in descending order of trust: `substrate` (the transport layer's own guidance), `linkedin_official` (platform-published; reliable for mechanics such as credit counts and reset dates, not for safe volume), `practitioner` (corroborated operator experience), `inferred` (Curviate's own reasoning; flagged, never hidden), `unseeded` (no figure at all for this row on this account's limit profile, reported so nothing is silently missing, never presented as a number).
+                                 * @enum {string}
+                                 */
+                                source: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
+                            }[];
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: an unknown query parameter, a malformed date (message starts from: or to:), from after to or a window over 365 days (from:), or an unknown zone (timezone:). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Only with account_id. INSUFFICIENT_ROLE: a Member filtering by a teammate's account (core activity covers your own). ACCOUNT_NOT_SHARED: the account's person turned team access off. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_NOT_FOUND: account_id is not one of your accounts, or was removed. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1AnalyticsEvents: {
+        parameters: {
+            query?: {
+                /** @description Only this account's events (acc_...). Default: every account you can see. */
+                account_id?: string;
+                /** @description Only this Motion's events (mot_...). */
+                motion_id?: string;
+                /** @description Comma list of step.executed, step.failed, invite.accepted, message.replied. Default: all. */
+                kind?: ("step.executed" | "step.failed" | "invite.accepted" | "message.replied")[];
+                /** @description Max items per page (1-100, default 20). */
+                limit?: number;
+                /** @description Pagination cursor from a previous response; pass it back verbatim with the same filters. */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Recent Motion events, newest first. Sources: steps executed, steps skipped or failed (an unknown send result is failed with reason outcome_unknown), invitations accepted and first replies. contact is the person's live record, null once deleted; a merged person shows the record they were merged into. Records of a removed account never appear. Lags: a step appears once it settles, a reply within a minute, an acceptance about 2 hours after it happens. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "analytics_event_list";
+                        items: {
+                            /** @enum {string} */
+                            object: "analytics_event";
+                            /** @description Event id (ane_...). */
+                            id: string;
+                            /** @enum {string} */
+                            kind: "step.executed" | "step.failed" | "invite.accepted" | "message.replied";
+                            /** @description UTC instant of the event. */
+                            occurred_at: string;
+                            motion_id: string;
+                            motion_name: string;
+                            enrollment_id: string;
+                            /** @description The sending account; null for an Enrollment with no account yet. */
+                            account_id: string | null;
+                            /** @description The step; null for a reply. */
+                            step_id: string | null;
+                            /** @description The step's action, e.g. invite.send; null for a reply. */
+                            action: string | null;
+                            /** @description The message variant used; null when the step has one. */
+                            variant_id: string | null;
+                            /**
+                             * @description Step events only; null for an acceptance or a reply.
+                             * @enum {string|null}
+                             */
+                            outcome: "executed" | "skipped" | "failed" | null;
+                            /** @description Why a step was skipped or failed, as a code; null otherwise. */
+                            reason: string | null;
+                            /** @description The person, read live; null once the Contact is deleted. */
+                            contact: {
+                                id: string;
+                                /** @description Full name. */
+                                full_name: string | null;
+                                /** @description LinkedIn profile URL. */
+                                linkedin_url: string | null;
+                            } | null;
+                        }[];
+                        /** @description Pass back as cursor for the next page; null on the last page. */
+                        cursor: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: an unknown query parameter or kind, a limit outside 1 to 100, or a cursor not from a prior response. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Only with account_id, in a team. ACCOUNT_NOT_SHARED: the teammate turned team access off for the account, so only they read its numbers. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: motion_id is not one of your Motions. ACCOUNT_NOT_FOUND: account_id is not one of your accounts, or was removed. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -29,6 +29,9 @@ import {
   type AuthResource,
   type WebhooksResource,
   type DraftsResource,
+  type ConnectRequestsResource,
+  type TeamsResource,
+  type NotificationsResource,
 } from "./resources/index.js";
 
 export class Curviate {
@@ -42,6 +45,13 @@ export class Curviate {
   readonly auth: AuthResource;
   readonly webhooks: WebhooksResource;
   readonly drafts: DraftsResource;
+  readonly connectRequests: ConnectRequestsResource;
+  readonly teams: TeamsResource;
+  /**
+   * Curviate's own Notifications (root). An account's LinkedIn notifications
+   * are `curviate.account(id).notifications`.
+   */
+  readonly notifications: NotificationsResource;
 
   constructor(config: CurviateConfig) {
     this.config = resolveConfig(config);
@@ -51,6 +61,9 @@ export class Curviate {
     this.auth = ns.auth;
     this.webhooks = ns.webhooks;
     this.drafts = ns.drafts;
+    this.connectRequests = ns.connectRequests;
+    this.teams = ns.teams;
+    this.notifications = ns.notifications;
   }
 
   /**

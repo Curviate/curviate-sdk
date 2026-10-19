@@ -284,6 +284,48 @@ export const ERROR_CODES = [
   //   (`required_tier`); a team Owner upgrades.
   "INSUFFICIENT_ROLE",
   "TIER_REQUIRED",
+  // - `TEAM_ACCESS_DENIED` (403): the request names a team (the `team` client
+  //   option, header `X-Curviate-Team`) this credential cannot act in. An API
+  //   key works in exactly one team. Drop the option, or use that team's key.
+  // - `ACCOUNT_NOT_SHARED` (403): the person who connected the account turned
+  //   its team access off; only they can use it.
+  // - `ACCOUNT_OWNER_ONLY` (403): only the person who connected the account can
+  //   do this (reconnect it, solve its checkpoints, set its team access).
+  "TEAM_ACCESS_DENIED",
+  "ACCOUNT_NOT_SHARED",
+  "ACCOUNT_OWNER_ONLY",
+
+  // Team members and invites (`teams`), all 409.
+  //
+  // - `LAST_OWNER`: the team would be left with no Owner.
+  // - `BILLING_OWNER_REQUIRED`: the Owner who receives invoices cannot leave, be
+  //   demoted or removed until `billing_owner_user_id` names another Owner.
+  // - `DEFAULT_TEAM_PROTECTED`: nobody is demoted, removed or leaves their own
+  //   default team.
+  // - `ALREADY_MEMBER`: the invited email is already a member.
+  // - `INVITE_ALREADY_PENDING`: an invite to this email is already pending.
+  // - `INVITE_NOT_PENDING`: re-send or revoke of an accepted or revoked invite.
+  // - `INVITE_LIMIT_REACHED`: the team already has 50 pending invites.
+  "LAST_OWNER",
+  "BILLING_OWNER_REQUIRED",
+  "DEFAULT_TEAM_PROTECTED",
+  "ALREADY_MEMBER",
+  "INVITE_ALREADY_PENDING",
+  "INVITE_NOT_PENDING",
+  "INVITE_LIMIT_REACHED",
+
+  // Connect requests (`connectRequests`), all 409.
+  //
+  // - `CONNECT_REQUEST_NOT_PENDING`: the request is completed, expired,
+  //   cancelled or failed (the message names which). Create a new one.
+  // - `CONNECT_REQUEST_IN_USE`: someone is completing it right now. Try again
+  //   in a minute.
+  // - `LINKEDIN_ACCOUNT_MISMATCH`: a reconnect signed in to a different
+  //   LinkedIn account than the one being reconnected. The account is
+  //   unchanged.
+  "CONNECT_REQUEST_NOT_PENDING",
+  "CONNECT_REQUEST_IN_USE",
+  "LINKEDIN_ACCOUNT_MISMATCH",
 
   // Generic
   "INTERNAL",

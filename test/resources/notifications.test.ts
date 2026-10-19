@@ -174,8 +174,9 @@ describe("notifications.showLess", () => {
 });
 
 describe("notifications namespace mounting", () => {
-  it("is account-scoped only — mounted on account(id), never the root client", () => {
-    expect(acc).toHaveProperty("notifications");
-    expect(client).not.toHaveProperty("notifications");
+  it("account(id).notifications is LinkedIn's; the root key is Curviate's own", () => {
+    expect(acc.notifications).toHaveProperty("showLess");
+    expect(client.notifications).toHaveProperty("unreadCount");
+    expect(client.notifications).not.toHaveProperty("showLess");
   });
 });

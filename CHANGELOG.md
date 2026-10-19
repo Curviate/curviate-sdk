@@ -10,11 +10,42 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 ## [Unreleased]
 
 Fixture and types regenerated from deployed staging (server
+`13d5357a7f74772782872c791ec8a5835060e9fe`, 191 paths; first regen at
 `3b0b7503a516f6a1f39622bd40ec6fec9c217c38`, 176 paths). The previous fixture
 was older, so this regen also carries earlier, unrelated server changes (see
 Changed). Regenerate from production and confirm an empty diff before publishing.
 
 ### Added
+
+- **`notifications` at the root** (4 methods): `list`, `unreadCount`,
+  `update`, `markAllRead`. Curviate's own Notifications for you in this team
+  (an account needs reconnecting, a Motion paused, an import finished, a
+  teammate joined or left), with per-person read and archived state. Check
+  `unreadCount()` at session start. `curviate.account(id).notifications` is
+  unchanged and still means the account's LinkedIn notifications: the same key
+  now carries a different class at each scope.
+- **`connectRequests`** (root, 3 methods): `create`, `get`, `cancel`
+  (`/v1/auth/connect-requests`). The credential-free way for an agent to get an
+  account connected or reconnected: create one, relay its `url` to the person,
+  poll `get` until `status` leaves `pending`. Your code never handles a
+  LinkedIn password, cookie or code. `create` is not retry-safe: a retry makes
+  a second request.
+- **`teams`** (root, 10 methods): `list`, `getCurrent`, `updateCurrent`,
+  `listMembers`, `updateMember`, `removeMember` (`"me"` leaves the team),
+  `createInvites`, `listInvites`, `resendInvite`, `revokeInvite`.
+- **`accounts.setTeamAccess(accountId, teamAccess)`**
+  (`PUT /v1/accounts/{account_id}/team-access`): opt an account you connected
+  out of team use, or share it again.
+- **`team` client option**, sent as `X-Curviate-Team`: the team a dashboard
+  session token acts in. An API key acts only in the team it was created in;
+  leave `team` unset with one. An empty `team` throws `INVALID_REQUEST` at
+  construction.
+- **Error codes** that decoded to `INTERNAL` until now: `TEAM_ACCESS_DENIED`,
+  `ACCOUNT_NOT_SHARED`, `ACCOUNT_OWNER_ONLY`, `LAST_OWNER`,
+  `BILLING_OWNER_REQUIRED`, `DEFAULT_TEAM_PROTECTED`, `ALREADY_MEMBER`,
+  `INVITE_ALREADY_PENDING`, `INVITE_NOT_PENDING`, `INVITE_LIMIT_REACHED`,
+  `CONNECT_REQUEST_NOT_PENDING`, `CONNECT_REQUEST_IN_USE`,
+  `LINKEDIN_ACCOUNT_MISMATCH`.
 
 - **`activity_window.effective_timezone` and `activity_window.source`** on the
   account object (`accounts.get`, `accounts.update`) and on the per-account
@@ -37,7 +68,15 @@ Changed). Regenerate from production and confirm an empty diff before publishing
   were not in the previous fixture: the contacts, tags, contact lists, Motions,
   enrollments, unibox, notifications, network sync and billing tier paths; new
   `Error` fields and `reason` values; `owner_user_id` and `team_access` on the
-  account object. Types only: no resource wraps them yet.
+  account object. Types only, except notifications, teams and team access
+  (Added above).
+- **An API key is one person's key in one team**, no longer one key per
+  workspace: it acts as the person who created it, with their role in that
+  team. `owner_user_id` on the account object is the person who connected it;
+  `team_access: false` means only they can use it.
+- **`auth_method` on the account object** is the method of the last successful
+  connect or reconnect (`credentials`, `cookie` or `hosted`), not the method
+  of the first connect.
 - **Two drift fixes the regen forced** (the SDK's own pins went red against the
   new document): the seven `motion` webhook events (`motion.status_changed`,
   `enrollment.started`, `enrollment.skipped`, `enrollment.finished`,

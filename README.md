@@ -33,20 +33,40 @@ const curviate = new Curviate({
 });
 ```
 
+An API key belongs to one person in one team and acts with that person's role there. `curviate.teams.getCurrent()` says which team and role. A dashboard session token may act in any team you belong to: pick one with `team: "tnt_..."` (sent as `X-Curviate-Team`). Leave `team` unset with an API key; naming another team is refused with `TEAM_ACCESS_DENIED`.
+
 ---
 
-## Account-scoped accessor
+## Connecting an account
 
-Every LinkedIn operation (messages, member profiles, invites, posts) is tied to a **managed account**, a LinkedIn session you have connected via the connect flow (`curviate.auth.intent()`). A new connect names where LinkedIn sees the account connecting from, with exactly one of `country` (e.g. `"US"`), `ip` or your own `proxy`:
+Every LinkedIn operation (messages, member profiles, invites, posts) is tied to a **managed account**, a LinkedIn session connected to Curviate.
+
+**Agents: use a connect request.** Your code never handles a LinkedIn password, cookie or verification code, so never ask for one. Create a request, give its `url` to the person, and they connect in their own Curviate dashboard:
+
+```ts
+const req = await curviate.connectRequests.create();             // new account
+// const req = await curviate.connectRequests.create({ account_id: "acc_123" }); // reconnect
+console.log(`Connect your LinkedIn account here: ${req.url}`);
+
+// Poll until it leaves `pending`: completed, expired (15 minutes), failed or cancelled.
+const done = await curviate.connectRequests.get(req.id!);
+if (done.status === "completed") console.log(done.account_id);
+```
+
+`create` is not retry-safe: a retry makes a second request. A pending request can be withdrawn with `connectRequests.cancel(id)`.
+
+**Your own app, with the person's credentials in hand:** `curviate.auth.intent()`. A new connect names where LinkedIn sees the account connecting from, with exactly one of `country` (e.g. `"US"`), `ip` or your own `proxy`:
 
 ```ts
 await curviate.auth.intent({ seat_id, auth_method: "credentials", credentials: { email, password }, country: "US" });
 ```
 
+## Account-scoped accessor
+
 The `curviate.account(id)` accessor fixes the `account_id` on every call so you do not have to thread it manually:
 
 ```ts
-// Root-level: tenant-wide operations (accounts, auth, webhooks, drafts)
+// Root-level: team-wide operations (accounts, auth, connectRequests, webhooks, drafts, teams, notifications)
 const { items: accounts } = await curviate.accounts.list();
 
 // Account-scoped: all LinkedIn ops under a specific account
@@ -57,6 +77,26 @@ const { items: chats } = await acc.messaging.listChats();
 const me = await acc.users.get("me");           // your own profile
 const profile = await acc.users.get("some-user-id"); // someone else's
 ```
+
+## Notifications
+
+`curviate.notifications` is Curviate telling you something needs attention: an account needs reconnecting, a Motion paused, an import finished, a teammate joined or left. Each person has their own list and read state. Check it at session start:
+
+```ts
+const { unread_count } = await curviate.notifications.unreadCount();
+if (unread_count > 0) {
+  const { items } = await curviate.notifications.list({ filter: "unread" });
+  for (const n of items) console.log(n.type, n.title);
+  // Mark only what you saw: one that arrived since the list stays unread.
+  await curviate.notifications.markAllRead({ before: items[0]!.created_at });
+}
+```
+
+`type` is an open list: tolerate values you do not know. `curviate.account(id).notifications` is something else: that account's LinkedIn notifications.
+
+## Teams
+
+`curviate.teams` manages the team the credential acts in: `getCurrent`, `updateCurrent`, `listMembers`, `updateMember` (role), `removeMember` (`"me"` leaves), `createInvites`, `listInvites`, `resendInvite`, `revokeInvite`, plus `list` for every team you belong to. Member and invite writes are for Owners (`INSUFFICIENT_ROLE` otherwise). `curviate.accounts.setTeamAccess(accountId, false)` keeps an account you connected to yourself.
 
 ## Drafts and scheduled posts
 

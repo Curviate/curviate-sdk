@@ -1,17 +1,22 @@
 /**
  * Resource namespace assembly.
  *
- * The surface is split cleanly in two, with no overlap:
- * - **Root-scoped** (`accounts`, `auth`, `webhooks`, `drafts`) hang off the root client
- *   only. Connected-account management, connect/reconnect, webhook
- *   registration and Drafts (a Draft's account is optional) are tenant-wide concerns, not per-account ones; they carry no
- *   `account_id` path segment.
+ * The surface is split in two:
+ * - **Root-scoped** (`accounts`, `auth`, `connectRequests`, `webhooks`, `drafts`,
+ *   `teams`, `notifications`) hang off the root client only. Connected-account
+ *   management, connect/reconnect, webhook registration, Drafts (a Draft's
+ *   account is optional), teams and Curviate's own Notifications are
+ *   team-wide concerns, not per-account ones; they carry no `account_id` path
+ *   segment.
  * - **Account-scoped** (everything else) hang off `curviate.account(id)` only.
  *   Every one of their paths leads with the fixed `account_id` segment, so they
  *   cannot function without an account bound and are never mounted at the root.
  *
  * {@link buildRootNamespaces} and {@link buildAccountScopedNamespaces} realize
- * the two disjoint halves.
+ * the two halves. One key appears in both with a different class:
+ * `notifications` is Curviate's Notifications at the root
+ * ({@link NotificationsResource}) and the account's LinkedIn notifications in
+ * an account scope ({@link LinkedInNotificationsResource}).
  */
 import type { RequestContext } from "../internal/context.js";
 import { AccountsResource } from "./accounts.js";
@@ -26,7 +31,10 @@ import { ProfileResource } from "./profile.js";
 import { GroupsResource } from "./groups.js";
 import { FeedResource } from "./feed.js";
 import { InboxesResource } from "./inboxes.js";
+import { LinkedInNotificationsResource } from "./linkedin-notifications.js";
 import { NotificationsResource } from "./notifications.js";
+import { ConnectRequestsResource } from "./connect-requests.js";
+import { TeamsResource } from "./teams.js";
 import { SalesNavigatorResource } from "./sales-navigator.js";
 import { RecruiterResource } from "./recruiter.js";
 import { JobsResource } from "./jobs.js";
@@ -46,7 +54,10 @@ export { ProfileResource } from "./profile.js";
 export { GroupsResource } from "./groups.js";
 export { FeedResource } from "./feed.js";
 export { InboxesResource } from "./inboxes.js";
+export { LinkedInNotificationsResource } from "./linkedin-notifications.js";
 export { NotificationsResource } from "./notifications.js";
+export { ConnectRequestsResource } from "./connect-requests.js";
+export { TeamsResource } from "./teams.js";
 export { SalesNavigatorResource } from "./sales-navigator.js";
 export { RecruiterResource } from "./recruiter.js";
 export { JobsResource } from "./jobs.js";
@@ -54,7 +65,10 @@ export { CompaniesResource } from "./companies.js";
 export { WebhooksResource } from "./webhooks.js";
 export { DraftsResource } from "./drafts.js";
 
-/** The full namespace surface, shared by the root client and account scopes. */
+/**
+ * The shared namespace bag the account scope is cut from (`notifications` here
+ * is the account's LinkedIn notifications).
+ */
 export interface ResourceNamespaces {
   accounts: AccountsResource;
   auth: AuthResource;
@@ -68,7 +82,7 @@ export interface ResourceNamespaces {
   groups: GroupsResource;
   feed: FeedResource;
   inboxes: InboxesResource;
-  notifications: NotificationsResource;
+  notifications: LinkedInNotificationsResource;
   salesNavigator: SalesNavigatorResource;
   recruiter: RecruiterResource;
   jobs: JobsResource;
@@ -92,7 +106,7 @@ export function buildNamespaces(ctx: RequestContext): ResourceNamespaces {
     groups: new GroupsResource(ctx),
     feed: new FeedResource(ctx),
     inboxes: new InboxesResource(ctx),
-    notifications: new NotificationsResource(ctx),
+    notifications: new LinkedInNotificationsResource(ctx),
     salesNavigator: new SalesNavigatorResource(ctx),
     recruiter: new RecruiterResource(ctx),
     jobs: new JobsResource(ctx),
@@ -103,22 +117,27 @@ export function buildNamespaces(ctx: RequestContext): ResourceNamespaces {
 }
 
 /**
- * The root-client surface, exactly the four tenant-wide namespaces. The root
- * client mounts these and nothing else; account-scoped namespaces are reachable
- * only via `curviate.account(id)`.
+ * The root-client surface: the team-wide namespaces. Account-scoped namespaces
+ * are reachable only via `curviate.account(id)`.
  */
-export type RootNamespaces = Pick<
-  ResourceNamespaces,
-  "accounts" | "auth" | "webhooks" | "drafts"
->;
+export interface RootNamespaces
+  extends Pick<ResourceNamespaces, "accounts" | "auth" | "webhooks" | "drafts"> {
+  connectRequests: ConnectRequestsResource;
+  teams: TeamsResource;
+  /** Curviate's own Notifications, not the account's LinkedIn ones. */
+  notifications: NotificationsResource;
+}
 
-/** Build the root-client namespace bag (`accounts`, `auth`, `webhooks`, `drafts`). */
+/** Build the root-client namespace bag. */
 export function buildRootNamespaces(ctx: RequestContext): RootNamespaces {
   return {
     accounts: new AccountsResource(ctx),
     auth: new AuthResource(ctx),
+    connectRequests: new ConnectRequestsResource(ctx),
     webhooks: new WebhooksResource(ctx),
     drafts: new DraftsResource(ctx),
+    teams: new TeamsResource(ctx),
+    notifications: new NotificationsResource(ctx),
   };
 }
 
