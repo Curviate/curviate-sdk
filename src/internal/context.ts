@@ -108,6 +108,7 @@ export function createContext(
       timeout: config.timeout,
       maxRetries: config.maxRetries,
       ...(config.fetch ? { fetch: config.fetch } : {}),
+      ...(config.team !== undefined ? { team: config.team } : {}),
       ...(args.query !== undefined ? { query: args.query } : {}),
       ...(args.body !== undefined ? { body: args.body } : {}),
       ...(args.rawBody !== undefined ? { rawBody: args.rawBody } : {}),

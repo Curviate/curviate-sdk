@@ -1,29 +1,18 @@
 /**
- * Notifications resource: 3 methods (NEW namespace).
+ * Notifications resource: 4 methods (root-scoped), `curviate.notifications`.
  *
- * Account-scoped: the bound context injects `account_id` as the leading
- * `/v1/` path segment on every request (account-first grammar), never a
- * query param or body field.
+ * What Curviate needs you to know: an account needs reconnecting, a Motion
+ * paused, an import finished, someone joined or left the team. Each person has
+ * their own list and read state, per team. Check `unreadCount()` at session
+ * start.
  *
- * The connected account's own notification centre: list its cards, delete
- * one, or apply "show less like this" to one. Both writes are self-actions;
- * they act only on the account's OWN cards and never notify or touch a
- * third party. Both share a `card_urn` path param: the card's ENTITY urn
- * (`urn:li:fsd_notificationCard:(...)`, the `card_urn` field of a
- * {@link NotificationsResource.list} item), not its secondary `object_urn`,
- * which targets the wrong notification. A card urn embeds `(`, `)`, `:`,
- * `,`; pass it to `delete`/`showLess` raw, the SDK percent-encodes it into
- * the path segment, and the server decodes it back.
+ * Not an account's LinkedIn notifications: those are account-scoped,
+ * `curviate.account(id).notifications`.
+ * Not webhook events either. Wire objects are `curviate_notification` and
+ * `curviate_notification_list`.
  *
- * Both writes are **idempotent** and **effective within a few seconds**:
- * deleting (or show-lessing) a card that is already gone succeeds with 200,
- * not an error, only a `card_urn` that never existed on this account 404s.
- * A `list()` read immediately after a write may still include the card for
- * a moment; that alone is not a failure signal; the 200 already confirms
- * the card was resolved and the removal accepted. (An early, unverified
- * assumption of a ~30s eventual-consistency window did not hold up under
- * measurement, removal lands in ~2-6s in practice; re-read after a short
- * delay, not instantly, if you need to confirm.)
+ * A Notification's `type` is an open list: new values may be added, so
+ * tolerate ones you do not know.
  */
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
@@ -31,97 +20,99 @@ import { apiPath } from "../internal/path.js";
 
 // ─── Type aliases from generated OpenAPI snapshot ──────────────────────────
 
-export type NotificationListPage =
-  paths["/v1/{account_id}/notifications"]["get"]["responses"]["200"]["content"]["application/json"];
 export type NotificationListQuery = NonNullable<
-  paths["/v1/{account_id}/notifications"]["get"]["parameters"]["query"]
+  paths["/v1/notifications"]["get"]["parameters"]["query"]
 >;
+export type NotificationListPage =
+  paths["/v1/notifications"]["get"]["responses"]["200"]["content"]["application/json"];
+export type Notification = NotificationListPage["items"][number];
 
-export type NotificationDeleteResult =
-  paths["/v1/{account_id}/notifications/{card_urn}"]["delete"]["responses"]["200"]["content"]["application/json"];
+export type NotificationUnreadCount =
+  paths["/v1/notifications/unread-count"]["get"]["responses"]["200"]["content"]["application/json"];
 
-export type NotificationShowLessResult =
-  paths["/v1/{account_id}/notifications/{card_urn}/show-less"]["post"]["responses"]["200"]["content"]["application/json"];
+export type NotificationUpdateBody = NonNullable<
+  paths["/v1/notifications/{id}"]["patch"]["requestBody"]
+>["content"]["application/json"];
+export type NotificationUpdateResult =
+  paths["/v1/notifications/{id}"]["patch"]["responses"]["200"]["content"]["application/json"];
+
+export type NotificationMarkAllReadBody = NonNullable<
+  paths["/v1/notifications/mark-all-read"]["post"]["requestBody"]
+>["content"]["application/json"];
+export type NotificationMarkAllReadResult =
+  paths["/v1/notifications/mark-all-read"]["post"]["responses"]["200"]["content"]["application/json"];
 
 // ─── Resource class ───────────────────────────────────────────────────────────
 
 export class NotificationsResource {
-  constructor(protected readonly ctx: RequestContext) {}
+  constructor(private readonly ctx: RequestContext) {}
 
   /**
-   * List the connected account's notification cards, newest first, plus
-   * the account-level `unread_count` (the unseen badge, NOT a count of
-   * `items`) and `latest_published_at` (a cheap poll watermark). Injected
-   * promo/suggestion cards are included and flagged (`injected:true`),
-   * never filtered.
-   * `GET /v1/{account_id}/notifications`
+   * List your Notifications, newest first, with your `unread_count`.
+   * `GET /v1/notifications`
    *
-   * @param params - optional `filter` (7-token enum, default `all`),
-   *   `limit` (1-100, default 20), and an opaque `cursor` from a prior
-   *   response. Page until the returned `cursor` is `null`.
+   * @param params - optional `filter` (`all` default, `unread`, `archived`),
+   *   `limit` (1-100, default 20) and an opaque `cursor` from a prior page.
+   *   Page until `cursor` is `null`.
+   *
+   * @example
+   * const { items, unread_count } = await curviate.notifications.list({ filter: "unread" });
    */
   list(params?: NotificationListQuery): Promise<NotificationListPage> {
     return this.ctx.request<NotificationListPage>({
       method: "GET",
-      path: "/v1/{account_id}/notifications",
-      ...(params ? { query: params as Record<string, string | number | boolean | string[] | undefined | null> } : {}),
+      path: "/v1/notifications",
+      ...(params ? { query: params } : {}),
     });
   }
 
   /**
-   * Delete one of the connected account's own notification cards by its
-   * card urn. A self-action, no third party is notified. This cannot be
-   * undone.
+   * Count your unread Notifications. Cheap; call it at session start.
+   * `GET /v1/notifications/unread-count`
    *
-   * **Safe to retry.** Idempotent: deleting a card you already deleted
-   * succeeds with `200`, not an error; a client that retries after a
-   * timeout is never punished for it. Only a `card_urn` that never existed
-   * on this account 404s.
-   *
-   * **Timing.** The removal takes effect within a few seconds; a
-   * {@link list} read immediately after this call may still include the
-   * card for a moment. That is not a failure signal; the `200` is already
-   * confirmation the card was resolved and the removal accepted. Re-read
-   * after a short delay, not instantly, if you need to visually confirm.
-   *
-   * `DELETE /v1/{account_id}/notifications/{card_urn}`
-   *
-   * @param cardUrn - the card's entity urn, raw/unencoded (the `card_urn`
-   *   field of a {@link list} item, `urn:li:fsd_notificationCard:(...)`,
-   *   NOT `object_urn`, which targets the wrong notification). The SDK
-   *   percent-encodes it into the path.
+   * @example
+   * const { unread_count } = await curviate.notifications.unreadCount();
    */
-  delete(cardUrn: string): Promise<NotificationDeleteResult> {
-    return this.ctx.request<NotificationDeleteResult>({
-      method: "DELETE",
-      path: apiPath`/v1/{account_id}/notifications/${cardUrn}`,
+  unreadCount(): Promise<NotificationUnreadCount> {
+    return this.ctx.request<NotificationUnreadCount>({
+      method: "GET",
+      path: "/v1/notifications/unread-count",
     });
   }
 
   /**
-   * Apply "show less like this" to the source of one of the connected
-   * account's own notification cards, a self-action, same card handle and
-   * timing/retry contract as {@link delete}. For network-activity cards (a
-   * repost, comment, or reaction by your network) this **removes the
-   * card**, the same effect as `delete`; LinkedIn exposes no separate,
-   * softer signal for these cards; this method exists so the calling
-   * intent reads clearly, not because it behaves differently. This cannot
-   * be undone.
+   * Mark one Notification read, or archive or unarchive it. Archiving also
+   * marks it read; a Notification is never marked unread.
+   * `PATCH /v1/notifications/{id}`
    *
-   * **Safe to retry**, same timing as {@link delete}: idempotent (a repeat
-   * is a `200`, not an error), effective within a few seconds, a
-   * still-visible card on an immediate {@link list} re-read is not a
-   * failure signal.
+   * @param id - the Notification id (`ntf_...`).
+   * @param body - `read: true` and/or `archived: true|false`.
    *
-   * `POST /v1/{account_id}/notifications/{card_urn}/show-less`
-   *
-   * @param cardUrn - the card's entity urn, raw/unencoded (see
-   *   {@link delete}). The SDK percent-encodes it into the path.
+   * @example
+   * await curviate.notifications.update("ntf_123", { archived: true });
    */
-  showLess(cardUrn: string): Promise<NotificationShowLessResult> {
-    return this.ctx.request<NotificationShowLessResult>({
+  update(id: string, body: NotificationUpdateBody): Promise<NotificationUpdateResult> {
+    return this.ctx.request<NotificationUpdateResult>({
+      method: "PATCH",
+      path: apiPath`/v1/notifications/${id}`,
+      body,
+    });
+  }
+
+  /**
+   * Mark all your Notifications read, or only those created at or before
+   * `before` (ISO 8601 with an offset; default now, a future time acts as now).
+   * `POST /v1/notifications/mark-all-read`
+   *
+   * @example
+   * await curviate.notifications.markAllRead();
+   */
+  markAllRead(body: NotificationMarkAllReadBody = {}): Promise<NotificationMarkAllReadResult> {
+    return this.ctx.request<NotificationMarkAllReadResult>({
       method: "POST",
-      path: apiPath`/v1/{account_id}/notifications/${cardUrn}/show-less`,
+      path: "/v1/notifications/mark-all-read",
+      body,
     });
   }
 }
+

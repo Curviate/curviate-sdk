@@ -180,7 +180,6 @@ describe("team and connect-request refusals decode to their own code, not INTERN
     "INVITE_LIMIT_REACHED",
     "INVITE_NOT_PENDING",
     "LAST_OWNER",
-    "NAME_TAKEN",
     "CONNECT_REQUEST_IN_USE",
     "CONNECT_REQUEST_NOT_PENDING",
     "LINKEDIN_ACCOUNT_MISMATCH",

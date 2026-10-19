@@ -1,5 +1,5 @@
 /**
- * Accounts resource: connected-account and seat management (8 methods, root-scoped).
+ * Accounts resource: connected-account and seat management (9 methods, root-scoped).
  *
  * Pattern followed by all resource namespaces:
  *   - take a {@link RequestContext} in the constructor,
@@ -46,6 +46,9 @@ export type AccountUpdateResult =
   paths["/v1/accounts/{account_id}"]["patch"]["responses"]["200"]["content"]["application/json"];
 
 /** `DELETE /v1/accounts/{account_id}` 200 body. */
+export type AccountTeamAccessResult =
+  paths["/v1/accounts/{account_id}/team-access"]["put"]["responses"]["200"]["content"]["application/json"];
+
 export type AccountDisconnectResult =
   paths["/v1/accounts/{account_id}"]["delete"]["responses"]["200"]["content"]["application/json"];
 
@@ -207,6 +210,25 @@ export class AccountsResource {
       method: "PATCH",
       path: apiPath`/v1/accounts/${accountId}`,
       body,
+    });
+  }
+
+  /**
+   * Turn team access on or off for an account you connected. `false` opts it
+   * out: nobody else in the team can operate it (`ACCOUNT_NOT_SHARED`), it
+   * leaves every Motion that held it, and its queued enrichment visits are
+   * dropped. `true` shares it again (it does not rejoin a Motion). Only the
+   * person who connected the account can do this (`ACCOUNT_OWNER_ONLY`).
+   * `PUT /v1/accounts/{account_id}/team-access`
+   *
+   * @example
+   * await curviate.accounts.setTeamAccess("acc_123", false);
+   */
+  setTeamAccess(accountId: string, teamAccess: boolean): Promise<AccountTeamAccessResult> {
+    return this.ctx.request<AccountTeamAccessResult>({
+      method: "PUT",
+      path: apiPath`/v1/accounts/${accountId}/team-access`,
+      body: { team_access: teamAccess },
     });
   }
 
