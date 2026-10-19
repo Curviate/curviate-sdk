@@ -1,0 +1,27 @@
+{
+  "about": "r19 missing fallback",
+  "rules": [
+    "R19"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{contact.first_name}}"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "m.with.fallback",
+      "rule": "required because the text uses a variable"
+    }
+  ],
+  "warnings": []
+}

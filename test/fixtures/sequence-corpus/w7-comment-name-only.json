@@ -1,0 +1,29 @@
+{
+  "about": "w7 comment name only",
+  "rules": [
+    "W7"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "c",
+        "do": "post.comment",
+        "with": {
+          "text": "Nice post, {{contact.first_name}}!",
+          "fallback": "skip"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "code": "W7",
+      "path": "c.with.text",
+      "rule": "the comment's only per-Contact variables are name fields; write it per Contact, for example in contact.extra"
+    }
+  ]
+}

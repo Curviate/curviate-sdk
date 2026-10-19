@@ -1,0 +1,28 @@
+{
+  "about": "r3 duplicate id",
+  "rules": [
+    "R3"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "a",
+        "wait": "1d"
+      },
+      {
+        "id": "a",
+        "wait": "1d",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "steps[1].id",
+      "rule": "duplicate step id a"
+    }
+  ],
+  "warnings": []
+}

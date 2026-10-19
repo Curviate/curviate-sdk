@@ -1,0 +1,34 @@
+{
+  "about": "r23 variants on non messaging step",
+  "rules": [
+    "R23"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "v",
+        "do": "profile.view",
+        "variants": [
+          {
+            "id": "a",
+            "text": "x"
+          },
+          {
+            "id": "b",
+            "text": "y"
+          }
+        ],
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "v.variants",
+      "rule": "variants are allowed on messaging steps only"
+    }
+  ],
+  "warnings": []
+}

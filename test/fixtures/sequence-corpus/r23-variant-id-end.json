@@ -1,0 +1,34 @@
+{
+  "about": "r23 variant id end",
+  "rules": [
+    "R23"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "variants": [
+          {
+            "id": "end",
+            "text": "Hi"
+          },
+          {
+            "id": "v2",
+            "text": "Hey"
+          }
+        ],
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "m.variants[0].id",
+      "rule": "\"end\" is reserved"
+    }
+  ],
+  "warnings": []
+}

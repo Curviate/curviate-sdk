@@ -1,0 +1,29 @@
+{
+  "about": "r13 with not object",
+  "rules": [
+    "R13"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "with": "Hi",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "m.with",
+      "rule": "must be an object"
+    },
+    {
+      "path": "m.with.text",
+      "rule": "required, or use variants"
+    }
+  ],
+  "warnings": []
+}

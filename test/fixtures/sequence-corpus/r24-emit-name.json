@@ -1,0 +1,24 @@
+{
+  "about": "r24 emit name",
+  "rules": [
+    "R24"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "e",
+        "emit": "Reply Received",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "e.emit",
+      "rule": "must match ^[a-z][a-z0-9_.]{0,63}$, like reply.received"
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,25 @@
+{
+  "about": "r10 until without else",
+  "rules": [
+    "R10"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "u",
+        "until": "message.replied",
+        "timeout": "2d",
+        "then": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "u.else",
+      "rule": "the last step must end explicitly; set else to a step id or \"end\""
+    }
+  ],
+  "warnings": []
+}

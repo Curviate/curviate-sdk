@@ -1,0 +1,29 @@
+{
+  "about": "r15 degree operand",
+  "rules": [
+    "R15"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "c",
+        "if": {
+          "contact.degree": {
+            "eq": 4
+          }
+        },
+        "then": "end",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "c.if",
+      "rule": "contact.degree takes {\"eq\": n} or {\"in\": [n, ...]}, n being 1, 2 or 3"
+    }
+  ],
+  "warnings": []
+}

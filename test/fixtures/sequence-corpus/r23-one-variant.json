@@ -1,0 +1,30 @@
+{
+  "about": "r23 one variant",
+  "rules": [
+    "R23"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "variants": [
+          {
+            "id": "v1",
+            "text": "Hi"
+          }
+        ],
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "m.variants",
+      "rule": "needs 2 to 5 variants; found 1"
+    }
+  ],
+  "warnings": []
+}

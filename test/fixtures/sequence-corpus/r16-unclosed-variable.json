@@ -1,0 +1,27 @@
+{
+  "about": "r16 unclosed variable",
+  "rules": [
+    "R16"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{contact.first_name"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "m.with.text",
+      "rule": "unclosed variable; write a variable as {{contact.first_name}}"
+    }
+  ],
+  "warnings": []
+}

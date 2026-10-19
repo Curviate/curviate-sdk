@@ -1,0 +1,39 @@
+{
+  "about": "w8 link in first message",
+  "rules": [
+    "W8"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "inv",
+        "do": "invite.send"
+      },
+      {
+        "id": "acc",
+        "until": "invite.accepted",
+        "timeout": "7d",
+        "then": "m",
+        "else": "end"
+      },
+      {
+        "id": "m",
+        "do": "message.send",
+        "with": {
+          "text": "Here is the deck: https://curviate.com/deck"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "code": "W8",
+      "path": "m.with.text",
+      "rule": "a link in the first message after the invitation is accepted"
+    }
+  ]
+}

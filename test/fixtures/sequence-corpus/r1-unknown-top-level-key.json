@@ -1,0 +1,25 @@
+{
+  "about": "r1 unknown top level key",
+  "rules": [
+    "R1"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "a",
+        "wait": "1d",
+        "next": "end"
+      }
+    ],
+    "foo": 1
+  },
+  "errors": [
+    {
+      "path": "foo",
+      "rule": "unknown key; a Sequence document holds only $schema, on_reply and steps"
+    }
+  ],
+  "warnings": []
+}

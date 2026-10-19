@@ -1,0 +1,24 @@
+{
+  "about": "r11 unknown on reply",
+  "rules": [
+    "R11"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "nope",
+    "steps": [
+      {
+        "id": "a",
+        "wait": "1d",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "on_reply",
+      "rule": "unknown step nope"
+    }
+  ],
+  "warnings": []
+}

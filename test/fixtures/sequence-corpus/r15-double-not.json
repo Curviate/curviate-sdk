@@ -1,0 +1,31 @@
+{
+  "about": "r15 double not",
+  "rules": [
+    "R15"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "c",
+        "if": {
+          "not": {
+            "not": {
+              "contact.premium": true
+            }
+          }
+        },
+        "then": "end",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "c.if.not",
+      "rule": "not cannot wrap another not"
+    }
+  ],
+  "warnings": []
+}

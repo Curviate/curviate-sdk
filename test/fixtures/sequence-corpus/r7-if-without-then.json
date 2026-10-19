@@ -1,0 +1,26 @@
+{
+  "about": "r7 if without then",
+  "rules": [
+    "R7"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "c",
+        "if": {
+          "contact.premium": true
+        },
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "c.then",
+      "rule": "required on an if step"
+    }
+  ],
+  "warnings": []
+}

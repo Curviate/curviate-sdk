@@ -1,0 +1,24 @@
+{
+  "about": "r3 end reserved",
+  "rules": [
+    "R3"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "end",
+        "wait": "1d",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "steps[0].id",
+      "rule": "\"end\" is reserved"
+    }
+  ],
+  "warnings": []
+}

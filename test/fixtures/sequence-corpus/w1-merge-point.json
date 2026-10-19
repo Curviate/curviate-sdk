@@ -1,0 +1,37 @@
+{
+  "about": "w1 merge point",
+  "rules": [
+    "W1"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "a",
+        "if": {
+          "contact.premium": true
+        },
+        "then": "c",
+        "else": "b"
+      },
+      {
+        "id": "b",
+        "wait": "1d"
+      },
+      {
+        "id": "c",
+        "wait": "1d",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "code": "W1",
+      "path": "c",
+      "rule": "merge point: reached by fall-through from b and by a jump from a"
+    }
+  ]
+}

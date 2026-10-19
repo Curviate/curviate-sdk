@@ -1,0 +1,27 @@
+{
+  "about": "r13 reaction enum",
+  "rules": [
+    "R13"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "r",
+        "do": "post.react",
+        "with": {
+          "reaction": "wow"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "r.with.reaction",
+      "rule": "must be one of like, celebrate, support, love, insightful, funny"
+    }
+  ],
+  "warnings": []
+}

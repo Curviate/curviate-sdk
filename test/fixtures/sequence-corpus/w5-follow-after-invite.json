@@ -1,0 +1,29 @@
+{
+  "about": "w5 follow after invite",
+  "rules": [
+    "W5"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "inv",
+        "do": "invite.send"
+      },
+      {
+        "id": "f",
+        "do": "profile.follow",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "code": "W5",
+      "path": "f.do",
+      "rule": "profile.follow after invite.send on the same path; an invitation already follows"
+    }
+  ]
+}

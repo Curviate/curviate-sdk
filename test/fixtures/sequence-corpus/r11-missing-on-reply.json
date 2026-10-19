@@ -1,0 +1,23 @@
+{
+  "about": "r11 missing on reply",
+  "rules": [
+    "R11"
+  ],
+  "schema_valid": false,
+  "document": {
+    "steps": [
+      {
+        "id": "a",
+        "wait": "1d",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "on_reply",
+      "rule": "required: a step id or \"end\""
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,27 @@
+{
+  "about": "r13 post not latest",
+  "rules": [
+    "R13"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "like",
+        "do": "post.react",
+        "with": {
+          "post": "https://www.linkedin.com/posts/x"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "like.with.post",
+      "rule": "only \"latest\" is supported"
+    }
+  ],
+  "warnings": []
+}

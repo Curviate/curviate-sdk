@@ -1,0 +1,32 @@
+{
+  "about": "r16 motion undefined",
+  "rules": [
+    "R16"
+  ],
+  "only": "server",
+  "context": {
+    "variables": {}
+  },
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{motion.x}}",
+          "fallback": "Hi"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "m.with.text",
+      "rule": "{{motion.x}} is not defined in settings.variables"
+    }
+  ],
+  "warnings": []
+}

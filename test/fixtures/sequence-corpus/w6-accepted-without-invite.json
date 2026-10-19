@@ -1,0 +1,27 @@
+{
+  "about": "w6 accepted without invite",
+  "rules": [
+    "W6"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "acc",
+        "until": "invite.accepted",
+        "timeout": "7d",
+        "then": "end",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "code": "W6",
+      "path": "acc.until",
+      "rule": "until invite.accepted on a path with no invite.send before it"
+    }
+  ]
+}

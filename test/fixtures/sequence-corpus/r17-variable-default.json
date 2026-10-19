@@ -1,0 +1,28 @@
+{
+  "about": "r17 variable default",
+  "rules": [
+    "R17"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{contact.first_name | default:'there'}}",
+          "fallback": "Hi"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "m.with.text",
+      "rule": "variable defaults are not supported; add a fallback"
+    }
+  ],
+  "warnings": []
+}

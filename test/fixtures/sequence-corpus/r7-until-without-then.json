@@ -1,0 +1,25 @@
+{
+  "about": "r7 until without then",
+  "rules": [
+    "R7"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "u",
+        "until": "message.replied",
+        "timeout": "2d",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "u.then",
+      "rule": "required on an until step"
+    }
+  ],
+  "warnings": []
+}

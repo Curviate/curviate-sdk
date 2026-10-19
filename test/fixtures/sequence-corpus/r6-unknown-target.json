@@ -1,0 +1,24 @@
+{
+  "about": "r6 unknown target",
+  "rules": [
+    "R6"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "a",
+        "wait": "1d",
+        "next": "nope"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "a.next",
+      "rule": "unknown step nope"
+    }
+  ],
+  "warnings": []
+}

@@ -70,3 +70,58 @@ export function stripLocalDiscriminatorMappings(node) {
   visit(node);
   return stripped;
 }
+
+/**
+ * openapi-typescript options shared by gen:types and check:types.
+ *
+ * `defaultNonNullable: false`: a property carrying a `default` stays optional
+ * in the generated type. The default (true) typed the Sequence document's
+ * `post`, `newer_than` and `reaction` as REQUIRED, so a valid document that
+ * omits them (the server applies the default) did not compile against
+ * `SequenceDocument`.
+ */
+export const TYPEGEN_OPTIONS = { defaultNonNullable: false };
+
+/**
+ * openapi-typescript 7.6.1 ignores `patternProperties` and renders such an
+ * object as `Record<string, never>`, so the Sequence predicate
+ * `{"contact.extra.<key>": {...}}` did not compile against `SequenceDocument`.
+ * For type generation only, an object whose only members are
+ * `patternProperties` gets that one pattern's schema as `additionalProperties`
+ * (the key pattern is checked at run time by `validateSequence`). Mutates
+ * `node`; the embedded schema is extracted before this runs.
+ * @param {unknown} node
+ * @returns {number} objects rewritten
+ */
+export function inlinePatternProperties(node) {
+  let rewritten = 0;
+  const visit = (n) => {
+    if (!n || typeof n !== "object") return;
+    if (Array.isArray(n)) {
+      for (const item of n) visit(item);
+      return;
+    }
+    const pp = n.patternProperties;
+    if (pp && typeof pp === "object" && !n.properties && Object.keys(pp).length === 1) {
+      n.additionalProperties = Object.values(pp)[0];
+      delete n.patternProperties;
+      rewritten += 1;
+    }
+    for (const key of Object.keys(n)) visit(n[key]);
+  };
+  visit(node);
+  return rewritten;
+}
+
+/**
+ * The Sequence document v1 JSON Schema as `src/sequence/schema.v1.json` holds
+ * it: `components.schemas.SequenceDocument` of the OpenAPI document, key for
+ * key (sdk/009 FR-010). Read before any transform above mutates the document.
+ * @param {any} doc the raw OpenAPI document
+ * @returns {string} pretty JSON plus a trailing newline
+ */
+export function sequenceSchemaJson(doc) {
+  const schema = doc?.components?.schemas?.SequenceDocument;
+  if (!schema) throw new Error("components.schemas.SequenceDocument missing from the OpenAPI document");
+  return JSON.stringify(schema, null, 2) + "\n";
+}

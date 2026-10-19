@@ -1,0 +1,34 @@
+{
+  "about": "r23 variant id equals step id",
+  "rules": [
+    "R23"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "variants": [
+          {
+            "id": "m",
+            "text": "Hi"
+          },
+          {
+            "id": "v2",
+            "text": "Hey"
+          }
+        ],
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "m.variants[0].id",
+      "rule": "m is already a step or variant id"
+    }
+  ],
+  "warnings": []
+}

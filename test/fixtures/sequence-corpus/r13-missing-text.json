@@ -1,0 +1,25 @@
+{
+  "about": "r13 missing text",
+  "rules": [
+    "R13"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "with": {},
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "m.with.text",
+      "rule": "required, or use variants"
+    }
+  ],
+  "warnings": []
+}

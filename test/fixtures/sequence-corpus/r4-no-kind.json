@@ -1,0 +1,23 @@
+{
+  "about": "r4 no kind",
+  "rules": [
+    "R4"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "a",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "a",
+      "rule": "a step needs exactly one of do, wait, until, if, emit, tag"
+    }
+  ],
+  "warnings": []
+}

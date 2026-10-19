@@ -1,0 +1,28 @@
+{
+  "about": "r13 unknown parameter",
+  "rules": [
+    "R13"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "with": {
+          "text": "Hi",
+          "foo": 1
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "m.with.foo",
+      "rule": "unknown parameter; message.send takes text, fallback"
+    }
+  ],
+  "warnings": []
+}

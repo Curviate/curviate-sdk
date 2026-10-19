@@ -1,0 +1,24 @@
+{
+  "about": "r12 wait 366d",
+  "rules": [
+    "R12"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "a",
+        "wait": "366d",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "a.wait",
+      "rule": "must be a duration between 1m and 365d: a number then m, h or d, like 30d"
+    }
+  ],
+  "warnings": []
+}

@@ -4428,17 +4428,17 @@ export interface components {
                      * @default latest
                      * @constant
                      */
-                    post: "latest";
+                    post?: "latest";
                     /**
                      * @description Only a post newer than this (1h to 365d).
                      * @default 30d
                      */
-                    newer_than: string;
+                    newer_than?: string;
                     /**
                      * @default like
                      * @enum {string}
                      */
-                    reaction: "like" | "celebrate" | "support" | "love" | "insightful" | "funny";
+                    reaction?: "like" | "celebrate" | "support" | "love" | "insightful" | "funny";
                 };
                 /** @description A step id, or "end". */
                 next?: string;
@@ -4457,12 +4457,12 @@ export interface components {
                      * @default latest
                      * @constant
                      */
-                    post: "latest";
+                    post?: "latest";
                     /**
                      * @description Only a post newer than this (1h to 365d).
                      * @default 30d
                      */
-                    newer_than: string;
+                    newer_than?: string;
                     /** @description Message text. Variables need a fallback. */
                     text?: string;
                     /** @description Variable-free comment, or "skip" to skip the step when a variable is missing. */
@@ -4621,7 +4621,15 @@ export interface components {
                         contains?: string;
                         exists?: boolean;
                     };
-                } | Record<string, never> | {
+                } | {
+                    [key: string]: {
+                        eq?: string | number | boolean;
+                        neq?: string | number | boolean;
+                        in?: (string | number | boolean)[];
+                        contains?: string;
+                        exists?: boolean;
+                    };
+                } | {
                     "account.premium": boolean;
                 } | {
                     not: {
@@ -4727,7 +4735,15 @@ export interface components {
                             contains?: string;
                             exists?: boolean;
                         };
-                    } | Record<string, never> | {
+                    } | {
+                        [key: string]: {
+                            eq?: string | number | boolean;
+                            neq?: string | number | boolean;
+                            in?: (string | number | boolean)[];
+                            contains?: string;
+                            exists?: boolean;
+                        };
+                    } | {
                         "account.premium": boolean;
                     };
                 };

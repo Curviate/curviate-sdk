@@ -1,0 +1,37 @@
+{
+  "about": "r23 text and variants",
+  "rules": [
+    "R23"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "with": {
+          "text": "Hi"
+        },
+        "variants": [
+          {
+            "id": "v1",
+            "text": "Hi"
+          },
+          {
+            "id": "v2",
+            "text": "Hey"
+          }
+        ],
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "m.variants",
+      "rule": "use either variants or with.text, not both"
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,25 @@
+{
+  "about": "r5 step level by",
+  "rules": [
+    "R5"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "invite",
+        "do": "invite.send",
+        "by": "acc_1",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "invite.by",
+      "rule": "step-level by is not supported; use settings.assign"
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,25 @@
+{
+  "about": "r5 unknown step key",
+  "rules": [
+    "R5"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "a",
+        "wait": "1d",
+        "then": "end",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "a.then",
+      "rule": "unknown key for a wait step"
+    }
+  ],
+  "warnings": []
+}

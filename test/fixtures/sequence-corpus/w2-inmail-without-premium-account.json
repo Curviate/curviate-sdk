@@ -1,0 +1,37 @@
+{
+  "about": "w2 inmail without premium account",
+  "rules": [
+    "W2"
+  ],
+  "only": "server",
+  "context": {
+    "stop_on_engagement": false,
+    "account_profiles": [
+      "basic",
+      "premium"
+    ]
+  },
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "im",
+        "do": "inmail.send",
+        "with": {
+          "subject": "Hi",
+          "text": "Body"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "code": "W2",
+      "path": "im.do",
+      "rule": "no sending Account has Sales Navigator or Recruiter, so this step will be skipped"
+    }
+  ]
+}

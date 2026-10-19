@@ -1,0 +1,28 @@
+{
+  "about": "r19 empty fallback",
+  "rules": [
+    "R19"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{contact.first_name}}",
+          "fallback": "  "
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "m.with.fallback",
+      "rule": "a fallback must not be empty"
+    }
+  ],
+  "warnings": []
+}
