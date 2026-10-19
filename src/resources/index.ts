@@ -3,9 +3,10 @@
  *
  * The surface is split in two:
  * - **Root-scoped** (`accounts`, `auth`, `connectRequests`, `webhooks`, `drafts`,
- *   `teams`, `notifications`) hang off the root client only. Connected-account
- *   management, connect/reconnect, webhook registration, Drafts (a Draft's
- *   account is optional), teams and Curviate's own Notifications are
+ *   `teams`, `notifications`, `contacts`, `contactLists`, `tags`) hang off the
+ *   root client only. Connected-account management, connect/reconnect, webhook
+ *   registration, Drafts (a Draft's account is optional), teams, Curviate's own
+ *   Notifications and the team's Contacts, lists and Tags are
  *   team-wide concerns, not per-account ones; they carry no `account_id` path
  *   segment.
  * - **Account-scoped** (everything else) hang off `curviate.account(id)` only.
@@ -35,6 +36,9 @@ import { LinkedInNotificationsResource } from "./linkedin-notifications.js";
 import { NotificationsResource } from "./notifications.js";
 import { ConnectRequestsResource } from "./connect-requests.js";
 import { TeamsResource } from "./teams.js";
+import { ContactsResource } from "./contacts.js";
+import { ContactListsResource } from "./contact-lists.js";
+import { TagsResource } from "./tags.js";
 import { SalesNavigatorResource } from "./sales-navigator.js";
 import { RecruiterResource } from "./recruiter.js";
 import { JobsResource } from "./jobs.js";
@@ -58,6 +62,9 @@ export { LinkedInNotificationsResource } from "./linkedin-notifications.js";
 export { NotificationsResource } from "./notifications.js";
 export { ConnectRequestsResource } from "./connect-requests.js";
 export { TeamsResource } from "./teams.js";
+export { ContactsResource, ContactImportsResource } from "./contacts.js";
+export { ContactListsResource } from "./contact-lists.js";
+export { TagsResource } from "./tags.js";
 export { SalesNavigatorResource } from "./sales-navigator.js";
 export { RecruiterResource } from "./recruiter.js";
 export { JobsResource } from "./jobs.js";
@@ -126,6 +133,9 @@ export interface RootNamespaces
   teams: TeamsResource;
   /** Curviate's own Notifications, not the account's LinkedIn ones. */
   notifications: NotificationsResource;
+  contacts: ContactsResource;
+  contactLists: ContactListsResource;
+  tags: TagsResource;
 }
 
 /** Build the root-client namespace bag. */
@@ -138,6 +148,9 @@ export function buildRootNamespaces(ctx: RequestContext): RootNamespaces {
     drafts: new DraftsResource(ctx),
     teams: new TeamsResource(ctx),
     notifications: new NotificationsResource(ctx),
+    contacts: new ContactsResource(ctx),
+    contactLists: new ContactListsResource(ctx),
+    tags: new TagsResource(ctx),
   };
 }
 

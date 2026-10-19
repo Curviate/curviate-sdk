@@ -32,6 +32,9 @@ import {
   type ConnectRequestsResource,
   type TeamsResource,
   type NotificationsResource,
+  type ContactsResource,
+  type ContactListsResource,
+  type TagsResource,
 } from "./resources/index.js";
 
 export class Curviate {
@@ -52,6 +55,10 @@ export class Curviate {
    * are `curviate.account(id).notifications`.
    */
   readonly notifications: NotificationsResource;
+  /** Your team's Contacts; `contacts.imports` for bulk imports. */
+  readonly contacts: ContactsResource;
+  readonly contactLists: ContactListsResource;
+  readonly tags: TagsResource;
 
   constructor(config: CurviateConfig) {
     this.config = resolveConfig(config);
@@ -64,6 +71,9 @@ export class Curviate {
     this.connectRequests = ns.connectRequests;
     this.teams = ns.teams;
     this.notifications = ns.notifications;
+    this.contacts = ns.contacts;
+    this.contactLists = ns.contactLists;
+    this.tags = ns.tags;
   }
 
   /**
