@@ -96,6 +96,42 @@ export type {
 } from "./resources/teams.js";
 
 export type {
+  Contact,
+  ContactListParams,
+  ContactListPage,
+  ContactUpsertBody,
+  ContactUpsertResult,
+  ContactUpdateBody,
+  ContactUpdateResult,
+  ContactDeleteManyBody,
+  ContactDeleteManyResult,
+  ContactUpdateManyBody,
+  ContactUpdateManyResult,
+  ContactEnrichBody,
+  ContactEnrichResult,
+  ContactExportParams,
+  ContactImport,
+  ContactImportCreateBody,
+  ContactImportListParams,
+  ContactImportListPage,
+  ContactImportGetResult,
+  ContactImportRowsParams,
+  ContactImportRowsPage,
+} from "./resources/contacts.js";
+
+export type {
+  ContactListObject,
+  ContactListCreateBody,
+  ContactListListParams,
+  ContactListListPage,
+  ContactListGetResult,
+  ContactListUpdateBody,
+  ContactListUpdateResult,
+} from "./resources/contact-lists.js";
+
+export type { Tag, TagListParams, TagListPage, TagUpdateBody } from "./resources/tags.js";
+
+export type {
   ResourceNamespaces,
   RootNamespaces,
   AccountScopedNamespaces,

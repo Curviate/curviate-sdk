@@ -327,6 +327,22 @@ export const ERROR_CODES = [
   "CONNECT_REQUEST_IN_USE",
   "LINKEDIN_ACCOUNT_MISMATCH",
 
+  // Contacts, Contact lists and Tags (`contacts`, `contactLists`, `tags`).
+  //
+  // - `NAME_TAKEN` (409): another Contact list or Tag already has this name in
+  //   any casing. Pick another name, or use the existing one.
+  // - `RESOURCE_IN_USE` (409): a live Motion or a running import uses this
+  //   list or Tag; the message names them. Finish or archive the Motion, or
+  //   wait for the import.
+  // - `CONTACT_LIMIT_REACHED` (422): a cap is reached (Contacts, lists or Tags
+  //   per team, Tags per Contact); the message names it. Delete some first.
+  // - `IMPORT_QUEUE_FULL` (429): 5 background imports are already queued or
+  //   running. Retry after one finishes.
+  "NAME_TAKEN",
+  "RESOURCE_IN_USE",
+  "CONTACT_LIMIT_REACHED",
+  "IMPORT_QUEUE_FULL",
+
   // Generic
   "INTERNAL",
 ] as const;
