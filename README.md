@@ -98,6 +98,29 @@ if (unread_count > 0) {
 
 `curviate.teams` manages the team the credential acts in: `getCurrent`, `updateCurrent`, `listMembers`, `updateMember` (role), `removeMember` (`"me"` leaves), `createInvites`, `listInvites`, `resendInvite`, `revokeInvite`, plus `list` for every team you belong to. Member and invite writes are for Owners (`INSUFFICIENT_ROLE` otherwise). `curviate.accounts.setTeamAccess(accountId, false)` keeps an account you connected to yourself.
 
+## Contacts, lists and Tags
+
+`curviate.contacts` keeps the people your team works with: a LinkedIn URL plus your own fields, Tags and Contact lists. Any spelling of one person's URL resolves to one Contact, so `upsert` is safe to repeat:
+
+```ts
+const { id, outcome } = await curviate.contacts.upsert({
+  linkedin_url: "https://www.linkedin.com/in/ana/",
+  job_title: "CTO",
+  tags: ["warm"],
+  list_name: "Q4 webinar", // created if new
+});
+
+// Bulk: rows or a CSV string, up to 10,000 rows. Over 500 runs in the background.
+const csv = await readFile("leads.csv", "utf8"); // node:fs/promises
+const imp = await curviate.contacts.imports.create({ csv, list_name: "Q4 webinar" });
+const { items: skipped } = await curviate.contacts.imports.rows(imp.id, { outcome: "skipped" });
+
+await curviate.contacts.updateMany({ contact_ids: [id], add_tags: ["vip"] });
+const all = await curviate.contacts.export({ format: "json", tag: "vip" });
+```
+
+`contacts.enrich` fills profile fields from what Curviate already stores, else queues paced live profile views from an account you name: a live view is a real profile view the person may see. `curviate.contactLists` and `curviate.tags` rename and delete; a Tag has no create call, the first write naming it creates it. Refusals: `NAME_TAKEN`, `RESOURCE_IN_USE` (a live Motion or a running import uses it), `CONTACT_LIMIT_REACHED`, `IMPORT_QUEUE_FULL`. Deletes are for Owners and Managers.
+
 ## Drafts and scheduled posts
 
 A Draft is a stored, editable, unpublished post. Give it an account and a `scheduled_at` and Curviate publishes it at that time. Drafts are tenant-wide, so `drafts` hangs off the root client (a Draft's `account_id` is a field, and optional). `acc.posts.create()` still publishes immediately and does not schedule.

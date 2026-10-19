@@ -1,5 +1,5 @@
 // The root `contacts` (with `contacts.imports`), `contactLists` and `tags`
-// namespaces (api/039), against a recorded transport (an injected `fetch`).
+// namespaces, against a recorded transport (an injected `fetch`).
 // One row per method: method, path, query and body on the wire.
 import { describe, expect, it } from "vitest";
 import { Curviate, ERROR_CODES, isCurviateError } from "../../src/index.js";

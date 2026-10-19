@@ -10,12 +10,38 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 ## [Unreleased]
 
 Fixture and types regenerated from deployed staging (server
-`13d5357a7f74772782872c791ec8a5835060e9fe`, 191 paths; first regen at
+`091f53a69decbc55c53336bbbbfa1dc5fd56e859`, 193 paths; earlier regens at
+`13d5357a7f74772782872c791ec8a5835060e9fe`, 191 paths, and
 `3b0b7503a516f6a1f39622bd40ec6fec9c217c38`, 176 paths). The previous fixture
 was older, so this regen also carries earlier, unrelated server changes (see
 Changed). Regenerate from production and confirm an empty diff before publishing.
 
 ### Added
+
+- **`contacts`** (root, 9 methods): `list`, `get`, `upsert`, `update`,
+  `delete`, `deleteMany`, `updateMany`, `enrich`, `export`, plus
+  **`contacts.imports`** (4 methods): `create`, `get`, `list`, `rows`. Your
+  team's Contacts: a LinkedIn URL plus your own fields, Tags and list
+  memberships; any spelling of one person's URL resolves to one Contact, so
+  `upsert` creates or updates and reports `outcome`. `updateMany` adds or
+  removes Tags and list memberships on up to 1,000 Contacts. `enrich` fills
+  profile fields from what Curviate stores, else queues paced live profile
+  views (a real view the person may see). `export` returns the whole matching
+  set in one download: `format: "json"` resolves with the Contact array, `csv`
+  and `ndjson` (default) with the raw bytes. Imports take `rows` or a `csv`
+  string, up to 10,000 rows; up to 500 run inline, larger ones in the
+  background (poll `imports.get`, read the report with `imports.rows`).
+- **`contactLists`** (root, 5 methods): `create`, `list`, `get`, `update`,
+  `delete`. Static lists; membership changes go through
+  `contacts.updateMany` (`add_list_id`, `remove_list_id`).
+- **`tags`** (root, 3 methods): `list`, `update` (rename), `delete`. No create
+  call: a write that names a new Tag creates it.
+- **Error codes** for Contacts, lists and Tags: `NAME_TAKEN` (409),
+  `RESOURCE_IN_USE` (409, a live Motion or running import uses the list or
+  Tag), `CONTACT_LIMIT_REACHED` (422), `IMPORT_QUEUE_FULL` (429).
+- **Unibox types** (no SDK method yet): `POST
+  /v1/unibox/chats/{account_id}/{chat_id}/contact` and `.../enrollments`, and
+  the typed `motion_context` on Unibox chats (was an empty object type).
 
 - **`notifications` at the root** (4 methods): `list`, `unreadCount`,
   `update`, `markAllRead`. Curviate's own Notifications for you in this team
