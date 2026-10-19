@@ -3315,7 +3315,7 @@ export interface paths {
         };
         /**
          * Export contacts
-         * @description Streams every Contact matching the listing's filters in one download, as CSV, JSON or NDJSON (default). No cursor. fields picks and orders the columns. A CSV export re-imports without changes.
+         * @description Streams every Contact matching the listing's filters in one download, as CSV, JSON or NDJSON (default). No cursor. fields picks and orders the columns. A CSV export re-imports unchanged: a cell starting with =, +, -, @, a tab, CR or ' gets a leading ' (formula guard), removed on import.
          */
         get: operations["getV1ContactsExport"];
         put?: never;
@@ -34444,31 +34444,31 @@ export interface operations {
                          * @description Response type discriminator.
                          * @enum {string}
                          */
-                        object?: "connect_request";
+                        object: "connect_request";
                         /** @description The connect request id (creq_...). Opaque. */
-                        id?: string;
+                        id: string;
                         /**
                          * @description connect asks for a new account; reconnect for the named one.
                          * @enum {string}
                          */
-                        kind?: "connect" | "reconnect";
+                        kind: "connect" | "reconnect";
                         /**
                          * @description pending until the person completes it in their dashboard. completed: account_id is the connected account. expired: not started within 15 minutes. failed: three failed sign-ins, or the account to reconnect is gone. cancelled: someone cancelled it.
                          * @enum {string}
                          */
-                        status?: "pending" | "completed" | "expired" | "cancelled" | "failed";
+                        status: "pending" | "completed" | "expired" | "cancelled" | "failed";
                         /** @description reconnect: the named account, from creation. connect: the new account once completed, else null. */
-                        account_id?: string | null;
+                        account_id: string | null;
                         /** @description The error code that ended the last failed sign-in attempt (for example CHECKPOINT_EXPIRED), else null. Never a message. */
-                        error_code?: string | null;
+                        error_code: string | null;
                         /** @description The dashboard link that opens the request. It works only for the person it is for, signed in to their own Curviate dashboard in this team; it carries no secret. */
-                        url?: string;
+                        url: string;
                         /** @description ISO-8601 UTC: a sign-in must start before this, 15 minutes after creation. */
-                        expires_at?: string;
+                        expires_at: string;
                         /** @description ISO-8601 UTC creation time. */
-                        created_at?: string;
+                        created_at: string;
                         /** @description ISO-8601 UTC completion time, else null. */
-                        completed_at?: string | null;
+                        completed_at: string | null;
                         safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
@@ -34557,31 +34557,31 @@ export interface operations {
                          * @description Response type discriminator.
                          * @enum {string}
                          */
-                        object?: "connect_request";
+                        object: "connect_request";
                         /** @description The connect request id (creq_...). Opaque. */
-                        id?: string;
+                        id: string;
                         /**
                          * @description connect asks for a new account; reconnect for the named one.
                          * @enum {string}
                          */
-                        kind?: "connect" | "reconnect";
+                        kind: "connect" | "reconnect";
                         /**
                          * @description pending until the person completes it in their dashboard. completed: account_id is the connected account. expired: not started within 15 minutes. failed: three failed sign-ins, or the account to reconnect is gone. cancelled: someone cancelled it.
                          * @enum {string}
                          */
-                        status?: "pending" | "completed" | "expired" | "cancelled" | "failed";
+                        status: "pending" | "completed" | "expired" | "cancelled" | "failed";
                         /** @description reconnect: the named account, from creation. connect: the new account once completed, else null. */
-                        account_id?: string | null;
+                        account_id: string | null;
                         /** @description The error code that ended the last failed sign-in attempt (for example CHECKPOINT_EXPIRED), else null. Never a message. */
-                        error_code?: string | null;
+                        error_code: string | null;
                         /** @description The dashboard link that opens the request. It works only for the person it is for, signed in to their own Curviate dashboard in this team; it carries no secret. */
-                        url?: string;
+                        url: string;
                         /** @description ISO-8601 UTC: a sign-in must start before this, 15 minutes after creation. */
-                        expires_at?: string;
+                        expires_at: string;
                         /** @description ISO-8601 UTC creation time. */
-                        created_at?: string;
+                        created_at: string;
                         /** @description ISO-8601 UTC completion time, else null. */
-                        completed_at?: string | null;
+                        completed_at: string | null;
                         safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
@@ -34643,31 +34643,31 @@ export interface operations {
                          * @description Response type discriminator.
                          * @enum {string}
                          */
-                        object?: "connect_request";
+                        object: "connect_request";
                         /** @description The connect request id (creq_...). Opaque. */
-                        id?: string;
+                        id: string;
                         /**
                          * @description connect asks for a new account; reconnect for the named one.
                          * @enum {string}
                          */
-                        kind?: "connect" | "reconnect";
+                        kind: "connect" | "reconnect";
                         /**
                          * @description pending until the person completes it in their dashboard. completed: account_id is the connected account. expired: not started within 15 minutes. failed: three failed sign-ins, or the account to reconnect is gone. cancelled: someone cancelled it.
                          * @enum {string}
                          */
-                        status?: "pending" | "completed" | "expired" | "cancelled" | "failed";
+                        status: "pending" | "completed" | "expired" | "cancelled" | "failed";
                         /** @description reconnect: the named account, from creation. connect: the new account once completed, else null. */
-                        account_id?: string | null;
+                        account_id: string | null;
                         /** @description The error code that ended the last failed sign-in attempt (for example CHECKPOINT_EXPIRED), else null. Never a message. */
-                        error_code?: string | null;
+                        error_code: string | null;
                         /** @description The dashboard link that opens the request. It works only for the person it is for, signed in to their own Curviate dashboard in this team; it carries no secret. */
-                        url?: string;
+                        url: string;
                         /** @description ISO-8601 UTC: a sign-in must start before this, 15 minutes after creation. */
-                        expires_at?: string;
+                        expires_at: string;
                         /** @description ISO-8601 UTC creation time. */
-                        created_at?: string;
+                        created_at: string;
                         /** @description ISO-8601 UTC completion time, else null. */
-                        completed_at?: string | null;
+                        completed_at: string | null;
                         safety_warning?: components["schemas"]["SafetyWarning"];
                     };
                 };
@@ -39535,7 +39535,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The whole matching set in one streamed download (Content-Disposition: attachment). CSV is UTF-8 with a BOM; a cell starting with = + - @, tab or CR is prefixed with '. */
+            /** @description The whole matching set in one streamed download (Content-Disposition: attachment), in the format asked for: NDJSON (default), CSV or JSON. CSV is UTF-8 with a BOM; a cell starting with = + - @, tab, CR or ' is prefixed with '. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -39544,6 +39544,71 @@ export interface operations {
                 };
                 content: {
                     "application/x-ndjson": string;
+                    "text/csv": string;
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "contact";
+                        /** @description Contact id (con_...). */
+                        id: string;
+                        /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person. */
+                        linkedin_url: string | null;
+                        /** @description The profile slug, when known. */
+                        public_identifier: string | null;
+                        /** @description LinkedIn's profile id, when known. */
+                        provider_id: string | null;
+                        /** @description LinkedIn's member id, when observed. */
+                        member_id: string | null;
+                        /** @description Full name. */
+                        full_name: string | null;
+                        /** @description First name. */
+                        first_name: string | null;
+                        /** @description Last name. */
+                        last_name: string | null;
+                        /** @description Profile headline. */
+                        headline: string | null;
+                        /** @description Current job title. */
+                        job_title: string | null;
+                        /** @description Current company. */
+                        company: string | null;
+                        /** @description Email, only ever what you supplied. */
+                        email: string | null;
+                        /** @description Location. */
+                        location: string | null;
+                        /** @description About text. */
+                        about: string | null;
+                        /** @description Your own fields. */
+                        extra: {
+                            [key: string]: unknown;
+                        };
+                        /** @description Per non-empty standard field: tenant (you supplied it) or linkedin (Curviate filled it). A tenant value is never overwritten by LinkedIn data. */
+                        sources: {
+                            [key: string]: "tenant" | "linkedin";
+                        };
+                        /** @description Tag names. */
+                        tags: string[];
+                        /** @description Contact lists (cl_...) holding this Contact. */
+                        list_ids: string[];
+                        /** @description Your accounts this person is a Connection of. */
+                        connected_account_ids: string[];
+                        enrichment: {
+                            /** @enum {string} */
+                            status: "none" | "queued" | "done" | "failed";
+                            /** @description When observed profile data last changed this Contact. */
+                            enriched_at: string | null;
+                            /**
+                             * @description Why the last enrich visit failed: profile_not_found (no such profile, or it is not this person), expired (not visited within 7 days), account_unavailable (the account was removed), platform_error, or tier_required (the team's plan no longer includes Contacts).
+                             * @enum {string|null}
+                             */
+                            failure_code: "profile_not_found" | "expired" | "account_unavailable" | "platform_error" | "tier_required" | null;
+                        };
+                        /** @description ISO 8601. */
+                        created_at: string;
+                        /** @description ISO 8601. */
+                        updated_at: string;
+                    }[];
                 };
             };
             /** @description Invalid filter or an unknown name in fields (the message names it). */
