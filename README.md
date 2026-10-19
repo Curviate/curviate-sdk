@@ -49,7 +49,7 @@ const req = await curviate.connectRequests.create();             // new account
 console.log(`Connect your LinkedIn account here: ${req.url}`);
 
 // Poll until it leaves `pending`: completed, expired (15 minutes), failed or cancelled.
-const done = await curviate.connectRequests.get(req.id!);
+const done = await curviate.connectRequests.get(req.id);
 if (done.status === "completed") console.log(done.account_id);
 ```
 
@@ -159,6 +159,33 @@ const edited = Sequence.fromDocument(motion.sequence) // throws SEQUENCE_INVALID
 ```
 
 `{{motion.<key>}}` is warning `W9` offline: only the API knows the Motion's `settings.variables`. Warnings that need the Motion's sending accounts or settings come from the API only. `SEQUENCE_SCHEMA_V1` is the published JSON Schema (`SEQUENCE_SCHEMA_URL`) for editors and tooling. The validator knows the vocabulary of the schema it ships with: a document using an action or event added to the API later is refused offline while the API accepts it; upgrade the SDK.
+
+## Motions and Enrollments
+
+A Motion runs one Sequence for the Contacts of its Contact lists, on its sending accounts, inside its schedule. `sequence` in `motions.create` and `motions.update` takes a builder or a document:
+
+```ts
+import { Sequence, step } from "@curviate/sdk";
+
+const motion = await curviate.motions.create({
+  name: "Q4 webinar follow-up",
+  contact_list_ids: ["cl_123"],
+  account_ids: ["acc_123"],
+  schedule: { timezone: "Europe/Berlin" },
+  sequence: seq, // a builder: converted with toDocument(); an invalid one throws SEQUENCE_INVALID, nothing is sent
+});
+
+const { paths, samples, projection } = await curviate.motions.preview(motion.id); // a read: nothing is sent to LinkedIn
+await curviate.motions.start(motion.id);
+
+// Edit later: load the stored document into a builder.
+const current = await curviate.motions.get(motion.id);
+await curviate.motions.update(motion.id, {
+  sequence: Sequence.fromDocument(current.sequence).insertBefore("opener", step.wait("settle", "1d")),
+});
+```
+
+A plain object goes as is and the API validates it; wrap hand-written JSON in `Sequence.fromDocument(json)` to have it checked offline first. `sequence: null` clears a draft's. Status operations: `start`, `pause`, `resume`, `archive` (irreversible), `delete` (drafts only); `addContacts` / `removeContacts` enroll or take out Contacts directly; `getSequenceVersion` reads a past version. `curviate.enrollments` lists one Contact's run per account (`list`, `get` with its Step history) and acts on it: `stop`, `resume({ at })`, `signal({ name })`. Refusals: `MOTION_NOT_STARTABLE` (every gap in `err.errors`), `MOTION_STATUS_CONFLICT`, `ENROLLMENT_NOT_ACTIVE`, `SEQUENCE_INVALID`.
 
 ## Drafts and scheduled posts
 
