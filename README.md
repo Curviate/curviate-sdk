@@ -87,7 +87,8 @@ const { unread_count } = await curviate.notifications.unreadCount();
 if (unread_count > 0) {
   const { items } = await curviate.notifications.list({ filter: "unread" });
   for (const n of items) console.log(n.type, n.title);
-  await curviate.notifications.markAllRead();
+  // Mark only what you saw: one that arrived since the list stays unread.
+  await curviate.notifications.markAllRead({ before: items[0]!.created_at });
 }
 ```
 

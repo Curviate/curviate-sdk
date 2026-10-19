@@ -16,42 +16,28 @@ import { apiPath } from "../internal/path.js";
 
 // ─── Type aliases from generated OpenAPI snapshot ──────────────────────────
 
-type Json<T> = T extends { content: { "application/json": infer B } } ? B : never;
-
 export type TeamListParams = NonNullable<paths["/v1/teams"]["get"]["parameters"]["query"]>;
-export type TeamListPage = Json<paths["/v1/teams"]["get"]["responses"]["200"]>;
-export type Team = Json<paths["/v1/teams/current"]["get"]["responses"]["200"]>;
-export type TeamUpdateBody = Json<NonNullable<paths["/v1/teams/current"]["patch"]["requestBody"]>>;
-export type TeamUpdateResult = Json<paths["/v1/teams/current"]["patch"]["responses"]["200"]>;
+export type TeamListPage = paths["/v1/teams"]["get"]["responses"]["200"]["content"]["application/json"];
+export type Team = paths["/v1/teams/current"]["get"]["responses"]["200"]["content"]["application/json"];
+export type TeamUpdateBody = NonNullable<paths["/v1/teams/current"]["patch"]["requestBody"]>["content"]["application/json"];
+export type TeamUpdateResult = paths["/v1/teams/current"]["patch"]["responses"]["200"]["content"]["application/json"];
 
 export type TeamMemberListParams = NonNullable<
   paths["/v1/teams/current/members"]["get"]["parameters"]["query"]
 >;
-export type TeamMemberListPage = Json<paths["/v1/teams/current/members"]["get"]["responses"]["200"]>;
-export type TeamMemberUpdateBody = Json<
-  NonNullable<paths["/v1/teams/current/members/{user_id}"]["patch"]["requestBody"]>
->;
-export type TeamMemberUpdateResult = Json<
-  paths["/v1/teams/current/members/{user_id}"]["patch"]["responses"]["200"]
->;
-export type TeamMemberRemoveResult = Json<
-  paths["/v1/teams/current/members/{user_id}"]["delete"]["responses"]["200"]
->;
+export type TeamMemberListPage = paths["/v1/teams/current/members"]["get"]["responses"]["200"]["content"]["application/json"];
+export type TeamMemberUpdateBody = NonNullable<paths["/v1/teams/current/members/{user_id}"]["patch"]["requestBody"]>["content"]["application/json"];
+export type TeamMemberUpdateResult = paths["/v1/teams/current/members/{user_id}"]["patch"]["responses"]["200"]["content"]["application/json"];
+export type TeamMemberRemoveResult = paths["/v1/teams/current/members/{user_id}"]["delete"]["responses"]["200"]["content"]["application/json"];
 
-export type TeamInviteCreateBody = Json<
-  NonNullable<paths["/v1/teams/current/invites"]["post"]["requestBody"]>
->;
-export type TeamInviteCreateResult = Json<paths["/v1/teams/current/invites"]["post"]["responses"]["201"]>;
+export type TeamInviteCreateBody = NonNullable<paths["/v1/teams/current/invites"]["post"]["requestBody"]>["content"]["application/json"];
+export type TeamInviteCreateResult = paths["/v1/teams/current/invites"]["post"]["responses"]["201"]["content"]["application/json"];
 export type TeamInviteListParams = NonNullable<
   paths["/v1/teams/current/invites"]["get"]["parameters"]["query"]
 >;
-export type TeamInviteListPage = Json<paths["/v1/teams/current/invites"]["get"]["responses"]["200"]>;
-export type TeamInviteResendResult = Json<
-  paths["/v1/teams/current/invites/{invite_id}/resend"]["post"]["responses"]["200"]
->;
-export type TeamInviteRevokeResult = Json<
-  paths["/v1/teams/current/invites/{invite_id}"]["delete"]["responses"]["200"]
->;
+export type TeamInviteListPage = paths["/v1/teams/current/invites"]["get"]["responses"]["200"]["content"]["application/json"];
+export type TeamInviteResendResult = paths["/v1/teams/current/invites/{invite_id}/resend"]["post"]["responses"]["200"]["content"]["application/json"];
+export type TeamInviteRevokeResult = paths["/v1/teams/current/invites/{invite_id}"]["delete"]["responses"]["200"]["content"]["application/json"];
 
 // ─── Resource class ───────────────────────────────────────────────────────────
 

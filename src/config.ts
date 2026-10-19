@@ -55,10 +55,12 @@ export function resolveConfig(config: CurviateConfig): ResolvedConfig {
       retryLikelyToSucceed: false,
     });
   }
-  if (config.team !== undefined && (typeof config.team !== "string" || config.team.length === 0)) {
+  // Printable ASCII, no spaces: anything else cannot travel in a header and
+  // would surface later as a retried "network error".
+  if (config.team !== undefined && !/^[\x21-\x7e]+$/.test(String(config.team))) {
     throw new CurviateError({
       code: "INVALID_REQUEST",
-      message: "team, when given, must be a non-empty team id.",
+      message: "team, when given, must be a team id (tnt_...): non-empty, no spaces.",
       userFixable: true,
       retryLikelyToSucceed: false,
     });

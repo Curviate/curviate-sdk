@@ -34,6 +34,7 @@ export type {
   AccountUpdateBody,
   AccountUpdateResult,
   SeatList,
+  AccountTeamAccessResult,
 } from "./resources/accounts.js";
 
 export type {
@@ -63,22 +64,35 @@ export type {
   NotificationListQuery,
   NotificationUnreadCount,
   NotificationUpdateBody,
+  NotificationUpdateResult,
   NotificationMarkAllReadBody,
+  NotificationMarkAllReadResult,
 } from "./resources/notifications.js";
 
 export type {
   ConnectRequest,
   ConnectRequestCreateBody,
+  ConnectRequestGetResult,
+  ConnectRequestCancelResult,
 } from "./resources/connect-requests.js";
 
 export type {
   Team,
+  TeamListParams,
   TeamListPage,
   TeamUpdateBody,
+  TeamUpdateResult,
+  TeamMemberListParams,
   TeamMemberListPage,
   TeamMemberUpdateBody,
+  TeamMemberUpdateResult,
+  TeamMemberRemoveResult,
   TeamInviteCreateBody,
+  TeamInviteCreateResult,
+  TeamInviteListParams,
   TeamInviteListPage,
+  TeamInviteResendResult,
+  TeamInviteRevokeResult,
 } from "./resources/teams.js";
 
 export type {

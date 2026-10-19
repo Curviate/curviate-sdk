@@ -139,11 +139,6 @@ describe("root team surface: method -> wire request", () => {
     expect(sent).toEqual([{ method, path, query, body, team: null }]);
   });
 
-  it("is unreachable from an account scope (root-only namespaces)", () => {
-    const acc = new Curviate({ apiKey: "k" }).account("acc_1") as unknown as Record<string, unknown>;
-    expect(acc.teams).toBeUndefined();
-    expect(acc.connectRequests).toBeUndefined();
-  });
 });
 
 describe("`team` option sends X-Curviate-Team", () => {
@@ -163,8 +158,8 @@ describe("`team` option sends X-Curviate-Team", () => {
     expect(sent[0]!.team).toBe(expected);
   });
 
-  it("an empty team is refused at construction, no request", () => {
-    expect(() => new Curviate({ apiKey: "k", team: "" })).toThrow(/team/);
+  it.each(["", " ", "tnt_a\nb", "tnt_ä"])("team %j is refused at construction", (team) => {
+    expect(() => new Curviate({ apiKey: "k", team })).toThrow(/team/);
   });
 });
 

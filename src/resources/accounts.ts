@@ -46,13 +46,14 @@ export type AccountUpdateResult =
   paths["/v1/accounts/{account_id}"]["patch"]["responses"]["200"]["content"]["application/json"];
 
 /** `DELETE /v1/accounts/{account_id}` 200 body. */
-export type AccountTeamAccessResult =
-  paths["/v1/accounts/{account_id}/team-access"]["put"]["responses"]["200"]["content"]["application/json"];
-
 export type AccountDisconnectResult =
   paths["/v1/accounts/{account_id}"]["delete"]["responses"]["200"]["content"]["application/json"];
 
 /** `POST /v1/billing/seats/add` request body. */
+/** `PUT /v1/accounts/{account_id}/team-access` 200 body. */
+export type AccountTeamAccessResult =
+  paths["/v1/accounts/{account_id}/team-access"]["put"]["responses"]["200"]["content"]["application/json"];
+
 export type SeatAddBody =
   paths["/v1/billing/seats/add"]["post"]["requestBody"]["content"]["application/json"];
 
