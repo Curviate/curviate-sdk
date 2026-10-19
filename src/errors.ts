@@ -350,6 +350,24 @@ export const ERROR_CODES = [
   // saved. user_fixable, never retryable as sent.
   "SEQUENCE_INVALID",
 
+  // Motions and Enrollments (`motions`, `enrollments`).
+  //
+  // - `MOTION_NOT_STARTABLE` (422): `start` or `resume` found gaps; `errors`
+  //   lists every one as `{path, rule}` (a Contact list, a sending account, a
+  //   timezone, a Sequence). Fix them and retry.
+  // - `MOTION_STATUS_CONFLICT` (409): the operation does not apply in the
+  //   Motion's status; the message names it and the operations it allows.
+  //   Only a draft can be deleted: archive instead.
+  // - `ENROLLMENT_NOT_ACTIVE` (409): the Enrollment's status does not take
+  //   this operation (stop: pending, active or paused; signal: active or
+  //   paused).
+  // - `CONTACT_NOT_ENROLLABLE` (422): adding a Contact to a Motion from a chat
+  //   was refused (already enrolled, excluded, in another Motion, filtered).
+  "MOTION_NOT_STARTABLE",
+  "MOTION_STATUS_CONFLICT",
+  "ENROLLMENT_NOT_ACTIVE",
+  "CONTACT_NOT_ENROLLABLE",
+
   // Generic
   "INTERNAL",
 ] as const;

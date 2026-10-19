@@ -1,4 +1,4 @@
-// The root `motions` and `enrollments` namespaces (api/040), against a recorded
+// The root `motions` and `enrollments` namespaces, against a recorded
 // transport (an injected `fetch`). One row per method: method, path, query and
 // body on the wire. The comma-list rows also cover the empty-array fold on
 // every list filter the API reads as one comma list.
@@ -99,7 +99,7 @@ const ROWS: Row[] = [
   ["enrollments.resume", (c) => c.enrollments.resume("enr_1", { at: "opener" }), "POST", "/v1/enrollments/enr_1/resume", "", { at: "opener" }],
   ["enrollments.signal", (c) => c.enrollments.signal("enr_1", { name: "demo_booked" }), "POST", "/v1/enrollments/enr_1/signal", "", { name: "demo_booked" }],
 
-  // The same fold on the comma lists that shipped before (#2037 qa, drafts).
+  // The same fold on the comma lists that shipped before (contacts, drafts).
   ["contacts.list(enrollment_status: []) omits it", (c) => c.contacts.list({ motion_id: "mot_1", enrollment_status: [] }), "GET", "/v1/contacts", "?motion_id=mot_1", undefined],
   ["contacts.export(enrollment_status: []) omits it", (c) => c.contacts.export({ motion_id: "mot_1", enrollment_status: [] }), "GET", "/v1/contacts/export", "?motion_id=mot_1", undefined],
   ["contacts.list(enrollment_status) still one comma list", (c) => c.contacts.list({ motion_id: "mot_1", enrollment_status: ["active", "paused"] }), "GET", "/v1/contacts", "?motion_id=mot_1&enrollment_status=active,paused", undefined],

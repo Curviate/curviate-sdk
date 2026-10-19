@@ -35,6 +35,8 @@ import {
   type ContactsResource,
   type ContactListsResource,
   type TagsResource,
+  type MotionsResource,
+  type EnrollmentsResource,
 } from "./resources/index.js";
 
 export class Curviate {
@@ -59,6 +61,10 @@ export class Curviate {
   readonly contacts: ContactsResource;
   readonly contactLists: ContactListsResource;
   readonly tags: TagsResource;
+  /** Motions: a Sequence run for Contacts; accepts a `Sequence` builder. */
+  readonly motions: MotionsResource;
+  /** One Contact x Motion x account run of a Motion. */
+  readonly enrollments: EnrollmentsResource;
 
   constructor(config: CurviateConfig) {
     this.config = resolveConfig(config);
@@ -74,6 +80,8 @@ export class Curviate {
     this.contacts = ns.contacts;
     this.contactLists = ns.contactLists;
     this.tags = ns.tags;
+    this.motions = ns.motions;
+    this.enrollments = ns.enrollments;
   }
 
   /**

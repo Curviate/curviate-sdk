@@ -1,5 +1,5 @@
 /**
- * sdk/009 FR-012 (AC-017, AC-018): `motions.create` / `motions.update` take a
+ * `motions.create` / `motions.update` take a
  * `Sequence` builder in `sequence`. Runs under MSW `onUnhandledRequest:
  * "error"` (test/setup.ts); every handler counts what reaches it.
  */
@@ -47,7 +47,7 @@ const thrown = (f: () => unknown): unknown => {
   return undefined;
 };
 
-describe("FR-012: motions helpers take a builder", () => {
+describe("motions helpers take a builder", () => {
   it("create with a valid builder: one request, sequence byte for byte toDocument()", async () => {
     const seen = capture();
     const seq = valid();
@@ -101,7 +101,7 @@ describe("FR-012: motions helpers take a builder", () => {
   });
 });
 
-describe("AC-018: no state shared between clients or calls", () => {
+describe("no state shared between clients or calls", () => {
   it("two keys, one builder, concurrently: each request carries its own key, bodies identical", async () => {
     const seen = capture();
     const seq = valid();
@@ -126,7 +126,7 @@ function g13(c: Curviate): void {
   void c.motions.update("mot_1", { sequence: unresolved });
   void c.motions.create({ name: "Q4", sequence: unresolved.add(step.wait("later", "1d", { next: "end" })) });
   void c.motions.update("mot_1", { sequence: Sequence.fromDocument({}) });
-  // No validate or dry-run option on the client (HR#4).
-  // @ts-expect-error HR#4
+  // No validate or dry-run option on the client (no validate or dry-run anywhere).
+  // @ts-expect-error no validate option
   void c.motions.create({ name: "Q4", validate: true });
 }

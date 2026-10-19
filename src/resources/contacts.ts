@@ -17,6 +17,7 @@
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
 import { apiPath } from "../internal/path.js";
+import { commaLists } from "../internal/query.js";
 
 // ─── Type aliases from generated OpenAPI snapshot ──────────────────────────
 
@@ -48,18 +49,6 @@ export type ContactImportListPage = paths["/v1/contacts/imports"]["get"]["respon
 export type ContactImportGetResult = paths["/v1/contacts/imports/{id}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type ContactImportRowsParams = NonNullable<paths["/v1/contacts/imports/{id}/rows"]["get"]["parameters"]["query"]>;
 export type ContactImportRowsPage = paths["/v1/contacts/imports/{id}/rows"]["get"]["responses"]["200"]["content"]["application/json"];
-
-/**
- * The server reads `enrollment_status` as one comma list and refuses a
- * repeated key; the document types it as an array, which the transport would
- * send as repeated keys. Join it.
- */
-function contactQuery(params: ContactListParams | ContactExportParams) {
-  const { enrollment_status, ...rest } = params;
-  return enrollment_status === undefined
-    ? rest
-    : { ...rest, enrollment_status: enrollment_status.join(",") };
-}
 
 // ─── Resource classes ─────────────────────────────────────────────────────────
 
@@ -173,7 +162,7 @@ export class ContactsResource {
     return this.ctx.request<ContactListPage>({
       method: "GET",
       path: "/v1/contacts",
-      ...(params ? { query: contactQuery(params) } : {}),
+      ...(params ? { query: commaLists(params, "enrollment_status") } : {}),
     });
   }
 
@@ -319,7 +308,7 @@ export class ContactsResource {
     return this.ctx.request<Contact[] | ArrayBuffer>({
       method: "GET",
       path: "/v1/contacts/export",
-      ...(params ? { query: contactQuery(params) } : {}),
+      ...(params ? { query: commaLists(params, "enrollment_status") } : {}),
     });
   }
 }
