@@ -1,5 +1,5 @@
 /**
- * sdk/009 TS-013, TS-023 (AC-013, AC-023): `CurviateError.errors` decodes the
+ * `CurviateError.errors` decodes the
  * wire `errors[]` of any error response, keeps only `{path, rule}`, and
  * leaves a malformed list undefined without breaking the rest of the error.
  * The offline module itself issues no request: the suite runs under MSW
@@ -38,7 +38,7 @@ const envelope = (code: string, errors?: unknown) => ({
   ...(errors === undefined ? {} : { errors }),
 });
 
-describe("wire errors[] (AC-013)", () => {
+describe("wire errors[]", () => {
   it("SEQUENCE_INVALID with 2 entries: both decoded, suggestion dropped, toJSON carries them", async () => {
     const { err, requests } = await refusal(422, envelope("SEQUENCE_INVALID", [
       { path: "opener.with.fallback", rule: "required because the text uses a variable", suggestion: "add a fallback" },
@@ -100,7 +100,7 @@ describe("wire errors[] (AC-013)", () => {
   });
 });
 
-describe("no requests (AC-023)", () => {
+describe("no requests", () => {
   it("building, validating and emitting send nothing (a request would fail the suite); control: a client call reaches the mock", async () => {
     const b = Sequence.create({ on_reply: "end" }).add(step.wait("a", "1d", { next: "end" }));
     b.validate();

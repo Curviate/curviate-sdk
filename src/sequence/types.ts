@@ -1,5 +1,5 @@
 /**
- * Sequence types (sdk/009 FR-001, FR-004). Principle: under-report, never
+ * Sequence types. Principle: under-report, never
  * over-report. A document the server accepts always compiles; checks that
  * need a literal type apply to literals only, and a widened `string` (or a
  * builder loaded with `fromDocument`) is left to `validateSequence` at run

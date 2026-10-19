@@ -1,5 +1,5 @@
 /**
- * The immutable Sequence builder (sdk/009 FR-003, FR-006, FR-008).
+ * The immutable Sequence builder.
  *
  * Every operation returns a new builder and leaves the receiver unchanged.
  * Operations never validate (forward references and work in progress are
@@ -62,7 +62,7 @@ const clone = <T>(v: T): T => (v === undefined ? v : (JSON.parse(JSON.stringify(
 
 /**
  * A Sequence under construction. Its output, `toDocument()`, is exactly the
- * api/040 Sequence document the API stores; raw JSON stays a first-class
+ * Sequence document the API stores; raw JSON stays a first-class
  * alternative everywhere.
  *
  * Type parameters track literal step ids and targets so a jump to a missing

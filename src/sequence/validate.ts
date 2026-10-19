@@ -1,6 +1,6 @@
 /**
- * Offline Sequence validator: rules R1-R24 and warnings W1, W5-W9 of api/040
- * FR-019 to FR-021, the verdict `curviate motion lint` gives (sdk/009 FR-005).
+ * Offline Sequence validator: rules R1-R24 and warnings W1, W5-W9, the same
+ * verdict the API and `curviate motion lint` give.
  * Pure: no I/O, never throws, never mutates its input.
  *
  * A second implementation of the server's rules (the server cannot import the

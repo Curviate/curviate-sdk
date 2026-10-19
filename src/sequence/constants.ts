@@ -1,6 +1,5 @@
 /**
- * The one module of Sequence bounds JSON Schema cannot express (sdk/009
- * FR-005). Every enum, pattern and bound the v1 schema states is read from
+ * The one module of Sequence bounds JSON Schema cannot express. Every enum, pattern and bound the v1 schema states is read from
  * `SEQUENCE_SCHEMA_V1` instead (see `vocab.ts`); each value here is pinned by
  * a boundary pair in the shared corpus (`test/sequence/corpus.test.ts`).
  */
@@ -36,7 +35,7 @@ export const MAX_VARIABLE_REFS_PER_TEXT = 50;
 /** R16/R18 quote an authored placeholder token cut to this many characters. */
 export const MAX_QUOTED_TOKEN_CHARS = 64;
 
-/** v1 variables (api/040 FR-015): `account.<field>`; `contact.<field>` reuses the schema's standard fields. */
+/** v1 variables: `account.<field>`; `contact.<field>` reuses the schema's standard fields. */
 export const ACCOUNT_FIELDS = ["first_name", "last_name", "full_name"] as const;
 /** W7: the Contact name fields. */
 export const NAME_FIELDS = ["full_name", "first_name", "last_name"] as const;

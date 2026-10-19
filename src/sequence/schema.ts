@@ -1,6 +1,6 @@
 /**
- * The Sequence document v1 JSON Schema, embedded so it works offline
- * (sdk/009 FR-010). `schema.v1.json` is written by `pnpm gen:types` from
+ * The Sequence document v1 JSON Schema, embedded so it works offline.
+ * `schema.v1.json` is written by `pnpm gen:types` from
  * `components.schemas.SequenceDocument` of the deployed OpenAPI document and
  * guarded by `pnpm check:types`; never edit it by hand.
  */

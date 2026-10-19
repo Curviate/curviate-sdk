@@ -26,7 +26,7 @@ const FIXTURE = resolve(pkgRoot, "fixtures/openapi.json");
 const SCHEMA = resolve(pkgRoot, "src/sequence/schema.v1.json");
 
 const doc = JSON.parse(await readFile(FIXTURE, "utf8"));
-// sdk/009 FR-010: the embedded Sequence schema equals the fixture component.
+// The embedded Sequence schema equals the fixture component.
 const freshSchema = sequenceSchemaJson(doc);
 let committedSchema;
 try {

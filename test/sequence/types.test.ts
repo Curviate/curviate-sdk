@@ -1,6 +1,5 @@
 /**
- * sdk/009 TS-004, TS-005, TS-006 (AC-004, AC-005, AC-006): compile-time
- * guarantees G1-G14. `pnpm typecheck` checks this file: each
+ * Compile-time guarantees G1-G14. `pnpm typecheck` checks this file: each
  * `@ts-expect-error` case must fail to compile (an unused directive is itself
  * an error, so a guarantee that stops holding reds the typecheck), and each
  * compiling twin differs from it in exactly one property.
@@ -151,7 +150,7 @@ function guarantees(): void {
   Sequence.create({ on_reply: "end" }).add(step.wait("a", "1d", { next: "b" }), step.wait("b", "1d", end)).remove("a").toDocument();
 }
 
-/** AC-004's compiling cases past the type checker's reach: widened values, remove, an unclosed {{. */
+/** Compiling cases past the type checker's reach: widened values, remove, an unclosed {{. */
 function underReport(): void {
   const target: string = "later";
   const id: string = "dynamic";
@@ -169,7 +168,7 @@ function underReport(): void {
   Sequence.create({ on_reply: "end" }).add({ id: "x", do: "message.send", with: { text: "hi" }, next: "end" }).toDocument();
 }
 
-/** AC-005: the documents as literal constructor calls, a 100-step chain, an 8,000-character text with 30 variables. */
+/** The documents as literal constructor calls, a 100-step chain, an 8,000-character text with 30 variables. */
 const literal = {
   "fr018": () =>
     Sequence.create({ on_reply: "replied" }).add(
@@ -346,7 +345,7 @@ const literal = {
 
 const file = (f: string) => sequenceOf(corpus.find(([n]) => n === f)![1]);
 
-describe("literal documents (AC-005)", () => {
+describe("literal documents", () => {
   it.each([
     ["fr018", "valid-fr018-normative-example.json"],
     ["connect-and-converse", "template-connect-and-converse.json"],

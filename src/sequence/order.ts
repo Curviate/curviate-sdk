@@ -1,6 +1,6 @@
 /**
- * Canonical key order (sdk/009 FR-007), reproducing api/040 FR-018/FR-031 key
- * for key. Runs on a document `validateSequence` accepted, so only known keys
+ * Canonical key order: the order the API's served documents use, key for
+ * key. Runs on a document `validateSequence` accepted, so only known keys
  * occur; any other key would keep its place after the known ones. Returns a
  * fresh deep copy; values are never touched.
  */

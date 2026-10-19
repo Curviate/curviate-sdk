@@ -116,7 +116,7 @@ export function inlinePatternProperties(node) {
 /**
  * The Sequence document v1 JSON Schema as `src/sequence/schema.v1.json` holds
  * it: `components.schemas.SequenceDocument` of the OpenAPI document, key for
- * key (sdk/009 FR-010). Read before any transform above mutates the document.
+ * key. Read before any transform above mutates the document.
  * @param {any} doc the raw OpenAPI document
  * @returns {string} pretty JSON plus a trailing newline
  */

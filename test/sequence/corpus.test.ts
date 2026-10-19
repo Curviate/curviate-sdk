@@ -1,6 +1,5 @@
 /**
- * sdk/009 TS-007, TS-011, TS-012, TS-016 (AC-007, AC-011, AC-012, AC-016):
- * the server's own corpus (vendored byte for byte, provenance in
+ * The server's own corpus (vendored byte for byte, provenance in
  * `test/fixtures/sequence-corpus.PROVENANCE`) through the SDK. Every entry the
  * SDK runs must give exactly the server-written `errors` and `warnings`; a
  * drift on either side reds here or in the server's corpus test.
@@ -48,7 +47,7 @@ const snapshot = (v: unknown): string => {
 const valid = offline.filter(([, e]) => e.errors.length === 0);
 const invalid = offline.filter(([, e]) => e.errors.length > 0);
 
-describe("corpus verdicts (AC-007)", () => {
+describe("corpus verdicts", () => {
   it("runs the whole vendored corpus: every entry but the server-only ones", () => {
     expect(corpus.length).toBe(120);
     expect(offline.length).toBe(110);
@@ -95,7 +94,7 @@ describe("corpus verdicts (AC-007)", () => {
 const coveredRules = (entries: [string, CorpusEntry][]) => new Set(entries.flatMap(([, e]) => e.rules).filter((r) => /^R\d+$/.test(r)));
 const ALL_RULES = Array.from({ length: 24 }, (_, i) => `R${i + 1}`);
 
-describe("coverage (AC-015)", () => {
+describe("coverage", () => {
   it("every rule R1-R24 is the expected rule of an entry the SDK runs", () => {
     const covered = coveredRules(offline);
     expect(ALL_RULES.filter((r) => !covered.has(r))).toEqual([]);
@@ -107,7 +106,7 @@ describe("coverage (AC-015)", () => {
   });
 });
 
-describe("round trip (AC-011)", () => {
+describe("round trip", () => {
   for (const [file, e] of valid) {
     it(file, () => {
       const input = sequenceOf(e) as Record<string, unknown>;
@@ -124,7 +123,7 @@ describe("round trip (AC-011)", () => {
   }
 });
 
-describe("fromDocument refusals (AC-012)", () => {
+describe("fromDocument refusals", () => {
   for (const [file, e] of invalid) {
     it(file, () => {
       const input = sequenceOf(e);

@@ -1,4 +1,4 @@
-/** The offline Sequence module (sdk/009): builder, constructors, validator, schema. */
+/** The offline Sequence module: builder, constructors, validator, schema. */
 export { Sequence } from "./builder.js";
 export { step } from "./step.js";
 export { validateSequence, type SequenceError, type SequenceValidationResult, type SequenceWarning } from "./validate.js";

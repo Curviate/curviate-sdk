@@ -1,7 +1,6 @@
 /**
- * sdk/009 TS-002, TS-003, TS-006, TS-009, TS-010, TS-022 (AC-002, AC-003,
- * AC-006, AC-009, AC-010, AC-022): constructors, operations, emission and
- * canonical order, against the corpus documents the server wrote.
+ * Constructors, operations, dynamic text, emission, canonical order and
+ * performance, against the corpus documents the server wrote.
  */
 import { describe, expect, it } from "vitest";
 import { CurviateError, Sequence, SEQUENCE_SCHEMA_URL, step, validateSequence } from "../../src/index.js";
@@ -10,7 +9,7 @@ import { corpus, sequenceOf } from "./_corpus.js";
 const doc = (file: string) => sequenceOf(corpus.find(([f]) => f === file)![1]) as Record<string, unknown>;
 const FR018 = doc("valid-fr018-normative-example.json");
 
-/** FR-018 written with constructors. */
+/** The normative example written with constructors. */
 const fr018 = () =>
   Sequence.create({ on_reply: "replied" }).add(
     step.do("visit", "profile.view", { note: "Warm-up visit before any contact." }),
@@ -52,8 +51,8 @@ const thrown = (fn: () => unknown): CurviateError => {
   throw new Error("expected a throw");
 };
 
-describe("constructors (AC-002)", () => {
-  it("FR-018 built with constructors emits FR-018 byte for byte", () => {
+describe("constructors", () => {
+  it("the normative example built with constructors emits it byte for byte", () => {
     expect(JSON.stringify(fr018().toDocument())).toBe(JSON.stringify(FR018));
   });
 
@@ -65,7 +64,7 @@ describe("constructors (AC-002)", () => {
   });
 });
 
-describe("operations (AC-003)", () => {
+describe("operations", () => {
   // Fall-through steps; every builder ends in `fin`, so each step stays reachable.
   const w = (id: string) => step.wait(id, "1d");
   const fin = step.emit("fin", "done", { next: "end" });
@@ -130,7 +129,7 @@ describe("operations (AC-003)", () => {
   });
 });
 
-describe("dynamic text (AC-006)", () => {
+describe("dynamic text", () => {
   it("a string variable holding a variable without fallback compiles and throws R19 at toDocument()", () => {
     const text: string = "Hi {{contact.first_name}}";
     const b = Sequence.create({ on_reply: "end" }).add(step.do("m", "message.send", { with: { text }, next: "end" }));
@@ -141,7 +140,7 @@ describe("dynamic text (AC-006)", () => {
   });
 });
 
-describe("emission (AC-009)", () => {
+describe("emission", () => {
   it("returns a fresh object each call; mutating one leaves the next unchanged", () => {
     const b = fr018();
     const one = b.toDocument();
@@ -172,7 +171,7 @@ describe("emission (AC-009)", () => {
     expect(out.$schema).toBe(SEQUENCE_SCHEMA_URL);
   });
 
-  it("an empty builder throws R2; FR-018 (W1 only) returns the document", () => {
+  it("an empty builder throws R2; the normative example (W1 only) returns the document", () => {
     const err = thrown(() => Sequence.create({ on_reply: "end" }).toDocument());
     expect(err.errors).toEqual([{ path: "steps", rule: "required: an array of 1 to 100 steps" }]);
     const b = fr018();
@@ -181,14 +180,14 @@ describe("emission (AC-009)", () => {
   });
 });
 
-describe("canonical order (AC-010)", () => {
+describe("canonical order", () => {
   const templates = corpus.filter(([f]) => f.startsWith("template-")).map(([f, e]) => [f, sequenceOf(e)] as const);
 
   it.each([["valid-fr018-normative-example.json", FR018] as const, ...templates])("%s comes back byte for byte", (_, d) => {
     expect(JSON.stringify(Sequence.fromDocument(d).toDocument())).toBe(JSON.stringify(d));
   });
 
-  it("a key-shuffled copy comes back deep-equal in FR-007 order", () => {
+  it("a key-shuffled copy comes back deep-equal in canonical order", () => {
     const reversed = (v: unknown): unknown =>
       Array.isArray(v) ? v.map(reversed) : typeof v === "object" && v !== null ? Object.fromEntries(Object.entries(v).reverse().map(([k, x]) => [k, reversed(x)])) : v;
     const shuffled = reversed(FR018);
@@ -197,7 +196,7 @@ describe("canonical order (AC-010)", () => {
   });
 });
 
-describe("performance and determinism (AC-022)", () => {
+describe("performance and determinism", () => {
   // 100 steps padded to just under 256 KiB of compact JSON.
   const big = (() => {
     const steps = Array.from({ length: 100 }, (_, i) => ({

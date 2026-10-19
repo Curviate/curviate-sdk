@@ -1,4 +1,4 @@
-/** The vendored api/040 corpus (sdk/009 FR-011): read-only access for the sequence tests. */
+/** The vendored corpus: read-only access for the sequence tests. */
 import { readdirSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";

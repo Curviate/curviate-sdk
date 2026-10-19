@@ -1,6 +1,5 @@
 /**
- * The Sequence v1 vocabulary, read from the embedded JSON Schema (sdk/009
- * FR-005, FR-010): actions and their `with` keys, events, reactions,
+ * The Sequence v1 vocabulary, read from the embedded JSON Schema: actions and their `with` keys, events, reactions,
  * predicates, patterns and the bounds the schema states. Nothing here is
  * restated; a schema change changes the validator with it.
  */
@@ -56,7 +55,7 @@ export function schemaKeywords(schema: unknown): Set<string> {
   return out;
 }
 
-/** Throws on a keyword the validator does not support (sdk/009 FR-010). */
+/** Throws on a keyword the validator does not support. */
 export function assertKeywords(schema: unknown): void {
   const unknown = [...schemaKeywords(schema)].filter((k) => !SUPPORTED_KEYWORDS.has(k));
   if (unknown.length) throw new Error(`Sequence schema uses unsupported JSON Schema keyword(s): ${unknown.join(", ")}`);

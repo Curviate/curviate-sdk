@@ -1,5 +1,5 @@
 /**
- * Step constructors (sdk/009 FR-002): one per kind, arguments
+ * Step constructors: one per kind, arguments
  * `(id, <kind value>, fields)`, `fields` keys exactly the document's
  * (`with`, `variants`, `next`, `then`, `else`, `timeout`, `note`). Each returns
  * the plain step object and adds no key the caller did not give: no default is

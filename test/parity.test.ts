@@ -369,7 +369,7 @@ describe("removed methods are gone", () => {
   });
 });
 
-describe("root value exports (sdk/009 AC-001)", () => {
+describe("root value exports", () => {
   it("are exactly the client, the error model, the webhook surface and the offline Sequence module", async () => {
     const entry = await import("../src/index.js");
     expect(Object.keys(entry).sort()).toEqual(
@@ -380,7 +380,7 @@ describe("root value exports (sdk/009 AC-001)", () => {
         "WebhookSignatureError",
         "constructEvent",
         "isCurviateError",
-        // sdk/009 FR-001: offline, never on the client
+        // offline, never on the client
         "SEQUENCE_SCHEMA_URL",
         "SEQUENCE_SCHEMA_V1",
         "Sequence",

@@ -1,6 +1,5 @@
 /**
- * sdk/009 TS-001, TS-008, TS-014 (AC-001 purity, AC-008, AC-014): the
- * embedded schema is the fixture's component, drives the validator's bounds,
+ * The embedded schema is the fixture's component, drives the validator's bounds,
  * uses only supported keywords, and cannot be changed by a consumer.
  */
 import { readFileSync, readdirSync } from "node:fs";
@@ -18,7 +17,7 @@ const fixture = JSON.parse(readFileSync(resolve(root, "fixtures/openapi.json"), 
 const copy = (): Record<string, any> => JSON.parse(JSON.stringify(SEQUENCE_SCHEMA_V1));
 const wait = (id: string, next?: string) => ({ id, wait: "1d", ...(next ? { next } : {}) });
 
-describe("embedded schema (AC-014)", () => {
+describe("embedded schema", () => {
   it("deep-equals components.schemas.SequenceDocument of the fixture, $id is the schema URL, no $ref", () => {
     expect(SEQUENCE_SCHEMA_V1).toEqual(fixture.components.schemas["SequenceDocument"]);
     expect(SEQUENCE_SCHEMA_V1["$id"]).toBe(SEQUENCE_SCHEMA_URL);
@@ -48,7 +47,7 @@ describe("embedded schema (AC-014)", () => {
   });
 });
 
-describe("bounds come from the schema (AC-008)", () => {
+describe("bounds come from the schema", () => {
   it("a schema copy with steps.maxItems 3 refuses a 4-step document the shipped schema accepts", () => {
     const doc = { on_reply: "end", steps: [wait("a"), wait("b"), wait("c"), wait("d", "end")] };
     const s = copy();
@@ -81,7 +80,7 @@ describe("bounds come from the schema (AC-008)", () => {
   });
 });
 
-describe("purity (AC-001)", () => {
+describe("purity", () => {
   const FORBIDDEN = /["']node:|["']fs["']|\bprocess\.|\bfetch\(/;
   const scan = (dir: string): string[] =>
     readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
