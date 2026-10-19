@@ -102,9 +102,11 @@ describe("curviate.tier.get", () => {
     const keys = Object.keys(schema.properties).filter((k) => k !== "object" && k !== "safety_warning").sort();
     expect(keys).toEqual(["bought_tier", "early_access", "features", "override", "pending", "period", "tier", "trial"]);
     expect(keys.join()).not.toMatch(/price|amount|stripe/);
-    // The compile-time half: the SDK type has the same keys.
-    const typed: (keyof R)[] = ["bought_tier", "early_access", "features", "override", "pending", "period", "tier", "trial"];
-    expect(typed).toHaveLength(keys.length);
+    // Compile-time half: the SDK type has exactly these keys (a missing or extra key fails tsc).
+    const exact: Record<Exclude<keyof R, "object" | "safety_warning">, true> = {
+      bought_tier: true, early_access: true, features: true, override: true, pending: true, period: true, tier: true, trial: true,
+    };
+    expect(Object.keys(exact).sort()).toEqual(keys);
   });
 });
 

@@ -21,7 +21,6 @@ import {
   type ConnectionLocation,
   type CurviateErrorDetail,
 } from "./errors.js";
-import type { TierFeature, TierName } from "./resources/tier.js";
 
 /** HTTP methods the transport issues. */
 export type HttpMethod = "GET" | "HEAD" | "POST" | "PATCH" | "PUT" | "DELETE";
@@ -231,12 +230,12 @@ async function errorFromResponse(res: Response): Promise<{ err: CurviateError; r
     // `TIER_REQUIRED` details. `required_tier` / `current_tier` are null-BEARING
     // (no Tier has it / the team has none), so null survives; a non-string
     // value (neither a name nor null) is dropped rather than mistyped.
-    ...(typeof env?.feature === "string" ? { feature: env.feature as TierFeature } : {}),
+    ...(typeof env?.feature === "string" ? { feature: env.feature } : {}),
     ...(typeof env?.required_tier === "string" || env?.required_tier === null
-      ? { requiredTier: env.required_tier as TierName | null }
+      ? { requiredTier: env.required_tier }
       : {}),
     ...(typeof env?.current_tier === "string" || env?.current_tier === null
-      ? { currentTier: env.current_tier as TierName | null }
+      ? { currentTier: env.current_tier }
       : {}),
     ...(typeof env?.upgrade_url === "string" ? { upgradeUrl: env.upgrade_url } : {}),
   });

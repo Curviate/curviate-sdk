@@ -536,19 +536,20 @@ export interface CurviateErrorInit {
   /**
    * On a `TIER_REQUIRED`: the feature the team's Tier does not include.
    * Wire field `feature`. A feature added later arrives as its own string,
-   * so keep a default branch.
+   * so keep a default branch (the type stays open: the known names complete,
+   * any other string allowed).
    */
-  feature?: TierFeature;
+  feature?: TierFeature | (string & {});
   /**
    * On a `TIER_REQUIRED`: the lowest Tier that includes {@link CurviateErrorInit.feature}.
    * Wire field `required_tier`. `null` when no Tier includes it.
    */
-  requiredTier?: TierName | null;
+  requiredTier?: TierName | (string & {}) | null;
   /**
    * On a `TIER_REQUIRED`: the Tier the team has now. Wire field `current_tier`.
    * `null` when the team has none.
    */
-  currentTier?: TierName | null;
+  currentTier?: TierName | (string & {}) | null;
   /**
    * On a `TIER_REQUIRED` for a team Owner only: the dashboard page where the
    * Tier is changed. Wire field `upgrade_url`. Absent for any other role, who
@@ -575,9 +576,9 @@ export interface CurviateErrorJSON {
   blocked?: boolean;
   connectionLocation?: ConnectionLocation;
   errors?: CurviateErrorDetail[];
-  feature?: TierFeature;
-  requiredTier?: TierName | null;
-  currentTier?: TierName | null;
+  feature?: TierFeature | (string & {});
+  requiredTier?: TierName | (string & {}) | null;
+  currentTier?: TierName | (string & {}) | null;
   upgradeUrl?: string;
 }
 
@@ -618,11 +619,11 @@ export class CurviateError extends Error {
   /** Every failure as `{path, rule}`. See {@link CurviateErrorInit.errors}. */
   readonly errors: CurviateErrorDetail[] | undefined;
   /** The feature the Tier lacks, on `TIER_REQUIRED`. See {@link CurviateErrorInit.feature}. */
-  readonly feature: TierFeature | undefined;
+  readonly feature: TierFeature | (string & {}) | undefined;
   /** The lowest Tier with that feature; `null` when none has it. See {@link CurviateErrorInit.requiredTier}. */
-  readonly requiredTier: TierName | null | undefined;
+  readonly requiredTier: TierName | (string & {}) | null | undefined;
   /** The team's Tier now; `null` when it has none. See {@link CurviateErrorInit.currentTier}. */
-  readonly currentTier: TierName | null | undefined;
+  readonly currentTier: TierName | (string & {}) | null | undefined;
   /** Where an Owner changes the Tier; absent for other roles. See {@link CurviateErrorInit.upgradeUrl}. */
   readonly upgradeUrl: string | undefined;
 
