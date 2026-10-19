@@ -24,7 +24,7 @@ function copy(v: unknown): unknown {
 
 function ordered(o: Obj, order: readonly string[], child: (key: string, value: unknown) => unknown = (_, x) => copy(x)): Obj {
   const out: Obj = {};
-  const keys = [...order.filter((k) => k in o), ...Object.keys(o).filter((k) => !order.includes(k))];
+  const keys = [...order.filter((k) => Object.prototype.hasOwnProperty.call(o, k)), ...Object.keys(o).filter((k) => !order.includes(k))];
   for (const k of keys) if (o[k] !== undefined) out[k] = child(k, o[k]);
   return out;
 }

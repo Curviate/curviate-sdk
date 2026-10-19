@@ -12,9 +12,8 @@ import { dirname, resolve, join } from "node:path";
 import openapiTS, { astToString } from "openapi-typescript";
 import {
   stripLocalDiscriminatorMappings,
-  inlinePatternProperties,
+  sequenceTypegenFixups,
   sequenceSchemaJson,
-  TYPEGEN_OPTIONS,
   forbiddenVendorPattern,
   GENERATED_HEADER as HEADER,
 } from "./openapi-sanitize.mjs";
@@ -38,9 +37,9 @@ if (committedSchema !== freshSchema) {
   console.error(`FAIL: ${SCHEMA} differs from components.schemas.SequenceDocument in the fixture. Regenerate with \`pnpm gen:types:fixture\`.`);
   process.exit(1);
 }
-inlinePatternProperties(doc);
+sequenceTypegenFixups(doc);
 stripLocalDiscriminatorMappings(doc);
-const ast = await openapiTS(doc, TYPEGEN_OPTIONS);
+const ast = await openapiTS(doc);
 const fresh = HEADER + astToString(ast);
 
 // vendor-name grep on the freshly generated output.

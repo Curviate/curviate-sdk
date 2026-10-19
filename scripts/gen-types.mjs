@@ -15,9 +15,8 @@ import { dirname, resolve } from "node:path";
 import openapiTS, { astToString } from "openapi-typescript";
 import {
   stripLocalDiscriminatorMappings,
-  inlinePatternProperties,
+  sequenceTypegenFixups,
   sequenceSchemaJson,
-  TYPEGEN_OPTIONS,
   forbiddenVendorPattern,
   GENERATED_HEADER as HEADER,
 } from "./openapi-sanitize.mjs";
@@ -53,13 +52,13 @@ async function loadDocument() {
 
 const doc = await loadDocument();
 const schemaJson = sequenceSchemaJson(doc);
-inlinePatternProperties(doc);
+sequenceTypegenFixups(doc);
 const stripped = stripLocalDiscriminatorMappings(doc);
 if (stripped > 0 && !useFixture) {
   console.error(`note: stripped ${stripped} unresolvable discriminator mapping(s) from the document`);
 }
 
-const ast = await openapiTS(doc, TYPEGEN_OPTIONS);
+const ast = await openapiTS(doc);
 const body = astToString(ast);
 await writeFile(OUTPUT, HEADER + body, "utf8");
 

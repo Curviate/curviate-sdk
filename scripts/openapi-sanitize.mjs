@@ -72,34 +72,31 @@ export function stripLocalDiscriminatorMappings(node) {
 }
 
 /**
- * openapi-typescript options shared by gen:types and check:types.
+ * Type-generation fixups, scoped to `components.schemas.SequenceDocument`
+ * (the rest of the document is untouched). openapi-typescript 7.6.1:
  *
- * `defaultNonNullable: false`: a property carrying a `default` stays optional
- * in the generated type. The default (true) typed the Sequence document's
- * `post`, `newer_than` and `reaction` as REQUIRED, so a valid document that
- * omits them (the server applies the default) did not compile against
- * `SequenceDocument`.
+ * - types a property carrying a `default` as REQUIRED, so `post`,
+ *   `newer_than` and `reaction` (the API applies their defaults) were required
+ *   and a valid document omitting them did not compile: `default` is dropped;
+ * - ignores `patternProperties` and renders the object `Record<string, never>`,
+ *   so the `contact.extra.<key>` predicate did not compile: a lone pattern's
+ *   schema becomes `additionalProperties` (`validateSequence` checks the key).
+ *
+ * Mutates `doc`; the embedded schema is extracted before this runs.
+ * @param {any} doc the OpenAPI document
+ * @returns {number} nodes rewritten
  */
-export const TYPEGEN_OPTIONS = { defaultNonNullable: false };
-
-/**
- * openapi-typescript 7.6.1 ignores `patternProperties` and renders such an
- * object as `Record<string, never>`, so the Sequence predicate
- * `{"contact.extra.<key>": {...}}` did not compile against `SequenceDocument`.
- * For type generation only, an object whose only members are
- * `patternProperties` gets that one pattern's schema as `additionalProperties`
- * (the key pattern is checked at run time by `validateSequence`). Mutates
- * `node`; the embedded schema is extracted before this runs.
- * @param {unknown} node
- * @returns {number} objects rewritten
- */
-export function inlinePatternProperties(node) {
+export function sequenceTypegenFixups(doc) {
   let rewritten = 0;
   const visit = (n) => {
     if (!n || typeof n !== "object") return;
     if (Array.isArray(n)) {
       for (const item of n) visit(item);
       return;
+    }
+    if ("default" in n && typeof n.type === "string") {
+      delete n.default;
+      rewritten += 1;
     }
     const pp = n.patternProperties;
     if (pp && typeof pp === "object" && !n.properties && Object.keys(pp).length === 1) {
@@ -109,7 +106,7 @@ export function inlinePatternProperties(node) {
     }
     for (const key of Object.keys(n)) visit(n[key]);
   };
-  visit(node);
+  visit(doc?.components?.schemas?.SequenceDocument);
   return rewritten;
 }
 

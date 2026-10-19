@@ -4425,19 +4425,12 @@ export interface components {
                 with?: {
                     /**
                      * @description Which post. Only "latest" in v1.
-                     * @default latest
                      * @constant
                      */
                     post?: "latest";
-                    /**
-                     * @description Only a post newer than this (1h to 365d).
-                     * @default 30d
-                     */
+                    /** @description Only a post newer than this (1h to 365d). */
                     newer_than?: string;
-                    /**
-                     * @default like
-                     * @enum {string}
-                     */
+                    /** @enum {string} */
                     reaction?: "like" | "celebrate" | "support" | "love" | "insightful" | "funny";
                 };
                 /** @description A step id, or "end". */
@@ -4454,14 +4447,10 @@ export interface components {
                 with?: {
                     /**
                      * @description Which post. Only "latest" in v1.
-                     * @default latest
                      * @constant
                      */
                     post?: "latest";
-                    /**
-                     * @description Only a post newer than this (1h to 365d).
-                     * @default 30d
-                     */
+                    /** @description Only a post newer than this (1h to 365d). */
                     newer_than?: string;
                     /** @description Message text. Variables need a fallback. */
                     text?: string;

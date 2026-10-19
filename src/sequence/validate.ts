@@ -25,14 +25,12 @@ import {
   NAME_FIELDS,
   TEXT_LIMITS,
 } from "./constants.js";
+import type { CurviateErrorDetail } from "../errors.js";
 import { SEQUENCE_SCHEMA_V1 } from "./schema.js";
 import { isObject, vocabulary, type Vocabulary } from "./vocab.js";
 
 /** One reason a Sequence document is refused: `path` into the document, `rule` saying what to change. */
-export interface SequenceError {
-  path: string;
-  rule: string;
-}
+export type SequenceError = CurviateErrorDetail;
 /** A non-blocking finding, `code` `W1` or `W5` to `W9`. */
 export interface SequenceWarning {
   code: `W${number}`;
@@ -236,7 +234,12 @@ export function createValidator(v: Vocabulary): (doc: unknown) => SequenceValida
  * const { errors, warnings } = validateSequence(JSON.parse(text));
  * for (const e of errors) console.error(`${e.path}: ${e.rule}`);
  */
-export const validateSequence: (value: unknown) => SequenceValidationResult = createValidator(vocabulary(SEQUENCE_SCHEMA_V1));
+export function validateSequence(value: unknown): SequenceValidationResult {
+  // Built on first use, so importing the SDK never walks the schema.
+  shipped ??= createValidator(vocabulary(SEQUENCE_SCHEMA_V1));
+  return shipped(value);
+}
+let shipped: ((doc: unknown) => SequenceValidationResult) | undefined;
 
 function run(doc: unknown, ctx: Ctx): SequenceValidationResult {
   const { v } = ctx;
