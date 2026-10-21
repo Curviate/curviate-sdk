@@ -55,8 +55,8 @@ const unstorable = offline.filter(([, e]) => e.code === "INVALID_REQUEST");
 
 describe("corpus verdicts", () => {
   it("runs the whole vendored corpus: every entry but the server-only ones", () => {
-    expect(corpus.length).toBe(150);
-    expect(offline.length).toBe(140);
+    expect(corpus.length).toBe(153);
+    expect(offline.length).toBe(143);
     expect(valid.length).toBeGreaterThan(0);
     expect(invalid.length).toBeGreaterThan(0);
   });
@@ -180,6 +180,8 @@ describe("round trip", () => {
       const input = sequenceOf(e) as Record<string, unknown>;
       const out = Sequence.fromDocument(deepFreeze(structuredClone(input))).toDocument();
       expect(out).toEqual(input);
+      // every valid corpus document is in the served key order (the server's corpus test pins it): byte for byte
+      expect(JSON.stringify(out)).toBe(JSON.stringify(input));
       expect("$schema" in out).toBe("$schema" in input);
       expect(Sequence.fromDocument(out).toDocument()).toEqual(out);
       const canonical = JSON.stringify(out);

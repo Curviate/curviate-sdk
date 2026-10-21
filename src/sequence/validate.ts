@@ -682,7 +682,7 @@ function checkDo(ctx: Ctx, order: number, p: string, ptr: string, raw: Record<st
         code: "R23",
         path: `${p}.variants`,
         pointer: vptr,
-        rule: `needs exactly ${MAX_VARIANTS} variants (A/B, MAX_VARIANTS)${n === null ? "" : `; found ${n}`}`,
+        rule: `needs exactly ${MAX_VARIANTS} variants (A/B)${n === null ? "" : `; found ${n}`}`,
       });
     }
     (Array.isArray(variants) ? variants : []).forEach((variant, j) => {

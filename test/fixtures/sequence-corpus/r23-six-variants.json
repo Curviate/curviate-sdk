@@ -43,9 +43,9 @@
   "errors": [
     {
       "path": "m.variants",
-      "rule": "needs exactly 2 variants (A/B, MAX_VARIANTS); found 6",
+      "rule": "needs exactly 2 variants (A/B); found 6",
       "code": "R23",
-      "message": "needs exactly 2 variants (A/B, MAX_VARIANTS); found 6",
+      "message": "needs exactly 2 variants (A/B); found 6",
       "pointer": "/steps/0/variants",
       "hint": "Give the step exactly 2 variants (A/B) with ids unique in the document, or one text in with.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r23"
