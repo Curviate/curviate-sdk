@@ -407,6 +407,7 @@ describe("root value exports", () => {
         "SEQUENCE_SCHEMA_URL",
         "SEQUENCE_SCHEMA_V1",
         "Sequence",
+        "newStepId",
         "step",
         "validateSequence",
       ].sort(),

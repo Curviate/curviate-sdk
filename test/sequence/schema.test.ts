@@ -52,7 +52,7 @@ describe("bounds come from the schema", () => {
     const doc = { on_reply: "end", steps: [wait("a"), wait("b"), wait("c"), wait("d", "end")] };
     const s = copy();
     s["properties"].steps.maxItems = 3;
-    expect(createValidator(vocabulary(s))(doc).errors).toEqual([{ path: "steps", rule: "4 steps; the limit is 3" }]);
+    expect(createValidator(vocabulary(s))(doc).errors).toMatchObject([{ path: "steps", rule: "4 steps; the limit is 3", code: "R2" }]);
     expect(validateSequence(doc).errors).toEqual([]);
   });
 
@@ -76,7 +76,7 @@ describe("bounds come from the schema", () => {
       return validateSequence(d).errors.filter((e) => e.path === "$");
     };
     expect(at(256 * 1024)).toEqual([]);
-    expect(at(256 * 1024 + 1)).toEqual([{ path: "$", rule: "the document is 262145 bytes; the limit is 262144, UTF-8 compact JSON" }]);
+    expect(at(256 * 1024 + 1)).toMatchObject([{ path: "$", rule: "the document is 262145 bytes; the limit is 262144, UTF-8 compact JSON", code: "R2", pointer: "" }]);
   });
 });
 

@@ -6,9 +6,10 @@
  * time.
  *
  * Vocabulary comes from the generated OpenAPI types wherever they express it
- * (actions, reactions, standard fields, boolean predicates); the one union
- * typed by hand (events: the generated type widens them to `string`) is
- * pinned to the embedded schema by `test/sequence/types.test.ts`.
+ * (actions, reactions, standard fields, boolean predicates incl.
+ * `message.seen`); the one union typed by hand (events: the generated type
+ * widens them to `string`) is pinned to the embedded schema by
+ * `test/sequence/types.test.ts`.
  */
 import type { components } from "../generated/types.js";
 
@@ -26,8 +27,12 @@ export type Action = GenDo["do"];
 export type MessagingAction = Extract<GenDo, { variants?: unknown }>["do"];
 /** `post.react` reactions. */
 export type Reaction = NonNullable<GenWith<"post.react">["reaction"]>;
-/** Events an `until` step waits for; `signal.<name>` is a custom signal. */
-export type SequenceEvent = "invite.accepted" | "message.replied" | "message.read" | `signal.${string}`;
+/**
+ * Events an `until` step waits for; `event.<name>` is a custom event an agent
+ * sends (`enrollments.events`). `signal.<name>` is its deprecated spelling,
+ * accepted with warning W13 until 2027-01-19.
+ */
+export type SequenceEvent = "invite.accepted" | "message.replied" | "message.read" | `event.${string}` | `signal.${string}`;
 
 /** Single-key predicate members of the generated union (the standard-field and extra members excluded). */
 type GenSingle = GenIf extends infer P ? (P extends unknown ? (string extends keyof P ? never : keyof P extends "not" ? never : P) : never) : never;
@@ -53,7 +58,7 @@ type BasePredicate =
   | { "contact.tag": string }
   | { [F in StandardField]: { [P in `contact.${F}`]: FieldOperand } }[StandardField]
   | { [key: `contact.extra.${string}`]: FieldOperand };
-/** An `if` predicate: one key, `contact.*` or `account.*`, optionally wrapped in one `not`. */
+/** An `if` predicate: one key, `contact.*`, `account.*` or `message.seen`, optionally wrapped in one `not`. */
 export type Predicate = BasePredicate | { not: BasePredicate };
 
 /** `with` of each action, keys as the document writes them. */
@@ -71,7 +76,15 @@ export interface ActionParams {
 }
 /** One A/B variant of a messaging step. */
 export type Variant<A extends Action = Action> = A extends "inmail.send" ? { id: string; subject: string; text: string } : { id: string; text: string };
-type Variants<A extends Action> = readonly [Variant<A>, Variant<A>, ...Variant<A>[]];
+/**
+ * A/B: exactly 2. 3 to 5 still compile: the API accepts them with warning W13
+ * until 2027-01-19 (never over-report).
+ */
+type Variants<A extends Action> =
+  | readonly [Variant<A>, Variant<A>]
+  | readonly [Variant<A>, Variant<A>, Variant<A>]
+  | readonly [Variant<A>, Variant<A>, Variant<A>, Variant<A>]
+  | readonly [Variant<A>, Variant<A>, Variant<A>, Variant<A>, Variant<A>];
 
 type Kind = "do" | "wait" | "until" | "if" | "emit" | "tag";
 type Only<K extends Kind> = { [P in Exclude<Kind, K>]?: never };
@@ -81,6 +94,7 @@ type DoStepOf<A extends Action> = {
   do: A;
   with?: ActionParams[A];
   variants?: A extends MessagingAction ? Variants<A> : never;
+  event?: string;
   next?: string;
   else?: string;
   note?: string;
@@ -93,7 +107,7 @@ export type SequenceStep =
   | ({ id: string; until: SequenceEvent; timeout: string; then: string; else?: string; note?: string } & Only<"until">)
   | ({ id: string; if: Predicate; then: string; else?: string; note?: string } & Only<"if">)
   | ({ id: string; emit: string; next?: string; note?: string } & Only<"emit">)
-  | ({ id: string; tag: string; next?: string; note?: string } & Only<"tag">);
+  | ({ id: string; tag: string; event?: string; next?: string; note?: string } & Only<"tag">);
 
 type DeepMutable<T> = T extends readonly (infer E)[] ? DeepMutable<E>[] : T extends object ? { -readonly [K in keyof T]: DeepMutable<T[K]> } : T;
 
@@ -124,6 +138,16 @@ type Inners<S extends string, Acc = never> = S extends `${string}{{${infer I}}}$
   ? Inners<Rest, I extends `${string}${"{" | "}"}${string}` ? Acc : Acc | I>
   : Acc;
 type HasVar<S> = IsLiteral<S> extends true ? ([Inners<S & string>] extends [never] ? false : true) : false;
+type Lower = "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z";
+type ShortTail<S extends string> = S extends "" ? true : S extends `${Lower | "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "_"}${infer R}` ? ShortTail<R> : false;
+/** A short variable `{{<key>}}`: a lowercase letter then `[a-z0-9_]`; `my_` only for the sending account's own name. */
+type ShortOk<S extends string> = S extends `${Lower}${infer R}`
+  ? ShortTail<R> extends true
+    ? S extends `my_${string}`
+      ? S extends "my_first_name" | "my_last_name" | "my_full_name" ? true : false
+      : true
+    : false
+  : false;
 type VarOk<I extends string> = I extends `${string}|${string}`
   ? false
   : Trim<I> extends `contact.extra.${infer K}`
@@ -134,13 +158,15 @@ type VarOk<I extends string> = I extends `${string}|${string}`
         ? true
         : Trim<I> extends `motion.${infer K}`
           ? K extends "" ? false : true
-          : false;
+          : Trim<I> extends `${string}.${string}`
+            ? false
+            : ShortOk<Trim<I>>;
 type BadVar<S extends string> = Inners<S> extends infer I ? (I extends string ? (VarOk<I> extends true ? never : I) : never) : never;
 /** G10: every `{{...}}` of a literal text is a v1 variable. */
 type CheckVars<S> = IsLiteral<S> extends true
   ? [BadVar<S & string>] extends [never]
     ? unknown
-    : SequenceTypeError<`{{${BadVar<S & string>}}} is not a v1 variable; use contact.<field>, contact.extra.<key>, account.first_name|last_name|full_name or motion.<key>, without a default`>
+    : SequenceTypeError<`{{${BadVar<S & string>}}} is not a v1 variable; use {{first_name}}, {{my_first_name}}, a custom field {{opener}}, or contact.<field>, contact.extra.<key>, account.first_name|last_name|full_name, without a default`>
   : unknown;
 /** G8: a literal fallback holds no variable. */
 type CheckFallback<S> = HasVar<S> extends true ? SequenceTypeError<"a fallback must not contain a variable"> : CheckVars<S>;
@@ -158,7 +184,7 @@ type AnyVar<T> = T extends unknown ? HasVar<T> : never;
 
 export type Exact<T, Allowed extends PropertyKey> = { [K in Exclude<keyof T, Allowed>]: SequenceTypeError<`unknown key ${K & string}`> };
 
-type DoKeys = "with" | "variants" | "next" | "else" | "note";
+type DoKeys = "with" | "variants" | "event" | "next" | "else" | "note";
 type TextFields = "text" | "subject" | "note";
 
 /** G4, G6-G11 on the `fields` of `step.do`. */
@@ -196,6 +222,8 @@ type CheckMessaging<A extends Action, F> = (Get<F, "variants"> extends readonly 
 export type DoFields<A extends Action> = {
   with?: ActionParams[A];
   variants?: A extends MessagingAction ? Variants<A> : never;
+  /** Custom event sent once each time this step runs (not when skipped or failed), like `invite_sent`. */
+  event?: string;
   next?: string;
   else?: string;
   note?: string;
