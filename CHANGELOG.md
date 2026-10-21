@@ -7,7 +7,68 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
-## [0.43.0] - Unreleased
+## [0.44.0] - Unreleased
+
+Dashboard v2 API. Fixture and types regenerated from a **local** server at
+`1b972f61c34611cdb85ed866ecf2ac87db044f11` (197 paths; the staging deploy was
+unavailable), and the Sequence corpus re-vendored from the same commit.
+Regenerate from the deployed API and confirm an empty diff before publishing.
+
+### Added
+
+- **Enrollments:** `enrollments.pause`, `enrollments.events` (send a custom
+  event to an `until event.<name>`), `enrollments.reassign` (move to another
+  sending account; `warnings` names Steps that will be skipped) and
+  `enrollments.bulk` (up to 1,000 by ids or filter, one result per
+  Enrollment, not atomic). `enrollments.resume` takes no body to lift your own
+  pause; Retry is `resume({ at })` at the failed Step. New list filters:
+  `version`, `done_step` with `outcome`, `reason`, `variant_id`,
+  `relationship_at_enrollment`. Types `EnrollmentEventBody`,
+  `EnrollmentReassignBody`, `EnrollmentReassignResult`, `EnrollmentBulkBody`,
+  `EnrollmentBulkResult`, `EnrollmentReason` (the reasons catalogue).
+- **Error codes** `SEQUENCE_CONFLICT` (with `err.current`: the stored
+  Sequence and its `sequence_revision`; send `if_sequence_revision` on
+  `motions.update`), `STEP_IN_FLIGHT`, `NOTHING_TO_RETRY`,
+  `ACCOUNT_ALREADY_ENGAGED`, `ALREADY_ENROLLED_ON_ACCOUNT`, `KNOWN_CHAT`,
+  `CHAT_NOT_ONE_TO_ONE`. Before, each decoded as `INTERNAL`.
+- **Compiler-style Sequence errors:** every `validateSequence` entry, every
+  offline `SEQUENCE_INVALID` entry and every decoded wire `errors[]` entry of
+  a Sequence rule carries `code` (`R1` to `R24`, `W1` to `W13`), `message`,
+  `pointer` (a JSON Pointer into the document), `hint` and `docs_url`, beside
+  `path` and `rule`.
+- **Sequence document:** short variables `{{first_name}}`,
+  `{{my_first_name}}` and `{{<key>}}` for a custom field (the long forms stay
+  valid); an optional `event` on `do` and `tag` steps; `until event.<name>`;
+  the `message.seen` predicate (`if` steps). Warnings `W11` (a short custom
+  field that looks like a typo of a standard field), `W12` (`message.seen`
+  before any message) and `W13` (a deprecated form).
+- **`newStepId(document, kind, beforeId?)`:** the id the dashboard editor
+  gives a new step (`message`, `message_2`, `w_<step>`).
+- **Webhooks:** `enrollment.accepted`, `enrollment.replied`, `enrollment.seen`,
+  `enrollment.reassigned` and `motion.custom_event` in `CurviateEvent`.
+  `account_ids` is optional (or `null`: every account you can operate) on
+  every source.
+
+### Changed
+
+- **A/B variants are exactly 2** (`MAX_VARIANTS`). 3 to 5 are accepted with
+  warning `W13` until 2027-01-19, then refused (`R23`); 1, or 6 and more,
+  are refused as before, and 6 and more no longer compile.
+- **`{{motion.<key>}}`** gives `W13` (Motion variables were removed) beside
+  `W9`; still not an error offline until 2027-01-19.
+
+### Deprecated
+
+- `enrollments.signal` and `EnrollmentSignalBody`: use `enrollments.events`;
+  accepted until 2027-01-19.
+- `until signal.<name>` (use `until event.<name>`) and the `motion.signal`
+  webhook event (renamed `motion.custom_event`), each accepted until
+  2027-01-19.
+- `emit` steps: legacy; put `event` on the `do` or `tag` step that matters.
+
+---
+
+## [0.43.0]
 
 Fixture and types regenerated from deployed staging (server
 `7359b1b1be0584f7f368f1367d39261f2de8f079`, 193 paths; earlier regens at

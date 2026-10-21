@@ -1,1 +1,1 @@
-Copied byte for byte from rapha-red/curviate apps/server/test/fixtures/sequence-corpus at 1b972f61c34611cdb85ed866ecf2ac87db044f11 (the API owns it: re-vendor, never edit).
+Copied byte for byte from rapha-red/curviate apps/server/test/fixtures/sequence-corpus at 1b972f61c34611cdb85ed866ecf2ac87db044f11, with valid-short-variables.json and valid-step-event.json at 18660ccc01da7c89e6e14f4c3df35d012dfc6055 (rapha-red/curviate#2506: about lines without internal refs) (the API owns it: re-vendor, never edit).

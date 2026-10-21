@@ -1,5 +1,5 @@
 {
-  "about": "short variables (FR-015, D27): a field, the sending Account's name and a custom field",
+  "about": "short variables: a field, the sending Account's name and a custom field",
   "rules": [],
   "schema_valid": true,
   "document": {
