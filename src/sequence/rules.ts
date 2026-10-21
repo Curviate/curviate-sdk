@@ -6,7 +6,7 @@
  * test. Hints never hold a Contact value.
  */
 
-export const SEQUENCE_RULES_DOCS_URL = "https://docs.curviate.com/reference/sequence-rules";
+const SEQUENCE_RULES_DOCS_URL = "https://docs.curviate.com/reference/sequence-rules";
 
 const HINTS: Record<string, (token: string) => string> = {
   R1: () => "Keep only $schema, on_reply and steps at the top level; $schema, when present, is https://docs.curviate.com/schemas/sequence/v1.json.",
