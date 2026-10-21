@@ -170,6 +170,18 @@ describe("emission", () => {
     expect(out.$schema).toBe(SEQUENCE_SCHEMA_URL);
   });
 
+  it("puts a step's event where the API serves it: after with, before then, else, next and note", () => {
+    const out = Sequence.create({ on_reply: "end" })
+      .add(
+        step.do("invite", "invite.send", { note: "n", next: "t", with: { note: null }, event: "invite_sent" }),
+        step.tag("t", "warm", { next: "end", event: "tagged" }),
+      )
+      .toDocument();
+    expect(JSON.stringify(out.steps)).toBe(
+      '[{"id":"invite","do":"invite.send","with":{"note":null},"event":"invite_sent","next":"t","note":"n"},{"id":"t","tag":"warm","event":"tagged","next":"end"}]',
+    );
+  });
+
   it("an empty builder throws R2; the normative example (W1 only) returns the document", () => {
     const err = thrown(() => Sequence.create({ on_reply: "end" }).toDocument());
     expect(err.errors).toMatchObject([{ path: "steps", rule: "required: an array of 1 to 100 steps", code: "R2" }]);

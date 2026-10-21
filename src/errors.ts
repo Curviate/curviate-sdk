@@ -15,6 +15,7 @@
  */
 
 import type { TierFeature, TierName } from "./resources/tier.js";
+import type { components } from "./generated/types.js";
 
 /**
  * The complete set of error codes observable by API callers, the single
@@ -496,14 +497,7 @@ export interface CurviateErrorDetail {
  * The stored Sequence a `SEQUENCE_CONFLICT` was refused against. Wire field
  * `current`, keys as the API sends them.
  */
-export interface SequenceConflictCurrent {
-  sequence_revision: number;
-  sequence_version: number;
-  /** The stored document, or `null` when the Motion has none. */
-  sequence: unknown;
-  sequence_updated_by_user_id: string | null;
-  updated_at: string;
-}
+export type SequenceConflictCurrent = NonNullable<components["schemas"]["Error"]["current"]>;
 
 /** Constructor input for {@link CurviateError}. */
 export interface CurviateErrorInit {

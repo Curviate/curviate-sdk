@@ -187,6 +187,13 @@ describe("motion refusals decode to their own code, not INTERNAL", () => {
 });
 
 describe("SEQUENCE_CONFLICT carries the stored Sequence in current", () => {
+  it("another code's current is not read as a Sequence conflict", async () => {
+    const { fetchImpl } = recorder(409, JSON.stringify({ object: "error", code: "MOTION_STATUS_CONFLICT", message: "x", current: { sequence_revision: 1 } }));
+    const err = await client(fetchImpl).motions.update("mot_1", { name: "x" }).catch((e: unknown) => e);
+    expect(isCurviateError(err) && err.code).toBe("MOTION_STATUS_CONFLICT");
+    expect(isCurviateError(err) && err.current).toBeUndefined();
+  });
+
   const current = {
     sequence_revision: 4,
     sequence_version: 2,

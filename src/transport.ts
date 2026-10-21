@@ -242,7 +242,7 @@ async function errorFromResponse(res: Response): Promise<{ err: CurviateError; r
       ? { connectionLocation: env.connection_location as ConnectionLocation }
       : {}),
     ...(Array.isArray(env?.errors) ? { errors: toErrorDetails(env.errors) } : {}),
-    ...(env?.current !== null && typeof env?.current === "object" && !Array.isArray(env.current)
+    ...(env?.code === "SEQUENCE_CONFLICT" && env.current !== null && typeof env.current === "object" && !Array.isArray(env.current)
       ? { current: env.current as SequenceConflictCurrent }
       : {}),
     // `TIER_REQUIRED` details. `required_tier` / `current_tier` are null-BEARING

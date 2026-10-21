@@ -5,7 +5,7 @@
  * fresh deep copy; values are never touched.
  */
 const DOC = ["$schema", "on_reply", "steps"];
-const STEP = ["id", "do", "wait", "until", "if", "emit", "tag", "timeout", "variants", "with", "then", "else", "next", "note"];
+const STEP = ["id", "do", "wait", "until", "if", "emit", "tag", "timeout", "variants", "with", "event", "then", "else", "next", "note"];
 const WITH = ["post", "newer_than", "reaction", "subject", "text", "note", "note_fallback", "fallback", "withdraw_after"];
 const VARIANT = ["id", "subject", "text"];
 const FALLBACK = ["subject", "text"];
