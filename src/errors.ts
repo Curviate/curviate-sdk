@@ -449,10 +449,22 @@ export interface SafetyHint {
   message: string;
 }
 
-/** One failure of a refused document: `path` into it, `rule` saying what to change. Wire `errors[]` entry. */
+/**
+ * One failure of a refused document: `path` into it, `rule` saying what to
+ * change. Wire `errors[]` entry. A Sequence rule or warning also carries the
+ * compiler-style keys: `code` (`R1` to `R24`, `W1` to `W13`), `message`
+ * (equal to `rule`), `pointer` (a JSON Pointer into the document you sent),
+ * `hint` (the fix) and `docs_url` (the rule's docs entry). A
+ * `MOTION_NOT_STARTABLE` gap is `{path, rule}` only.
+ */
 export interface CurviateErrorDetail {
   path: string;
   rule: string;
+  code?: string;
+  message?: string;
+  pointer?: string;
+  hint?: string;
+  docs_url?: string;
 }
 
 /** Constructor input for {@link CurviateError}. */

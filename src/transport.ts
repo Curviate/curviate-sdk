@@ -87,16 +87,23 @@ interface WireErrorEnvelope {
   upgrade_url?: unknown;
 }
 
+/** The compiler-style keys a wire `errors[]` entry may add to `{path, rule}`. */
+const DETAIL_KEYS = ["code", "message", "pointer", "hint", "docs_url"] as const;
+
 /**
- * Wire `errors[]` as `{path, rule}` entries (document paths, not request
- * paths): not an array gives undefined, an entry without string `path` and
- * `rule` is dropped, any other key (`suggestion`) is dropped.
+ * Wire `errors[]` as {@link CurviateErrorDetail} entries (document paths, not
+ * request paths): not an array gives undefined, an entry without string `path`
+ * and `rule` is dropped, a compiler-style key (`code`, `message`, `pointer`,
+ * `hint`, `docs_url`) is kept when it is a string, any other key
+ * (`suggestion`) is dropped.
  */
 function toErrorDetails(errors: unknown): CurviateErrorDetail[] | undefined {
   if (!Array.isArray(errors)) return undefined;
-  return errors.flatMap((e: { path?: unknown; rule?: unknown } | null) => {
-    const { path, rule } = typeof e === "object" && e !== null ? e : {};
-    return typeof path === "string" && typeof rule === "string" ? [{ path, rule }] : [];
+  return errors.flatMap((e: Record<string, unknown> | null) => {
+    if (typeof e !== "object" || e === null || typeof e["path"] !== "string" || typeof e["rule"] !== "string") return [];
+    const detail: CurviateErrorDetail = { path: e["path"], rule: e["rule"] };
+    for (const k of DETAIL_KEYS) if (typeof e[k] === "string") detail[k] = e[k];
+    return [detail];
   });
 }
 

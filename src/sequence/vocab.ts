@@ -98,12 +98,14 @@ export interface Vocabulary {
   /** Actions that take `variants`. */
   messagingActions: readonly string[];
   minVariants: number;
+  /** The schema's `maxItems`: the deprecation window's bound (A/B is `MAX_VARIANTS`, 2). */
   maxVariants: number;
   idPattern: string;
   maxNoteChars: number;
   durationPattern: string;
   events: readonly string[];
-  signalNamePattern: string;
+  /** A custom event name: a step's `event`, `until event.<name>` (and its deprecated `signal.<name>`). */
+  eventNamePattern: string;
   emitPattern: string;
   tagPattern: string;
   maxTagChars: number;
@@ -198,7 +200,7 @@ export function vocabulary(schema: unknown): Vocabulary {
     maxNoteChars: num(obj(propsOf(alts[0]!)["note"], "note")["maxLength"], "note.maxLength"),
     durationPattern: str(obj(byKind("wait")["wait"], "wait")["pattern"], "wait.pattern"),
     events: arr(until[0]!["enum"], "until.enum").map((e) => str(e, "until.enum[]")),
-    signalNamePattern: after(str(until[1]!["pattern"], "until.pattern"), "^signal\\."),
+    eventNamePattern: after(str(until[1]!["pattern"], "until.pattern"), "^(event|signal)\\."),
     emitPattern: str(obj(byKind("emit")["emit"], "emit")["pattern"], "emit.pattern"),
     tagPattern: str(tag["pattern"], "tag.pattern"),
     maxTagChars: num(tag["maxLength"], "tag.maxLength"),

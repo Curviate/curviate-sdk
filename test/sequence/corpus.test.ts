@@ -55,8 +55,8 @@ const unstorable = offline.filter(([, e]) => e.code === "INVALID_REQUEST");
 
 describe("corpus verdicts", () => {
   it("runs the whole vendored corpus: every entry but the server-only ones", () => {
-    expect(corpus.length).toBe(137);
-    expect(offline.length).toBe(127);
+    expect(corpus.length).toBe(150);
+    expect(offline.length).toBe(140);
     expect(valid.length).toBeGreaterThan(0);
     expect(invalid.length).toBeGreaterThan(0);
   });
@@ -80,14 +80,14 @@ describe("corpus verdicts", () => {
   });
 
   it.each([undefined, null, [], "x", 42])("a non-object document (%j) is R1, never a throw", (value) => {
-    expect(validateSequence(value)).toEqual({ errors: [{ path: "$", rule: "a Sequence document is a JSON object" }], warnings: [] });
+    expect(validateSequence(value)).toEqual({ errors: entry("r1-not-an-object.json").errors, warnings: [] });
   });
 
-  it("{{motion.<key>}} is W9, never an error", () => {
+  it("{{motion.<key>}} is deprecated (W13) plus W9, never an error, in the deprecation window", () => {
     const doc = { on_reply: "end", steps: [{ id: "m", do: "message.send", with: { text: "Hi {{motion.x}}", fallback: "Hi" }, next: "end" }] };
     const r = validateSequence(doc);
     expect(r.errors).toEqual([]);
-    expect(r.warnings.map((w) => w.code)).toEqual(["W9"]);
+    expect(r.warnings.map((w) => w.code)).toEqual(["W13", "W9"]);
   });
 
   it("an own property holding undefined counts as absent", () => {
