@@ -1,6 +1,6 @@
 /**
  * Motions and Enrollments (root-scoped): `curviate.motions` (13 methods) and
- * `curviate.enrollments` (9 methods).
+ * `curviate.enrollments` (10 methods).
  *
  * A Motion runs one Sequence (see `Sequence`) for the Contacts of its Contact
  * lists, on its sending accounts, inside its schedule. It is created as a
@@ -19,6 +19,7 @@
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
 import { apiPath } from "../internal/path.js";
+import { CurviateError, KNOWN_ERROR_CODES, type ErrorCode } from "../errors.js";
 import { commaLists } from "../internal/query.js";
 import { Sequence, type ResolvedSequence } from "../sequence/builder.js";
 import type { SequenceDocument } from "../sequence/types.js";
@@ -52,6 +53,8 @@ export type EnrollmentReassignBody = NonNullable<paths["/v1/enrollments/{id}/rea
 export type EnrollmentReassignResult = paths["/v1/enrollments/{id}/reassign"]["post"]["responses"]["200"]["content"]["application/json"];
 export type EnrollmentBulkBody = NonNullable<paths["/v1/enrollments/bulk"]["post"]["requestBody"]>["content"]["application/json"];
 export type EnrollmentBulkResult = paths["/v1/enrollments/bulk"]["post"]["responses"]["200"]["content"]["application/json"];
+/** One Enrollment's result in a bulk call; what `enrollments.retry` resolves with. */
+export type EnrollmentBulkItem = EnrollmentBulkResult["results"][number];
 /** A reason code of the catalogue (skip, finish or Step reasons), as `reason` and the list's `reason` filter carry it. */
 export type EnrollmentReason = NonNullable<EnrollmentListParams["reason"]>[number];
 
@@ -130,7 +133,10 @@ export class MotionsResource {
    * Change a Motion. Objects (`schedule`, `settings`) merge by key; arrays,
    * `where` and `sequence` replace whole; `null` clears. `sequence` takes a
    * builder or a document, as in `create`. After start, a structural Sequence
-   * change makes a new version; running Enrollments keep theirs.
+   * change makes a new version; running Enrollments keep theirs. Send
+   * `if_sequence_revision` (the `sequence_revision` you read) to refuse the
+   * save when someone saved the Sequence since: `SEQUENCE_CONFLICT`, nothing
+   * saved, the stored document in `err.current`. Omitted: the last write wins.
    * `PATCH /v1/motions/{id}`
    *
    * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
@@ -139,6 +145,7 @@ export class MotionsResource {
    * const motion = await curviate.motions.get("mot_123");
    * await curviate.motions.update("mot_123", {
    *   sequence: Sequence.fromDocument(motion.sequence).replace("pause", step.wait("pause", "3d", { next: "end" })),
+   *   if_sequence_revision: motion.sequence_revision,
    * });
    */
   async update<Q extends AnySequence = SequenceDocument | null>(motionId: string, body: MotionUpdateBody<Q>): Promise<Motion> {
@@ -340,11 +347,12 @@ export class EnrollmentsResource {
 
   /**
    * Without `at`: lift your own pause; the Enrollment continues where it was,
-   * with the time its wait had left. With `at`: continue at that Step of its
-   * Sequence version, `on_reply` re-armed (the out-of-office path). **Retry**
-   * is `resume` at the failed Step: it acts only while that Step's latest
-   * outcome is `failed`, else `NOTHING_TO_RETRY` and nothing is sent. Works
-   * on `active`, `paused` and most `finished` Enrollments; else
+   * with the time its wait had left. With `at`: an explicit jump to that Step
+   * of its Sequence version, `on_reply` re-armed (the out-of-office path).
+   * The jump is not guarded: it re-enters the Step you name even when that
+   * Step already sent, so a message can go out again. To retry a failed Step,
+   * use `enrollments.retry(id)`, which acts only on a failure. Works on
+   * `active`, `paused` and most `finished` Enrollments; else
    * `ENROLLMENT_NOT_ACTIVE`.
    * `POST /v1/enrollments/{id}/resume`
    *
@@ -352,7 +360,7 @@ export class EnrollmentsResource {
    *
    * @example
    * await curviate.enrollments.resume("enr_123"); // lift your pause
-   * await curviate.enrollments.resume("enr_123", { at: "opener" }); // Retry the failed opener
+   * await curviate.enrollments.resume("enr_123", { at: "bump" }); // jump to a Step after an out-of-office reply
    */
   resume(enrollmentId: string, body?: EnrollmentResumeBody): Promise<Enrollment> {
     return this.ctx.request<Enrollment>({ method: "POST", path: apiPath`/v1/enrollments/${enrollmentId}/resume`, body });
@@ -410,6 +418,39 @@ export class EnrollmentsResource {
    */
   bulk(body: EnrollmentBulkBody): Promise<EnrollmentBulkResult> {
     return this.ctx.request<EnrollmentBulkResult>({ method: "POST", path: "/v1/enrollments/bulk", body });
+  }
+
+  /**
+   * Retry the failed Step of one Enrollment: the guarded Retry. It acts only
+   * while that Step's latest outcome is `failed`, so a repeated or looped
+   * call never sends a delivered message again. Resolves with the
+   * Enrollment's result when it was resumed; otherwise throws its refusal as
+   * a `CurviateError` (`NOTHING_TO_RETRY` when nothing failed,
+   * `STEP_IN_FLIGHT`, `ENROLLMENT_NOT_ACTIVE`, `RESOURCE_NOT_FOUND`, ...),
+   * with no `httpStatus`. Sent as `bulk` with this one id.
+   * `POST /v1/enrollments/bulk`
+   *
+   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   *
+   * @example
+   * try {
+   *   await curviate.enrollments.retry("enr_123");
+   * } catch (err) {
+   *   if (isCurviateError(err) && err.code === "NOTHING_TO_RETRY") console.log("nothing failed");
+   * }
+   */
+  async retry(enrollmentId: string): Promise<EnrollmentBulkItem> {
+    const res = await this.bulk({ action: "retry", ids: [enrollmentId] });
+    const item = res.results[0];
+    if (item?.outcome === "ok") return item;
+    const known = item?.error && KNOWN_ERROR_CODES.has(item.error.code);
+    const code = (known ? item.error!.code : "INTERNAL") as ErrorCode;
+    throw new CurviateError({
+      code,
+      message: item?.error?.message ?? `No retry result for ${enrollmentId}.`,
+      userFixable: false,
+      retryLikelyToSucceed: code === "STEP_IN_FLIGHT",
+    });
   }
 
   /**

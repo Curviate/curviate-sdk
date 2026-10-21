@@ -21,11 +21,14 @@ Regenerate from the deployed API and confirm an empty diff before publishing.
   sending account; `warnings` names Steps that will be skipped) and
   `enrollments.bulk` (up to 1,000 by ids or filter, one result per
   Enrollment, not atomic). `enrollments.resume` takes no body to lift your own
-  pause; Retry is `resume({ at })` at the failed Step. New list filters:
+  pause. `enrollments.retry(id)` retries a failed Step through the guarded
+  bulk path and throws `NOTHING_TO_RETRY` (or the Enrollment's other refusal)
+  as a `CurviateError`; `resume({ at })` is an explicit, unguarded jump to a
+  Step. New list filters:
   `version`, `done_step` with `outcome`, `reason`, `variant_id`,
   `relationship_at_enrollment`. Types `EnrollmentEventBody`,
   `EnrollmentReassignBody`, `EnrollmentReassignResult`, `EnrollmentBulkBody`,
-  `EnrollmentBulkResult`, `EnrollmentReason` (the reasons catalogue).
+  `EnrollmentBulkResult`, `EnrollmentBulkItem`, `EnrollmentReason` (the reasons catalogue).
 - **Error codes** `SEQUENCE_CONFLICT` (with `err.current`: the stored
   Sequence and its `sequence_revision`; send `if_sequence_revision` on
   `motions.update`), `STEP_IN_FLIGHT`, `NOTHING_TO_RETRY`,

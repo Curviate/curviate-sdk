@@ -159,6 +159,7 @@ export type {
   EnrollmentReassignResult,
   EnrollmentBulkBody,
   EnrollmentBulkResult,
+  EnrollmentBulkItem,
   EnrollmentReason,
 } from "./resources/motions.js";
 

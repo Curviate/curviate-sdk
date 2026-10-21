@@ -378,7 +378,7 @@ export const ERROR_CODES = [
   //   account or Contact is gone).
   // - `STEP_IN_FLIGHT` (409): a Step of the Enrollment is being sent right
   //   now; pause and reassign wait until it settles. Retry in a minute.
-  // - `NOTHING_TO_RETRY` (409): Retry (resume at the failed Step) found no
+  // - `NOTHING_TO_RETRY` (409, or thrown by `enrollments.retry`): Retry found no
   //   Step whose latest outcome is `failed`; nothing was resumed or sent.
   // - `ACCOUNT_ALREADY_ENGAGED` (409): reassign refused: the Enrollment's
   //   account already did something the Contact can see.
