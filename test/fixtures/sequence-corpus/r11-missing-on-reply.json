@@ -16,7 +16,12 @@
   "errors": [
     {
       "path": "on_reply",
-      "rule": "required: a step id or \"end\""
+      "rule": "required: a step id or \"end\"",
+      "code": "R11",
+      "message": "required: a step id or \"end\"",
+      "pointer": "",
+      "hint": "Set on_reply to a step id or \"end\".",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r11"
     }
   ],
   "warnings": []

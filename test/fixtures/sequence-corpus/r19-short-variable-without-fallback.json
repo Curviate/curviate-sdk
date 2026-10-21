@@ -1,0 +1,32 @@
+{
+  "about": "a short variable needs a fallback like a long one",
+  "rules": [
+    "R19"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{first_name}}"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "m.with.fallback",
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/0/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
+    }
+  ],
+  "warnings": []
+}

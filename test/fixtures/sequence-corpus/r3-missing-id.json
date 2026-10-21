@@ -16,7 +16,12 @@
   "errors": [
     {
       "path": "steps[0].id",
-      "rule": "required: matching ^[a-z][a-z0-9_]{0,39}$"
+      "rule": "required: matching ^[a-z][a-z0-9_]{0,39}$",
+      "code": "R3",
+      "message": "required: matching ^[a-z][a-z0-9_]{0,39}$",
+      "pointer": "/steps/0",
+      "hint": "Give each step a unique id: lowercase letters, digits and _, starting with a letter, at most 40 characters, not end.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r3"
     }
   ],
   "warnings": []

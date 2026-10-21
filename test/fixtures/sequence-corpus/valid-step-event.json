@@ -1,0 +1,23 @@
+{
+  "about": "a custom event on a do step and on a tag step (FR-011, D32)",
+  "rules": [],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "invite",
+        "do": "invite.send",
+        "event": "invite_sent"
+      },
+      {
+        "id": "t",
+        "tag": "no-reply",
+        "event": "no_reply.7d",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": []
+}

@@ -17,7 +17,12 @@
   "errors": [
     {
       "path": "a.next",
-      "rule": "unknown step nope"
+      "rule": "unknown step nope",
+      "code": "R6",
+      "message": "unknown step nope",
+      "pointer": "/steps/0/next",
+      "hint": "Point the exit at a step id of this document, or at \"end\".",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r6"
     }
   ],
   "warnings": []

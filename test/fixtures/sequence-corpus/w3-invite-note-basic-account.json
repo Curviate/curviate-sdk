@@ -27,9 +27,13 @@
   "errors": [],
   "warnings": [
     {
-      "code": "W3",
       "path": "inv.with.note_fallback",
-      "rule": "a basic sending Account sends only a few noted invitations a month; set note_fallback to \"drop\" to send without a note after that"
+      "rule": "a basic sending Account sends only a few noted invitations a month; set note_fallback to \"drop\" to send without a note after that",
+      "code": "W3",
+      "message": "a basic sending Account sends only a few noted invitations a month; set note_fallback to \"drop\" to send without a note after that",
+      "pointer": "/steps/0/with",
+      "hint": "Set note_fallback to \"drop\" so invitations go on without a note once the noted ones are used up.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w3"
     }
   ]
 }

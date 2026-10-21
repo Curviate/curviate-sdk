@@ -20,7 +20,12 @@
   "errors": [
     {
       "path": "inv.with.withdraw_after",
-      "rule": "must be a duration between 14d and 180d: a number then m, h or d, like 30d"
+      "rule": "must be a duration between 14d and 180d: a number then m, h or d, like 30d",
+      "code": "R21",
+      "message": "must be a duration between 14d and 180d: a number then m, h or d, like 30d",
+      "pointer": "/steps/0/with/withdraw_after",
+      "hint": "Set withdraw_after between 14d and 180d, for example 21d.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r21"
     }
   ],
   "warnings": []

@@ -22,7 +22,12 @@
   "errors": [
     {
       "path": "c.if",
-      "rule": "contact.degree takes {\"eq\": n} or {\"in\": [n, ...]}, n being 1, 2 or 3"
+      "rule": "contact.degree takes {\"eq\": n} or {\"in\": [n, ...]}, n being 1, 2 or 3",
+      "code": "R15",
+      "message": "contact.degree takes {\"eq\": n} or {\"in\": [n, ...]}, n being 1, 2 or 3",
+      "pointer": "/steps/0/if",
+      "hint": "Use one predicate key per object with its typed operand; chain if steps instead of all or any. account.* and message.* work in if steps only.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r15"
     }
   ],
   "warnings": []

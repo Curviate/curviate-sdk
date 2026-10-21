@@ -21,7 +21,12 @@
   "errors": [
     {
       "path": "c.with.text",
-      "rule": "1251 characters; the limit is 1250, variables not counted"
+      "rule": "1251 characters; the limit is 1250, variables not counted",
+      "code": "R22",
+      "message": "1251 characters; the limit is 1250, variables not counted",
+      "pointer": "/steps/0/with/text",
+      "hint": "Shorten the text to the limit (variables are not counted) or use fewer variables.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r22"
     }
   ],
   "warnings": []

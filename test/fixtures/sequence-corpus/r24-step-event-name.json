@@ -1,0 +1,30 @@
+{
+  "about": "a step event name off the pattern",
+  "rules": [
+    "R24"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "invite",
+        "do": "invite.send",
+        "event": "Bad Name",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "invite.event",
+      "rule": "must match ^[a-z][a-z0-9_.]{0,63}$, like invite_sent",
+      "code": "R24",
+      "message": "must match ^[a-z][a-z0-9_.]{0,63}$, like invite_sent",
+      "pointer": "/steps/0/event",
+      "hint": "Name the event with lowercase letters, digits, _ and ., starting with a letter, like reply.received; a Tag is 1 to 64 characters without , or ;.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r24"
+    }
+  ],
+  "warnings": []
+}

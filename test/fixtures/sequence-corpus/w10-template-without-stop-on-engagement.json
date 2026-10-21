@@ -137,14 +137,22 @@
   "errors": [],
   "warnings": [
     {
-      "code": "W10",
       "path": "on_reply",
-      "rule": "on_reply is unused while stop_on_engagement is on"
+      "rule": "on_reply is unused while stop_on_engagement is on",
+      "code": "W10",
+      "message": "on_reply is unused while stop_on_engagement is on",
+      "pointer": "/on_reply",
+      "hint": "Set on_reply to \"end\", or turn stop_on_engagement off.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w10"
     },
     {
-      "code": "W1",
       "path": "w_invite",
-      "rule": "merge point: reached by fall-through from like and by a jump from has_post"
+      "rule": "merge point: reached by fall-through from like and by a jump from has_post",
+      "code": "W1",
+      "message": "merge point: reached by fall-through from like and by a jump from has_post",
+      "pointer": "/steps/4",
+      "hint": "If the merge is intended, keep it; otherwise give the jumping step its own continuation.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w1"
     }
   ]
 }

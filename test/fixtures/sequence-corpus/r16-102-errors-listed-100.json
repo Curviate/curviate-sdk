@@ -13,357 +13,357 @@
         "id": "m0",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m1",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m2",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m3",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m4",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m5",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m6",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m7",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m8",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m9",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m10",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m11",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m12",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m13",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m14",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m15",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m16",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m17",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m18",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m19",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m20",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m21",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m22",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m23",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m24",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m25",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m26",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m27",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m28",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m29",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m30",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m31",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m32",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m33",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m34",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m35",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m36",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m37",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m38",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m39",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m40",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m41",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m42",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m43",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m44",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m45",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m46",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m47",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m48",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m49",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         }
       },
       {
         "id": "m50",
         "do": "message.send",
         "with": {
-          "text": "Hi {{x}}"
+          "text": "Hi {{X}}"
         },
         "next": "end"
       }
@@ -372,403 +372,903 @@
   "errors": [
     {
       "path": "m0.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/0/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m0.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/0/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m1.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/1/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m1.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/1/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m2.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/2/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m2.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/2/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m3.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/3/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m3.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/3/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m4.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/4/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m4.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/4/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m5.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/5/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m5.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/5/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m6.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/6/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m6.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/6/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m7.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/7/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m7.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/7/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m8.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/8/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m8.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/8/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m9.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/9/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m9.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/9/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m10.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/10/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m10.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/10/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m11.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/11/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m11.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/11/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m12.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/12/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m12.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/12/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m13.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/13/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m13.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/13/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m14.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/14/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m14.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/14/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m15.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/15/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m15.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/15/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m16.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/16/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m16.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/16/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m17.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/17/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m17.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/17/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m18.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/18/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m18.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/18/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m19.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/19/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m19.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/19/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m20.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/20/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m20.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/20/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m21.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/21/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m21.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/21/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m22.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/22/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m22.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/22/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m23.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/23/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m23.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/23/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m24.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/24/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m24.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/24/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m25.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/25/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m25.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/25/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m26.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/26/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m26.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/26/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m27.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/27/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m27.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/27/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m28.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/28/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m28.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/28/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m29.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/29/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m29.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/29/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m30.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/30/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m30.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/30/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m31.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/31/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m31.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/31/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m32.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/32/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m32.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/32/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m33.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/33/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m33.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/33/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m34.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/34/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m34.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/34/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m35.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/35/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m35.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/35/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m36.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/36/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m36.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/36/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m37.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/37/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m37.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/37/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m38.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/38/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m38.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/38/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m39.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/39/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m39.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/39/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m40.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/40/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m40.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/40/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m41.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/41/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m41.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/41/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m42.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/42/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m42.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/42/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m43.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/43/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m43.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/43/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m44.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/44/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m44.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/44/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m45.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/45/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m45.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/45/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m46.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/46/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m46.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/46/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m47.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/47/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m47.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/47/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m48.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/48/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m48.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/48/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "m49.with.text",
-      "rule": "unknown variable {{x}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/49/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "m49.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/49/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     }
   ],
   "warnings": []

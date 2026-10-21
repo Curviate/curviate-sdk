@@ -19,7 +19,12 @@
   "errors": [
     {
       "path": "u.until",
-      "rule": "a signal name must match ^[a-z][a-z0-9_]{0,39}$"
+      "rule": "an event name must match ^[a-z][a-z0-9_.]{0,63}$",
+      "code": "R14",
+      "message": "an event name must match ^[a-z][a-z0-9_.]{0,63}$",
+      "pointer": "/steps/0/until",
+      "hint": "Wait for invite.accepted, message.replied, message.read or event.<name>, and give a timeout.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r14"
     }
   ],
   "warnings": []

@@ -1,0 +1,40 @@
+{
+  "about": "r15 message.seen takes true or false",
+  "rules": [
+    "R15"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "msg",
+        "do": "message.send",
+        "with": {
+          "text": "Hello there"
+        },
+        "next": "c"
+      },
+      {
+        "id": "c",
+        "if": {
+          "message.seen": "yes"
+        },
+        "then": "end",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "c.if",
+      "rule": "message.seen takes true or false",
+      "code": "R15",
+      "message": "message.seen takes true or false",
+      "pointer": "/steps/1/if",
+      "hint": "Use one predicate key per object with its typed operand; chain if steps instead of all or any. account.* and message.* work in if steps only.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r15"
+    }
+  ],
+  "warnings": []
+}

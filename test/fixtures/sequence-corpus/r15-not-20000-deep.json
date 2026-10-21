@@ -15,11 +15,16 @@
       }
     ]
   },
-  "errors": [
-    {
-      "path": "c.if",
-      "rule": "a predicate nests at most 10 levels"
-    }
-  ],
-  "warnings": []
+    "errors": [
+      {
+        "path": "c.if",
+        "rule": "a predicate nests at most 10 levels",
+        "code": "R15",
+        "message": "a predicate nests at most 10 levels",
+        "pointer": "/steps/0/if",
+        "hint": "Use one predicate key per object with its typed operand; chain if steps instead of all or any. account.* and message.* work in if steps only.",
+        "docs_url": "https://docs.curviate.com/reference/sequence-rules#r15"
+      }
+    ],
+    "warnings": []
 }

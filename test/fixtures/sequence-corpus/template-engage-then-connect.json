@@ -44,7 +44,7 @@
           "do": "post.comment",
           "with": {
             "newer_than": "60d",
-            "text": "{{contact.extra.comment}}",
+            "text": "{{comment}}",
             "fallback": "skip"
           },
           "note": "The agent writes one comment per Contact; no product mention."
@@ -75,7 +75,7 @@
           "id": "opener",
           "do": "message.send",
           "with": {
-            "text": "Hi {{contact.first_name}}, {{contact.extra.opener}}",
+            "text": "Hi {{first_name}}, {{opener}}",
             "fallback": "Hi, thanks for connecting. What are you working on at the moment?"
           }
         },
@@ -89,7 +89,7 @@
           "id": "followup",
           "do": "message.send",
           "with": {
-            "text": "{{contact.extra.followup}}",
+            "text": "{{followup}}",
             "fallback": "Following up once in case this got buried. All good if now is not the time."
           }
         },
@@ -106,11 +106,7 @@
         },
         {
           "id": "replied",
-          "tag": "in-conversation"
-        },
-        {
-          "id": "handoff",
-          "emit": "reply.received",
+          "tag": "in-conversation",
           "next": "end"
         }
       ]
@@ -119,9 +115,13 @@
   "errors": [],
   "warnings": [
     {
-      "code": "W1",
       "path": "w_invite",
-      "rule": "merge point: reached by fall-through from comment and by a jump from react"
+      "rule": "merge point: reached by fall-through from comment and by a jump from react",
+      "code": "W1",
+      "message": "merge point: reached by fall-through from comment and by a jump from react",
+      "pointer": "/steps/3",
+      "hint": "If the merge is intended, keep it; otherwise give the jumping step its own continuation.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w1"
     }
   ]
 }

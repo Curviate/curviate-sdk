@@ -1,6 +1,8 @@
 {
   "about": "valid motion defined",
-  "rules": [],
+  "rules": [
+    "W13"
+  ],
   "only": "server",
   "context": {
     "variables": {
@@ -23,5 +25,24 @@
     ]
   },
   "errors": [],
-  "warnings": []
+  "warnings": [
+    {
+      "path": "settings.variables",
+      "rule": "Motion variables were removed; accepted until 2027-01-19; write the text in place or use a custom field",
+      "code": "W13",
+      "message": "Motion variables were removed; accepted until 2027-01-19; write the text in place or use a custom field",
+      "pointer": "",
+      "hint": "Use text in place or a custom field instead.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w13"
+    },
+    {
+      "path": "m.with.text",
+      "rule": "{{motion.x}}: Motion variables were removed; accepted until 2027-01-19; write the text in place or use a custom field",
+      "code": "W13",
+      "message": "{{motion.x}}: Motion variables were removed; accepted until 2027-01-19; write the text in place or use a custom field",
+      "pointer": "/steps/0/with/text",
+      "hint": "Use text in place or a custom field such as {{x}} instead.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w13"
+    }
+  ]
 }
