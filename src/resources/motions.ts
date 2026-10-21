@@ -417,6 +417,8 @@ export class EnrollmentsResource {
    * plus a `Deprecation` header and warning W13; accepted until 2027-01-19.
    * `POST /v1/enrollments/{id}/signal`
    *
+   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   *
    * @deprecated Use `enrollments.events`; `signal` stops working on 2027-01-19.
    *
    * @example

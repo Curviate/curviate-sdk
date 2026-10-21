@@ -103,9 +103,14 @@ const DETAIL_KEYS = ["code", "message", "pointer", "hint", "docs_url"] as const;
 function toErrorDetails(errors: unknown): CurviateErrorDetail[] | undefined {
   if (!Array.isArray(errors)) return undefined;
   return errors.flatMap((e: Record<string, unknown> | null) => {
-    if (typeof e !== "object" || e === null || typeof e["path"] !== "string" || typeof e["rule"] !== "string") return [];
-    const detail: CurviateErrorDetail = { path: e["path"], rule: e["rule"] };
-    for (const k of DETAIL_KEYS) if (typeof e[k] === "string") detail[k] = e[k];
+    const entry = typeof e === "object" && e !== null ? e : {};
+    const { path, rule } = entry;
+    if (typeof path !== "string" || typeof rule !== "string") return [];
+    const detail: CurviateErrorDetail = { path, rule };
+    for (const k of DETAIL_KEYS) {
+      const v = entry[k];
+      if (typeof v === "string") detail[k] = v;
+    }
     return [detail];
   });
 }

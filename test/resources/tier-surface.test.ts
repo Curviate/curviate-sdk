@@ -150,7 +150,7 @@ describe("JSDoc sweep: every gated write that exists says it needs Automate", ()
   const BY_HANDLER: [string, string][] = [["PATCH", "/v1/unibox/accounts/{account_id}"]];
 
   it("derives a non-empty set, every tagged write has an SDK method", () => {
-    expect(tagged.length).toBe(23);
+    expect(tagged.length).toBe(25);
     for (const [m, p] of [...tagged, ...BY_HANDLER]) expect(block(m, p), `${m} ${p} has no SDK method`).toBeDefined();
     // The four network and unibox writes are in the derived set, not added by hand.
     expect(tagged.filter(([, p]) => /^\/v1\/(network|unibox)\//.test(p)).length).toBe(4);
