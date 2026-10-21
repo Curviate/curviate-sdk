@@ -20,6 +20,7 @@ import {
   type SafetyReason,
   type ConnectionLocation,
   type CurviateErrorDetail,
+  type SequenceConflictCurrent,
 } from "./errors.js";
 
 /** HTTP methods the transport issues. */
@@ -80,6 +81,8 @@ interface WireErrorEnvelope {
   connection_location?: unknown;
   /** `SEQUENCE_INVALID`, `MOTION_NOT_STARTABLE`: every failure as `{path, rule}`. */
   errors?: unknown;
+  /** `SEQUENCE_CONFLICT`: the stored Sequence. */
+  current?: unknown;
   /** `TIER_REQUIRED`: the feature, the lowest Tier with it, the team's Tier, an Owner's upgrade page. */
   feature?: unknown;
   required_tier?: unknown;
@@ -234,6 +237,9 @@ async function errorFromResponse(res: Response): Promise<{ err: CurviateError; r
       ? { connectionLocation: env.connection_location as ConnectionLocation }
       : {}),
     ...(Array.isArray(env?.errors) ? { errors: toErrorDetails(env.errors) } : {}),
+    ...(env?.current !== null && typeof env?.current === "object" && !Array.isArray(env.current)
+      ? { current: env.current as SequenceConflictCurrent }
+      : {}),
     // `TIER_REQUIRED` details. `required_tier` / `current_tier` are null-BEARING
     // (no Tier has it / the team has none), so null survives; a non-string
     // value (neither a name nor null) is dropped rather than mistyped.

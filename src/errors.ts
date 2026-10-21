@@ -351,10 +351,17 @@ export const ERROR_CODES = [
 
   // Sequences (`Sequence`, `validateSequence`). `SEQUENCE_INVALID` (422 from
   // the API, or thrown offline by `toDocument()` / `Sequence.fromDocument`):
-  // the Sequence document breaks one or more rules. `errors` lists every one as
-  // `{path, rule}` in step order, so one fix round covers them all. Nothing is
-  // saved. user_fixable, never retryable as sent.
+  // the Sequence document breaks one or more rules. `errors` lists every one
+  // (`path`, `rule`, `code`, `pointer`, `hint`, `docs_url`) in step order, so
+  // one fix round covers them all. Nothing is saved. user_fixable, never
+  // retryable as sent.
+  //
+  // `SEQUENCE_CONFLICT` (409): `motions.update` sent `if_sequence_revision`
+  // and someone saved the Sequence since; nothing is saved. `current` carries
+  // the stored document and its `sequence_revision`: merge, or send yours again
+  // with that revision to replace it.
   "SEQUENCE_INVALID",
+  "SEQUENCE_CONFLICT",
 
   // Motions and Enrollments (`motions`, `enrollments`).
   //
@@ -365,15 +372,33 @@ export const ERROR_CODES = [
   //   Motion's status; the message names it and the operations it allows.
   //   Only a draft can be deleted: archive instead.
   // - `ENROLLMENT_NOT_ACTIVE` (409): the Enrollment's status does not take
-  //   this operation (stop: pending, active or paused; signal: active or
-  //   paused; resume: active, paused or finished, not when the account or
-  //   Contact is gone).
+  //   this operation (stop and pause: pending, active or paused; events:
+  //   active or paused; resume: active, paused or finished, not when the
+  //   account or Contact is gone).
+  // - `STEP_IN_FLIGHT` (409): a Step of the Enrollment is being sent right
+  //   now; pause and reassign wait until it settles. Retry in a minute.
+  // - `NOTHING_TO_RETRY` (409): Retry (resume at the failed Step) found no
+  //   Step whose latest outcome is `failed`; nothing was resumed or sent.
+  // - `ACCOUNT_ALREADY_ENGAGED` (409): reassign refused: the Enrollment's
+  //   account already did something the Contact can see.
+  // - `ALREADY_ENROLLED_ON_ACCOUNT` (409): reassign refused: the target
+  //   account already holds this Contact in the Motion, or is its own account.
+  // - `KNOWN_CHAT` (409): reassign refused: the Motion excludes known chats
+  //   and the Contact already has a chat with your team.
   // - `CONTACT_NOT_ENROLLABLE` (422): adding a Contact to a Motion from a chat
   //   was refused (already enrolled, excluded, in another Motion, filtered).
+  // - `CHAT_NOT_ONE_TO_ONE` (422): a Unibox Contact action on a group chat,
+  //   or a chat whose counterpart is not a person.
   "MOTION_NOT_STARTABLE",
   "MOTION_STATUS_CONFLICT",
   "ENROLLMENT_NOT_ACTIVE",
+  "STEP_IN_FLIGHT",
+  "NOTHING_TO_RETRY",
+  "ACCOUNT_ALREADY_ENGAGED",
+  "ALREADY_ENROLLED_ON_ACCOUNT",
+  "KNOWN_CHAT",
   "CONTACT_NOT_ENROLLABLE",
+  "CHAT_NOT_ONE_TO_ONE",
 
   // Client-side, never sent by the API. `CLIENT_TIMEOUT`: no response within
   // the client's `timeout` (default 30 s, per attempt). A read is retried
@@ -467,6 +492,19 @@ export interface CurviateErrorDetail {
   docs_url?: string;
 }
 
+/**
+ * The stored Sequence a `SEQUENCE_CONFLICT` was refused against. Wire field
+ * `current`, keys as the API sends them.
+ */
+export interface SequenceConflictCurrent {
+  sequence_revision: number;
+  sequence_version: number;
+  /** The stored document, or `null` when the Motion has none. */
+  sequence: unknown;
+  sequence_updated_by_user_id: string | null;
+  updated_at: string;
+}
+
 /** Constructor input for {@link CurviateError}. */
 export interface CurviateErrorInit {
   code: ErrorCode;
@@ -546,11 +584,18 @@ export interface CurviateErrorInit {
    */
   connectionLocation?: ConnectionLocation;
   /**
-   * Every failure, as `{path, rule}`, on a refusal that lists them: wire field
-   * `errors` (`SEQUENCE_INVALID`, `MOTION_NOT_STARTABLE`), or the offline
+   * Every failure, as `{path, rule}` plus the compiler-style keys of a
+   * Sequence rule, on a refusal that lists them: wire field `errors`
+   * (`SEQUENCE_INVALID`, `MOTION_NOT_STARTABLE`), or the offline
    * `SEQUENCE_INVALID` a Sequence builder throws. `message` repeats the first.
    */
   errors?: CurviateErrorDetail[];
+  /**
+   * On a `SEQUENCE_CONFLICT`: the stored Sequence, its `sequence_revision` and
+   * who saved it. Wire field `current`. Send your edit again with
+   * `if_sequence_revision: current.sequence_revision` to replace it.
+   */
+  current?: SequenceConflictCurrent;
   /**
    * On a `TIER_REQUIRED`: the feature the team's Tier does not include.
    * Wire field `feature`. A feature added later arrives as its own string,
@@ -594,6 +639,7 @@ export interface CurviateErrorJSON {
   blocked?: boolean;
   connectionLocation?: ConnectionLocation;
   errors?: CurviateErrorDetail[];
+  current?: SequenceConflictCurrent;
   feature?: TierFeature | (string & {});
   requiredTier?: TierName | (string & {}) | null;
   currentTier?: TierName | (string & {}) | null;
@@ -636,6 +682,8 @@ export class CurviateError extends Error {
   readonly connectionLocation: ConnectionLocation | undefined;
   /** Every failure as `{path, rule}`. See {@link CurviateErrorInit.errors}. */
   readonly errors: CurviateErrorDetail[] | undefined;
+  /** The stored Sequence, on `SEQUENCE_CONFLICT`. See {@link CurviateErrorInit.current}. */
+  readonly current: SequenceConflictCurrent | undefined;
   /** The feature the Tier lacks, on `TIER_REQUIRED`. See {@link CurviateErrorInit.feature}. */
   readonly feature: TierFeature | (string & {}) | undefined;
   /** The lowest Tier with that feature; `null` when none has it. See {@link CurviateErrorInit.requiredTier}. */
@@ -661,6 +709,7 @@ export class CurviateError extends Error {
     this.blocked = init.blocked;
     this.connectionLocation = init.connectionLocation;
     this.errors = init.errors;
+    this.current = init.current;
     this.feature = init.feature;
     this.requiredTier = init.requiredTier;
     this.currentTier = init.currentTier;
@@ -697,6 +746,7 @@ export class CurviateError extends Error {
     if (this.blocked !== undefined) json.blocked = this.blocked;
     if (this.connectionLocation !== undefined) json.connectionLocation = this.connectionLocation;
     if (this.errors !== undefined) json.errors = this.errors;
+    if (this.current !== undefined) json.current = this.current;
     if (this.feature !== undefined) json.feature = this.feature;
     // Null-bearing like `resetAt`: `null` says no Tier has it / the team has none.
     if (this.requiredTier !== undefined) json.requiredTier = this.requiredTier;

@@ -26,6 +26,7 @@ export {
   type CurviateErrorInit,
   type CurviateErrorJSON,
   type CurviateErrorDetail,
+  type SequenceConflictCurrent,
 } from "./errors.js";
 
 export type {
@@ -152,7 +153,13 @@ export type {
   EnrollmentListParams,
   EnrollmentListPage,
   EnrollmentResumeBody,
+  EnrollmentEventBody,
   EnrollmentSignalBody,
+  EnrollmentReassignBody,
+  EnrollmentReassignResult,
+  EnrollmentBulkBody,
+  EnrollmentBulkResult,
+  EnrollmentReason,
 } from "./resources/motions.js";
 
 export type { TierResult, TierName, TierFeature } from "./resources/tier.js";
