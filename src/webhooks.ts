@@ -143,12 +143,23 @@ export interface PostPublishFailedPayload extends EventPayloadBase {
 }
 
 /**
- * Payload of the seven `motion` events (`motion.status_changed`,
- * `enrollment.started`, `enrollment.skipped`, `enrollment.finished`,
- * `step.executed`, `step.failed`, `motion.signal`). Each carries `motion_id`;
- * the rest varies by event and is documented at
- * https://docs.curviate.com/reference/webhooks/events (`contact` is the Contact
- * record, `null` once deleted).
+ * Payload of the eleven `motion` events (`motion.status_changed`,
+ * `enrollment.started`, `enrollment.accepted`, `enrollment.replied`,
+ * `enrollment.seen`, `enrollment.reassigned`, `enrollment.skipped`,
+ * `enrollment.finished`, `step.executed`, `step.failed`,
+ * `motion.custom_event`). Each carries `motion_id` and is self-contained:
+ * `motion_name`, `account_name`, the step keys (`step_id`, `action`,
+ * `variant_id`, `step_event`: the step's custom event name, while `event` stays
+ * the event type) and `reason_message` beside every `reason`. The rest varies
+ * by event, with a full example per event at
+ * https://docs.curviate.com/reference/webhooks/catalogue (`contact` is the
+ * Contact record, `null` once deleted). No payload carries the text Curviate
+ * sent.
+ *
+ * `motion.custom_event` fires once when a step carrying an `event` ran (or a
+ * legacy `emit` step is reached). `motion.signal` is its deprecated name: a
+ * webhook subscribed to it receives the same `data` under that name until
+ * 2027-01-19.
  *
  * `motion.status_changed` carries `reason`, which is `tier_required` when the
  * Team lost the Tier that includes Motions: the Motion reads `paused` with
@@ -258,10 +269,16 @@ export type CurviateEvent = CurviateEventEnvelope &
     | { event: "post.publish_failed"; data: PostPublishFailedPayload }
     | { event: "motion.status_changed"; data: MotionPayload }
     | { event: "enrollment.started"; data: MotionPayload }
+    | { event: "enrollment.accepted"; data: MotionPayload }
+    | { event: "enrollment.replied"; data: MotionPayload }
+    | { event: "enrollment.seen"; data: MotionPayload }
+    | { event: "enrollment.reassigned"; data: MotionPayload }
     | { event: "enrollment.skipped"; data: MotionPayload }
     | { event: "enrollment.finished"; data: MotionPayload }
     | { event: "step.executed"; data: MotionPayload }
     | { event: "step.failed"; data: MotionPayload }
+    | { event: "motion.custom_event"; data: MotionPayload }
+    /** @deprecated Renamed `motion.custom_event`; delivered under this name until 2027-01-19. */
     | { event: "motion.signal"; data: MotionPayload }
   );
 
