@@ -3,7 +3,7 @@
 // body on the wire. The comma-list rows also cover the empty-array fold on
 // every list filter the API reads as one comma list.
 import { describe, expect, it } from "vitest";
-import { Curviate, ERROR_CODES, isCurviateError } from "../../src/index.js";
+import { Curviate, CurviateError, ERROR_CODES, isCurviateError } from "../../src/index.js";
 
 const BASE = "https://app.curviate.test";
 
@@ -218,5 +218,39 @@ describe("SEQUENCE_CONFLICT carries the stored Sequence in current", () => {
     expect(isCurviateError(err) && err.code).toBe("SEQUENCE_CONFLICT");
     expect(isCurviateError(err) && err.current).toEqual(expected);
     expect(isCurviateError(err) && err.toJSON().current).toEqual(expected);
+  });
+});
+
+describe("enrollments.retry(id): the guarded Retry, through bulk", () => {
+  const item = (outcome: "ok" | "error", error: { code: string; message: string } | null = null) =>
+    JSON.stringify({ object: "enrollment_bulk_result", action: "retry", matched: 1, results: [{ enrollment_id: "enr_1", outcome, error, warnings: [] }] });
+
+  it("sends bulk retry for that one id and returns its result when ok", async () => {
+    const { sent, fetchImpl } = recorder(200, item("ok"));
+    const res = await client(fetchImpl).enrollments.retry("enr_1");
+    expect(sent).toEqual([{ method: "POST", path: "/v1/enrollments/bulk", search: "", body: { action: "retry", ids: ["enr_1"] } }]);
+    expect(res).toEqual({ enrollment_id: "enr_1", outcome: "ok", error: null, warnings: [] });
+  });
+
+  it.each([
+    ["NOTHING_TO_RETRY", "Nothing to retry: the Step's latest outcome is executed.", false],
+    ["STEP_IN_FLIGHT", "A Step is being sent right now; retry in a minute.", true],
+    ["ENROLLMENT_NOT_ACTIVE", "Enrollment is finished.", false],
+    ["RESOURCE_NOT_FOUND", "Enrollment not found.", false],
+  ] as const)("a per-item %s is thrown as that typed CurviateError, never resolved", async (code, message, retryable) => {
+    const { fetchImpl } = recorder(200, item("error", { code, message }));
+    const err = await client(fetchImpl).enrollments.retry("enr_1").catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(CurviateError);
+    expect(err).toMatchObject({ code, message, httpStatus: undefined, retryLikelyToSucceed: retryable });
+  });
+
+  it("an unknown per-item code is INTERNAL, its message kept", async () => {
+    const { fetchImpl } = recorder(200, item("error", { code: "NOT_A_CODE", message: "x" }));
+    await expect(client(fetchImpl).enrollments.retry("enr_1")).rejects.toMatchObject({ code: "INTERNAL", message: "x" });
+  });
+
+  it("a response without that Enrollment's result throws INTERNAL", async () => {
+    const { fetchImpl } = recorder(200, JSON.stringify({ object: "enrollment_bulk_result", action: "retry", matched: 0, results: [] }));
+    await expect(client(fetchImpl).enrollments.retry("enr_1")).rejects.toMatchObject({ code: "INTERNAL" });
   });
 });
