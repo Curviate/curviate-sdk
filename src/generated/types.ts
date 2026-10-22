@@ -39272,6 +39272,8 @@ export interface operations {
                             provider_id: string | null;
                             /** @description LinkedIn's member id, when observed. */
                             member_id: string | null;
+                            /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. The link is signed and expires: show initials when it fails to load. */
+                            profile_picture_url: string | null;
                             /** @description Full name. */
                             full_name: string | null;
                             /** @description First name. */
@@ -39444,6 +39446,8 @@ export interface operations {
                         provider_id: string | null;
                         /** @description LinkedIn's member id, when observed. */
                         member_id: string | null;
+                        /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. The link is signed and expires: show initials when it fails to load. */
+                        profile_picture_url: string | null;
                         /** @description Full name. */
                         full_name: string | null;
                         /** @description First name. */
@@ -39521,6 +39525,8 @@ export interface operations {
                         provider_id: string | null;
                         /** @description LinkedIn's member id, when observed. */
                         member_id: string | null;
+                        /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. The link is signed and expires: show initials when it fails to load. */
+                        profile_picture_url: string | null;
                         /** @description Full name. */
                         full_name: string | null;
                         /** @description First name. */
@@ -39702,6 +39708,8 @@ export interface operations {
                         provider_id: string | null;
                         /** @description LinkedIn's member id, when observed. */
                         member_id: string | null;
+                        /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. The link is signed and expires: show initials when it fails to load. */
+                        profile_picture_url: string | null;
                         /** @description Full name. */
                         full_name: string | null;
                         /** @description First name. */
@@ -40734,6 +40742,8 @@ export interface operations {
                         provider_id: string | null;
                         /** @description LinkedIn's member id, when observed. */
                         member_id: string | null;
+                        /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. The link is signed and expires: show initials when it fails to load. */
+                        profile_picture_url: string | null;
                         /** @description Full name. */
                         full_name: string | null;
                         /** @description First name. */
@@ -40942,6 +40952,8 @@ export interface operations {
                         provider_id: string | null;
                         /** @description LinkedIn's member id, when observed. */
                         member_id: string | null;
+                        /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. The link is signed and expires: show initials when it fails to load. */
+                        profile_picture_url: string | null;
                         /** @description Full name. */
                         full_name: string | null;
                         /** @description First name. */
