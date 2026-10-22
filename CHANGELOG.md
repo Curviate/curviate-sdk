@@ -10,8 +10,9 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 ## [0.44.0] - Unreleased
 
 Dashboard v2 API. Fixture and types regenerated from a **local** server at
-`1b972f61c34611cdb85ed866ecf2ac87db044f11` (197 paths; the staging deploy was
-unavailable), and the Sequence corpus re-vendored from the same commit.
+`c99bc1f5f3f154e9dd16ae89e8eaa99162a51208` (staging `61b558850` plus the
+corpus change; 197 paths; the staging deploy was unavailable), and the
+Sequence corpus re-vendored from that commit.
 Regenerate from the deployed API and confirm an empty diff before publishing.
 
 ### Added

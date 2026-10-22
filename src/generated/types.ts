@@ -3877,7 +3877,7 @@ export interface paths {
         put?: never;
         /**
          * Resume an enrollment
-         * @description With at: continues an active, paused or finished Enrollment at that Step (an out-of-office reply; Retry is resume at the failed Step) and arms the reply rule again. Without at: lifts your own pause, with the time its wait had left. It stays paused while its account or Motion is. Needs Automate.
+         * @description With at: re-enters the named Step of an active, paused or finished Enrollment (an out-of-office reply), arming the reply rule; it may send that Step again. To retry a failed Step, use the bulk retry action. Without at: lifts your own pause. Needs Automate.
          */
         post: operations["postV1EnrollmentsIdResume"];
         delete?: never;
@@ -44527,7 +44527,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description The Step id to continue at; it must exist in the Sequence version the Enrollment runs on. Retry a failed Step by naming it. Leave it out only to lift your own pause: the Enrollment continues where it was, with the time its wait had left. */
+                    /** @description The Step id to re-enter; it must exist in the Sequence version the Enrollment runs on. A jump: it may send that Step again, even one that already sent. To retry a failed Step, use the retry action instead. Leave it out only to lift your own pause: the Enrollment continues where it was, with the time its wait had left. */
                     at?: string;
                 };
             };
@@ -44643,7 +44643,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ENROLLMENT_NOT_ACTIVE: a pending or skipped Enrollment, one whose Contact is gone, or one that finished with account_removed, account_unavailable, contact_deleted or contact_merged. MOTION_STATUS_CONFLICT: the Motion is archived, or its schedule.end_at has passed. */
+            /** @description ENROLLMENT_NOT_ACTIVE: a pending or skipped Enrollment, one whose Contact is gone, or one that finished with account_removed, account_unavailable, contact_deleted or contact_merged. MOTION_STATUS_CONFLICT: the Motion is archived, or its schedule.end_at has passed. STEP_IN_FLIGHT: a Step is being sent right now; try again in a minute. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -45189,7 +45189,7 @@ export interface operations {
             content: {
                 "application/json": {
                     /**
-                     * @description What to do to each Enrollment, as its single call would: pause, resume, stop, retry (resume at its latest failed Step), event or reassign.
+                     * @description What to do to each Enrollment, as its single call would: pause, resume, stop, retry (re-runs its latest failed Step, only while that is the Step's latest outcome), event or reassign.
                      * @enum {string}
                      */
                     action: "pause" | "resume" | "stop" | "retry" | "event" | "reassign";
@@ -45290,7 +45290,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: resume, retry, event and reassign need a Tier with Motions; pause and stop always work. A refusal of one Enrollment (your role, its account's team access) is that Enrollment's result, never a 403 of the call. */
+            /** @description TIER_REQUIRED: resume, retry, event and reassign need a Tier with Motions; pause and stop always work. A refusal of one Enrollment (your role, its account's team access) is that Enrollment's result, never a 403 of the call. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
