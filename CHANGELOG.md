@@ -7,16 +7,17 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
-## [0.44.0] - Unreleased
+## [0.44.0] - 2026-10-22
 
-Dashboard v2 API. Fixture and types regenerated from a **local** server at
-`c99bc1f5f3f154e9dd16ae89e8eaa99162a51208` (staging `61b558850` plus the
-corpus change; 197 paths; the staging deploy was unavailable), and the
-Sequence corpus re-vendored from that commit.
-Regenerate from the deployed API and confirm an empty diff before publishing.
+Dashboard v2 API. Fixture and types regenerated from deployed staging (server
+`15b704443878c7b589e40c7955a202b5131a20f7`, 197 paths), and the Sequence
+corpus re-vendored from the same server.
 
 ### Added
 
+- **Contact `profile_picture_url`:** read-only, `string | null`. The person's
+  LinkedIn photo from profile data your team already holds; null when none is
+  held. The link is signed and expires.
 - **Enrollments:** `enrollments.pause`, `enrollments.events` (send a custom
   event to an `until event.<name>`), `enrollments.reassign` (move to another
   sending account; `warnings` names Steps that will be skipped) and
