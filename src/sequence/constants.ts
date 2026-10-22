@@ -11,10 +11,10 @@ export const END = "end";
 const H = 60;
 const D = 24 * H;
 export const DURATION_BOUNDS = {
-  wait: { min: 1, max: 365 * D, label: "1m and 365d" },
-  timeout: { min: 1 * H, max: 180 * D, label: "1h and 180d" },
-  withdraw_after: { min: 14 * D, max: 180 * D, label: "14d and 180d" },
-  newer_than: { min: 1 * H, max: 365 * D, label: "1h and 365d" },
+  wait: { min: 1, max: 365 * D, label: "1m and 365d", example: "1d" },
+  timeout: { min: 1 * H, max: 180 * D, label: "1h and 180d", example: "21d" },
+  withdraw_after: { min: 14 * D, max: 180 * D, label: "14d and 180d", example: "21d" },
+  newer_than: { min: 1 * H, max: 365 * D, label: "1h and 365d", example: "30d" },
 } as const;
 
 /** R22 text limits, characters, variables not counted. */
@@ -39,5 +39,17 @@ export const MAX_QUOTED_TOKEN_CHARS = 64;
 export const ACCOUNT_FIELDS = ["first_name", "last_name", "full_name"] as const;
 /** W7: the Contact name fields. */
 export const NAME_FIELDS = ["full_name", "first_name", "last_name"] as const;
-/** `{{motion.<key>}}` key shape. */
+/** `{{motion.<key>}}` key shape (deprecated: accepted with W13 until {@link DEPRECATED_ACCEPTED_UNTIL}). */
 export const MOTION_KEY_PATTERN = "^[a-z][a-z0-9_]{0,39}$";
+
+/**
+ * A/B only: exactly 2 variants. The schema's `maxItems` is the deprecation
+ * window's bound (3 up to it are accepted with W13), not this.
+ */
+export const MAX_VARIANTS = 2;
+/** An old form (3+ variants, `until signal.<name>`, `{{motion.<key>}}`) is accepted with W13 until this day. */
+export const DEPRECATED_ACCEPTED_UNTIL = "2027-01-19";
+/** A short variable, `{{<key>}}` (no dot): a standard field, `my_<name>`, or a custom field. */
+export const SHORT_VARIABLE_PATTERN = "^[a-z][a-z0-9_]{0,63}$";
+/** The sending account's own name, short form (`my_` is reserved for these). */
+export const MY_FIELDS = ["my_first_name", "my_last_name", "my_full_name"] as const;

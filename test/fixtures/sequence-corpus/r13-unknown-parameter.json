@@ -21,7 +21,12 @@
   "errors": [
     {
       "path": "m.with.foo",
-      "rule": "unknown parameter; message.send takes text, fallback"
+      "rule": "unknown parameter; message.send takes text, fallback",
+      "code": "R13",
+      "message": "unknown parameter; message.send takes text, fallback",
+      "pointer": "/steps/0/with/foo",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13"
     }
   ],
   "warnings": []

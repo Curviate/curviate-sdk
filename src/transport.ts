@@ -20,6 +20,7 @@ import {
   type SafetyReason,
   type ConnectionLocation,
   type CurviateErrorDetail,
+  type SequenceConflictCurrent,
 } from "./errors.js";
 
 /** HTTP methods the transport issues. */
@@ -80,6 +81,8 @@ interface WireErrorEnvelope {
   connection_location?: unknown;
   /** `SEQUENCE_INVALID`, `MOTION_NOT_STARTABLE`: every failure as `{path, rule}`. */
   errors?: unknown;
+  /** `SEQUENCE_CONFLICT`: the stored Sequence. */
+  current?: unknown;
   /** `TIER_REQUIRED`: the feature, the lowest Tier with it, the team's Tier, an Owner's upgrade page. */
   feature?: unknown;
   required_tier?: unknown;
@@ -87,16 +90,28 @@ interface WireErrorEnvelope {
   upgrade_url?: unknown;
 }
 
+/** The compiler-style keys a wire `errors[]` entry may add to `{path, rule}`. */
+const DETAIL_KEYS = ["code", "message", "pointer", "hint", "docs_url"] as const;
+
 /**
- * Wire `errors[]` as `{path, rule}` entries (document paths, not request
- * paths): not an array gives undefined, an entry without string `path` and
- * `rule` is dropped, any other key (`suggestion`) is dropped.
+ * Wire `errors[]` as {@link CurviateErrorDetail} entries (document paths, not
+ * request paths): not an array gives undefined, an entry without string `path`
+ * and `rule` is dropped, a compiler-style key (`code`, `message`, `pointer`,
+ * `hint`, `docs_url`) is kept when it is a string, any other key
+ * (`suggestion`) is dropped.
  */
 function toErrorDetails(errors: unknown): CurviateErrorDetail[] | undefined {
   if (!Array.isArray(errors)) return undefined;
-  return errors.flatMap((e: { path?: unknown; rule?: unknown } | null) => {
-    const { path, rule } = typeof e === "object" && e !== null ? e : {};
-    return typeof path === "string" && typeof rule === "string" ? [{ path, rule }] : [];
+  return errors.flatMap((e: Record<string, unknown> | null) => {
+    const entry = typeof e === "object" && e !== null ? e : {};
+    const { path, rule } = entry;
+    if (typeof path !== "string" || typeof rule !== "string") return [];
+    const detail: CurviateErrorDetail = { path, rule };
+    for (const k of DETAIL_KEYS) {
+      const v = entry[k];
+      if (typeof v === "string") detail[k] = v;
+    }
+    return [detail];
   });
 }
 
@@ -227,6 +242,9 @@ async function errorFromResponse(res: Response): Promise<{ err: CurviateError; r
       ? { connectionLocation: env.connection_location as ConnectionLocation }
       : {}),
     ...(Array.isArray(env?.errors) ? { errors: toErrorDetails(env.errors) } : {}),
+    ...(env?.code === "SEQUENCE_CONFLICT" && env.current !== null && typeof env.current === "object" && !Array.isArray(env.current)
+      ? { current: env.current as SequenceConflictCurrent }
+      : {}),
     // `TIER_REQUIRED` details. `required_tier` / `current_tier` are null-BEARING
     // (no Tier has it / the team has none), so null survives; a non-string
     // value (neither a name nor null) is dropped rather than mistyped.

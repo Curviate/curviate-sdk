@@ -1999,7 +1999,7 @@ export interface paths {
         };
         /**
          * Retrieve a Recruiter-enriched profile.
-         * @description Get a LinkedIn profile with Recruiter enrichment (recruiting_profile: notes, tags, events). The {user_id} is 'me', the target profile's public identifier, or a member ID. Request specific profile sections via with_sections (repeatable). Requires a Recruiter seat.
+         * @description Get a LinkedIn profile with Recruiter enrichment (recruiting_profile: notes, tags, events). The {user_id} is 'me', the target profile's public identifier, or a member ID. Request specific profile sections via with_sections. Requires a Recruiter seat.
          */
         get: operations["getV1AccountIdRecruiterProfilesUserId"];
         put?: never;
@@ -2227,7 +2227,7 @@ export interface paths {
         };
         /**
          * List Recruiter job postings
-         * @description List Recruiter job postings. Filter by state (default OPEN), sort, location, job_poster, contract, and workplace_type (all repeatable). Pagination is driven by the limit (1-100) and cursor query params. Requires a Recruiter seat.
+         * @description List Recruiter job postings. Filter by state (default OPEN), sort, location, job_poster, contract, and workplace_type (each takes several values). Pagination is driven by the limit (1-100) and cursor query params. Requires a Recruiter seat.
          */
         get: operations["getV1AccountIdRecruiterJobs"];
         put?: never;
@@ -3003,7 +3003,7 @@ export interface paths {
         };
         /**
          * List webhook event types
-         * @description Returns the complete canonical event catalogue (36 events) grouped by source: messaging (7), user (2), account_status (15), post (2), motion (7), plus 3 recruiter/sales_nav events. A local catalogue read: no platform call is made.
+         * @description Returns the complete canonical event catalogue (40 events) grouped by source: messaging (7), user (2), account_status (15), post (2), motion (11), plus 3 recruiter/sales_nav events. A local catalogue read: no platform call is made.
          */
         get: operations["getV1WebhooksEvents"];
         put?: never;
@@ -3846,6 +3846,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/enrollments/{id}/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pause an enrollment
+         * @description Holds one pending, active or paused Enrollment until you resume it (waiting.kind paused_by_user), whatever else returns. Its waits freeze: on resume each continues with the time it had left. Replies and other events are still recorded; with stop_on_engagement on, a reply still ends it.
+         */
+        post: operations["postV1EnrollmentsIdPause"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/enrollments/{id}/resume": {
         parameters: {
             query?: never;
@@ -3856,10 +3876,30 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Resume an enrollment at a step
-         * @description Continues an active, paused or finished Enrollment at the Step you name, e.g. after an out-of-office reply. The reply rule is armed again. It stays paused while its account or its Motion is paused, then continues from that Step. Resuming in a completed Motion reactivates the Motion. Needs Automate.
+         * Resume an enrollment
+         * @description With at: re-enters the named Step of an active, paused or finished Enrollment (an out-of-office reply), arming the reply rule; it may send that Step again. To retry a failed Step, use the bulk retry action. Without at: lifts your own pause. Needs Automate.
          */
         post: operations["postV1EnrollmentsIdResume"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/enrollments/{id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send a custom event to an enrollment
+         * @description Sends a custom event to an active or paused Enrollment whose Sequence waits for it (`until event.<name>`), e.g. after you wrote the researched text to the Contact's extra fields. Input only: it fires no webhook. Needs Automate.
+         */
+        post: operations["postV1EnrollmentsIdEvents"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3876,10 +3916,50 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Send a signal to an enrollment
-         * @description Records a signal for an active or paused Enrollment whose Sequence has a Step waiting for it (`until signal.<name>`). Typical use: write the researched text to the Contact's extra fields, then signal. A name no Step waits for is refused, with the awaited names in the message. Needs Automate.
+         * Send a signal to an enrollment (deprecated)
+         * @description Deprecated, accepted until 2027-01-19: use POST /v1/enrollments/{id}/events, which this answers identically, plus a Deprecation header and a W13 warning. Needs Automate.
          */
         post: operations["postV1EnrollmentsIdSignal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/enrollments/{id}/reassign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Move an enrollment to another account
+         * @description Moves an Enrollment to another sending account of its Motion and restarts it there at the first Step of its Sequence version (variants kept). Refused, nothing changed, once its account contacted the person beyond a profile view. warnings names a Step that will be skipped. Needs Automate.
+         */
+        post: operations["postV1EnrollmentsIdReassign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/enrollments/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Act on many enrollments
+         * @description Pauses, resumes, stops, retries, sends an event to or reassigns up to 1000 Enrollments, by ids or by a filter (the list filters, motion_id required). Each is decided alone, as its single call, with its own result; not atomic. List with the same filter to see the matches.
+         */
+        post: operations["postV1EnrollmentsBulk"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4097,13 +4177,36 @@ export interface components {
             merged_into?: string;
             /** @description Present alongside row: whole seconds until that row is usable again. This response carries no Retry-After header and no delay retry_hint, deliberately: a paused row can be paused for an hour, and a client that sleeps that inside the call hangs. Do not retry this row before the wait elapses; switch to other work instead. Seconds, not milliseconds. */
             retry_after?: number;
-            /** @description Present on SEQUENCE_INVALID: every failure of the refused Sequence document, not only the first (the first 100; the message counts them all), in step order, so one fix round covers them all. Also on MOTION_NOT_STARTABLE: every gap that keeps the Motion from starting. path is relative to the document (for example opener.variants.opener_named.text or invite.with.withdraw_after); rule says what to change. The message repeats the first entry. */
+            /** @description Present on SEQUENCE_INVALID: every failure of the refused Sequence document, not only the first (the first 100; the message counts them all), in step order, so one fix round covers them all, each compiler-style with code, message, pointer, hint and docs_url. Also on MOTION_NOT_STARTABLE: every gap that keeps the Motion from starting, as path and rule only. path is relative to the document (for example opener.variants.opener_named.text or invite.with.withdraw_after); rule says what to change. The message repeats the first entry. */
             errors?: {
                 /** @description Where in the Sequence document: step id, then field. */
                 path: string;
                 /** @description The broken rule, phrased as the fix. */
                 rule: string;
+                /** @description On SEQUENCE_INVALID: the rule id, R1 to R24. */
+                code?: string;
+                /** @description On SEQUENCE_INVALID: equal to rule. */
+                message?: string;
+                /** @description On SEQUENCE_INVALID: an RFC 6901 JSON Pointer into the document you sent (for example /steps/5/with/withdraw_after), so a tool finds the line without parsing path. A missing key points at the object that lacks it. */
+                pointer?: string;
+                /** @description On SEQUENCE_INVALID: one sentence saying what to do. */
+                hint?: string;
+                /** @description On SEQUENCE_INVALID: the rule's entry on the Sequence rules page. */
+                docs_url?: string;
             }[];
+            /** @description Present on SEQUENCE_CONFLICT: the Motion's stored Sequence your PATCH was refused against, so you can merge or overwrite without a second read. To replace it with yours, send the PATCH again with if_sequence_revision set to current.sequence_revision. */
+            current?: {
+                /** @description The stored revision. */
+                sequence_revision: number;
+                /** @description The stored Sequence version. */
+                sequence_version: number;
+                /** @description The stored Sequence document, or null. */
+                sequence: unknown;
+                /** @description Who saved that revision. */
+                sequence_updated_by_user_id: string | null;
+                /** @description ISO 8601: when the Motion last changed. */
+                updated_at: string;
+            };
             /** @description Present when a structured search filter value matched several filter options and one has to be picked (422 FILTER_CANDIDATES_REQUIRED). One entry per offending value, so a single retry can fix them all. A value that matched no option at all is not listed here and is not an error: it is sent on as an id and reported in notices[] on the 200. */
             unresolved?: {
                 /** @description The request body field the value came from. Dotted for nested filters, for example author.company. */
@@ -4285,7 +4388,7 @@ export interface components {
         };
         /**
          * Sequence document v1
-         * @description A Motion's Sequence: a flat steps array run from the first step, ending explicitly in "end". Served documents use this key order: $schema, on_reply, steps; in a step id, the kind key, timeout, variants, with, then, else, next, note; in with post, newer_than, reaction, subject, text, note, note_fallback, fallback, withdraw_after; in a variant id, subject, text. A text holds at most 50 variables.
+         * @description A Motion's Sequence: a flat steps array run from the first step, ending explicitly in "end". Served documents use this key order: $schema, on_reply, steps; in a step id, the kind key, timeout, variants, with, event, then, else, next, note; in with post, newer_than, reaction, subject, text, note, note_fallback, fallback, withdraw_after; in a variant id, subject, text. A text holds at most 50 variables. Variables: `{{first_name}}` (any standard Contact field), `{{my_first_name}}`, `{{my_last_name}}`, `{{my_full_name}}` (the sending Account), any other `{{<key>}}` is the custom field `contact.extra.<key>`; the long forms `{{contact.<field>}}`, `{{contact.extra.<key>}}` and `{{account.<name>}}` stay valid. Delays are about their duration: every wait and until timeout gets a small random spread that only ever adds time.
          */
         SequenceDocument: {
             /** @constant */
@@ -4298,6 +4401,8 @@ export interface components {
                 /** @constant */
                 do: "profile.view";
                 with?: Record<string, never>;
+                /** @description Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent. */
+                event?: string;
                 /** @description A step id, or "end". */
                 next?: string;
                 /** @description Taken when the action cannot run or fails. Absent: same as success. */
@@ -4310,6 +4415,8 @@ export interface components {
                 /** @constant */
                 do: "profile.follow";
                 with?: Record<string, never>;
+                /** @description Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent. */
+                event?: string;
                 /** @description A step id, or "end". */
                 next?: string;
                 /** @description Taken when the action cannot run or fails. Absent: same as success. */
@@ -4322,6 +4429,8 @@ export interface components {
                 /** @constant */
                 do: "profile.unfollow";
                 with?: Record<string, never>;
+                /** @description Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent. */
+                event?: string;
                 /** @description A step id, or "end". */
                 next?: string;
                 /** @description Taken when the action cannot run or fails. Absent: same as success. */
@@ -4341,12 +4450,14 @@ export interface components {
                     /** @description Withdraw the invitation if still pending after this long (14d to 180d). Absent: never. */
                     withdraw_after?: string;
                 };
-                /** @description A/B variants, split evenly and sticky per Enrollment. Exclusive with the text in with. */
+                /** @description A/B variants: exactly 2, split evenly and sticky per Enrollment. Exclusive with the text in with. More than 2 (up to 5) is deprecated: accepted with warning W13 until 2027-01-19. */
                 variants?: {
                     /** @description Step id, unique in the document. "end" is reserved. */
                     id: string;
                     text: string;
                 }[];
+                /** @description Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent. */
+                event?: string;
                 /** @description A step id, or "end". */
                 next?: string;
                 /** @description Taken when the action cannot run or fails. Absent: same as success. */
@@ -4359,6 +4470,8 @@ export interface components {
                 /** @constant */
                 do: "invite.withdraw";
                 with?: Record<string, never>;
+                /** @description Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent. */
+                event?: string;
                 /** @description A step id, or "end". */
                 next?: string;
                 /** @description Taken when the action cannot run or fails. Absent: same as success. */
@@ -4376,12 +4489,14 @@ export interface components {
                     /** @description Variable-free text used when a variable is missing. */
                     fallback?: string;
                 };
-                /** @description A/B variants, split evenly and sticky per Enrollment. Exclusive with the text in with. */
+                /** @description A/B variants: exactly 2, split evenly and sticky per Enrollment. Exclusive with the text in with. More than 2 (up to 5) is deprecated: accepted with warning W13 until 2027-01-19. */
                 variants?: {
                     /** @description Step id, unique in the document. "end" is reserved. */
                     id: string;
                     text: string;
                 }[];
+                /** @description Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent. */
+                event?: string;
                 /** @description A step id, or "end". */
                 next?: string;
                 /** @description Taken when the action cannot run or fails. Absent: same as success. */
@@ -4404,13 +4519,15 @@ export interface components {
                         text: string;
                     };
                 };
-                /** @description A/B variants, split evenly and sticky per Enrollment. Exclusive with the text in with. */
+                /** @description A/B variants: exactly 2, split evenly and sticky per Enrollment. Exclusive with the text in with. More than 2 (up to 5) is deprecated: accepted with warning W13 until 2027-01-19. */
                 variants?: {
                     /** @description Step id, unique in the document. "end" is reserved. */
                     id: string;
                     subject: string;
                     text: string;
                 }[];
+                /** @description Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent. */
+                event?: string;
                 /** @description A step id, or "end". */
                 next?: string;
                 /** @description Taken when the action cannot run or fails. Absent: same as success. */
@@ -4433,6 +4550,8 @@ export interface components {
                     /** @enum {string} */
                     reaction?: "like" | "celebrate" | "support" | "love" | "insightful" | "funny";
                 };
+                /** @description Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent. */
+                event?: string;
                 /** @description A step id, or "end". */
                 next?: string;
                 /** @description Taken when the action cannot run or fails. Absent: same as success. */
@@ -4457,12 +4576,14 @@ export interface components {
                     /** @description Variable-free comment, or "skip" to skip the step when a variable is missing. */
                     fallback?: string;
                 };
-                /** @description A/B variants, split evenly and sticky per Enrollment. Exclusive with the text in with. */
+                /** @description A/B variants: exactly 2, split evenly and sticky per Enrollment. Exclusive with the text in with. More than 2 (up to 5) is deprecated: accepted with warning W13 until 2027-01-19. */
                 variants?: {
                     /** @description Step id, unique in the document. "end" is reserved. */
                     id: string;
                     text: string;
                 }[];
+                /** @description Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent. */
+                event?: string;
                 /** @description A step id, or "end". */
                 next?: string;
                 /** @description Taken when the action cannot run or fails. Absent: same as success. */
@@ -4475,6 +4596,8 @@ export interface components {
                 /** @constant */
                 do: "skill.endorse";
                 with?: Record<string, never>;
+                /** @description Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent. */
+                event?: string;
                 /** @description A step id, or "end". */
                 next?: string;
                 /** @description Taken when the action cannot run or fails. Absent: same as success. */
@@ -4484,7 +4607,7 @@ export interface components {
             } | {
                 /** @description Step id, unique in the document. "end" is reserved. */
                 id: string;
-                /** @description Calendar time to wait (1m to 365d). */
+                /** @description Calendar time to wait, about this long (1m to 365d; a small random spread is added, never subtracted). */
                 wait: string;
                 /** @description A step id, or "end". */
                 next?: string;
@@ -4493,9 +4616,9 @@ export interface components {
             } | {
                 /** @description Step id, unique in the document. "end" is reserved. */
                 id: string;
-                /** @description `invite.accepted`, `message.replied`, `message.read`, or `signal.<name>`. */
+                /** @description `invite.accepted`, `message.replied`, `message.read`, or `event.<name>` (a custom event an agent sends). `signal.<name>` is the deprecated spelling of `event.<name>`: accepted with warning W13 until 2027-01-19. */
                 until: ("invite.accepted" | "message.replied" | "message.read") | string;
-                /** @description Give up waiting after this long (1h to 180d). */
+                /** @description Give up waiting after about this long (1h to 180d; a small random spread is added, never subtracted). */
                 timeout: string;
                 /** @description A step id, or "end". */
                 then: string;
@@ -4621,6 +4744,9 @@ export interface components {
                 } | {
                     "account.premium": boolean;
                 } | {
+                    /** @description if only: the Enrollment's last message.send or inmail.send was seen (a read receipt, or a reply after it). False before any message. */
+                    "message.seen": boolean;
+                } | {
                     not: {
                         "contact.connected": boolean;
                     } | {
@@ -4734,6 +4860,9 @@ export interface components {
                         };
                     } | {
                         "account.premium": boolean;
+                    } | {
+                        /** @description if only: the Enrollment's last message.send or inmail.send was seen (a read receipt, or a reply after it). False before any message. */
+                        "message.seen": boolean;
                     };
                 };
                 /** @description A step id, or "end". */
@@ -4745,7 +4874,7 @@ export interface components {
             } | {
                 /** @description Step id, unique in the document. "end" is reserved. */
                 id: string;
-                /** @description Signal name for the motion.signal webhook. */
+                /** @description Legacy: a custom event name. New documents put event on the step that matters. */
                 emit: string;
                 /** @description A step id, or "end". */
                 next?: string;
@@ -4756,6 +4885,8 @@ export interface components {
                 id: string;
                 /** @description Tag added to the Contact. */
                 tag: string;
+                /** @description Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent. */
+                event?: string;
                 /** @description A step id, or "end". */
                 next?: string;
                 /** @description Annotation shown in the builder graph. Never sent. */
@@ -4781,7 +4912,7 @@ export interface operations {
     getV1AccountIdUsersUserId: {
         parameters: {
             query?: {
-                /** @description Profile sections to fetch, repeatable: linkedin_experience, linkedin_skills, and others (each has a _preview variant). Omit for base fields only. */
+                /** @description Sections to fetch, e.g. linkedin_experience, linkedin_skills (plus _preview). Omit for base fields. Repeat the key, comma-separate or mix; empties ignored. */
                 linkedin_sections?: string[];
                 /** @description How willing this read is to reach LinkedIn: auto (default), live, refill, or cache_only. Details: /reference/getting-started/cache. */
                 mode?: "live" | "auto" | "refill" | "cache_only";
@@ -8622,7 +8753,7 @@ export interface operations {
                 limit?: number;
                 /** @description Opaque pagination cursor from a prior response's cursor. Omit for the first page. */
                 cursor?: string;
-                /** @description Extra fields to resolve, comma-separated in one value (expand=public_identifier). Present on every result as a value or null; repeating the key drops values. */
+                /** @description Extra fields to resolve (expand=public_identifier). Present on every result as a value or null. Repeat the key, comma-separate or mix; empties ignored. */
                 expand?: string;
             };
             header?: never;
@@ -8813,7 +8944,7 @@ export interface operations {
     getV1AccountIdCompaniesIdentifierChatsChatId: {
         parameters: {
             query?: {
-                /** @description Extra fields to resolve, comma-separated in one value (expand=public_identifier). Present on every result as a value or null; repeating the key drops values. */
+                /** @description Extra fields to resolve (expand=public_identifier). Present on every result as a value or null. Repeat the key, comma-separate or mix; empties ignored. */
                 expand?: string;
             };
             header?: never;
@@ -9000,7 +9131,7 @@ export interface operations {
                 limit?: number;
                 /** @description Opaque pagination cursor from a prior response's cursor. Omit for the first page. */
                 cursor?: string;
-                /** @description Extra fields to resolve, comma-separated in one value (expand=public_identifier). Present on every result as a value or null; repeating the key drops values. */
+                /** @description Extra fields to resolve (expand=public_identifier). Present on every result as a value or null. Repeat the key, comma-separate or mix; empties ignored. */
                 expand?: string;
             };
             header?: never;
@@ -9351,7 +9482,7 @@ export interface operations {
     getV1AccountIdCompaniesIdentifierChatsChatIdMessagesMessageId: {
         parameters: {
             query?: {
-                /** @description Extra fields to resolve, comma-separated in one value (expand=public_identifier). Present on every result as a value or null; repeating the key drops values. */
+                /** @description Extra fields to resolve (expand=public_identifier). Present on every result as a value or null. Repeat the key, comma-separate or mix; empties ignored. */
                 expand?: string;
             };
             header?: never;
@@ -9525,7 +9656,7 @@ export interface operations {
                 limit?: number;
                 /** @description Opaque pagination cursor from a prior response's cursor. Omit for the first page. */
                 cursor?: string;
-                /** @description Extra fields to resolve, comma-separated in one value (expand=public_identifier). Present on every result as a value or null; repeating the key drops values. */
+                /** @description Extra fields to resolve (expand=public_identifier). Present on every result as a value or null. Repeat the key, comma-separate or mix; empties ignored. */
                 expand?: string;
             };
             header?: never;
@@ -12121,7 +12252,7 @@ export interface operations {
                 limit?: number;
                 /** @description An opaque cursor for pagination. Pass the `cursor` from the preceding response to fetch the next page. */
                 cursor?: string;
-                /** @description Extra fields to resolve, comma-separated in one value (expand=public_identifier). Present on every result as a value or null; repeating the key drops values. */
+                /** @description Extra fields to resolve (expand=public_identifier). Present on every result as a value or null. Repeat the key, comma-separate or mix; empties ignored. */
                 expand?: string;
             };
             header?: never;
@@ -12544,7 +12675,7 @@ export interface operations {
     getV1AccountIdChatsChatId: {
         parameters: {
             query?: {
-                /** @description Extra fields to resolve, comma-separated in one value (expand=public_identifier). Present on every result as a value or null; repeating the key drops values. */
+                /** @description Extra fields to resolve (expand=public_identifier). Present on every result as a value or null. Repeat the key, comma-separate or mix; empties ignored. */
                 expand?: string;
                 /** @description How willing this read is to reach LinkedIn: auto (default), live, refill, or cache_only. Details: /reference/getting-started/cache. */
                 mode?: "live" | "auto" | "refill" | "cache_only";
@@ -12951,7 +13082,7 @@ export interface operations {
                 limit?: number;
                 /** @description An opaque cursor for pagination. Pass the `cursor` from the preceding response to fetch the next page. */
                 cursor?: string;
-                /** @description Extra fields to resolve, comma-separated in one value (expand=public_identifier). Present on every result as a value or null; repeating the key drops values. */
+                /** @description Extra fields to resolve (expand=public_identifier). Present on every result as a value or null. Repeat the key, comma-separate or mix; empties ignored. */
                 expand?: string;
             };
             header?: never;
@@ -13341,7 +13472,7 @@ export interface operations {
     getV1AccountIdChatsChatIdMessagesMessageId: {
         parameters: {
             query?: {
-                /** @description Extra fields to resolve, comma-separated in one value (expand=public_identifier). Present on every result as a value or null; repeating the key drops values. */
+                /** @description Extra fields to resolve (expand=public_identifier). Present on every result as a value or null. Repeat the key, comma-separate or mix; empties ignored. */
                 expand?: string;
             };
             header?: never;
@@ -14493,7 +14624,7 @@ export interface operations {
                 limit?: number;
                 /** @description An opaque cursor for pagination. Pass the `cursor` from the preceding response to fetch the next page. */
                 cursor?: string;
-                /** @description Extra fields to resolve, comma-separated in one value (expand=public_identifier). Present on every result as a value or null; repeating the key drops values. */
+                /** @description Extra fields to resolve (expand=public_identifier). Present on every result as a value or null. Repeat the key, comma-separate or mix; empties ignored. */
                 expand?: string;
             };
             header?: never;
@@ -17941,7 +18072,7 @@ export interface operations {
     getV1NetworkConnections: {
         parameters: {
             query?: {
-                /** @description Only Connections of these accounts: a comma list of 1 to 50 account ids (acc_...). Omitted: every account you can operate. */
+                /** @description Only these accounts' Connections: 1 to 50 account ids (acc_...). Omitted: all you can operate. Repeat the key, comma-separate or mix; empties ignored. */
                 account_id?: string[];
                 /** @description Case-insensitive text to find in the full name or the headline, 3 to 100 characters. */
                 q?: string;
@@ -18027,7 +18158,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST, naming the field: q shorter than 3 or longer than 100 characters, more than 50 account ids or a malformed one, a malformed cursor, include_removed other than true or false, limit outside 1 to 1000, or a parameter given more than once. */
+            /** @description INVALID_REQUEST, naming the field: q shorter than 3 or longer than 100 characters, more than 50 account ids or a malformed one, a malformed cursor, include_removed other than true or false, limit outside 1 to 1000, or a single-valued parameter given more than once. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -18080,7 +18211,7 @@ export interface operations {
     getV1NetworkSyncStatus: {
         parameters: {
             query?: {
-                /** @description Only these accounts: a comma list of 1 to 50 account ids (acc_...). Omitted: every account you can operate. */
+                /** @description Only these accounts: 1 to 50 account ids (acc_...). Omitted: all you can operate. Repeat the key, comma-separate or mix; empties ignored. */
                 account_id?: string[];
             };
             header?: never;
@@ -18176,7 +18307,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST, naming the field: more than 50 account ids, a malformed one, or account_id given more than once. */
+            /** @description INVALID_REQUEST, naming the field: more than 50 account ids, or a malformed one. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -18576,11 +18707,11 @@ export interface operations {
     getV1UniboxChats: {
         parameters: {
             query?: {
-                /** @description Only chats of these accounts: a comma list of 1 to 50 account ids (acc_...). Omitted: every account you can operate. */
+                /** @description Only chats of these accounts: 1 to 50 account ids (acc_...). Omitted: all you can operate. Repeat the key, comma-separate or mix; empties ignored. */
                 account_ids?: string[];
-                /** @description Only chats linked to any of these Motions: a comma list of Motion ids. */
+                /** @description Only chats linked to any of these Motions (Motion ids). Repeat the key, comma-separate or mix; empties ignored. */
                 motion_ids?: string[];
-                /** @description Only chats whose Contact has any of these Tags (names, case-insensitive): a comma list. */
+                /** @description Only chats whose Contact has any of these Tags (names, case-insensitive). Repeat the key, comma-separate or mix; empties ignored. */
                 tags?: string[];
                 /** @description true: only unread chats. false: only read chats. Omitted: both. */
                 unread?: boolean;
@@ -18896,7 +19027,7 @@ export interface operations {
     getV1UniboxUnreadCount: {
         parameters: {
             query?: {
-                /** @description Only chats of these accounts: a comma list of 1 to 50 account ids (acc_...). Omitted: every account you can operate. */
+                /** @description Only chats of these accounts: 1 to 50 account ids (acc_...). Omitted: all you can operate. Repeat the key, comma-separate or mix; empties ignored. */
                 account_ids?: string[];
             };
             header?: never;
@@ -18925,7 +19056,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST: account_ids is not a comma list of account ids. */
+            /** @description INVALID_REQUEST: account_ids holds something that is not an account id. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -19247,11 +19378,12 @@ export interface operations {
                         status: "pending" | "active" | "paused" | "finished" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch";
-                            step_id: string;
+                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            /** @description The Step it waits at; null before it starts. */
+                            step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
                             until: string | null;
                         } | null;
@@ -19265,6 +19397,10 @@ export interface operations {
                          * @enum {string|null}
                          */
                         skip_reason: "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
+                        finish_message: string | null;
+                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
+                        skip_message: string | null;
                         /** @description More on the skip, for example the index of the where filter that failed. */
                         skip_detail: string | null;
                         /** @description True once the Contact replied. */
@@ -19273,6 +19409,11 @@ export interface operations {
                         variants: {
                             [key: string]: string;
                         };
+                        /**
+                         * @description The Contact's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
+                         * @enum {string|null}
+                         */
+                        relationship_at_enrollment: "connected" | "not_connected" | "invite_pending" | "unknown" | null;
                         /** @description ISO 8601. */
                         created_at: string;
                         /** @description When it started. */
@@ -19780,7 +19921,7 @@ export interface operations {
     getV1AccountIdJobsJobId: {
         parameters: {
             query?: {
-                /** @description Sections to add, e.g. hiring_team,salary. Several: one comma-separated value; a repeated key keeps only the last. Omit for base fields only. */
+                /** @description Sections to add, e.g. hiring_team, salary. Omit for base fields only. Repeat the key, comma-separate or mix; empties ignored. */
                 with_sections?: string[];
             };
             header?: never;
@@ -22995,7 +23136,7 @@ export interface operations {
     getV1Drafts: {
         parameters: {
             query?: {
-                /** @description Comma list of draft, scheduled, failed, published. Default draft,scheduled,failed. published items are publish records, never Drafts. */
+                /** @description draft, scheduled, failed, published (publish records, not Drafts). Default: draft, scheduled, failed. Repeat the key, comma-separate or mix; empties ignored. */
                 status?: ("draft" | "scheduled" | "failed" | "published")[];
                 /** @description Only items on this account (acc_...), or none for Drafts with no account. Omitted: all of yours. */
                 account_id?: string;
@@ -24399,7 +24540,7 @@ export interface operations {
     getV1AccountIdRecruiterProfilesUserId: {
         parameters: {
             query?: {
-                /** @description Recruiter profile sections to fetch, repeatable: linkedin_experience, linkedin_skills, and others (each has a _preview variant). Omit for base fields only. */
+                /** @description Recruiter sections, e.g. linkedin_experience, linkedin_skills (plus _preview). Omit for base fields. Repeat the key, comma-separate or mix; empties ignored. */
                 with_sections?: ("linkedin_*" | "linkedin_experience" | "linkedin_education" | "linkedin_languages" | "linkedin_skills" | "linkedin_certifications" | "linkedin_volunteer_experience" | "linkedin_projects" | "linkedin_recommendations" | "linkedin_interests" | "linkedin_recruiting_activity" | "linkedin_*_preview" | "linkedin_experience_preview" | "linkedin_education_preview" | "linkedin_languages_preview" | "linkedin_skills_preview" | "linkedin_certifications_preview" | "linkedin_volunteer_experience_preview" | "linkedin_projects_preview" | "linkedin_recommendations_preview" | "linkedin_interests_preview" | "linkedin_recruiting_activity_preview")[];
             };
             header?: never;
@@ -25588,7 +25729,7 @@ export interface operations {
     getV1AccountIdRecruiterProjects: {
         parameters: {
             query?: {
-                /** @description Filter by project status (repeatable, flat). One or more of: ACTIVE, CLOSED, DRAFT, REVIEW. */
+                /** @description Filter by project status: ACTIVE, CLOSED, DRAFT, REVIEW. Repeat the key, comma-separate or mix; empties ignored. */
                 status?: ("ACTIVE" | "CLOSED" | "DRAFT" | "REVIEW")[];
                 /** @description Field to sort results by. Defaults to LAST_USED_BY_ME. */
                 sort_by?: "LAST_USED_BY_ME" | "MOST_USED_BY_ME" | "LAST_VIEWED_BY_ME" | "NEWEST_TO_OLDEST" | "OLDEST_TO_NEWEST" | "ALPHABETICAL" | "REVERSE_ALPHABETICAL";
@@ -27624,17 +27765,17 @@ export interface operations {
     getV1AccountIdRecruiterJobs: {
         parameters: {
             query?: {
-                /** @description Filter by posting lifecycle state (repeatable, flat). Defaults to OPEN. One or more of: DRAFT, OPEN, CLOSED, REVIEW, SUSPENDED. */
+                /** @description Filter by posting lifecycle state: DRAFT, OPEN, CLOSED, REVIEW, SUSPENDED. Defaults to OPEN. Repeat the key, comma-separate or mix; empties ignored. */
                 state?: ("DRAFT" | "OPEN" | "CLOSED" | "REVIEW" | "SUSPENDED")[];
                 /** @description Field to sort results by. Defaults to LAST_ACCESS_TIME. */
                 sort_by?: "LAST_ACCESS_TIME" | "CHRONOLOGICAL" | "REVERSE_CHRONOLOGICAL";
-                /** @description Resolved LOCATION parameter ids (repeatable, flat). */
+                /** @description Resolved LOCATION parameter ids. Repeat the key, comma-separate or mix; empties ignored. */
                 location?: string[];
-                /** @description Resolved job-poster (SEAT) parameter ids (repeatable, flat). */
+                /** @description Resolved job-poster (SEAT) parameter ids. Repeat the key, comma-separate or mix; empties ignored. */
                 job_poster?: string[];
-                /** @description Resolved CONTRACT parameter ids (repeatable, flat). */
+                /** @description Resolved CONTRACT parameter ids. Repeat the key, comma-separate or mix; empties ignored. */
                 contract?: string[];
-                /** @description Filter by workplace type (repeatable, flat). One or more of: ON_SITE, REMOTE, HYBRID. */
+                /** @description Filter by workplace type: ON_SITE, REMOTE, HYBRID. Repeat the key, comma-separate or mix; empties ignored. */
                 workplace_type?: ("ON_SITE" | "REMOTE" | "HYBRID")[];
                 /** @description Number of results to return (1-100). Defaults to 10. */
                 limit?: number;
@@ -29703,7 +29844,7 @@ export interface operations {
     getV1AccountIdSalesNavigatorProfilesIdentifier: {
         parameters: {
             query?: {
-                /** @description Sales Navigator sections to fetch, repeatable: linkedin_experience, linkedin_skills, others (each has a _preview variant). Omit for base fields only. */
+                /** @description Sales Nav sections, e.g. linkedin_experience, linkedin_skills (plus _preview). Omit for base fields. Repeat the key, comma-separate or mix; empties ignored. */
                 with_sections?: ("linkedin_*" | "linkedin_experience" | "linkedin_education" | "linkedin_languages" | "linkedin_skills" | "linkedin_certifications" | "linkedin_volunteer_experience" | "linkedin_projects" | "linkedin_recommendations" | "linkedin_interests" | "linkedin_recruiting_activity" | "linkedin_*_preview" | "linkedin_experience_preview" | "linkedin_education_preview" | "linkedin_languages_preview" | "linkedin_skills_preview" | "linkedin_certifications_preview" | "linkedin_volunteer_experience_preview" | "linkedin_projects_preview" | "linkedin_recommendations_preview" | "linkedin_interests_preview" | "linkedin_recruiting_activity_preview")[];
             };
             header?: never;
@@ -35308,8 +35449,8 @@ export interface operations {
                     request_url: string;
                     /** @description Human-readable name for this webhook (1-100 chars) */
                     name?: string;
-                    /** @description Per-account targeting. Required and non-empty; each id must be an acc_-prefixed id owned by the tenant. */
-                    account_ids: string[];
+                    /** @description Per-account targeting, each an acc_ id you own and can operate. Omit to receive events for every account you can operate, now and later. */
+                    account_ids?: string[] | null;
                     /**
                      * @description A disabled webhook is created but delivers nothing
                      * @default true
@@ -35339,8 +35480,8 @@ export interface operations {
                     request_url: string;
                     /** @description Human-readable name for this webhook (1-100 chars) */
                     name?: string;
-                    /** @description Per-account targeting. Required and non-empty; each id must be an acc_-prefixed id owned by the tenant. */
-                    account_ids: string[];
+                    /** @description Per-account targeting, each an acc_ id you own and can operate. Omit to receive events for every account you can operate, now and later. */
+                    account_ids?: string[] | null;
                     /**
                      * @description A disabled webhook is created but delivers nothing
                      * @default true
@@ -35370,8 +35511,8 @@ export interface operations {
                     request_url: string;
                     /** @description Human-readable name for this webhook (1-100 chars) */
                     name?: string;
-                    /** @description Per-account targeting. Omit to receive events for every current and future account; each id must be an acc_-prefixed id you own. */
-                    account_ids?: string[];
+                    /** @description Per-account targeting, each an acc_ id you own and can operate. Omit to receive events for every account you can operate, now and later. */
+                    account_ids?: string[] | null;
                     /**
                      * @description A disabled webhook is created but delivers nothing
                      * @default true
@@ -35396,8 +35537,8 @@ export interface operations {
                     request_url: string;
                     /** @description Human-readable name for this webhook (1-100 chars) */
                     name?: string;
-                    /** @description Per-account targeting. Required and non-empty; each id must be an acc_-prefixed id owned by the tenant. */
-                    account_ids: string[];
+                    /** @description Per-account targeting, each an acc_ id you own and can operate. Omit to receive events for every account you can operate, now and later. */
+                    account_ids?: string[] | null;
                     /**
                      * @description A disabled webhook is created but delivers nothing
                      * @default true
@@ -35422,8 +35563,8 @@ export interface operations {
                     request_url: string;
                     /** @description Human-readable name for this webhook (1-100 chars) */
                     name?: string;
-                    /** @description Per-account targeting. Required and non-empty; each id must be an acc_-prefixed id owned by the tenant. */
-                    account_ids: string[];
+                    /** @description Per-account targeting, each an acc_ id you own and can operate. Omit to receive events for every account you can operate, now and later. */
+                    account_ids?: string[] | null;
                     /**
                      * @description A disabled webhook is created but delivers nothing
                      * @default true
@@ -35439,8 +35580,8 @@ export interface operations {
                     }[];
                     /** @description Only deliver events whose data.motion_id is one of these Motions (mot_ ids you own, up to 100). Events that carry no Motion are then not delivered. Default: no filter. */
                     motion_ids?: string[];
-                    /** @description Motion events to subscribe to (default: all but step.executed) */
-                    events?: ("motion.status_changed" | "enrollment.started" | "enrollment.skipped" | "enrollment.finished" | "step.executed" | "step.failed" | "motion.signal")[];
+                    /** @description Motion events to subscribe to (default: all but the opt-ins step.executed, enrollment.seen and enrollment.reassigned). motion.signal is the old name of motion.custom_event, accepted until 2027-01-19. */
+                    events?: ("motion.status_changed" | "enrollment.started" | "enrollment.accepted" | "enrollment.replied" | "enrollment.seen" | "enrollment.reassigned" | "enrollment.skipped" | "enrollment.finished" | "step.executed" | "step.failed" | "motion.custom_event" | "motion.signal")[];
                 };
             };
         };
@@ -35470,7 +35611,7 @@ export interface operations {
                         request_url?: string;
                         /** @description Human-readable label. */
                         name?: string | null;
-                        /** @description Accounts targeted by this webhook (acc_ ids you own), or null when an account_status webhook covers every current and future account. */
+                        /** @description Accounts targeted by this webhook (acc_ ids you own), or null when it covers every account its creator can operate, now and later (any source). */
                         account_ids?: string[] | null;
                         /** @description When set, only events whose data.motion_id is one of these Motions (mot_ ids) are delivered. null: no Motion filter. */
                         motion_ids?: string[] | null;
@@ -35750,7 +35891,7 @@ export interface operations {
                         request_url?: string;
                         /** @description Human-readable label. */
                         name?: string | null;
-                        /** @description Accounts targeted by this webhook (acc_ ids you own), or null when an account_status webhook covers every current and future account. */
+                        /** @description Accounts targeted by this webhook (acc_ ids you own), or null when it covers every account its creator can operate, now and later (any source). */
                         account_ids?: string[] | null;
                         /** @description When set, only events whose data.motion_id is one of these Motions (mot_ ids) are delivered. null: no Motion filter. */
                         motion_ids?: string[] | null;
@@ -35917,7 +36058,7 @@ export interface operations {
                     }[];
                     /** @description Replace the field-remapping keys for the delivery payload (whole-array). */
                     data?: string[];
-                    /** @description Replace the targeted accounts (whole-array, each an acc_ id you own), or null to cover every current and future account (account_status webhooks only). */
+                    /** @description Replace the targeted accounts (whole-array, each an acc_ id you own), or null to cover every account you can operate, now and later. */
                     account_ids?: string[] | null;
                     /** @description Only deliver events whose data.motion_id is one of these Motions (mot_ ids you own, up to 100). Events that carry no Motion are then not delivered. Replaces the whole list; null removes the filter. */
                     motion_ids?: string[] | null;
@@ -35950,7 +36091,7 @@ export interface operations {
                         request_url?: string;
                         /** @description Human-readable label. */
                         name?: string | null;
-                        /** @description Accounts targeted by this webhook (acc_ ids you own), or null when an account_status webhook covers every current and future account. */
+                        /** @description Accounts targeted by this webhook (acc_ ids you own), or null when it covers every account its creator can operate, now and later (any source). */
                         account_ids?: string[] | null;
                         /** @description When set, only events whose data.motion_id is one of these Motions (mot_ ids) are delivered. null: no Motion filter. */
                         motion_ids?: string[] | null;
@@ -39073,7 +39214,7 @@ export interface operations {
             query?: {
                 /** @description Only Contacts in this Contact list (cl_...). */
                 list_id?: string;
-                /** @description Comma list of Tag names, any casing: Contacts with any of them. */
+                /** @description Tag names, any casing: Contacts with any of them. Repeat the key, comma-separate or mix; empties ignored. */
                 tag?: string;
                 /** @description Only Contacts in this import's report (imp_...), while the import exists. */
                 import_id?: string;
@@ -39089,7 +39230,7 @@ export interface operations {
                 account_id?: string;
                 /** @description Only Contacts with an Enrollment in this Motion (mot_...). */
                 motion_id?: string;
-                /** @description With motion_id: comma list of pending, active, paused, finished, skipped, Contacts whose Enrollment in that Motion has one of them. */
+                /** @description With motion_id: pending, active, paused, finished, skipped. Contacts whose Enrollment there has one. Repeat the key, comma-separate or mix; empties ignored. */
                 enrollment_status?: ("pending" | "active" | "paused" | "finished" | "skipped")[];
                 /** @description By creation time: desc (default) or asc. */
                 order?: "desc" | "asc";
@@ -39131,6 +39272,8 @@ export interface operations {
                             provider_id: string | null;
                             /** @description LinkedIn's member id, when observed. */
                             member_id: string | null;
+                            /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. The link is signed and expires: show initials when it fails to load. */
+                            profile_picture_url: string | null;
                             /** @description Full name. */
                             full_name: string | null;
                             /** @description First name. */
@@ -39303,6 +39446,8 @@ export interface operations {
                         provider_id: string | null;
                         /** @description LinkedIn's member id, when observed. */
                         member_id: string | null;
+                        /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. The link is signed and expires: show initials when it fails to load. */
+                        profile_picture_url: string | null;
                         /** @description Full name. */
                         full_name: string | null;
                         /** @description First name. */
@@ -39380,6 +39525,8 @@ export interface operations {
                         provider_id: string | null;
                         /** @description LinkedIn's member id, when observed. */
                         member_id: string | null;
+                        /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. The link is signed and expires: show initials when it fails to load. */
+                        profile_picture_url: string | null;
                         /** @description Full name. */
                         full_name: string | null;
                         /** @description First name. */
@@ -39506,7 +39653,7 @@ export interface operations {
             query?: {
                 /** @description Only Contacts in this Contact list (cl_...). */
                 list_id?: string;
-                /** @description Comma list of Tag names, any casing: Contacts with any of them. */
+                /** @description Tag names, any casing: Contacts with any of them. Repeat the key, comma-separate or mix; empties ignored. */
                 tag?: string;
                 /** @description Only Contacts in this import's report (imp_...), while the import exists. */
                 import_id?: string;
@@ -39522,11 +39669,11 @@ export interface operations {
                 account_id?: string;
                 /** @description Only Contacts with an Enrollment in this Motion (mot_...). */
                 motion_id?: string;
-                /** @description With motion_id: comma list of pending, active, paused, finished, skipped, Contacts whose Enrollment in that Motion has one of them. */
+                /** @description With motion_id: pending, active, paused, finished, skipped. Contacts whose Enrollment there has one. Repeat the key, comma-separate or mix; empties ignored. */
                 enrollment_status?: ("pending" | "active" | "paused" | "finished" | "skipped")[];
                 /** @description csv, json or ndjson (default). */
                 format?: "csv" | "json" | "ndjson";
-                /** @description Comma list of columns to include, in this order (e.g. linkedin_url,tags,extra.note). Default: all. */
+                /** @description Columns to include, in this order (e.g. linkedin_url, tags, extra.note). Default: all. Repeat the key, comma-separate or mix; empties ignored. */
                 fields?: string;
             };
             header?: never;
@@ -39561,6 +39708,8 @@ export interface operations {
                         provider_id: string | null;
                         /** @description LinkedIn's member id, when observed. */
                         member_id: string | null;
+                        /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. The link is signed and expires: show initials when it fails to load. */
+                        profile_picture_url: string | null;
                         /** @description Full name. */
                         full_name: string | null;
                         /** @description First name. */
@@ -40466,7 +40615,7 @@ export interface operations {
     getV1ContactsImportsIdRows: {
         parameters: {
             query?: {
-                /** @description Comma list of outcomes to keep: created, updated, unchanged, skipped. */
+                /** @description Outcomes to keep: created, updated, unchanged, skipped. Repeat the key, comma-separate or mix; empties ignored. */
                 outcome?: string;
                 /** @description Max items per page (1-100, default 20). */
                 limit?: number;
@@ -40593,6 +40742,8 @@ export interface operations {
                         provider_id: string | null;
                         /** @description LinkedIn's member id, when observed. */
                         member_id: string | null;
+                        /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. The link is signed and expires: show initials when it fails to load. */
+                        profile_picture_url: string | null;
                         /** @description Full name. */
                         full_name: string | null;
                         /** @description First name. */
@@ -40801,6 +40952,8 @@ export interface operations {
                         provider_id: string | null;
                         /** @description LinkedIn's member id, when observed. */
                         member_id: string | null;
+                        /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. The link is signed and expires: show initials when it fails to load. */
+                        profile_picture_url: string | null;
                         /** @description Full name. */
                         full_name: string | null;
                         /** @description First name. */
@@ -41600,7 +41753,7 @@ export interface operations {
     getV1Motions: {
         parameters: {
             query?: {
-                /** @description Comma list of draft, scheduled, active, paused, completed, archived. Default: all but archived. */
+                /** @description draft, scheduled, active, paused, completed, archived. Default: all but archived. Repeat the key, comma-separate or mix; empties ignored. */
                 status?: ("draft" | "scheduled" | "active" | "paused" | "completed" | "archived")[];
                 /** @description Only Motions sending from this account (acc_...). */
                 account_id?: string;
@@ -41677,6 +41830,7 @@ export interface operations {
                                     percent: number;
                                     min_invites: number;
                                 } | null;
+                                /** @description Deprecated (warning W13): Motion variables are removed; write text in place or use a custom field. */
                                 variables: {
                                     [key: string]: string;
                                 };
@@ -41688,6 +41842,10 @@ export interface operations {
                             }[];
                             /** @description The current Sequence version. 1 until a structural edit after start. */
                             sequence_version: number;
+                            /** @description Rises by 1 on every accepted write that changes the stored Sequence (a draft rewrite, a copy edit, a structural edit); 0 while there is none. Send it back as if_sequence_revision on PATCH so a teammate's newer save is never overwritten silently. */
+                            sequence_revision: number;
+                            /** @description The user who saved the current Sequence revision. */
+                            sequence_updated_by_user_id: string | null;
                             /** @description Enrollments by status. */
                             counts: {
                                 pending: number;
@@ -41825,7 +41983,7 @@ export interface operations {
                             /** @description Invitations before the floor is evaluated (10 to 1000). Default 30. */
                             min_invites?: number;
                         } | null;
-                        /** @description Motion variables, rendered as `{{motion.<key>}}`. Up to 50 keys matching ^[a-z][a-z0-9_]{0,39}$; values up to 2000 characters, without variables. On update a null value removes the key. */
+                        /** @description Deprecated: Motion variables are removed (accepted with warning W13 until 2027-01-19); write text that is the same for everyone in place, and per-Contact text in a custom field. Rendered as `{{motion.<key>}}`. Up to 50 keys matching ^[a-z][a-z0-9_]{0,39}$; values up to 2000 characters, without variables. On update a null value removes the key. */
                         variables?: {
                             [key: string]: string | null;
                         };
@@ -41897,6 +42055,7 @@ export interface operations {
                                 percent: number;
                                 min_invites: number;
                             } | null;
+                            /** @description Deprecated (warning W13): Motion variables are removed; write text in place or use a custom field. */
                             variables: {
                                 [key: string]: string;
                             };
@@ -41910,6 +42069,10 @@ export interface operations {
                         sequence: components["schemas"]["SequenceDocument"] | null;
                         /** @description The current Sequence version. 1 until a structural edit after start. */
                         sequence_version: number;
+                        /** @description Rises by 1 on every accepted write that changes the stored Sequence (a draft rewrite, a copy edit, a structural edit); 0 while there is none. Send it back as if_sequence_revision on PATCH so a teammate's newer save is never overwritten silently. */
+                        sequence_revision: number;
+                        /** @description The user who saved the current Sequence revision. */
+                        sequence_updated_by_user_id: string | null;
                         /** @description Enrollments by status. */
                         counts: {
                             pending: number;
@@ -41920,9 +42083,20 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
                         warnings: {
+                            /** @description The warning id, W1 to W13. */
                             code: string;
+                            /** @description Where, as step id then field. */
                             path: string;
+                            /** @description What the warning says. */
                             rule: string;
+                            /** @description Equal to rule. */
+                            message: string;
+                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Motion-level warning. */
+                            pointer: string;
+                            /** @description One sentence saying what to do. */
+                            hint: string;
+                            /** @description The warning's entry on the Sequence rules page. */
+                            docs_url: string;
                         }[];
                         /** @description The user who created the Motion. */
                         created_by_user_id: string | null;
@@ -41994,7 +42168,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description SEQUENCE_INVALID: the sequence breaks one or more rules. errors[] lists them as {path, rule} in step order (the first 100; the message counts them all). Nothing is saved. */
+            /** @description SEQUENCE_INVALID: the sequence breaks one or more rules. errors[] lists them in step order (the first 100; the message counts them all), each compiler-style: path, rule, code (R1 to R24), message, pointer (a JSON Pointer into the document), hint and docs_url. Nothing is saved. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -42086,6 +42260,7 @@ export interface operations {
                                 percent: number;
                                 min_invites: number;
                             } | null;
+                            /** @description Deprecated (warning W13): Motion variables are removed; write text in place or use a custom field. */
                             variables: {
                                 [key: string]: string;
                             };
@@ -42099,6 +42274,10 @@ export interface operations {
                         sequence: components["schemas"]["SequenceDocument"] | null;
                         /** @description The current Sequence version. 1 until a structural edit after start. */
                         sequence_version: number;
+                        /** @description Rises by 1 on every accepted write that changes the stored Sequence (a draft rewrite, a copy edit, a structural edit); 0 while there is none. Send it back as if_sequence_revision on PATCH so a teammate's newer save is never overwritten silently. */
+                        sequence_revision: number;
+                        /** @description The user who saved the current Sequence revision. */
+                        sequence_updated_by_user_id: string | null;
                         /** @description Enrollments by status. */
                         counts: {
                             pending: number;
@@ -42109,9 +42288,20 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
                         warnings: {
+                            /** @description The warning id, W1 to W13. */
                             code: string;
+                            /** @description Where, as step id then field. */
                             path: string;
+                            /** @description What the warning says. */
                             rule: string;
+                            /** @description Equal to rule. */
+                            message: string;
+                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Motion-level warning. */
+                            pointer: string;
+                            /** @description One sentence saying what to do. */
+                            hint: string;
+                            /** @description The warning's entry on the Sequence rules page. */
+                            docs_url: string;
                         }[];
                         /** @description The user who created the Motion. */
                         created_by_user_id: string | null;
@@ -42304,7 +42494,7 @@ export interface operations {
                             /** @description Invitations before the floor is evaluated (10 to 1000). Default 30. */
                             min_invites?: number;
                         } | null;
-                        /** @description Motion variables, rendered as `{{motion.<key>}}`. Up to 50 keys matching ^[a-z][a-z0-9_]{0,39}$; values up to 2000 characters, without variables. On update a null value removes the key. */
+                        /** @description Deprecated: Motion variables are removed (accepted with warning W13 until 2027-01-19); write text that is the same for everyone in place, and per-Contact text in a custom field. Rendered as `{{motion.<key>}}`. Up to 50 keys matching ^[a-z][a-z0-9_]{0,39}$; values up to 2000 characters, without variables. On update a null value removes the key. */
                         variables?: {
                             [key: string]: string | null;
                         };
@@ -42315,6 +42505,8 @@ export interface operations {
                     where?: unknown[];
                     /** @description The Sequence document (GET /schemas/sequence/v1.json), validated whole; every error comes back at once. Replaced whole on update. null clears a draft's. */
                     sequence?: components["schemas"]["SequenceDocument"] | null;
+                    /** @description The sequence_revision of the Motion as you read it, which your edit is based on. When the stored Sequence has moved past it, the PATCH is refused whole with 409 SEQUENCE_CONFLICT, carrying the current document in current; merge it, or send yours again with if_sequence_revision set to current.sequence_revision to replace it. Omitted: the last write wins. */
+                    if_sequence_revision?: number;
                 };
             };
         };
@@ -42376,6 +42568,7 @@ export interface operations {
                                 percent: number;
                                 min_invites: number;
                             } | null;
+                            /** @description Deprecated (warning W13): Motion variables are removed; write text in place or use a custom field. */
                             variables: {
                                 [key: string]: string;
                             };
@@ -42389,6 +42582,10 @@ export interface operations {
                         sequence: components["schemas"]["SequenceDocument"] | null;
                         /** @description The current Sequence version. 1 until a structural edit after start. */
                         sequence_version: number;
+                        /** @description Rises by 1 on every accepted write that changes the stored Sequence (a draft rewrite, a copy edit, a structural edit); 0 while there is none. Send it back as if_sequence_revision on PATCH so a teammate's newer save is never overwritten silently. */
+                        sequence_revision: number;
+                        /** @description The user who saved the current Sequence revision. */
+                        sequence_updated_by_user_id: string | null;
                         /** @description Enrollments by status. */
                         counts: {
                             pending: number;
@@ -42399,9 +42596,20 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
                         warnings: {
+                            /** @description The warning id, W1 to W13. */
                             code: string;
+                            /** @description Where, as step id then field. */
                             path: string;
+                            /** @description What the warning says. */
                             rule: string;
+                            /** @description Equal to rule. */
+                            message: string;
+                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Motion-level warning. */
+                            pointer: string;
+                            /** @description One sentence saying what to do. */
+                            hint: string;
+                            /** @description The warning's entry on the Sequence rules page. */
+                            docs_url: string;
                         }[];
                         /** @description The user who created the Motion. */
                         created_by_user_id: string | null;
@@ -42457,7 +42665,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description MOTION_STATUS_CONFLICT: the Motion is archived and read-only. REAUTH_REQUIRED: a newly added account is disconnected. */
+            /** @description MOTION_STATUS_CONFLICT: the Motion is archived and read-only. REAUTH_REQUIRED: a newly added account is disconnected. SEQUENCE_CONFLICT: if_sequence_revision is not the stored sequence_revision (someone saved since you loaded it); nothing is saved, and current carries the stored sequence, sequence_revision, sequence_version, sequence_updated_by_user_id and updated_at. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -42475,7 +42683,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description SEQUENCE_INVALID: the sequence breaks one or more rules. errors[] lists them as {path, rule} in step order (the first 100; the message counts them all). Nothing is saved. Changing settings.variables re-checks the stored sequence, so removing a variable it uses is refused here too. MOTION_NOT_STARTABLE: on a scheduled, active or paused Motion the result must still pass what start checks; errors[] lists the gaps. */
+            /** @description SEQUENCE_INVALID: the sequence breaks one or more rules. errors[] lists them in step order (the first 100; the message counts them all), each compiler-style: path, rule, code (R1 to R24), message, pointer (a JSON Pointer into the document), hint and docs_url. Nothing is saved. Changing settings.variables re-checks the stored sequence, so removing a variable it uses is refused here too. MOTION_NOT_STARTABLE: on a scheduled, active or paused Motion the result must still pass what start checks; errors[] lists the gaps. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -42567,6 +42775,7 @@ export interface operations {
                                 percent: number;
                                 min_invites: number;
                             } | null;
+                            /** @description Deprecated (warning W13): Motion variables are removed; write text in place or use a custom field. */
                             variables: {
                                 [key: string]: string;
                             };
@@ -42580,6 +42789,10 @@ export interface operations {
                         sequence: components["schemas"]["SequenceDocument"] | null;
                         /** @description The current Sequence version. 1 until a structural edit after start. */
                         sequence_version: number;
+                        /** @description Rises by 1 on every accepted write that changes the stored Sequence (a draft rewrite, a copy edit, a structural edit); 0 while there is none. Send it back as if_sequence_revision on PATCH so a teammate's newer save is never overwritten silently. */
+                        sequence_revision: number;
+                        /** @description The user who saved the current Sequence revision. */
+                        sequence_updated_by_user_id: string | null;
                         /** @description Enrollments by status. */
                         counts: {
                             pending: number;
@@ -42590,9 +42803,20 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
                         warnings: {
+                            /** @description The warning id, W1 to W13. */
                             code: string;
+                            /** @description Where, as step id then field. */
                             path: string;
+                            /** @description What the warning says. */
                             rule: string;
+                            /** @description Equal to rule. */
+                            message: string;
+                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Motion-level warning. */
+                            pointer: string;
+                            /** @description One sentence saying what to do. */
+                            hint: string;
+                            /** @description The warning's entry on the Sequence rules page. */
+                            docs_url: string;
                         }[];
                         /** @description The user who created the Motion. */
                         created_by_user_id: string | null;
@@ -42747,6 +42971,7 @@ export interface operations {
                                 percent: number;
                                 min_invites: number;
                             } | null;
+                            /** @description Deprecated (warning W13): Motion variables are removed; write text in place or use a custom field. */
                             variables: {
                                 [key: string]: string;
                             };
@@ -42760,6 +42985,10 @@ export interface operations {
                         sequence: components["schemas"]["SequenceDocument"] | null;
                         /** @description The current Sequence version. 1 until a structural edit after start. */
                         sequence_version: number;
+                        /** @description Rises by 1 on every accepted write that changes the stored Sequence (a draft rewrite, a copy edit, a structural edit); 0 while there is none. Send it back as if_sequence_revision on PATCH so a teammate's newer save is never overwritten silently. */
+                        sequence_revision: number;
+                        /** @description The user who saved the current Sequence revision. */
+                        sequence_updated_by_user_id: string | null;
                         /** @description Enrollments by status. */
                         counts: {
                             pending: number;
@@ -42770,9 +42999,20 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
                         warnings: {
+                            /** @description The warning id, W1 to W13. */
                             code: string;
+                            /** @description Where, as step id then field. */
                             path: string;
+                            /** @description What the warning says. */
                             rule: string;
+                            /** @description Equal to rule. */
+                            message: string;
+                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Motion-level warning. */
+                            pointer: string;
+                            /** @description One sentence saying what to do. */
+                            hint: string;
+                            /** @description The warning's entry on the Sequence rules page. */
+                            docs_url: string;
                         }[];
                         /** @description The user who created the Motion. */
                         created_by_user_id: string | null;
@@ -42918,6 +43158,7 @@ export interface operations {
                                 percent: number;
                                 min_invites: number;
                             } | null;
+                            /** @description Deprecated (warning W13): Motion variables are removed; write text in place or use a custom field. */
                             variables: {
                                 [key: string]: string;
                             };
@@ -42931,6 +43172,10 @@ export interface operations {
                         sequence: components["schemas"]["SequenceDocument"] | null;
                         /** @description The current Sequence version. 1 until a structural edit after start. */
                         sequence_version: number;
+                        /** @description Rises by 1 on every accepted write that changes the stored Sequence (a draft rewrite, a copy edit, a structural edit); 0 while there is none. Send it back as if_sequence_revision on PATCH so a teammate's newer save is never overwritten silently. */
+                        sequence_revision: number;
+                        /** @description The user who saved the current Sequence revision. */
+                        sequence_updated_by_user_id: string | null;
                         /** @description Enrollments by status. */
                         counts: {
                             pending: number;
@@ -42941,9 +43186,20 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
                         warnings: {
+                            /** @description The warning id, W1 to W13. */
                             code: string;
+                            /** @description Where, as step id then field. */
                             path: string;
+                            /** @description What the warning says. */
                             rule: string;
+                            /** @description Equal to rule. */
+                            message: string;
+                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Motion-level warning. */
+                            pointer: string;
+                            /** @description One sentence saying what to do. */
+                            hint: string;
+                            /** @description The warning's entry on the Sequence rules page. */
+                            docs_url: string;
                         }[];
                         /** @description The user who created the Motion. */
                         created_by_user_id: string | null;
@@ -43098,6 +43354,7 @@ export interface operations {
                                 percent: number;
                                 min_invites: number;
                             } | null;
+                            /** @description Deprecated (warning W13): Motion variables are removed; write text in place or use a custom field. */
                             variables: {
                                 [key: string]: string;
                             };
@@ -43111,6 +43368,10 @@ export interface operations {
                         sequence: components["schemas"]["SequenceDocument"] | null;
                         /** @description The current Sequence version. 1 until a structural edit after start. */
                         sequence_version: number;
+                        /** @description Rises by 1 on every accepted write that changes the stored Sequence (a draft rewrite, a copy edit, a structural edit); 0 while there is none. Send it back as if_sequence_revision on PATCH so a teammate's newer save is never overwritten silently. */
+                        sequence_revision: number;
+                        /** @description The user who saved the current Sequence revision. */
+                        sequence_updated_by_user_id: string | null;
                         /** @description Enrollments by status. */
                         counts: {
                             pending: number;
@@ -43121,9 +43382,20 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
                         warnings: {
+                            /** @description The warning id, W1 to W13. */
                             code: string;
+                            /** @description Where, as step id then field. */
                             path: string;
+                            /** @description What the warning says. */
                             rule: string;
+                            /** @description Equal to rule. */
+                            message: string;
+                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Motion-level warning. */
+                            pointer: string;
+                            /** @description One sentence saying what to do. */
+                            hint: string;
+                            /** @description The warning's entry on the Sequence rules page. */
+                            docs_url: string;
                         }[];
                         /** @description The user who created the Motion. */
                         created_by_user_id: string | null;
@@ -43283,7 +43555,7 @@ export interface operations {
             query?: {
                 /** @description How many Contacts to render, the first enrollable ones by list order. 1 to 20, default 5. Not with contact_ids. */
                 sample?: number;
-                /** @description Comma list of Contact ids (con_...) to render, up to 20, in the order given. Not with sample. */
+                /** @description Contact ids (con_...) to render, up to 20, in the order given. Not with sample. Repeat the key, comma-separate or mix; empties ignored. */
                 contact_ids?: string[];
             };
             header?: never;
@@ -43379,9 +43651,20 @@ export interface operations {
                         };
                         /** @description Lint warnings, as on the Motion. */
                         warnings: {
+                            /** @description The warning id, W1 to W13. */
                             code: string;
+                            /** @description Where, as step id then field. */
                             path: string;
+                            /** @description What the warning says. */
                             rule: string;
+                            /** @description Equal to rule. */
+                            message: string;
+                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Motion-level warning. */
+                            pointer: string;
+                            /** @description One sentence saying what to do. */
+                            hint: string;
+                            /** @description The warning's entry on the Sequence rules page. */
+                            docs_url: string;
                         }[];
                         safety_warning?: components["schemas"]["SafetyWarning"];
                     };
@@ -43650,10 +43933,22 @@ export interface operations {
                 contact_id?: string;
                 /** @description Only Enrollments on this account (acc_...). */
                 account_id?: string;
-                /** @description Comma list of pending, active, paused, finished, skipped. Default: all. */
+                /** @description pending, active, paused, finished, skipped. Default: all. Repeat the key, comma-separate or mix; empties ignored. */
                 status?: ("pending" | "active" | "paused" | "finished" | "skipped")[];
                 /** @description Only Enrollments currently at this Step. */
                 step_id?: string;
+                /** @description Only Enrollments running this Sequence version (a whole number, 1 or more). Default: every version. */
+                version?: number;
+                /** @description Only Enrollments with a record on this Step in their Sequence version (they reached and ran it). */
+                done_step?: string;
+                /** @description With done_step only: how that Step ended. The 200 response description defines each value. */
+                outcome?: "executed" | "skipped" | "failed" | "accepted" | "not_accepted" | "replied" | "no_reply" | "seen";
+                /** @description Catalogue reason codes: skip, finish or Step reasons (on done_step when given). Repeat the key, comma-separate or mix; empties ignored. */
+                reason?: ("in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit")[];
+                /** @description Only Enrollments whose variant on that variant's Step is this one. */
+                variant_id?: string;
+                /** @description Relationship to the account at the start: connected, not_connected, invite_pending, unknown. Repeat the key, comma-separate or mix; empties ignored. */
+                relationship_at_enrollment?: ("connected" | "not_connected" | "invite_pending" | "unknown")[];
                 /** @description Max items per page (1-100, default 20). */
                 limit?: number;
                 /** @description Pagination cursor from a previous response; pass it back verbatim with the same filters. */
@@ -43665,7 +43960,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Enrollments, newest first. */
+            /** @description Enrollments, newest first. Filters combine with AND. The counted unit is the Enrollment, one Contact on one account in one Motion: each Contact counts once per Account. done_step with outcome lists who did what at a Step: executed, skipped, failed (the Step's own record; a condition or wait counts as executed); accepted, not_accepted (on invite.send: its invitation was accepted, or withdrawn or never accepted before the wait for it timed out; on an until invite.accepted: its then or else exit); replied, no_reply (on message.send or inmail.send: a reply came after it, or none and the Enrollment left the following until message.replied by else or finished; on an until message.replied: its then or else exit); seen (on message.send or inmail.send: a read receipt arrived for it or the person replied after it, the same rule as the analytics seen rate). An outcome the Step's kind cannot have is a 400. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -43696,11 +43991,12 @@ export interface operations {
                             status: "pending" | "active" | "paused" | "finished" | "skipped";
                             /** @description The Step it is at; null before it starts. */
                             current_step_id: string | null;
-                            /** @description What it waits for; null when nothing holds it. */
+                            /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
                             waiting: {
                                 /** @enum {string} */
-                                kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch";
-                                step_id: string;
+                                kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                                /** @description The Step it waits at; null before it starts. */
+                                step_id: string | null;
                                 /** @description ISO 8601, when the wait ends; null when open-ended. */
                                 until: string | null;
                             } | null;
@@ -43714,6 +44010,10 @@ export interface operations {
                              * @enum {string|null}
                              */
                             skip_reason: "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                            /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
+                            finish_message: string | null;
+                            /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
+                            skip_message: string | null;
                             /** @description More on the skip, for example the index of the where filter that failed. */
                             skip_detail: string | null;
                             /** @description True once the Contact replied. */
@@ -43722,6 +44022,11 @@ export interface operations {
                             variants: {
                                 [key: string]: string;
                             };
+                            /**
+                             * @description The Contact's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
+                             * @enum {string|null}
+                             */
+                            relationship_at_enrollment: "connected" | "not_connected" | "invite_pending" | "unknown" | null;
                             /** @description ISO 8601. */
                             created_at: string;
                             /** @description When it started. */
@@ -43735,7 +44040,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid filter, a query key given twice, an empty value, or a malformed cursor. */
+            /** @description Invalid filter, a query key given twice, an empty value, or a malformed cursor. outcome without done_step, or an outcome that step's kind cannot have (the message names the step and its kind). A reason that is not a code of the catalogue (https://docs.curviate.com/reference/motion-reasons). */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -43825,11 +44130,12 @@ export interface operations {
                         status: "pending" | "active" | "paused" | "finished" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch";
-                            step_id: string;
+                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            /** @description The Step it waits at; null before it starts. */
+                            step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
                             until: string | null;
                         } | null;
@@ -43843,6 +44149,10 @@ export interface operations {
                          * @enum {string|null}
                          */
                         skip_reason: "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
+                        finish_message: string | null;
+                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
+                        skip_message: string | null;
                         /** @description More on the skip, for example the index of the where filter that failed. */
                         skip_detail: string | null;
                         /** @description True once the Contact replied. */
@@ -43851,6 +44161,11 @@ export interface operations {
                         variants: {
                             [key: string]: string;
                         };
+                        /**
+                         * @description The Contact's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
+                         * @enum {string|null}
+                         */
+                        relationship_at_enrollment: "connected" | "not_connected" | "invite_pending" | "unknown" | null;
                         /** @description ISO 8601. */
                         created_at: string;
                         /** @description When it started. */
@@ -43861,10 +44176,10 @@ export interface operations {
                             /** @description The Step; null for requeued. */
                             step_id: string | null;
                             /**
-                             * @description requeued: the Enrollment ended before it started and was added again.
+                             * @description requeued: the Enrollment ended before it started and was added again. seen: a read receipt arrived for the message of step_id; at is when the receipt arrived (LinkedIn gives no read time). reassigned: it moved to another account.
                              * @enum {string}
                              */
-                            outcome: "executed" | "skipped" | "failed" | "taken" | "requeued";
+                            outcome: "executed" | "skipped" | "failed" | "taken" | "requeued" | "seen" | "reassigned";
                             /**
                              * @description The exit taken.
                              * @enum {string|null}
@@ -43873,8 +44188,15 @@ export interface operations {
                             /** @description The variant used. */
                             variant_id: string | null;
                             used_fallback: boolean;
-                            /** @description Why it was skipped or failed. */
-                            reason: string | null;
+                            /**
+                             * @description Why it was skipped or failed: a code of the reasons catalogue, https://docs.curviate.com/reference/motion-reasons.
+                             * @enum {string|null}
+                             */
+                            reason: "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit" | null;
+                            /** @description The catalogue's one-line sentence for reason; null when reason is. */
+                            reason_message: string | null;
+                            /** @description The account that ran it; null for an entry no account ran (requeued). */
+                            account_id: string | null;
                             /** @description ISO 8601. */
                             at: string;
                         }[];
@@ -43954,11 +44276,12 @@ export interface operations {
                         status: "pending" | "active" | "paused" | "finished" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch";
-                            step_id: string;
+                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            /** @description The Step it waits at; null before it starts. */
+                            step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
                             until: string | null;
                         } | null;
@@ -43972,6 +44295,10 @@ export interface operations {
                          * @enum {string|null}
                          */
                         skip_reason: "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
+                        finish_message: string | null;
+                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
+                        skip_message: string | null;
                         /** @description More on the skip, for example the index of the where filter that failed. */
                         skip_detail: string | null;
                         /** @description True once the Contact replied. */
@@ -43980,6 +44307,11 @@ export interface operations {
                         variants: {
                             [key: string]: string;
                         };
+                        /**
+                         * @description The Contact's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
+                         * @enum {string|null}
+                         */
+                        relationship_at_enrollment: "connected" | "not_connected" | "invite_pending" | "unknown" | null;
                         /** @description ISO 8601. */
                         created_at: string;
                         /** @description When it started. */
@@ -44049,7 +44381,7 @@ export interface operations {
             };
         };
     };
-    postV1EnrollmentsIdResume: {
+    postV1EnrollmentsIdPause: {
         parameters: {
             query?: never;
             header?: never;
@@ -44059,16 +44391,9 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": {
-                    /** @description The Step id to continue at. It must exist in the Sequence version the Enrollment runs on. */
-                    at: string;
-                };
-            };
-        };
+        requestBody?: never;
         responses: {
-            /** @description The Enrollment at the named Step: active, or paused while its account or Motion is. One that ended before it started is pending again. */
+            /** @description The Enrollment, paused by you: status paused, waiting.kind paused_by_user. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -44096,11 +44421,12 @@ export interface operations {
                         status: "pending" | "active" | "paused" | "finished" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch";
-                            step_id: string;
+                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            /** @description The Step it waits at; null before it starts. */
+                            step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
                             until: string | null;
                         } | null;
@@ -44114,6 +44440,10 @@ export interface operations {
                          * @enum {string|null}
                          */
                         skip_reason: "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
+                        finish_message: string | null;
+                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
+                        skip_message: string | null;
                         /** @description More on the skip, for example the index of the where filter that failed. */
                         skip_detail: string | null;
                         /** @description True once the Contact replied. */
@@ -44122,6 +44452,11 @@ export interface operations {
                         variants: {
                             [key: string]: string;
                         };
+                        /**
+                         * @description The Contact's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
+                         * @enum {string|null}
+                         */
+                        relationship_at_enrollment: "connected" | "not_connected" | "invite_pending" | "unknown" | null;
                         /** @description ISO 8601. */
                         created_at: string;
                         /** @description When it started. */
@@ -44132,7 +44467,159 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST: at is missing, or no Step with that id exists in the Sequence version the Enrollment runs on. */
+            /** @description INVALID_REQUEST: this call takes no query parameters and no request body (none, or {}). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Motion sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Motion sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Enrollment. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ENROLLMENT_NOT_ACTIVE: already paused by a user, finished or skipped. MOTION_STATUS_CONFLICT: the Motion is archived, or its schedule.end_at has passed. STEP_IN_FLIGHT: a Step is being sent right now; try again in a minute. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1EnrollmentsIdResume: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Enrollment id (enr_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The Step id to re-enter; it must exist in the Sequence version the Enrollment runs on. A jump: it may send that Step again, even one that already sent. To retry a failed Step, use the retry action instead. Leave it out only to lift your own pause: the Enrollment continues where it was, with the time its wait had left. */
+                    at?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The Enrollment: at the named Step, or, without at, where it was with its wait's remaining time. Active, or paused while its account or Motion is. One that ended before it started is pending again. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "enrollment";
+                        /** @description Enrollment id (enr_...). */
+                        id: string;
+                        /** @description The Motion (mot_...). */
+                        motion_id: string;
+                        /** @description The Contact (con_...); null once the Contact is deleted. */
+                        contact_id: string | null;
+                        /** @description The sending account (acc_...); null until one is assigned. */
+                        account_id: string | null;
+                        /** @description The Sequence version this Enrollment runs on. */
+                        sequence_version: number;
+                        /** @enum {string} */
+                        status: "pending" | "active" | "paused" | "finished" | "skipped";
+                        /** @description The Step it is at; null before it starts. */
+                        current_step_id: string | null;
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
+                        waiting: {
+                            /** @enum {string} */
+                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            /** @description The Step it waits at; null before it starts. */
+                            step_id: string | null;
+                            /** @description ISO 8601, when the wait ends; null when open-ended. */
+                            until: string | null;
+                        } | null;
+                        /**
+                         * @description Why it finished; null unless status is finished.
+                         * @enum {string|null}
+                         */
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | null;
+                        /**
+                         * @description Why the Contact was not enrolled; null unless status is skipped.
+                         * @enum {string|null}
+                         */
+                        skip_reason: "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
+                        finish_message: string | null;
+                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
+                        skip_message: string | null;
+                        /** @description More on the skip, for example the index of the where filter that failed. */
+                        skip_detail: string | null;
+                        /** @description True once the Contact replied. */
+                        replied: boolean;
+                        /** @description The variant chosen per Step: step id to variant id. */
+                        variants: {
+                            [key: string]: string;
+                        };
+                        /**
+                         * @description The Contact's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
+                         * @enum {string|null}
+                         */
+                        relationship_at_enrollment: "connected" | "not_connected" | "invite_pending" | "unknown" | null;
+                        /** @description ISO 8601. */
+                        created_at: string;
+                        /** @description When it started. */
+                        started_at: string | null;
+                        /** @description When it finished. */
+                        finished_at: string | null;
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: at is missing on an Enrollment you did not pause, or no Step with that id exists in the Sequence version the Enrollment runs on. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -44168,7 +44655,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ENROLLMENT_NOT_ACTIVE: a pending or skipped Enrollment, one whose Contact is gone, or one that finished with account_removed, account_unavailable, contact_deleted or contact_merged. MOTION_STATUS_CONFLICT: the Motion is archived, or its schedule.end_at has passed. */
+            /** @description ENROLLMENT_NOT_ACTIVE: a pending or skipped Enrollment, one whose Contact is gone, or one that finished with account_removed, account_unavailable, contact_deleted or contact_merged. MOTION_STATUS_CONFLICT: the Motion is archived, or its schedule.end_at has passed. STEP_IN_FLIGHT: a Step is being sent right now; try again in a minute. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -44200,7 +44687,7 @@ export interface operations {
             };
         };
     };
-    postV1EnrollmentsIdSignal: {
+    postV1EnrollmentsIdEvents: {
         parameters: {
             query?: never;
             header?: never;
@@ -44213,13 +44700,13 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description The signal name a Step of the Enrollment's Sequence waits for (`until signal.<name>`). */
+                    /** @description The custom event name a Step of the Enrollment's Sequence waits for (`until event.<name>`, or its deprecated spelling `until signal.<name>`). */
                     name: string;
                 };
             };
         };
         responses: {
-            /** @description The Enrollment. The signal is recorded with its time. */
+            /** @description The Enrollment. The event is recorded with its time; a Step waiting for it moves on. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -44247,11 +44734,12 @@ export interface operations {
                         status: "pending" | "active" | "paused" | "finished" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch";
-                            step_id: string;
+                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            /** @description The Step it waits at; null before it starts. */
+                            step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
                             until: string | null;
                         } | null;
@@ -44265,6 +44753,10 @@ export interface operations {
                          * @enum {string|null}
                          */
                         skip_reason: "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
+                        finish_message: string | null;
+                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
+                        skip_message: string | null;
                         /** @description More on the skip, for example the index of the where filter that failed. */
                         skip_detail: string | null;
                         /** @description True once the Contact replied. */
@@ -44273,6 +44765,11 @@ export interface operations {
                         variants: {
                             [key: string]: string;
                         };
+                        /**
+                         * @description The Contact's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
+                         * @enum {string|null}
+                         */
+                        relationship_at_enrollment: "connected" | "not_connected" | "invite_pending" | "unknown" | null;
                         /** @description ISO 8601. */
                         created_at: string;
                         /** @description When it started. */
@@ -44351,6 +44848,501 @@ export interface operations {
             };
         };
     };
+    postV1EnrollmentsIdSignal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Enrollment id (enr_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The custom event name a Step of the Enrollment's Sequence waits for (`until event.<name>`, or its deprecated spelling `until signal.<name>`). */
+                    name: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Deprecated: as POST /v1/enrollments/{id}/events, plus a Deprecation header and warnings holding one W13 entry that names the new route. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "enrollment";
+                        /** @description Enrollment id (enr_...). */
+                        id: string;
+                        /** @description The Motion (mot_...). */
+                        motion_id: string;
+                        /** @description The Contact (con_...); null once the Contact is deleted. */
+                        contact_id: string | null;
+                        /** @description The sending account (acc_...); null until one is assigned. */
+                        account_id: string | null;
+                        /** @description The Sequence version this Enrollment runs on. */
+                        sequence_version: number;
+                        /** @enum {string} */
+                        status: "pending" | "active" | "paused" | "finished" | "skipped";
+                        /** @description The Step it is at; null before it starts. */
+                        current_step_id: string | null;
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
+                        waiting: {
+                            /** @enum {string} */
+                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            /** @description The Step it waits at; null before it starts. */
+                            step_id: string | null;
+                            /** @description ISO 8601, when the wait ends; null when open-ended. */
+                            until: string | null;
+                        } | null;
+                        /**
+                         * @description Why it finished; null unless status is finished.
+                         * @enum {string|null}
+                         */
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | null;
+                        /**
+                         * @description Why the Contact was not enrolled; null unless status is skipped.
+                         * @enum {string|null}
+                         */
+                        skip_reason: "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
+                        finish_message: string | null;
+                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
+                        skip_message: string | null;
+                        /** @description More on the skip, for example the index of the where filter that failed. */
+                        skip_detail: string | null;
+                        /** @description True once the Contact replied. */
+                        replied: boolean;
+                        /** @description The variant chosen per Step: step id to variant id. */
+                        variants: {
+                            [key: string]: string;
+                        };
+                        /**
+                         * @description The Contact's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
+                         * @enum {string|null}
+                         */
+                        relationship_at_enrollment: "connected" | "not_connected" | "invite_pending" | "unknown" | null;
+                        /** @description ISO 8601. */
+                        created_at: string;
+                        /** @description When it started. */
+                        started_at: string | null;
+                        /** @description When it finished. */
+                        finished_at: string | null;
+                        warnings: {
+                            code: string;
+                            path: string;
+                            rule: string;
+                            message: string;
+                            pointer: string;
+                            hint: string;
+                            docs_url: string;
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: name is missing, or no Step of the Enrollment's Sequence waits for it. The message lists the awaited names. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Motion sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Motion sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Enrollment. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ENROLLMENT_NOT_ACTIVE: the Enrollment's status does not take this call; it needs active or paused. The message names the current status. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1EnrollmentsIdReassign: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Enrollment id (enr_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The sending account (acc_...) of the Motion to move the Enrollment to. */
+                    account_id: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The Enrollment on its new account: pending, to start again at the first Step of its Sequence version (paused, if you had paused it, until you resume it). warnings lists each Step that will be skipped, e.g. already_invited when your team already invited the person (an invitation goes out once per team). */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "enrollment";
+                        /** @description Enrollment id (enr_...). */
+                        id: string;
+                        /** @description The Motion (mot_...). */
+                        motion_id: string;
+                        /** @description The Contact (con_...); null once the Contact is deleted. */
+                        contact_id: string | null;
+                        /** @description The sending account (acc_...); null until one is assigned. */
+                        account_id: string | null;
+                        /** @description The Sequence version this Enrollment runs on. */
+                        sequence_version: number;
+                        /** @enum {string} */
+                        status: "pending" | "active" | "paused" | "finished" | "skipped";
+                        /** @description The Step it is at; null before it starts. */
+                        current_step_id: string | null;
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
+                        waiting: {
+                            /** @enum {string} */
+                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            /** @description The Step it waits at; null before it starts. */
+                            step_id: string | null;
+                            /** @description ISO 8601, when the wait ends; null when open-ended. */
+                            until: string | null;
+                        } | null;
+                        /**
+                         * @description Why it finished; null unless status is finished.
+                         * @enum {string|null}
+                         */
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | null;
+                        /**
+                         * @description Why the Contact was not enrolled; null unless status is skipped.
+                         * @enum {string|null}
+                         */
+                        skip_reason: "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
+                        finish_message: string | null;
+                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
+                        skip_message: string | null;
+                        /** @description More on the skip, for example the index of the where filter that failed. */
+                        skip_detail: string | null;
+                        /** @description True once the Contact replied. */
+                        replied: boolean;
+                        /** @description The variant chosen per Step: step id to variant id. */
+                        variants: {
+                            [key: string]: string;
+                        };
+                        /**
+                         * @description The Contact's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
+                         * @enum {string|null}
+                         */
+                        relationship_at_enrollment: "connected" | "not_connected" | "invite_pending" | "unknown" | null;
+                        /** @description ISO 8601. */
+                        created_at: string;
+                        /** @description When it started. */
+                        started_at: string | null;
+                        /** @description When it finished. */
+                        finished_at: string | null;
+                        warnings: {
+                            /**
+                             * @description A reason code of the catalogue: the Step will be skipped with it.
+                             * @enum {string}
+                             */
+                            code: "already_invited";
+                            /** @description The Step id. */
+                            path: string;
+                            /** @description The catalogue's one-line sentence. */
+                            message: string;
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: account_id is missing, or an unknown key. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Motion sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Motion sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. The same for the target account: you need to be allowed to send from it in Motions. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Enrollment. ACCOUNT_NOT_FOUND: account_id is not a sending account of this Motion (or not one of your accounts). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Nothing changed. ENROLLMENT_NOT_ACTIVE: the Enrollment finished (other than account_unavailable or account_removed) or was skipped. STEP_IN_FLIGHT: a Step is being sent right now; try again in a minute. ACCOUNT_ALREADY_ENGAGED: its account already contacted the person (more than a profile view). ALREADY_ENROLLED_ON_ACCOUNT: the target already holds this Contact in the Motion, or is its own account. KNOWN_CHAT: the Motion excludes known chats and your team already chats with the Contact. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1EnrollmentsBulk: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description What to do to each Enrollment, as its single call would: pause, resume, stop, retry (re-runs its latest failed Step, only while that is the Step's latest outcome), event or reassign.
+                     * @enum {string}
+                     */
+                    action: "pause" | "resume" | "stop" | "retry" | "event" | "reassign";
+                    /** @description Enrollment ids (enr_...), 1 to 1000, distinct. Not with filter. */
+                    ids?: string[];
+                    /** @description The GET /v1/enrollments filters as an object, motion_id required; lists as arrays. At most 1000 matches, else 400 and nothing is done. */
+                    filter?: {
+                        /** @description The Motion (mot_...) whose Enrollments to act on. Required. */
+                        motion_id: string;
+                        /** @description Only Enrollments of this Contact (con_...). */
+                        contact_id?: string;
+                        /** @description Only Enrollments on this account (acc_...). */
+                        account_id?: string;
+                        /** @description Any of pending, active, paused, finished, skipped. */
+                        status?: ("pending" | "active" | "paused" | "finished" | "skipped")[];
+                        /** @description Only Enrollments currently at this Step. */
+                        step_id?: string;
+                        /** @description Only Enrollments running this Sequence version. */
+                        version?: number;
+                        /** @description Only Enrollments with a record on this Step in their Sequence version (they reached and ran it). */
+                        done_step?: string;
+                        /**
+                         * @description With done_step only: how that Step ended. The 200 response description defines each value.
+                         * @enum {string}
+                         */
+                        outcome?: "executed" | "skipped" | "failed" | "accepted" | "not_accepted" | "replied" | "no_reply" | "seen";
+                        /** @description Catalogue reason codes. */
+                        reason?: ("in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit")[];
+                        /** @description Only Enrollments whose variant on that variant's Step is this one. */
+                        variant_id?: string;
+                        /** @description Any of connected, not_connected, invite_pending, unknown. */
+                        relationship_at_enrollment?: ("connected" | "not_connected" | "invite_pending" | "unknown")[];
+                    };
+                    /** @description With resume only: the Step to continue at. Without it, resume lifts your own pauses. */
+                    at?: string;
+                    /** @description With event only, and required there: the custom event name. */
+                    name?: string;
+                    /** @description With reassign only, and required there: the sending account to move each Enrollment to. */
+                    account_id?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description matched: how many Enrollments the call acted on. One result per Enrollment, oldest first: ok, or error with the code and message its single call would answer (retry: NOTHING_TO_RETRY when the Step's latest outcome is not failed; INTERNAL for a server error on that one) (an id you cannot see is RESOURCE_NOT_FOUND; a filter leaves such Enrollments out). A second identical call is a new call: a second stop answers ENROLLMENT_NOT_ACTIVE per id. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "enrollment_bulk_result";
+                        /** @enum {string} */
+                        action: "pause" | "resume" | "stop" | "retry" | "event" | "reassign";
+                        matched: number;
+                        results: {
+                            enrollment_id: string;
+                            /** @enum {string} */
+                            outcome: "ok" | "error";
+                            /** @description The refusal of this Enrollment's call; null when ok. */
+                            error: {
+                                code: string;
+                                message: string;
+                            } | null;
+                            warnings: {
+                                /**
+                                 * @description A reason code of the catalogue: the Step will be skipped with it.
+                                 * @enum {string}
+                                 */
+                                code: "already_invited";
+                                /** @description The Step id. */
+                                path: string;
+                                /** @description The catalogue's one-line sentence. */
+                                message: string;
+                            }[];
+                        }[];
+                        safety_warning?: components["schemas"]["SafetyWarning"];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: not exactly one of ids or filter; more than 1000 ids or filter matches (nothing done); filter without motion_id; at with an action other than resume; event without name; reassign without account_id. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description TIER_REQUIRED: resume, retry, event and reassign need a Tier with Motions; pause and stop always work. A refusal of one Enrollment (your role, its account's team access) is that Enrollment's result, never a 403 of the call. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_NOT_FOUND: filter.account_id is not one of your accounts. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     getV1AnalyticsMotions: {
         parameters: {
             query?: {
@@ -44369,7 +45361,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Motion results across your Motions. totals counts every visible record, archived Motions included; motions lists every Motion but drafts (archived ones only with records in the window), latest activity first, at most 100 (motions_truncated). Lags: a step counts once it settles, a reply within a minute, an acceptance about 2 hours after it happens. */
+            /** @description Motion results across your Motions. Each Contact counts once per Account. totals counts every visible record, archived Motions included; motions lists every Motion but drafts (archived ones only with records in the window), latest activity first, at most 100 (motions_truncated). Lags: a step counts once it settles, a reply within a minute, an acceptance about 2 hours after it happens. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -44398,7 +45390,7 @@ export interface operations {
                         /** @description UTC instant of the read; maturity is measured from it. */
                         generated_at: string;
                         totals: {
-                            /** @description Enrollments by state right now; the window does not apply. A Contact enrolled with two accounts counts twice. */
+                            /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Contact counts once per Account. */
                             enrollments: {
                                 /** @description Waiting to start (pending). */
                                 queued: number;
@@ -44466,6 +45458,17 @@ export interface operations {
                                 comments: number;
                                 /** @description skill.endorse steps executed. */
                                 endorsements: number;
+                            };
+                            /** @description Right now, like enrollments: why Enrollments were skipped or failed. Each map sums to its count. */
+                            enrollment_reasons: {
+                                /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                skipped: {
+                                    [key: string]: number;
+                                };
+                                /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                failed: {
+                                    [key: string]: number;
+                                };
                             };
                         };
                         /** @description One entry per day of the window, oldest first, zeros included. Each event on its own day; no rates. */
@@ -44499,7 +45502,7 @@ export interface operations {
                             pause_reason: string | null;
                             /** @description The Motion's latest visible record; null when it has none. */
                             last_activity_at: string | null;
-                            /** @description Enrollments by state right now; the window does not apply. A Contact enrolled with two accounts counts twice. */
+                            /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Contact counts once per Account. */
                             enrollments: {
                                 /** @description Waiting to start (pending). */
                                 queued: number;
@@ -44567,6 +45570,17 @@ export interface operations {
                                 comments: number;
                                 /** @description skill.endorse steps executed. */
                                 endorsements: number;
+                            };
+                            /** @description Right now, like enrollments: why Enrollments were skipped or failed. Each map sums to its count. */
+                            enrollment_reasons: {
+                                /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                skipped: {
+                                    [key: string]: number;
+                                };
+                                /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                failed: {
+                                    [key: string]: number;
+                                };
                             };
                         }[];
                         motions_truncated: boolean;
@@ -44575,7 +45589,7 @@ export interface operations {
                             account_id: string;
                             /** @description null once the account is removed. */
                             account_name: string | null;
-                            /** @description Enrollments by state right now; the window does not apply. A Contact enrolled with two accounts counts twice. */
+                            /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Contact counts once per Account. */
                             enrollments: {
                                 /** @description Waiting to start (pending). */
                                 queued: number;
@@ -44643,6 +45657,17 @@ export interface operations {
                                 comments: number;
                                 /** @description skill.endorse steps executed. */
                                 endorsements: number;
+                            };
+                            /** @description Right now, like enrollments: why Enrollments were skipped or failed. Each map sums to its count. */
+                            enrollment_reasons: {
+                                /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                skipped: {
+                                    [key: string]: number;
+                                };
+                                /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                failed: {
+                                    [key: string]: number;
+                                };
                             };
                         }[];
                         safety_warning?: components["schemas"]["SafetyWarning"];
@@ -44722,7 +45747,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description One Motion's results, with a row per step (current version first, then steps only older versions have) and per variant. Lags as for the overview. */
+            /** @description One Motion's results, with a row per step (current version first, then steps only older versions have) and per variant. Each Contact counts once per Account. paths splits the Motion by the Contact's relationship to the account when the Enrollment started (provisional). Lags as for the overview. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -44760,7 +45785,7 @@ export interface operations {
                         /** @description UTC instant of the read; maturity is measured from it. */
                         generated_at: string;
                         totals: {
-                            /** @description Enrollments by state right now; the window does not apply. A Contact enrolled with two accounts counts twice. */
+                            /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Contact counts once per Account. */
                             enrollments: {
                                 /** @description Waiting to start (pending). */
                                 queued: number;
@@ -44829,6 +45854,17 @@ export interface operations {
                                 /** @description skill.endorse steps executed. */
                                 endorsements: number;
                             };
+                            /** @description Right now, like enrollments: why Enrollments were skipped or failed. Each map sums to its count. */
+                            enrollment_reasons: {
+                                /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                skipped: {
+                                    [key: string]: number;
+                                };
+                                /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                failed: {
+                                    [key: string]: number;
+                                };
+                            };
                         };
                         /** @description One entry per day of the window, oldest first, zeros included. Each event on its own day; no rates. */
                         daily: {
@@ -44863,6 +45899,8 @@ export interface operations {
                             in_current_version: boolean;
                             /** @description Running or paused Enrollments at this step now. */
                             queued: number;
+                            /** @description Of queued, the paused ones: waiting = queued - paused. */
+                            paused: number;
                             /** @description Executions in the window. */
                             executed: number;
                             /** @description Skipped in the window. */
@@ -44899,9 +45937,32 @@ export interface operations {
                                 /** @description True when messaged is below 30. The rate is still returned. */
                                 low_sample: boolean;
                             } | null;
-                            /** @description A messaging step with two or more variants: one row per variant, in document order. Never sorted by result. */
+                            /** @description message.send and inmail.send only, else null. Seen rate over executions of this message step at least 7 days old: seen when a read receipt arrived for the message or the person replied after it (a reply proves it was read; not last touch). The rate is a floor: people can turn read receipts off. A receipt says the message was seen, never when; the same rule as GET /v1/enrollments outcome=seen. */
+                            seen: {
+                                /** @description Numerator: the seen part of sent. */
+                                seen: number;
+                                /** @description Denominator. */
+                                sent: number;
+                                /** @description seen / sent, 4 decimals; null when sent is 0. */
+                                rate: number | null;
+                                /** @description True when sent is below 30. The rate is still returned. */
+                                low_sample: boolean;
+                            } | null;
+                            /** @description Why this step was skipped or failed; each map sums to skipped or failed. An until timeout is no reason: it stays in else. */
+                            reasons: {
+                                /** @description The window's skipped executions of this step, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                skipped: {
+                                    [key: string]: number;
+                                };
+                                /** @description The window's failed executions of this step (outcome_unknown included), by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                failed: {
+                                    [key: string]: number;
+                                };
+                            };
+                            /** @description A messaging step with two or more variants: one row per variant, in document order, never sorted by result. When the step has a fallback that sends something, a last row with variant_id null and fallback true counts the executions that sent the fallback, whatever variant was assigned (they also count in their variant's executed and fallback_used): the sum of own_text_executed over the variant rows plus the fallback row's executed is the step's executed. */
                             variants: {
-                                variant_id: string;
+                                /** @description The variant; null on the fallback row. */
+                                variant_id: string | null;
                                 /** @description Executions in the window. */
                                 executed: number;
                                 /** @description Skipped in the window. */
@@ -44932,6 +45993,229 @@ export interface operations {
                                     /** @description True when messaged is below 30. The rate is still returned. */
                                     low_sample: boolean;
                                 } | null;
+                                /** @description message.send and inmail.send only, else null. Seen rate over executions of this message step at least 7 days old: seen when a read receipt arrived for the message or the person replied after it (a reply proves it was read; not last touch). The rate is a floor: people can turn read receipts off. A receipt says the message was seen, never when; the same rule as GET /v1/enrollments outcome=seen. */
+                                seen: {
+                                    /** @description Numerator: the seen part of sent. */
+                                    seen: number;
+                                    /** @description Denominator. */
+                                    sent: number;
+                                    /** @description seen / sent, 4 decimals; null when sent is 0. */
+                                    rate: number | null;
+                                    /** @description True when sent is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                } | null;
+                                /** @description True on the fallback row only. */
+                                fallback: boolean;
+                                /** @description Executions that sent this variant's own text (executed less fallback_used); 0 on the fallback row. */
+                                own_text_executed: number;
+                            }[];
+                        }[];
+                        /** @description Provisional: the funnel's two paths may still change. Exactly three entries, connected, not_connected (invite_pending included), unknown, by relationship_at_enrollment. Started Enrollments only: one not yet started is in no path, so totals may exceed the sum of the paths by exactly those. Same filters, window and snapshot as the rest of the body. */
+                        paths: {
+                            /** @enum {string} */
+                            path: "connected" | "not_connected" | "unknown";
+                            totals: {
+                                /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Contact counts once per Account. */
+                                enrollments: {
+                                    /** @description Waiting to start (pending). */
+                                    queued: number;
+                                    /** @description Running (active). */
+                                    in_progress: number;
+                                    /** @description Paused. */
+                                    paused: number;
+                                    /** @description Finished, for any reason but a lost account (replied and messaged_manually included). */
+                                    finished: number;
+                                    /** @description Finished because the account became unavailable or was removed. */
+                                    failed: number;
+                                    /** @description Skipped at admission or start. */
+                                    skipped: number;
+                                };
+                                /** @description Invitations, each on its send day. */
+                                invites: {
+                                    /** @description Invitations sent in the window. One whose send result was unknown counts once it is accepted. */
+                                    sent: number;
+                                    /** @description Of those, accepted so far, whenever detected. */
+                                    accepted: number;
+                                    /** @description Of those, sent less than 7 days ago: not yet in the rate. */
+                                    maturing: number;
+                                };
+                                /** @description Acceptance rate over invitations sent in the window that are at least 7 days old, each counted on its own send day (the acceptance floor's rule). Withdrawn invitations stay in the denominator. */
+                                acceptance: {
+                                    /** @description Numerator: the accepted part of sent. */
+                                    accepted: number;
+                                    /** @description Denominator. */
+                                    sent: number;
+                                    /** @description accepted / sent, 4 decimals; null when sent is 0. */
+                                    rate: number | null;
+                                    /** @description True when sent is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                };
+                                messages: {
+                                    /** @description message.send and inmail.send steps executed in the window (messages, not people). */
+                                    sent: number;
+                                    /** @description Enrollments whose first message falls in the window, with no reply before it. */
+                                    messaged: number;
+                                    /** @description Of those, first messaged less than 7 days ago. */
+                                    maturing: number;
+                                };
+                                /** @description Reply rate over Enrollments first messaged in the window at least 7 days ago, with no reply before that message. replied: those that replied at or after it. */
+                                reply: {
+                                    /** @description Numerator: the replied part of messaged. */
+                                    replied: number;
+                                    /** @description Denominator. */
+                                    messaged: number;
+                                    /** @description replied / messaged, 4 decimals; null when messaged is 0. */
+                                    rate: number | null;
+                                    /** @description True when messaged is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                };
+                                /** @description Enrollments whose first reply came in the window. A reply is an inbound 1:1 message from the enrolled person on the Enrollment's account, counted once per Enrollment; any other inbound message is not counted. A reply up to 30 days after the Enrollment finished still counts. */
+                                replies: number;
+                                /** @description Engagement steps executed in the window. A first-step profile visit that also identified the person counts once. */
+                                engagement: {
+                                    /** @description profile.view steps executed. */
+                                    views: number;
+                                    /** @description post.react steps executed, any reaction. */
+                                    reactions: number;
+                                    /** @description profile.follow steps executed. */
+                                    follows: number;
+                                    /** @description post.comment steps executed. */
+                                    comments: number;
+                                    /** @description skill.endorse steps executed. */
+                                    endorsements: number;
+                                };
+                                /** @description Right now, like enrollments: why Enrollments were skipped or failed. Each map sums to its count. */
+                                enrollment_reasons: {
+                                    /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                    skipped: {
+                                        [key: string]: number;
+                                    };
+                                    /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                    failed: {
+                                        [key: string]: number;
+                                    };
+                                };
+                            };
+                            steps: {
+                                step_id: string;
+                                /** @enum {string} */
+                                kind: "do" | "wait" | "if" | "until" | "tag" | "emit";
+                                /** @description The action of a do step; null for the others. */
+                                action: string | null;
+                                /** @description False for a step only an older Sequence version has; it is listed after the current ones. */
+                                in_current_version: boolean;
+                                /** @description Running or paused Enrollments at this step now. */
+                                queued: number;
+                                /** @description Of queued, the paused ones: waiting = queued - paused. */
+                                paused: number;
+                                /** @description Executions in the window. */
+                                executed: number;
+                                /** @description Skipped in the window. */
+                                skipped: number;
+                                /** @description Failed in the window; an unknown send result counts here. */
+                                failed: number;
+                                /** @description wait, tag and emit passes in the window. */
+                                taken: number;
+                                /** @description if and until exits through then in the window. */
+                                then: number;
+                                /** @description if and until exits through else in the window (an until timeout). */
+                                else: number;
+                                /** @description Executions that used a fallback value. */
+                                fallback_used: number;
+                                /** @description invite.send only, else null. Acceptance rate over invitations sent in the window that are at least 7 days old, each counted on its own send day (the acceptance floor's rule). Withdrawn invitations stay in the denominator. */
+                                acceptance: {
+                                    /** @description Numerator: the accepted part of sent. */
+                                    accepted: number;
+                                    /** @description Denominator. */
+                                    sent: number;
+                                    /** @description accepted / sent, 4 decimals; null when sent is 0. */
+                                    rate: number | null;
+                                    /** @description True when sent is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                } | null;
+                                /** @description message.send and inmail.send only, else null. Last touch: a reply counts for the message step it followed, before the next message. Over executions at least 7 days old, with no reply before them. */
+                                reply: {
+                                    /** @description Numerator: the replied part of messaged. */
+                                    replied: number;
+                                    /** @description Denominator. */
+                                    messaged: number;
+                                    /** @description replied / messaged, 4 decimals; null when messaged is 0. */
+                                    rate: number | null;
+                                    /** @description True when messaged is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                } | null;
+                                /** @description message.send and inmail.send only, else null. Seen rate over executions of this message step at least 7 days old: seen when a read receipt arrived for the message or the person replied after it (a reply proves it was read; not last touch). The rate is a floor: people can turn read receipts off. A receipt says the message was seen, never when; the same rule as GET /v1/enrollments outcome=seen. */
+                                seen: {
+                                    /** @description Numerator: the seen part of sent. */
+                                    seen: number;
+                                    /** @description Denominator. */
+                                    sent: number;
+                                    /** @description seen / sent, 4 decimals; null when sent is 0. */
+                                    rate: number | null;
+                                    /** @description True when sent is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                } | null;
+                                /** @description Why this step was skipped or failed; each map sums to skipped or failed. An until timeout is no reason: it stays in else. */
+                                reasons: {
+                                    /** @description The window's skipped executions of this step, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                    skipped: {
+                                        [key: string]: number;
+                                    };
+                                    /** @description The window's failed executions of this step (outcome_unknown included), by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                    failed: {
+                                        [key: string]: number;
+                                    };
+                                };
+                                /** @description A messaging step with two or more variants: one row per variant, in document order, never sorted by result. When the step has a fallback that sends something, a last row with variant_id null and fallback true counts the executions that sent the fallback, whatever variant was assigned (they also count in their variant's executed and fallback_used): the sum of own_text_executed over the variant rows plus the fallback row's executed is the step's executed. */
+                                variants: {
+                                    /** @description The variant; null on the fallback row. */
+                                    variant_id: string | null;
+                                    /** @description Executions in the window. */
+                                    executed: number;
+                                    /** @description Skipped in the window. */
+                                    skipped: number;
+                                    /** @description Failed in the window; an unknown send result counts here. */
+                                    failed: number;
+                                    /** @description Executions that used a fallback value. */
+                                    fallback_used: number;
+                                    /** @description invite.send only, else null. Acceptance rate over invitations sent in the window that are at least 7 days old, each counted on its own send day (the acceptance floor's rule). Withdrawn invitations stay in the denominator. */
+                                    acceptance: {
+                                        /** @description Numerator: the accepted part of sent. */
+                                        accepted: number;
+                                        /** @description Denominator. */
+                                        sent: number;
+                                        /** @description accepted / sent, 4 decimals; null when sent is 0. */
+                                        rate: number | null;
+                                        /** @description True when sent is below 30. The rate is still returned. */
+                                        low_sample: boolean;
+                                    } | null;
+                                    /** @description message.send and inmail.send only, else null. Last touch: a reply counts for the message step it followed, before the next message. Over executions at least 7 days old, with no reply before them. */
+                                    reply: {
+                                        /** @description Numerator: the replied part of messaged. */
+                                        replied: number;
+                                        /** @description Denominator. */
+                                        messaged: number;
+                                        /** @description replied / messaged, 4 decimals; null when messaged is 0. */
+                                        rate: number | null;
+                                        /** @description True when messaged is below 30. The rate is still returned. */
+                                        low_sample: boolean;
+                                    } | null;
+                                    /** @description message.send and inmail.send only, else null. Seen rate over executions of this message step at least 7 days old: seen when a read receipt arrived for the message or the person replied after it (a reply proves it was read; not last touch). The rate is a floor: people can turn read receipts off. A receipt says the message was seen, never when; the same rule as GET /v1/enrollments outcome=seen. */
+                                    seen: {
+                                        /** @description Numerator: the seen part of sent. */
+                                        seen: number;
+                                        /** @description Denominator. */
+                                        sent: number;
+                                        /** @description seen / sent, 4 decimals; null when sent is 0. */
+                                        rate: number | null;
+                                        /** @description True when sent is below 30. The rate is still returned. */
+                                        low_sample: boolean;
+                                    } | null;
+                                    /** @description True on the fallback row only. */
+                                    fallback: boolean;
+                                    /** @description Executions that sent this variant's own text (executed less fallback_used); 0 on the fallback row. */
+                                    own_text_executed: number;
+                                }[];
                             }[];
                         }[];
                         /** @description Per account with records in the window or any Enrollment. Enrollment and window figures of totals equal the sum over these plus records with no account. */
@@ -44939,7 +46223,7 @@ export interface operations {
                             account_id: string;
                             /** @description null once the account is removed. */
                             account_name: string | null;
-                            /** @description Enrollments by state right now; the window does not apply. A Contact enrolled with two accounts counts twice. */
+                            /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Contact counts once per Account. */
                             enrollments: {
                                 /** @description Waiting to start (pending). */
                                 queued: number;
@@ -45007,6 +46291,17 @@ export interface operations {
                                 comments: number;
                                 /** @description skill.endorse steps executed. */
                                 endorsements: number;
+                            };
+                            /** @description Right now, like enrollments: why Enrollments were skipped or failed. Each map sums to its count. */
+                            enrollment_reasons: {
+                                /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                skipped: {
+                                    [key: string]: number;
+                                };
+                                /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                failed: {
+                                    [key: string]: number;
+                                };
                             };
                         }[];
                         safety_warning?: components["schemas"]["SafetyWarning"];
@@ -45273,7 +46568,9 @@ export interface operations {
                 account_id?: string;
                 /** @description Only this Motion's events (mot_...). */
                 motion_id?: string;
-                /** @description Comma list of step.executed, step.failed, invite.accepted, message.replied. Default: all. */
+                /** @description Only the outcome events of this Step, in any Sequence version of the Motion. Requires motion_id (step ids are unique per Motion, not per team). */
+                step_id?: string;
+                /** @description step.executed, step.failed, invite.accepted, message.replied. Default: all. Repeat the key, comma-separate or mix; empties ignored. */
                 kind?: ("step.executed" | "step.failed" | "invite.accepted" | "message.replied")[];
                 /** @description Max items per page (1-100, default 20). */
                 limit?: number;
@@ -45322,8 +46619,13 @@ export interface operations {
                              * @enum {string|null}
                              */
                             outcome: "executed" | "skipped" | "failed" | null;
-                            /** @description Why a step was skipped or failed, as a code; null otherwise. */
-                            reason: string | null;
+                            /**
+                             * @description Why a step was skipped or failed, as a code of the reasons catalogue (https://docs.curviate.com/reference/motion-reasons); null otherwise.
+                             * @enum {string|null}
+                             */
+                            reason: "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit" | null;
+                            /** @description The catalogue's one-line plain-words sentence for reason; null when reason is. */
+                            reason_message: string | null;
                             /** @description The person, read live; null once the Contact is deleted. */
                             contact: {
                                 id: string;
@@ -45339,7 +46641,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST: an unknown query parameter or kind, a limit outside 1 to 100, or a cursor not from a prior response. */
+            /** @description INVALID_REQUEST: an unknown query parameter or kind, a limit outside 1 to 100, a cursor not from a prior response, or step_id without motion_id (step_id:). */
             400: {
                 headers: {
                     [name: string]: unknown;

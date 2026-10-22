@@ -52,9 +52,13 @@
   "errors": [],
   "warnings": [
     {
-      "code": "W1",
       "path": "r_msg",
-      "rule": "merge point: reached by fall-through from settle and by a jump from connected"
+      "rule": "merge point: reached by fall-through from settle and by a jump from connected",
+      "code": "W1",
+      "message": "merge point: reached by fall-through from settle and by a jump from connected",
+      "pointer": "/steps/5",
+      "hint": "If the merge is intended, keep it; otherwise give the jumping step its own continuation.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w1"
     }
   ]
 }

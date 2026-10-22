@@ -3,7 +3,7 @@
  * performance, against the corpus documents the server wrote.
  */
 import { describe, expect, it } from "vitest";
-import { CurviateError, Sequence, SEQUENCE_SCHEMA_URL, step, validateSequence } from "../../src/index.js";
+import { CurviateError, newStepId, Sequence, SEQUENCE_SCHEMA_URL, step, validateSequence } from "../../src/index.js";
 import { corpus, sequenceOf } from "./_corpus.js";
 
 const doc = (file: string) => sequenceOf(corpus.find(([f]) => f === file)![1]) as Record<string, unknown>;
@@ -22,8 +22,8 @@ const fr018 = () =>
     step.wait("w_opener", "1d"),
     step.do("opener", "message.send", {
       variants: [
-        { id: "opener_named", text: "Hi {{contact.first_name}}, {{contact.extra.opener}}" },
-        { id: "opener_plain", text: "{{contact.extra.opener}}" },
+        { id: "opener_named", text: "Hi {{first_name}}, {{opener}}" },
+        { id: "opener_plain", text: "{{opener}}" },
       ],
       with: { fallback: "Hi, glad we are connected. How do you handle LinkedIn outreach today?" },
       note: "No link in the first message.",
@@ -31,14 +31,13 @@ const fr018 = () =>
     step.until("r_opener", "message.replied", { timeout: "4d", then: "replied" }),
     step.do("followup", "message.send", {
       with: {
-        text: "{{contact.extra.followup}}",
+        text: "{{followup}}",
         fallback: "Quick follow-up in case this got buried. Happy to leave it here if the timing is off.",
       },
     }),
     step.until("r_followup", "message.replied", { timeout: "7d", then: "replied" }),
     step.tag("silent", "no-reply", { next: "end" }),
-    step.tag("replied", "in-conversation"),
-    step.emit("handoff", "reply.received", { next: "end" }),
+    step.tag("replied", "in-conversation", { next: "end" }),
   );
 
 const thrown = (fn: () => unknown): CurviateError => {
@@ -90,7 +89,7 @@ describe("operations", () => {
 
   it("acts on the first of duplicate ids", () => {
     const b = Sequence.fromDocument({ on_reply: "end", steps: [step.wait("a", "2d"), fin] }).insertBefore("fin", w("a"));
-    expect(b.validate().errors).toEqual([{ path: "steps[1].id", rule: "duplicate step id a" }]);
+    expect(b.validate().errors).toMatchObject([{ path: "steps[1].id", rule: "duplicate step id a", code: "R3", pointer: "/steps/1/id" }]);
     expect(b.remove("a").toDocument().steps).toEqual([
       { id: "a", wait: "1d" },
       { id: "fin", emit: "done", next: "end" },
@@ -116,7 +115,7 @@ describe("operations", () => {
   it("JSON.stringify(builder) equals JSON.stringify(toDocument()) and throws the same way", () => {
     const b = fr018();
     expect(JSON.stringify(b)).toBe(JSON.stringify(b.toDocument()));
-    const bad = Sequence.fromDocument(FR018).remove("handoff");
+    const bad = Sequence.fromDocument(FR018).remove("replied");
     expect(() => JSON.stringify(bad)).toThrow(CurviateError);
     expect(thrown(() => JSON.stringify(bad)).errors).toEqual(thrown(() => bad.toDocument()).errors);
   });
@@ -171,9 +170,21 @@ describe("emission", () => {
     expect(out.$schema).toBe(SEQUENCE_SCHEMA_URL);
   });
 
+  it("puts a step's event where the API serves it: after with, before then, else, next and note", () => {
+    const out = Sequence.create({ on_reply: "end" })
+      .add(
+        step.do("invite", "invite.send", { note: "n", next: "t", with: { note: null }, event: "invite_sent" }),
+        step.tag("t", "warm", { next: "end", event: "tagged" }),
+      )
+      .toDocument();
+    expect(JSON.stringify(out.steps)).toBe(
+      '[{"id":"invite","do":"invite.send","with":{"note":null},"event":"invite_sent","next":"t","note":"n"},{"id":"t","tag":"warm","event":"tagged","next":"end"}]',
+    );
+  });
+
   it("an empty builder throws R2; the normative example (W1 only) returns the document", () => {
     const err = thrown(() => Sequence.create({ on_reply: "end" }).toDocument());
-    expect(err.errors).toEqual([{ path: "steps", rule: "required: an array of 1 to 100 steps" }]);
+    expect(err.errors).toMatchObject([{ path: "steps", rule: "required: an array of 1 to 100 steps", code: "R2" }]);
     const b = fr018();
     expect(b.validate().warnings.map((x) => x.code)).toEqual(["W1"]);
     expect(b.toDocument()).toEqual(FR018);
@@ -234,9 +245,27 @@ describe("performance and determinism", () => {
   });
 
   it("two runs give identical bytes and error order", () => {
-    const broken = { ...big, steps: big.steps.map((s, i) => (i % 10 === 0 ? { ...s, with: { text: "{{nope}}" } } : s)) };
+    const broken = { ...big, steps: big.steps.map((s, i) => (i % 10 === 0 ? { ...s, with: { text: "{{Nope}}" } } : s)) };
     expect(JSON.stringify(validateSequence(broken))).toBe(JSON.stringify(validateSequence(broken)));
     expect(validateSequence(broken).errors.length).toBeGreaterThan(10);
     expect(JSON.stringify(Sequence.fromDocument(big).toDocument())).toBe(JSON.stringify(Sequence.fromDocument(big).toDocument()));
+  });
+});
+
+describe("newStepId: the id a new step of a kind gets (the dashboard editor's rule)", () => {
+  const d = { on_reply: "end", steps: [{ id: "message", do: "message.send", variants: [{ id: "message_2", text: "a" }, { id: "b", text: "b" }] }, { id: "visit", do: "profile.view" }] };
+  const long = "a".repeat(40);
+  it.each([
+    ["first of its kind", {}, "message.send", undefined, "message"],
+    ["next free in the series, variant ids taken too", d, "message.send", undefined, "message_3"],
+    ["the kind's own base", d, "post.react", undefined, "like"],
+    ["each step kind", {}, "until", undefined, "accepted"],
+    ["a wait before a step", d, "wait", "visit", "w_visit"],
+    ["a wait with no step after", d, "wait", undefined, "wait"],
+    ["cut to 40 characters", {}, "wait", long, `w_${long}`.slice(0, 40)],
+    ["cut to 40 with its suffix", { steps: [{ id: `w_${long}`.slice(0, 40) }] }, "wait", long, `w_${long}`.slice(0, 38) + "_2"],
+    ["not a document: nothing taken", "x", "tag", undefined, "tag"],
+  ] as const)("%s", (_, doc, kind, before, expected) => {
+    expect(newStepId(doc, kind, before)).toBe(expected);
   });
 });

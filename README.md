@@ -143,26 +143,32 @@ const all = await curviate.contacts.export({ format: "json", tag: "vip" });
 
 ## Sequences
 
-A Motion runs one Sequence: a JSON document of steps (`do`, `wait`, `until`, `if`, `emit`, `tag`), run from the first step and ended explicitly with `"end"`. The SDK has an offline module for it: a typed builder that emits exactly that document, and `validateSequence`, which gives the verdict the API gives. Nothing in it touches the network, a key or the file system, so it runs in CI, browsers and edge functions. It needs TypeScript 5.0 or later.
+A Motion runs one Sequence: a JSON document of steps (`do`, `wait`, `until`, `if`, `tag`, and the legacy `emit`), run from the first step and ended explicitly with `"end"`. The SDK has an offline module for it: a typed builder that emits exactly that document, and `validateSequence`, which gives the verdict the API gives. Nothing in it touches the network, a key or the file system, so it runs in CI, browsers and edge functions. It needs TypeScript 5.0 or later.
 
 ```ts
 import { Sequence, step } from "@curviate/sdk";
 
 const seq = Sequence.create({ on_reply: "end" }).add(
-  step.do("invite", "invite.send", { with: { note: null, withdraw_after: "21d" } }),
+  step.do("invite", "invite.send", { with: { note: null, withdraw_after: "21d" }, event: "invite_sent" }),
   step.until("accepted", "invite.accepted", { timeout: "21d", then: "opener", else: "end" }),
   step.do("opener", "message.send", {
-    with: { text: "Hi {{contact.first_name}}, thanks for connecting.", fallback: "Hi, thanks for connecting." },
-    next: "end",
+    variants: [
+      { id: "named", text: "Hi {{first_name}}, {{opener}}" },
+      { id: "plain", text: "{{opener}}" },
+    ],
+    with: { fallback: "Hi, thanks for connecting." },
   }),
+  step.until("r_opener", "message.replied", { timeout: "4d", then: "end" }),
+  step.if("seen", { "message.seen": true }, { then: "bump", else: "end" }),
+  step.do("bump", "message.send", { with: { text: "{{followup}}", fallback: "Quick follow-up in case this got buried." }, next: "end" }),
 );
 
 const document = seq.toDocument(); // the Sequence document, keys in canonical order
 ```
 
-Field names are the document's keys (`on_reply`, `note_fallback`, `withdraw_after`). With literal arguments, the type checker refuses what the API would: a typo'd action, event, reaction or predicate, a `{{...}}` that is not a v1 variable (`{{firstName}}`, a `| default:` filter), a text with a variable and no fallback, a duration like `"1w"`, the reserved id `"end"`, and a jump to a step you never added (at `toDocument()`). Text the type checker cannot see (a `string` variable) is checked when you call `validate()` or `toDocument()`.
+Field names are the document's keys (`on_reply`, `note_fallback`, `withdraw_after`). Variables: `{{first_name}}` (any standard Contact field), `{{my_first_name}}`, `{{my_last_name}}`, `{{my_full_name}}` (the sending account), and any other `{{<key>}}` is the custom field `contact.extra.<key>`; the long forms `{{contact.first_name}}`, `{{contact.extra.opener}}` and `{{account.first_name}}` stay valid. A messaging step takes one text in `with` or exactly 2 `variants` (A/B). An optional `event` on a `do` or `tag` step sends a custom event each time the step runs; `until event.<name>` waits for one your agent sends (`enrollments.events`). With literal arguments, the type checker refuses what the API would: a typo'd action, event, reaction or predicate, a `{{...}}` that is not a variable (`{{firstName}}`, `{{my_title}}`, a `| default:` filter), a text with a variable and no fallback, one variant, a duration like `"1w"`, the reserved id `"end"`, and a jump to a step you never added (at `toDocument()`). Text the type checker cannot see (a `string` variable) is checked when you call `validate()` or `toDocument()`.
 
-Every builder operation (`add`, `insertBefore`, `replace`, `remove`, `onReply`) returns a new builder. `toDocument()` throws `SEQUENCE_INVALID` with every error in `err.errors` as `{path, rule}`, the same list the API returns; warnings never block, read them with `validate()`. `JSON.stringify(seq)` equals `JSON.stringify(seq.toDocument())`.
+Every builder operation (`add`, `insertBefore`, `replace`, `remove`, `onReply`) returns a new builder. `toDocument()` throws `SEQUENCE_INVALID` with every error in `err.errors`, the same list the API returns: `path`, `rule`, and the compiler-style `code` (`R1` to `R24`), `pointer` (a JSON Pointer into the document), `hint` (the fix) and `docs_url`. Warnings (`W1` to `W13`) never block, read them with `validate()`. `JSON.stringify(seq)` equals `JSON.stringify(seq.toDocument())`. `newStepId(document, kind)` names a new step as the dashboard editor does (`message`, `message_2`, `w_<step>` for a wait before a step).
 
 Raw JSON stays first class. Validate a document you wrote by hand, or load one (a Motion's `sequence`) to edit it:
 
@@ -170,14 +176,14 @@ Raw JSON stays first class. Validate a document you wrote by hand, or load one (
 import { Sequence, step, validateSequence } from "@curviate/sdk";
 
 const { errors, warnings } = validateSequence(JSON.parse(text));
-for (const e of errors) console.error(`${e.path}: ${e.rule}`);
+for (const e of errors) console.error(`${e.path}: ${e.rule} (${e.code}: ${e.hint})`);
 
 const edited = Sequence.fromDocument(motion.sequence) // throws SEQUENCE_INVALID when invalid
   .insertBefore("opener", step.wait("settle", "1d"))
   .toDocument();
 ```
 
-`{{motion.<key>}}` is warning `W9` offline: only the API knows the Motion's `settings.variables`. Warnings that need the Motion's sending accounts or settings come from the API only. `SEQUENCE_SCHEMA_V1` is the published JSON Schema (`SEQUENCE_SCHEMA_URL`) for editors and tooling. The validator knows the vocabulary of the schema it ships with: a document using an action or event added to the API later is refused offline while the API accepts it; upgrade the SDK.
+Deprecated forms are accepted with warning `W13` until 2027-01-19, then refused: 3 to 5 variants (use 2), `until signal.<name>` (use `until event.<name>`) and `{{motion.<key>}}` (write the text in place or use a custom field; offline it also gives `W9`). Warnings that need the Motion's sending accounts or settings come from the API only. `SEQUENCE_SCHEMA_V1` is the published JSON Schema (`SEQUENCE_SCHEMA_URL`) for editors and tooling. The validator knows the vocabulary of the schema it ships with: a document using an action or event added to the API later is refused offline while the API accepts it; upgrade the SDK.
 
 ## Motions and Enrollments
 
@@ -197,14 +203,22 @@ const motion = await curviate.motions.create({
 const { paths, samples, projection } = await curviate.motions.preview(motion.id); // a read: nothing is sent to LinkedIn
 await curviate.motions.start(motion.id);
 
-// Edit later: load the stored document into a builder.
+// Edit later: load the stored document into a builder. if_sequence_revision refuses the save
+// with SEQUENCE_CONFLICT (the stored document in err.current) when someone saved since.
 const current = await curviate.motions.get(motion.id);
 await curviate.motions.update(motion.id, {
   sequence: Sequence.fromDocument(current.sequence).insertBefore("opener", step.wait("settle", "1d")),
+  if_sequence_revision: current.sequence_revision,
 });
+
+// Enrollments: one Contact's run on one account.
+const { items: failed } = await curviate.enrollments.list({ motion_id: motion.id, done_step: "opener", outcome: "failed" });
+await curviate.enrollments.bulk({ action: "retry", ids: failed.map((e) => e.id) }); // one result per Enrollment
+await curviate.enrollments.retry("enr_123"); // one: throws NOTHING_TO_RETRY unless its Step failed
+await curviate.enrollments.events("enr_123", { name: "research_ready" }); // moves an `until event.research_ready`
 ```
 
-A plain object goes as is and the API validates it; wrap hand-written JSON in `Sequence.fromDocument(json)` to have it checked offline first. `sequence: null` clears a draft's. Status operations: `start`, `pause`, `resume`, `archive` (irreversible), `delete` (drafts only); `addContacts` / `removeContacts` enroll or take out Contacts directly; `getSequenceVersion` reads a past version. `curviate.enrollments` lists one Contact's run per account (`list`, `get` with its Step history) and acts on it: `stop`, `resume({ at })`, `signal({ name })`. Refusals: `MOTION_NOT_STARTABLE` (every gap in `err.errors`), `MOTION_STATUS_CONFLICT`, `ENROLLMENT_NOT_ACTIVE`, `SEQUENCE_INVALID`.
+A plain object goes as is and the API validates it; wrap hand-written JSON in `Sequence.fromDocument(json)` to have it checked offline first. `sequence: null` clears a draft's. Status operations: `start`, `pause`, `resume`, `archive` (irreversible), `delete` (drafts only); `addContacts` / `removeContacts` enroll or take out Contacts directly; `getSequenceVersion` reads a past version. `curviate.enrollments` lists one Contact's run per account (`list`, filtered by status, Step, Sequence version, or how a Step ended: `done_step` with `outcome`, `reason`, `variant_id`, `relationship_at_enrollment`; `get` with its Step history) and acts on it: `pause`, `resume()` (lift your pause), `retry(id)` (retry the failed Step; it acts only on a failure, else throws `NOTHING_TO_RETRY`, so a repeated call never sends a delivered message again), `resume({ at })` (an explicit jump to a Step, not guarded: it re-enters a Step that already sent; use `retry` for a failure), `events({ name })`, `reassign({ account_id })`, `stop`, and `bulk` for up to 1,000 at once by ids or filter. `signal` is the deprecated name of `events`, accepted until 2027-01-19. Refusals: `MOTION_NOT_STARTABLE` (every gap in `err.errors`), `MOTION_STATUS_CONFLICT`, `ENROLLMENT_NOT_ACTIVE`, `SEQUENCE_INVALID`, `SEQUENCE_CONFLICT`, `STEP_IN_FLIGHT` (retry in a minute), `NOTHING_TO_RETRY` (from `retry`, or per Enrollment in `bulk`), `ACCOUNT_ALREADY_ENGAGED`, `ALREADY_ENROLLED_ON_ACCOUNT`, `KNOWN_CHAT`.
 
 ## Network, Unibox and Analytics
 

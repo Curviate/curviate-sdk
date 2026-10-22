@@ -27,7 +27,12 @@
   "errors": [
     {
       "path": "m.variants[0].id",
-      "rule": "m is already a step or variant id"
+      "rule": "m is already a step or variant id",
+      "code": "R23",
+      "message": "m is already a step or variant id",
+      "pointer": "/steps/0/variants/0/id",
+      "hint": "Give the step exactly 2 variants (A/B) with ids unique in the document, or one text in with.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r23"
     }
   ],
   "warnings": []

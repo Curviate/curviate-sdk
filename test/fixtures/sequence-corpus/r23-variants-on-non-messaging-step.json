@@ -27,7 +27,12 @@
   "errors": [
     {
       "path": "v.variants",
-      "rule": "variants are allowed on messaging steps only"
+      "rule": "variants are allowed on messaging steps only",
+      "code": "R23",
+      "message": "variants are allowed on messaging steps only",
+      "pointer": "/steps/0/variants",
+      "hint": "Give the step exactly 2 variants (A/B) with ids unique in the document, or one text in with.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r23"
     }
   ],
   "warnings": []

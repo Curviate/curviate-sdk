@@ -20,7 +20,12 @@
   "errors": [
     {
       "path": "c.with.fallback",
-      "rule": "required on a comment: text, or \"skip\""
+      "rule": "required on a comment: text, or \"skip\"",
+      "code": "R19",
+      "message": "required on a comment: text, or \"skip\"",
+      "pointer": "/steps/0/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     }
   ],
   "warnings": []

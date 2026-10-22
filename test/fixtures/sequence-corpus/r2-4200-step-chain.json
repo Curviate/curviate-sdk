@@ -16813,7 +16813,12 @@
   "errors": [
     {
       "path": "steps",
-      "rule": "4200 steps; the limit is 100"
+      "rule": "4200 steps; the limit is 100",
+      "code": "R2",
+      "message": "4200 steps; the limit is 100",
+      "pointer": "/steps",
+      "hint": "Keep the document to 1 to 100 steps and 256 KiB; split a longer flow into two Motions.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r2"
     }
   ],
   "warnings": []

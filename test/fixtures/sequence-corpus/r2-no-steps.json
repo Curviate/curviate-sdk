@@ -11,7 +11,12 @@
   "errors": [
     {
       "path": "steps",
-      "rule": "required: an array of 1 to 100 steps"
+      "rule": "required: an array of 1 to 100 steps",
+      "code": "R2",
+      "message": "required: an array of 1 to 100 steps",
+      "pointer": "/steps",
+      "hint": "Keep the document to 1 to 100 steps and 256 KiB; split a longer flow into two Motions.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r2"
     }
   ],
   "warnings": []

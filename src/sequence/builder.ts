@@ -147,7 +147,7 @@ export class Sequence<S = never, R extends string = never, O extends boolean = f
    * Appends steps in order: constructor output or object literals.
    *
    * @example
-   * const next = seq.add(step.wait("pause", "2d"), step.emit("done", "sequence.done", { next: "end" }));
+   * const next = seq.add(step.wait("pause", "2d"), step.tag("done", "sequence-done", { event: "sequence_done", next: "end" }));
    */
   add<const T extends readonly SequenceStep[]>(...steps: T & NoDups<T, Lit<Ids<S>>>): Sequence<S | Steps<T>, R, O> {
     return this.#with([...this.#doc.steps, ...clone(steps as readonly unknown[])]);

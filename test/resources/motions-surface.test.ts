@@ -3,7 +3,7 @@
 // body on the wire. The comma-list rows also cover the empty-array fold on
 // every list filter the API reads as one comma list.
 import { describe, expect, it } from "vitest";
-import { Curviate, ERROR_CODES, isCurviateError } from "../../src/index.js";
+import { Curviate, CurviateError, ERROR_CODES, isCurviateError } from "../../src/index.js";
 
 const BASE = "https://app.curviate.test";
 
@@ -94,10 +94,49 @@ const ROWS: Row[] = [
     undefined,
   ],
   ["enrollments.list(status: []) omits the filter", (c) => c.enrollments.list({ motion_id: "mot_1", status: [] }), "GET", "/v1/enrollments", "?motion_id=mot_1", undefined],
+  [
+    "enrollments.list(step outcome filters) sends reason and relationship_at_enrollment as comma lists",
+    (c) =>
+      c.enrollments.list({
+        motion_id: "mot_1",
+        version: 2,
+        done_step: "opener",
+        outcome: "failed",
+        reason: ["platform_error", "outcome_unknown"],
+        variant_id: "a",
+        relationship_at_enrollment: ["connected", "invite_pending"],
+      }),
+    "GET",
+    "/v1/enrollments",
+    "?motion_id=mot_1&version=2&done_step=opener&outcome=failed&reason=platform_error,outcome_unknown&variant_id=a&relationship_at_enrollment=connected,invite_pending",
+    undefined,
+  ],
+  [
+    "enrollments.list(reason: [], relationship_at_enrollment: []) omits both",
+    (c) => c.enrollments.list({ motion_id: "mot_1", reason: [], relationship_at_enrollment: [] }),
+    "GET",
+    "/v1/enrollments",
+    "?motion_id=mot_1",
+    undefined,
+  ],
   ["enrollments.get", (c) => c.enrollments.get(ODD), "GET", `/v1/enrollments/${ODD_PATH}`, "", undefined],
   ["enrollments.stop", (c) => c.enrollments.stop(ODD), "POST", `/v1/enrollments/${ODD_PATH}/stop`, "", undefined],
-  ["enrollments.resume", (c) => c.enrollments.resume("enr_1", { at: "opener" }), "POST", "/v1/enrollments/enr_1/resume", "", { at: "opener" }],
-  ["enrollments.signal", (c) => c.enrollments.signal("enr_1", { name: "demo_booked" }), "POST", "/v1/enrollments/enr_1/signal", "", { name: "demo_booked" }],
+  ["enrollments.pause", (c) => c.enrollments.pause(ODD), "POST", `/v1/enrollments/${ODD_PATH}/pause`, "", undefined],
+  ["enrollments.resume(at): continue at a Step, or Retry the failed one", (c) => c.enrollments.resume("enr_1", { at: "opener" }), "POST", "/v1/enrollments/enr_1/resume", "", { at: "opener" }],
+  ["enrollments.resume(): lift your own pause, no body", (c) => c.enrollments.resume(ODD), "POST", `/v1/enrollments/${ODD_PATH}/resume`, "", undefined],
+  ["enrollments.resume({}): an empty body is sent as given", (c) => c.enrollments.resume("enr_1", {}), "POST", "/v1/enrollments/enr_1/resume", "", {}],
+  ["enrollments.events", (c) => c.enrollments.events(ODD, { name: "research_ready" }), "POST", `/v1/enrollments/${ODD_PATH}/events`, "", { name: "research_ready" }],
+  ["enrollments.reassign", (c) => c.enrollments.reassign(ODD, { account_id: "acc_2" }), "POST", `/v1/enrollments/${ODD_PATH}/reassign`, "", { account_id: "acc_2" }],
+  ["enrollments.bulk(ids)", (c) => c.enrollments.bulk({ action: "stop", ids: ["enr_1", "enr_2"] }), "POST", "/v1/enrollments/bulk", "", { action: "stop", ids: ["enr_1", "enr_2"] }],
+  [
+    "enrollments.bulk(filter): arrays stay JSON arrays in the body",
+    (c) => c.enrollments.bulk({ action: "event", name: "research_ready", filter: { motion_id: "mot_1", status: ["active", "paused"], reason: ["platform_error"] } }),
+    "POST",
+    "/v1/enrollments/bulk",
+    "",
+    { action: "event", name: "research_ready", filter: { motion_id: "mot_1", status: ["active", "paused"], reason: ["platform_error"] } },
+  ],
+  ["enrollments.signal (deprecated alias of events)", (c) => c.enrollments.signal("enr_1", { name: "demo_booked" }), "POST", "/v1/enrollments/enr_1/signal", "", { name: "demo_booked" }],
 
   // The same fold on the comma lists that shipped before (contacts, drafts).
   ["contacts.list(enrollment_status: []) omits it", (c) => c.contacts.list({ motion_id: "mot_1", enrollment_status: [] }), "GET", "/v1/contacts", "?motion_id=mot_1", undefined],
@@ -126,6 +165,13 @@ describe("motion refusals decode to their own code, not INTERNAL", () => {
     ["ENROLLMENT_NOT_ACTIVE", 409],
     ["CONTACT_NOT_ENROLLABLE", 422],
     ["SEQUENCE_INVALID", 422],
+    ["SEQUENCE_CONFLICT", 409],
+    ["STEP_IN_FLIGHT", 409],
+    ["NOTHING_TO_RETRY", 409],
+    ["ACCOUNT_ALREADY_ENGAGED", 409],
+    ["ALREADY_ENROLLED_ON_ACCOUNT", 409],
+    ["KNOWN_CHAT", 409],
+    ["CHAT_NOT_ONE_TO_ONE", 422],
   ] as const)("%s (%i)", async (code, status) => {
     expect(ERROR_CODES).toContain(code);
     const { fetchImpl } = recorder(status, JSON.stringify({ object: "error", code, message: "refused", user_fixable: true, retry_likely_to_succeed: false }));
@@ -137,5 +183,74 @@ describe("motion refusals decode to their own code, not INTERNAL", () => {
     const { fetchImpl } = recorder(409, JSON.stringify({ object: "error", code: "NOT_A_CODE", message: "x" }));
     const err = await client(fetchImpl).motions.start("mot_1").catch((e: unknown) => e);
     expect(isCurviateError(err) && err.code).toBe("INTERNAL");
+  });
+});
+
+describe("SEQUENCE_CONFLICT carries the stored Sequence in current", () => {
+  it("another code's current is not read as a Sequence conflict", async () => {
+    const { fetchImpl } = recorder(409, JSON.stringify({ object: "error", code: "MOTION_STATUS_CONFLICT", message: "x", current: { sequence_revision: 1 } }));
+    const err = await client(fetchImpl).motions.update("mot_1", { name: "x" }).catch((e: unknown) => e);
+    expect(isCurviateError(err) && err.code).toBe("MOTION_STATUS_CONFLICT");
+    expect(isCurviateError(err) && err.current).toBeUndefined();
+  });
+
+  const current = {
+    sequence_revision: 4,
+    sequence_version: 2,
+    sequence: { on_reply: "end", steps: [{ id: "w", wait: "1d", next: "end" }] },
+    sequence_updated_by_user_id: "usr_1",
+    updated_at: "2026-10-21T10:00:00.000Z",
+  };
+  const refuse = (extra: Record<string, unknown>) =>
+    JSON.stringify({ object: "error", code: "SEQUENCE_CONFLICT", message: "The Sequence changed since revision 3", user_fixable: true, retry_likely_to_succeed: false, ...extra });
+
+  it.each([
+    ["an object: decoded as sent", { current }, current],
+    ["a null sequence (a draft cleared it)", { current: { ...current, sequence: null } }, { ...current, sequence: null }],
+    ["absent", {}, undefined],
+    ["not an object", { current: "x" }, undefined],
+  ] as const)("current %s", async (_, extra, expected) => {
+    const { sent, fetchImpl } = recorder(409, refuse(extra));
+    const err = await client(fetchImpl)
+      .motions.update("mot_1", { sequence: DOC, if_sequence_revision: 3 })
+      .catch((e: unknown) => e);
+    expect(sent[0]!.body).toEqual({ sequence: DOC, if_sequence_revision: 3 });
+    expect(isCurviateError(err) && err.code).toBe("SEQUENCE_CONFLICT");
+    expect(isCurviateError(err) && err.current).toEqual(expected);
+    expect(isCurviateError(err) && err.toJSON().current).toEqual(expected);
+  });
+});
+
+describe("enrollments.retry(id): the guarded Retry, through bulk", () => {
+  const item = (outcome: "ok" | "error", error: { code: string; message: string } | null = null) =>
+    JSON.stringify({ object: "enrollment_bulk_result", action: "retry", matched: 1, results: [{ enrollment_id: "enr_1", outcome, error, warnings: [] }] });
+
+  it("sends bulk retry for that one id and returns its result when ok", async () => {
+    const { sent, fetchImpl } = recorder(200, item("ok"));
+    const res = await client(fetchImpl).enrollments.retry("enr_1");
+    expect(sent).toEqual([{ method: "POST", path: "/v1/enrollments/bulk", search: "", body: { action: "retry", ids: ["enr_1"] } }]);
+    expect(res).toEqual({ enrollment_id: "enr_1", outcome: "ok", error: null, warnings: [] });
+  });
+
+  it.each([
+    ["NOTHING_TO_RETRY", "Nothing to retry: the Step's latest outcome is executed.", false],
+    ["STEP_IN_FLIGHT", "A Step is being sent right now; retry in a minute.", true],
+    ["ENROLLMENT_NOT_ACTIVE", "Enrollment is finished.", false],
+    ["RESOURCE_NOT_FOUND", "Enrollment not found.", false],
+  ] as const)("a per-item %s is thrown as that typed CurviateError, never resolved", async (code, message, retryable) => {
+    const { fetchImpl } = recorder(200, item("error", { code, message }));
+    const err = await client(fetchImpl).enrollments.retry("enr_1").catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(CurviateError);
+    expect(err).toMatchObject({ code, message, httpStatus: undefined, retryLikelyToSucceed: retryable });
+  });
+
+  it("an unknown per-item code is INTERNAL, its message kept", async () => {
+    const { fetchImpl } = recorder(200, item("error", { code: "NOT_A_CODE", message: "x" }));
+    await expect(client(fetchImpl).enrollments.retry("enr_1")).rejects.toMatchObject({ code: "INTERNAL", message: "x" });
+  });
+
+  it("a response without that Enrollment's result throws INTERNAL", async () => {
+    const { fetchImpl } = recorder(200, JSON.stringify({ object: "enrollment_bulk_result", action: "retry", matched: 0, results: [] }));
+    await expect(client(fetchImpl).enrollments.retry("enr_1")).rejects.toMatchObject({ code: "INTERNAL" });
   });
 });

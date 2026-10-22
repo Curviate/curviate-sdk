@@ -21,7 +21,12 @@
   "errors": [
     {
       "path": "m.with.text",
-      "rule": "8001 characters; the limit is 8000, variables not counted"
+      "rule": "8001 characters; the limit is 8000, variables not counted",
+      "code": "R22",
+      "message": "8001 characters; the limit is 8000, variables not counted",
+      "pointer": "/steps/0/with/text",
+      "hint": "Shorten the text to the limit (variables are not counted) or use fewer variables.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r22"
     }
   ],
   "warnings": []

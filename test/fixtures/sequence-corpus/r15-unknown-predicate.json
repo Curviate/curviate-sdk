@@ -22,7 +22,12 @@
   "errors": [
     {
       "path": "c.if",
-      "rule": "unknown predicate contact.age"
+      "rule": "unknown predicate contact.age",
+      "code": "R15",
+      "message": "unknown predicate contact.age",
+      "pointer": "/steps/0/if",
+      "hint": "Use one predicate key per object with its typed operand; chain if steps instead of all or any. account.* and message.* work in if steps only.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r15"
     }
   ],
   "warnings": []

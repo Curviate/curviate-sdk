@@ -61,11 +61,11 @@
         "variants": [
           {
             "id": "opener_named",
-            "text": "Hi {{contact.first_name}}, {{contact.extra.opener}}"
+            "text": "Hi {{first_name}}, {{opener}}"
           },
           {
             "id": "opener_plain",
-            "text": "{{contact.extra.opener}}"
+            "text": "{{opener}}"
           }
         ],
         "with": {
@@ -83,7 +83,7 @@
         "id": "followup",
         "do": "message.send",
         "with": {
-          "text": "{{contact.extra.followup}}",
+          "text": "{{followup}}",
           "fallback": "Quick follow-up in case this got buried. Happy to leave it here if the timing is off."
         }
       },
@@ -100,11 +100,7 @@
       },
       {
         "id": "replied",
-        "tag": "in-conversation"
-      },
-      {
-        "id": "handoff",
-        "emit": "reply.received",
+        "tag": "in-conversation",
         "next": "end"
       }
     ]
@@ -112,9 +108,13 @@
   "errors": [],
   "warnings": [
     {
-      "code": "W1",
       "path": "w_invite",
-      "rule": "merge point: reached by fall-through from like and by a jump from has_post"
+      "rule": "merge point: reached by fall-through from like and by a jump from has_post",
+      "code": "W1",
+      "message": "merge point: reached by fall-through from like and by a jump from has_post",
+      "pointer": "/steps/4",
+      "hint": "If the merge is intended, keep it; otherwise give the jumping step its own continuation.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w1"
     }
   ]
 }

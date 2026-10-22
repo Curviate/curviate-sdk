@@ -1,6 +1,8 @@
 /**
  * `CurviateError.errors` decodes the
- * wire `errors[]` of any error response, keeps only `{path, rule}`, and
+ * wire `errors[]` of any error response, keeps `{path, rule}` and the
+ * compiler-style `code`, `message`, `pointer`, `hint`, `docs_url` (each when a
+ * string), drops any other key, and
  * leaves a malformed list undefined without breaking the rest of the error.
  * The offline module itself issues no request: the suite runs under MSW
  * `onUnhandledRequest: "error"` (test/setup.ts), and the control below is a
@@ -39,17 +41,25 @@ const envelope = (code: string, errors?: unknown) => ({
 });
 
 describe("wire errors[]", () => {
-  it("SEQUENCE_INVALID with 2 entries: both decoded, suggestion dropped, toJSON carries them", async () => {
+  it("SEQUENCE_INVALID with 2 entries: both decoded with their compiler-style keys, suggestion dropped, toJSON carries them", async () => {
+    const compiler = {
+      code: "R19",
+      message: "required because the text uses a variable",
+      pointer: "/steps/0/with",
+      hint: "Add a variable-free fallback.",
+      docs_url: "https://docs.curviate.com/reference/sequence-rules#r19",
+    };
     const { err, requests } = await refusal(422, envelope("SEQUENCE_INVALID", [
-      { path: "opener.with.fallback", rule: "required because the text uses a variable", suggestion: "add a fallback" },
-      { path: "on_reply", rule: "unknown step thanks" },
+      { path: "opener.with.fallback", rule: "required because the text uses a variable", ...compiler, suggestion: "add a fallback" },
+      { path: "on_reply", rule: "unknown step thanks", code: 11, pointer: null },
     ]));
     expect(requests).toBe(1);
     expect(err.code).toBe("SEQUENCE_INVALID");
     expect(err.message).toBe("m: r");
     expect(err.httpStatus).toBe(422);
     expect(err.errors).toEqual([
-      { path: "opener.with.fallback", rule: "required because the text uses a variable" },
+      { path: "opener.with.fallback", rule: "required because the text uses a variable", ...compiler },
+      // a compiler-style key that is not a string is dropped; the entry stays
       { path: "on_reply", rule: "unknown step thanks" },
     ]);
     expect(err.toJSON().errors).toEqual(err.errors);

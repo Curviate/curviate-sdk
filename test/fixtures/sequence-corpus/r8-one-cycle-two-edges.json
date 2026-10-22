@@ -24,7 +24,12 @@
   "errors": [
     {
       "path": "b.then",
-      "rule": "cycle: a -> b -> a"
+      "rule": "cycle: a -> b -> a",
+      "code": "R8",
+      "message": "cycle: a -> b -> a",
+      "pointer": "/steps/1/then",
+      "hint": "Break the loop: point one exit of the cycle at a later step or at \"end\".",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r8"
     }
   ],
   "warnings": []

@@ -21,9 +21,13 @@
   "errors": [],
   "warnings": [
     {
-      "code": "W5",
       "path": "f.do",
-      "rule": "profile.follow after invite.send on the same path; an invitation already follows"
+      "rule": "profile.follow after invite.send on the same path; an invitation already follows",
+      "code": "W5",
+      "message": "profile.follow after invite.send on the same path; an invitation already follows",
+      "pointer": "/steps/1/do",
+      "hint": "Remove the follow step: the invitation already follows the person.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w5"
     }
   ]
 }

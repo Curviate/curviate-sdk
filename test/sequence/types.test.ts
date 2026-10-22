@@ -38,6 +38,10 @@ function guarantees(): void {
   // @ts-expect-error G3 event
   step.until("u", "invite.acepted", { timeout: "1d", then: "end" });
   step.until("u", "invite.accepted", { timeout: "1d", then: "end" });
+  step.until("u", "event.paid", { timeout: "1d", then: "end" });
+  // @ts-expect-error G3 custom event namespace
+  step.until("u", "events.paid", { timeout: "1d", then: "end" });
+  // deprecated spelling: the API accepts it with W13 until 2027-01-19, so it compiles
   step.until("u", "signal.paid", { timeout: "1d", then: "end" });
   // @ts-expect-error G3 reaction
   step.do("l", "post.react", { with: { reaction: "wow" } });
@@ -47,6 +51,12 @@ function guarantees(): void {
   step.if("i", { "contact.first_name": { eq: "Ada" } }, { then: "end" });
   step.if("i", { "contact.extra.plan": { eq: "pro" } }, { then: "end" });
   step.if("i", { not: { "account.premium": true } }, { then: "end" });
+  step.if("i", { "message.seen": true }, { then: "end" });
+  step.if("i", { not: { "message.seen": true } }, { then: "end" });
+  // @ts-expect-error G3 message predicate key
+  step.if("i", { "message.read": true }, { then: "end" });
+  // @ts-expect-error G3 message.seen takes a boolean
+  step.if("i", { "message.seen": "yes" }, { then: "end" });
 
   // G4: with keys per action; no step-level by; post only "latest"
   // @ts-expect-error G4 unknown with key
@@ -57,6 +67,13 @@ function guarantees(): void {
   // @ts-expect-error G4 post
   step.do("l", "post.react", { with: { post: "first" } });
   step.do("l", "post.react", { with: { post: "latest" } });
+  // the step event: on do and tag steps only
+  step.do("i", "invite.send", { with: { note: null }, event: "invite_sent" });
+  step.tag("t", "warm", { event: "tagged_warm" });
+  // @ts-expect-error G4 event on a wait
+  step.wait("w", "1d", { event: "waited" });
+  // @ts-expect-error G4 event on an until
+  step.until("u", "invite.accepted", { timeout: "1d", then: "end", event: "x" });
 
   // G5: until needs timeout and then; if needs then
   // @ts-expect-error G5 until without timeout
@@ -67,10 +84,13 @@ function guarantees(): void {
   step.if("i", { "contact.connected": true }, { else: "end" });
   step.if("i", { "contact.connected": true }, { then: "end" });
 
-  // G6: variants >= 2, messaging only, exclusive with the text
+  // G6: variants exactly 2 (3 to 5 compile: accepted with W13 until 2027-01-19), messaging only, exclusive with the text
   // @ts-expect-error G6 one variant
   step.do("v", "message.send", { variants: [{ id: "a", text: "x" }] });
   step.do("v", "message.send", { variants: [{ id: "a", text: "x" }, { id: "b", text: "y" }] });
+  step.do("v", "message.send", { variants: [{ id: "a", text: "x" }, { id: "b", text: "y" }, { id: "c", text: "z" }, { id: "d", text: "w" }, { id: "e", text: "v" }] });
+  // @ts-expect-error G6 six variants
+  step.do("v", "message.send", { variants: [{ id: "a", text: "x" }, { id: "b", text: "y" }, { id: "c", text: "z" }, { id: "d", text: "w" }, { id: "e", text: "v" }, { id: "f", text: "u" }] });
   // @ts-expect-error G6 text and variants
   step.do("v", "message.send", { with: { text: "x" }, variants: [{ id: "a", text: "x" }, { id: "b", text: "y" }] });
   // @ts-expect-error G6 variants on a non-messaging action
@@ -112,6 +132,17 @@ function guarantees(): void {
   step.do("m", "message.send", { with: { text: "Hi {{contact.first_name | default:'x'}}", fallback: "Hi" } });
   step.do("m", "message.send", { with: { text: "Hi {{ contact.first_name }}", fallback: "Hi" } });
   step.do("m", "message.send", { with: { text: "Hi {{account.full_name}} {{motion.offer}}", fallback: "Hi" } });
+  // G10: short variables: a standard field, the account's own name, a custom field
+  step.do("m", "message.send", { with: { text: "Hi {{first_name}}, {{my_first_name}} here. {{opener}} {{ company_2 }}", fallback: "Hi" } });
+  // @ts-expect-error G10 my_ is reserved for the account's own name
+  step.do("m", "message.send", { with: { text: "Hi {{my_title}}", fallback: "Hi" } });
+  // @ts-expect-error G10 a short variable starts with a lowercase letter
+  step.do("m", "message.send", { with: { text: "Hi {{_opener}}", fallback: "Hi" } });
+  // @ts-expect-error G10 a dotted name outside contact., account., motion.
+  step.do("m", "message.send", { with: { text: "Hi {{lead.first_name}}", fallback: "Hi" } });
+  // @ts-expect-error G7 a short variable needs its fallback too
+  step.do("m", "message.send", { with: { text: "Hi {{first_name}}" } });
+  step.do("c", "post.comment", { with: { text: "{{comment}}", fallback: "skip" } });
 
   // G10: the server trims a variable's inner text with String.prototype.trim: every one of its characters
   step.do("m", "message.send", { with: { text: "Hi {{\tcontact.first_name\t}}", fallback: "Hi" } });
@@ -202,66 +233,63 @@ const literal = {
   "fr018": () =>
     Sequence.create({ on_reply: "replied" }).add(
       step.do("visit", "profile.view", {"note":"Warm-up visit before any contact."}),
-      step.if("has_post", {"contact.posted_within":"14d"}, {"then":"w_like","else":"w_invite"}),
+      step.if("has_post", {"contact.posted_within": "14d"}, {"then":"w_like","else":"w_invite"}),
       step.wait("w_like", "1d"),
       step.do("like", "post.react", {"with":{"post":"latest","newer_than":"14d","reaction":"like"}}),
       step.wait("w_invite", "1d"),
       step.do("invite", "invite.send", {"with":{"withdraw_after":"21d"},"note":"No note: blank invites are accepted slightly more often."}),
       step.until("accepted", "invite.accepted", {"timeout":"21d","then":"w_opener","else":"end"}),
       step.wait("w_opener", "1d"),
-      step.do("opener", "message.send", {"variants":[{"id":"opener_named","text":"Hi {{contact.first_name}}, {{contact.extra.opener}}"},{"id":"opener_plain","text":"{{contact.extra.opener}}"}],"with":{"fallback":"Hi, glad we are connected. How do you handle LinkedIn outreach today?"},"note":"No link in the first message."}),
+      step.do("opener", "message.send", {"variants":[{"id":"opener_named","text":"Hi {{first_name}}, {{opener}}"},{"id":"opener_plain","text":"{{opener}}"}],"with":{"fallback":"Hi, glad we are connected. How do you handle LinkedIn outreach today?"},"note":"No link in the first message."}),
       step.until("r_opener", "message.replied", {"timeout":"4d","then":"replied"}),
-      step.do("followup", "message.send", {"with":{"text":"{{contact.extra.followup}}","fallback":"Quick follow-up in case this got buried. Happy to leave it here if the timing is off."}}),
+      step.do("followup", "message.send", {"with":{"text":"{{followup}}","fallback":"Quick follow-up in case this got buried. Happy to leave it here if the timing is off."}}),
       step.until("r_followup", "message.replied", {"timeout":"7d","then":"replied"}),
       step.tag("silent", "no-reply", {"next":"end"}),
-      step.tag("replied", "in-conversation"),
-      step.emit("handoff", "reply.received", {"next":"end"}),
+      step.tag("replied", "in-conversation", {"next":"end"}),
     ),
   "connect-and-converse": () =>
     Sequence.create({ on_reply: "replied" }).add(
       step.do("visit", "profile.view", {"note":"Warm-up visit before any contact."}),
-      step.if("has_post", {"contact.posted_within":"14d"}, {"then":"w_like","else":"w_invite"}),
+      step.if("has_post", {"contact.posted_within": "14d"}, {"then":"w_like","else":"w_invite"}),
       step.wait("w_like", "1d"),
       step.do("like", "post.react", {"with":{"post":"latest","newer_than":"14d","reaction":"like"}}),
       step.wait("w_invite", "1d"),
       step.do("invite", "invite.send", {"with":{"withdraw_after":"21d"},"note":"No note: blank invites are accepted slightly more often."}),
       step.until("accepted", "invite.accepted", {"timeout":"21d","then":"w_opener","else":"end"}),
       step.wait("w_opener", "1d"),
-      step.do("opener", "message.send", {"variants":[{"id":"opener_named","text":"Hi {{contact.first_name}}, {{contact.extra.opener}}"},{"id":"opener_plain","text":"{{contact.extra.opener}}"}],"with":{"fallback":"Hi, glad we are connected. How do you handle LinkedIn outreach today?"},"note":"No link in the first message."}),
+      step.do("opener", "message.send", {"variants":[{"id":"opener_named","text":"Hi {{first_name}}, {{opener}}"},{"id":"opener_plain","text":"{{opener}}"}],"with":{"fallback":"Hi, glad we are connected. How do you handle LinkedIn outreach today?"},"note":"No link in the first message."}),
       step.until("r_opener", "message.replied", {"timeout":"4d","then":"replied"}),
-      step.do("followup", "message.send", {"with":{"text":"{{contact.extra.followup}}","fallback":"Quick follow-up in case this got buried. Happy to leave it here if the timing is off."}}),
+      step.do("followup", "message.send", {"with":{"text":"{{followup}}","fallback":"Quick follow-up in case this got buried. Happy to leave it here if the timing is off."}}),
       step.until("r_followup", "message.replied", {"timeout":"7d","then":"replied"}),
       step.tag("silent", "no-reply", {"next":"end"}),
-      step.tag("replied", "in-conversation"),
-      step.emit("handoff", "reply.received", {"next":"end"}),
+      step.tag("replied", "in-conversation", {"next":"end"}),
     ),
   "engage-then-connect": () =>
     Sequence.create({ on_reply: "replied" }).add(
       step.do("react", "post.react", {"with":{"newer_than":"60d"},"else":"w_invite"}),
       step.wait("w_comment", "10m"),
-      step.do("comment", "post.comment", {"with":{"newer_than":"60d","text":"{{contact.extra.comment}}","fallback":"skip"},"note":"The agent writes one comment per Contact; no product mention."}),
+      step.do("comment", "post.comment", {"with":{"newer_than":"60d","text":"{{comment}}","fallback":"skip"},"note":"The agent writes one comment per Contact; no product mention."}),
       step.wait("w_invite", "30m"),
       step.do("invite", "invite.send", {"with":{"withdraw_after":"21d"}}),
       step.until("accepted", "invite.accepted", {"timeout":"21d","then":"w_opener","else":"end"}),
       step.wait("w_opener", "1d"),
-      step.do("opener", "message.send", {"with":{"text":"Hi {{contact.first_name}}, {{contact.extra.opener}}","fallback":"Hi, thanks for connecting. What are you working on at the moment?"}}),
+      step.do("opener", "message.send", {"with":{"text":"Hi {{first_name}}, {{opener}}","fallback":"Hi, thanks for connecting. What are you working on at the moment?"}}),
       step.until("r_opener", "message.replied", {"timeout":"5d","then":"replied"}),
-      step.do("followup", "message.send", {"with":{"text":"{{contact.extra.followup}}","fallback":"Following up once in case this got buried. All good if now is not the time."}}),
+      step.do("followup", "message.send", {"with":{"text":"{{followup}}","fallback":"Following up once in case this got buried. All good if now is not the time."}}),
       step.until("r_followup", "message.replied", {"timeout":"7d","then":"replied"}),
       step.tag("silent", "no-reply", {"next":"end"}),
-      step.tag("replied", "in-conversation"),
-      step.emit("handoff", "reply.received", {"next":"end"}),
+      step.tag("replied", "in-conversation", {"next":"end"}),
     ),
   "nurture-connections": () =>
     Sequence.create({ on_reply: "replied" }).add(
-      step.if("is_connected", {"contact.connected":true}, {"then":"dm","else":"not_connected"}),
+      step.if("is_connected", {"contact.connected": true}, {"then":"dm","else":"not_connected"}),
       step.tag("not_connected", "not-connected", {"next":"end"}),
-      step.do("dm", "message.send", {"with":{"text":"{{contact.extra.dm}}","fallback":"Hi, it has been a while. What are you focused on these days?"}}),
+      step.do("dm", "message.send", {"with":{"text":"{{dm}}","fallback":"Hi, it has been a while. What are you focused on these days?"}}),
       step.until("r_dm", "message.replied", {"timeout":"5d","then":"replied"}),
-      step.do("followup", "message.send", {"with":{"text":"{{contact.extra.followup}}","fallback":"No rush on this, just wanted to check in once more."}}),
+      step.if("seen_dm", {"message.seen": true}, {"then":"followup","else":"end","note":"Follow up only when they saw the first message."}),
+      step.do("followup", "message.send", {"with":{"text":"{{followup}}","fallback":"No rush on this, just wanted to check in once more."}}),
       step.until("r_followup", "message.replied", {"timeout":"7d","then":"replied","else":"end"}),
-      step.tag("replied", "in-conversation"),
-      step.emit("handoff", "reply.received", {"next":"end"}),
+      step.tag("replied", "in-conversation", {"next":"end"}),
     ),
   "role-switch-engagement": () =>
     Sequence.create({ on_reply: "end" }).add(
@@ -429,7 +457,7 @@ describe("types (G14, pinned vocabulary)", () => {
   it("the hand-typed unions equal the schema's vocabulary", () => {
     const v = vocabulary(SEQUENCE_SCHEMA_V1);
     const EVENTS = ["invite.accepted", "message.replied", "message.read"] as const;
-    expectTypeOf<(typeof EVENTS)[number]>().toEqualTypeOf<Exclude<SequenceEvent, `signal.${string}`>>();
+    expectTypeOf<(typeof EVENTS)[number]>().toEqualTypeOf<Exclude<SequenceEvent, `event.${string}` | `signal.${string}`>>();
     expect(v.events).toEqual(EVENTS);
     type GenWith<A extends keyof ActionParams> = NonNullable<Extract<SequenceDocument["steps"][number], { do: A }>["with"]>;
     expectTypeOf<keyof ActionParams["invite.send"]>().toEqualTypeOf<keyof GenWith<"invite.send">>();

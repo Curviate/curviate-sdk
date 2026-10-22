@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://docs.curviate.com/schemas/sequence/v1.json",
   "title": "Sequence document v1",
-  "description": "A Motion's Sequence: a flat steps array run from the first step, ending explicitly in \"end\". Served documents use this key order: $schema, on_reply, steps; in a step id, the kind key, timeout, variants, with, then, else, next, note; in with post, newer_than, reaction, subject, text, note, note_fallback, fallback, withdraw_after; in a variant id, subject, text. A text holds at most 50 variables.",
+  "description": "A Motion's Sequence: a flat steps array run from the first step, ending explicitly in \"end\". Served documents use this key order: $schema, on_reply, steps; in a step id, the kind key, timeout, variants, with, event, then, else, next, note; in with post, newer_than, reaction, subject, text, note, note_fallback, fallback, withdraw_after; in a variant id, subject, text. A text holds at most 50 variables. Variables: `{{first_name}}` (any standard Contact field), `{{my_first_name}}`, `{{my_last_name}}`, `{{my_full_name}}` (the sending Account), any other `{{<key>}}` is the custom field `contact.extra.<key>`; the long forms `{{contact.<field>}}`, `{{contact.extra.<key>}}` and `{{account.<name>}}` stay valid. Delays are about their duration: every wait and until timeout gets a small random spread that only ever adds time.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -47,6 +47,11 @@
                 "additionalProperties": false,
                 "properties": {}
               },
+              "event": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_.]{0,63}$",
+                "description": "Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent."
+              },
               "next": {
                 "type": "string",
                 "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
@@ -86,6 +91,11 @@
                 "additionalProperties": false,
                 "properties": {}
               },
+              "event": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_.]{0,63}$",
+                "description": "Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent."
+              },
               "next": {
                 "type": "string",
                 "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
@@ -124,6 +134,11 @@
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {}
+              },
+              "event": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_.]{0,63}$",
+                "description": "Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent."
               },
               "next": {
                 "type": "string",
@@ -187,7 +202,7 @@
                 "type": "array",
                 "minItems": 2,
                 "maxItems": 5,
-                "description": "A/B variants, split evenly and sticky per Enrollment. Exclusive with the text in with.",
+                "description": "A/B variants: exactly 2, split evenly and sticky per Enrollment. Exclusive with the text in with. More than 2 (up to 5) is deprecated: accepted with warning W13 until 2027-01-19.",
                 "items": {
                   "type": "object",
                   "additionalProperties": false,
@@ -207,6 +222,11 @@
                     }
                   }
                 }
+              },
+              "event": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_.]{0,63}$",
+                "description": "Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent."
               },
               "next": {
                 "type": "string",
@@ -246,6 +266,11 @@
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {}
+              },
+              "event": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_.]{0,63}$",
+                "description": "Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent."
               },
               "next": {
                 "type": "string",
@@ -301,7 +326,7 @@
                 "type": "array",
                 "minItems": 2,
                 "maxItems": 5,
-                "description": "A/B variants, split evenly and sticky per Enrollment. Exclusive with the text in with.",
+                "description": "A/B variants: exactly 2, split evenly and sticky per Enrollment. Exclusive with the text in with. More than 2 (up to 5) is deprecated: accepted with warning W13 until 2027-01-19.",
                 "items": {
                   "type": "object",
                   "additionalProperties": false,
@@ -321,6 +346,11 @@
                     }
                   }
                 }
+              },
+              "event": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_.]{0,63}$",
+                "description": "Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent."
               },
               "next": {
                 "type": "string",
@@ -395,7 +425,7 @@
                 "type": "array",
                 "minItems": 2,
                 "maxItems": 5,
-                "description": "A/B variants, split evenly and sticky per Enrollment. Exclusive with the text in with.",
+                "description": "A/B variants: exactly 2, split evenly and sticky per Enrollment. Exclusive with the text in with. More than 2 (up to 5) is deprecated: accepted with warning W13 until 2027-01-19.",
                 "items": {
                   "type": "object",
                   "additionalProperties": false,
@@ -420,6 +450,11 @@
                     }
                   }
                 }
+              },
+              "event": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_.]{0,63}$",
+                "description": "Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent."
               },
               "next": {
                 "type": "string",
@@ -484,6 +519,11 @@
                     "default": "like"
                   }
                 }
+              },
+              "event": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_.]{0,63}$",
+                "description": "Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent."
               },
               "next": {
                 "type": "string",
@@ -551,7 +591,7 @@
                 "type": "array",
                 "minItems": 2,
                 "maxItems": 5,
-                "description": "A/B variants, split evenly and sticky per Enrollment. Exclusive with the text in with.",
+                "description": "A/B variants: exactly 2, split evenly and sticky per Enrollment. Exclusive with the text in with. More than 2 (up to 5) is deprecated: accepted with warning W13 until 2027-01-19.",
                 "items": {
                   "type": "object",
                   "additionalProperties": false,
@@ -571,6 +611,11 @@
                     }
                   }
                 }
+              },
+              "event": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_.]{0,63}$",
+                "description": "Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent."
               },
               "next": {
                 "type": "string",
@@ -611,6 +656,11 @@
                 "additionalProperties": false,
                 "properties": {}
               },
+              "event": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_.]{0,63}$",
+                "description": "Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent."
+              },
               "next": {
                 "type": "string",
                 "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
@@ -644,7 +694,7 @@
               "wait": {
                 "type": "string",
                 "pattern": "^[1-9][0-9]*(m|h|d)$",
-                "description": "Calendar time to wait (1m to 365d)."
+                "description": "Calendar time to wait, about this long (1m to 365d; a small random spread is added, never subtracted)."
               },
               "next": {
                 "type": "string",
@@ -685,15 +735,15 @@
                   },
                   {
                     "type": "string",
-                    "pattern": "^signal\\.[a-z][a-z0-9_]{0,39}$"
+                    "pattern": "^(event|signal)\\.[a-z][a-z0-9_.]{0,63}$"
                   }
                 ],
-                "description": "`invite.accepted`, `message.replied`, `message.read`, or `signal.<name>`."
+                "description": "`invite.accepted`, `message.replied`, `message.read`, or `event.<name>` (a custom event an agent sends). `signal.<name>` is the deprecated spelling of `event.<name>`: accepted with warning W13 until 2027-01-19."
               },
               "timeout": {
                 "type": "string",
                 "pattern": "^[1-9][0-9]*(m|h|d)$",
-                "description": "Give up waiting after this long (1h to 180d)."
+                "description": "Give up waiting after about this long (1h to 180d; a small random spread is added, never subtracted)."
               },
               "then": {
                 "type": "string",
@@ -1342,6 +1392,19 @@
                     "type": "object",
                     "additionalProperties": false,
                     "required": [
+                      "message.seen"
+                    ],
+                    "properties": {
+                      "message.seen": {
+                        "type": "boolean",
+                        "description": "if only: the Enrollment's last message.send or inmail.send was seen (a read receipt, or a reply after it). False before any message."
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
                       "not"
                     ],
                     "properties": {
@@ -1955,6 +2018,19 @@
                                 "type": "boolean"
                               }
                             }
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "message.seen"
+                            ],
+                            "properties": {
+                              "message.seen": {
+                                "type": "boolean",
+                                "description": "if only: the Enrollment's last message.send or inmail.send was seen (a read receipt, or a reply after it). False before any message."
+                              }
+                            }
                           }
                         ]
                       }
@@ -1995,7 +2071,7 @@
               "emit": {
                 "type": "string",
                 "pattern": "^[a-z][a-z0-9_.]{0,63}$",
-                "description": "Signal name for the motion.signal webhook."
+                "description": "Legacy: a custom event name. New documents put event on the step that matters."
               },
               "next": {
                 "type": "string",
@@ -2028,6 +2104,11 @@
                 "maxLength": 64,
                 "pattern": "^[^,;]*[^,;\\s][^,;]*$",
                 "description": "Tag added to the Contact."
+              },
+              "event": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_.]{0,63}$",
+                "description": "Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent."
               },
               "next": {
                 "type": "string",

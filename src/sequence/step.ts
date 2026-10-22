@@ -1,7 +1,7 @@
 /**
  * Step constructors: one per kind, arguments
  * `(id, <kind value>, fields)`, `fields` keys exactly the document's
- * (`with`, `variants`, `next`, `then`, `else`, `timeout`, `note`). Each returns
+ * (`with`, `variants`, `event`, `next`, `then`, `else`, `timeout`, `note`). Each returns
  * the plain step object and adds no key the caller did not give: no default is
  * written.
  *
@@ -22,6 +22,7 @@ import type {
 } from "./types.js";
 
 type Flow = { next?: string; note?: string };
+type TagFlow = Flow & { event?: string };
 type Branch = { then: string; else?: string; note?: string };
 type Timed = Branch & { timeout: string };
 type TimeoutOf<F> = F extends { readonly timeout: infer D } ? D : never;
@@ -34,13 +35,15 @@ function build(id: string, kind: string, value: unknown, fields: object | undefi
 export const step: {
   /**
    * A `do` step: run one action. `fields.with` takes the action's parameters,
-   * `fields.variants` (messaging actions) 2 to 5 A/B texts, `else` the step
-   * taken when the action cannot run. A literal text using a variable needs
-   * its fallback; a comment always needs one.
+   * `fields.variants` (messaging actions) exactly 2 A/B texts, `fields.event`
+   * a custom event sent each time the step runs, `else` the step taken when
+   * the action cannot run. A literal text using a variable needs its
+   * fallback; a comment always needs one.
    *
    * @example
    * step.do("opener", "message.send", {
-   *   with: { text: "Hi {{contact.first_name}}, thanks for connecting.", fallback: "Hi, thanks for connecting." },
+   *   with: { text: "Hi {{first_name}}, thanks for connecting.", fallback: "Hi, thanks for connecting." },
+   *   event: "opener_sent",
    *   next: "end",
    * });
    */
@@ -67,10 +70,12 @@ export const step: {
   ): { id: Id; wait: D } & F;
   /**
    * An `until` step: wait for an event, at most `timeout`; `then` on the event,
-   * `else` (or the next step) on timeout.
+   * `else` (or the next step) on timeout. `event.<name>` waits for a custom
+   * event your agent sends with `enrollments.events`.
    *
    * @example
    * step.until("w_accept", "invite.accepted", { timeout: "14d", then: "opener", else: "end" });
+   * step.until("w_research", "event.research_ready", { timeout: "3d", then: "opener", else: "end" });
    */
   until<const Id extends string, const E extends SequenceEvent, const F extends Timed>(
     id: Id & CheckId<Id>,
@@ -78,10 +83,12 @@ export const step: {
     fields: F & Exact<F, keyof Timed> & { timeout: CheckDuration<TimeoutOf<F>> },
   ): { id: Id; until: E } & F;
   /**
-   * An `if` step: branch on one predicate about the Contact or the sending Account.
+   * An `if` step: branch on one predicate about the Contact, the sending
+   * Account, or the last message (`message.seen`).
    *
    * @example
    * step.if("is_connected", { "contact.connected": true }, { then: "opener", else: "invite" });
+   * step.if("was_seen", { "message.seen": true }, { then: "bump", else: "end" });
    */
   if<const Id extends string, const F extends Branch>(
     id: Id & CheckId<Id>,
@@ -89,7 +96,9 @@ export const step: {
     fields: F & Exact<F, keyof Branch>,
   ): { id: Id; if: Predicate } & F;
   /**
-   * An `emit` step: send a `motion.signal` webhook with this name.
+   * Legacy: an `emit` step sends a custom event (the `motion.custom_event`
+   * webhook) with this name. New Sequences put `event` on the `do` or `tag`
+   * step that matters instead.
    *
    * @example
    * step.emit("notify", "reply.received", { next: "end" });
@@ -100,15 +109,16 @@ export const step: {
     fields?: F & Exact<F, keyof Flow>,
   ): { id: Id; emit: string } & F;
   /**
-   * A `tag` step: add a Tag to the Contact.
+   * A `tag` step: add a Tag to the Contact; `fields.event` sends a custom
+   * event each time it runs.
    *
    * @example
-   * step.tag("mark", "replied", { next: "end" });
+   * step.tag("mark", "replied", { event: "marked_replied", next: "end" });
    */
-  tag<const Id extends string, const F extends Flow = {}>(
+  tag<const Id extends string, const F extends TagFlow = {}>(
     id: Id & CheckId<Id>,
     name: string,
-    fields?: F & Exact<F, keyof Flow>,
+    fields?: F & Exact<F, keyof TagFlow>,
   ): { id: Id; tag: string } & F;
 } = {
   do: (id: string, action: string, fields?: object) => build(id, "do", action, fields),

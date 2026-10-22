@@ -8,9 +8,6 @@
       {
         "id": "i",
         "do": "invite.send",
-        "with": {
-          "note": null
-        },
         "variants": [
           {
             "id": "x",
@@ -21,6 +18,9 @@
             "text": "Great panel."
           }
         ],
+        "with": {
+          "note": null
+        },
         "next": "end"
       }
     ]

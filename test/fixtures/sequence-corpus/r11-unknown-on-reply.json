@@ -17,7 +17,12 @@
   "errors": [
     {
       "path": "on_reply",
-      "rule": "unknown step nope"
+      "rule": "unknown step nope",
+      "code": "R11",
+      "message": "unknown step nope",
+      "pointer": "/on_reply",
+      "hint": "Set on_reply to a step id or \"end\".",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r11"
     }
   ],
   "warnings": []

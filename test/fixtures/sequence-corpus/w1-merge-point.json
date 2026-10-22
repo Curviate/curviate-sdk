@@ -29,9 +29,13 @@
   "errors": [],
   "warnings": [
     {
-      "code": "W1",
       "path": "c",
-      "rule": "merge point: reached by fall-through from b and by a jump from a"
+      "rule": "merge point: reached by fall-through from b and by a jump from a",
+      "code": "W1",
+      "message": "merge point: reached by fall-through from b and by a jump from a",
+      "pointer": "/steps/2",
+      "hint": "If the merge is intended, keep it; otherwise give the jumping step its own continuation.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w1"
     }
   ]
 }

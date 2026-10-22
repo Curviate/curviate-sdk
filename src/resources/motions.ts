@@ -1,6 +1,6 @@
 /**
  * Motions and Enrollments (root-scoped): `curviate.motions` (13 methods) and
- * `curviate.enrollments` (5 methods).
+ * `curviate.enrollments` (10 methods).
  *
  * A Motion runs one Sequence (see `Sequence`) for the Contacts of its Contact
  * lists, on its sending accounts, inside its schedule. It is created as a
@@ -19,6 +19,7 @@
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
 import { apiPath } from "../internal/path.js";
+import { CurviateError, KNOWN_ERROR_CODES, type ErrorCode } from "../errors.js";
 import { commaLists } from "../internal/query.js";
 import { Sequence, type ResolvedSequence } from "../sequence/builder.js";
 import type { SequenceDocument } from "../sequence/types.js";
@@ -45,7 +46,17 @@ export type EnrollmentDetail = paths["/v1/enrollments/{id}"]["get"]["responses"]
 export type EnrollmentListParams = NonNullable<paths["/v1/enrollments"]["get"]["parameters"]["query"]>;
 export type EnrollmentListPage = paths["/v1/enrollments"]["get"]["responses"]["200"]["content"]["application/json"];
 export type EnrollmentResumeBody = NonNullable<paths["/v1/enrollments/{id}/resume"]["post"]["requestBody"]>["content"]["application/json"];
+export type EnrollmentEventBody = NonNullable<paths["/v1/enrollments/{id}/events"]["post"]["requestBody"]>["content"]["application/json"];
+/** @deprecated Use {@link EnrollmentEventBody} with `enrollments.events`. */
 export type EnrollmentSignalBody = NonNullable<paths["/v1/enrollments/{id}/signal"]["post"]["requestBody"]>["content"]["application/json"];
+export type EnrollmentReassignBody = NonNullable<paths["/v1/enrollments/{id}/reassign"]["post"]["requestBody"]>["content"]["application/json"];
+export type EnrollmentReassignResult = paths["/v1/enrollments/{id}/reassign"]["post"]["responses"]["200"]["content"]["application/json"];
+export type EnrollmentBulkBody = NonNullable<paths["/v1/enrollments/bulk"]["post"]["requestBody"]>["content"]["application/json"];
+export type EnrollmentBulkResult = paths["/v1/enrollments/bulk"]["post"]["responses"]["200"]["content"]["application/json"];
+/** One Enrollment's result in a bulk call; what `enrollments.retry` resolves with. */
+export type EnrollmentBulkItem = EnrollmentBulkResult["results"][number];
+/** A reason code of the catalogue (skip, finish or Step reasons), as `reason` and the list's `reason` filter carry it. */
+export type EnrollmentReason = NonNullable<EnrollmentListParams["reason"]>[number];
 
 /**
  * What `sequence` takes: a document (sent verbatim, unvalidated), `null`
@@ -122,7 +133,10 @@ export class MotionsResource {
    * Change a Motion. Objects (`schedule`, `settings`) merge by key; arrays,
    * `where` and `sequence` replace whole; `null` clears. `sequence` takes a
    * builder or a document, as in `create`. After start, a structural Sequence
-   * change makes a new version; running Enrollments keep theirs.
+   * change makes a new version; running Enrollments keep theirs. Send
+   * `if_sequence_revision` (the `sequence_revision` you read) to refuse the
+   * save when someone saved the Sequence since: `SEQUENCE_CONFLICT`, nothing
+   * saved, the stored document in `err.current`. Omitted: the last write wins.
    * `PATCH /v1/motions/{id}`
    *
    * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
@@ -131,6 +145,7 @@ export class MotionsResource {
    * const motion = await curviate.motions.get("mot_123");
    * await curviate.motions.update("mot_123", {
    *   sequence: Sequence.fromDocument(motion.sequence).replace("pause", step.wait("pause", "3d", { next: "end" })),
+   *   if_sequence_revision: motion.sequence_revision,
    * });
    */
   async update<Q extends AnySequence = SequenceDocument | null>(motionId: string, body: MotionUpdateBody<Q>): Promise<Motion> {
@@ -275,15 +290,22 @@ export class EnrollmentsResource {
 
   /**
    * List Enrollments, newest first. Filters: `motion_id`, `contact_id`,
-   * `account_id`, `status` (any of them), `step_id`. Pages with an opaque
-   * `cursor` until it is `null`.
+   * `account_id`, `status` (any of them), `step_id` (at that Step now),
+   * `version`; by Step outcome: `done_step` with `outcome` (how that Step
+   * ended), `reason` (catalogue codes, any of them), `variant_id`,
+   * `relationship_at_enrollment` (any of them). Pages with an opaque `cursor`
+   * until it is `null`.
    * `GET /v1/enrollments`
    *
    * @example
-   * const { items } = await curviate.enrollments.list({ motion_id: "mot_123", status: ["active"] });
+   * const { items } = await curviate.enrollments.list({ motion_id: "mot_123", done_step: "opener", outcome: "failed" });
    */
   list(params?: EnrollmentListParams): Promise<EnrollmentListPage> {
-    return this.ctx.request<EnrollmentListPage>({ method: "GET", path: "/v1/enrollments", query: commaLists(params, "status") });
+    return this.ctx.request<EnrollmentListPage>({
+      method: "GET",
+      path: "/v1/enrollments",
+      query: commaLists(params, "status", "reason", "relationship_at_enrollment"),
+    });
   }
 
   /**
@@ -311,30 +333,137 @@ export class EnrollmentsResource {
   }
 
   /**
-   * Continue an Enrollment at Step `at` of its Sequence version, `on_reply`
-   * re-armed: the out-of-office path. Works on `active`, `paused` and most
-   * `finished` Enrollments; else `ENROLLMENT_NOT_ACTIVE`.
+   * Hold one `pending`, `active` or `paused` Enrollment until you `resume` it
+   * (`waiting.kind: "paused_by_user"`); its waits freeze. A Step being sent
+   * right now is `STEP_IN_FLIGHT`: retry in a minute. Works on every plan.
+   * `POST /v1/enrollments/{id}/pause`
+   *
+   * @example
+   * await curviate.enrollments.pause("enr_123");
+   */
+  pause(enrollmentId: string): Promise<Enrollment> {
+    return this.ctx.request<Enrollment>({ method: "POST", path: apiPath`/v1/enrollments/${enrollmentId}/pause` });
+  }
+
+  /**
+   * Without `at`: lift your own pause; the Enrollment continues where it was,
+   * with the time its wait had left. With `at`: an explicit jump to that Step
+   * of its Sequence version, `on_reply` re-armed (the out-of-office path).
+   * The jump is not guarded: it re-enters the Step you name even when that
+   * Step already sent, so a message can go out again. To retry a failed Step,
+   * use `enrollments.retry(id)`, which acts only on a failure. Works on
+   * `active`, `paused` and most `finished` Enrollments; else
+   * `ENROLLMENT_NOT_ACTIVE`.
    * `POST /v1/enrollments/{id}/resume`
    *
    * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
    *
    * @example
-   * await curviate.enrollments.resume("enr_123", { at: "bump" });
+   * await curviate.enrollments.resume("enr_123"); // lift your pause
+   * await curviate.enrollments.resume("enr_123", { at: "bump" }); // jump to a Step after an out-of-office reply
    */
-  resume(enrollmentId: string, body: EnrollmentResumeBody): Promise<Enrollment> {
+  resume(enrollmentId: string, body?: EnrollmentResumeBody): Promise<Enrollment> {
     return this.ctx.request<Enrollment>({ method: "POST", path: apiPath`/v1/enrollments/${enrollmentId}/resume`, body });
   }
 
   /**
-   * Send the signal a Step waits for (`until signal.<name>`), on an `active`
-   * or `paused` Enrollment. A name no Step of its version awaits is
-   * `INVALID_REQUEST`, listing the awaited names.
-   * `POST /v1/enrollments/{id}/signal`
+   * Send a custom event to an `active` or `paused` Enrollment whose Sequence
+   * waits for it (`until event.<name>`), for example once your agent wrote
+   * the researched text to the Contact's custom fields. Input only: fires no
+   * webhook. A name no Step of its version awaits is `INVALID_REQUEST`,
+   * listing the awaited names.
+   * `POST /v1/enrollments/{id}/events`
    *
    * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
    *
    * @example
-   * await curviate.enrollments.signal("enr_123", { name: "demo_booked" });
+   * await curviate.enrollments.events("enr_123", { name: "research_ready" });
+   */
+  events(enrollmentId: string, body: EnrollmentEventBody): Promise<Enrollment> {
+    return this.ctx.request<Enrollment>({ method: "POST", path: apiPath`/v1/enrollments/${enrollmentId}/events`, body });
+  }
+
+  /**
+   * Move an Enrollment to another sending account of its Motion; it restarts
+   * there at the first Step of its Sequence version (one you paused stays
+   * paused until you resume it). `warnings` names each Step that will be
+   * skipped. Refused, nothing changed, with `ACCOUNT_ALREADY_ENGAGED` (its
+   * account already contacted the person beyond a profile view),
+   * `ALREADY_ENROLLED_ON_ACCOUNT`, `KNOWN_CHAT` or `STEP_IN_FLIGHT`.
+   * `POST /v1/enrollments/{id}/reassign`
+   *
+   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   *
+   * @example
+   * const { warnings } = await curviate.enrollments.reassign("enr_123", { account_id: "acc_456" });
+   */
+  reassign(enrollmentId: string, body: EnrollmentReassignBody): Promise<EnrollmentReassignResult> {
+    return this.ctx.request<EnrollmentReassignResult>({ method: "POST", path: apiPath`/v1/enrollments/${enrollmentId}/reassign`, body });
+  }
+
+  /**
+   * Pause, resume, stop, retry, send an event to or reassign up to 1,000
+   * Enrollments, by `ids` or by a `filter` of the list's fields (`motion_id`
+   * required). Each is decided alone, as its single call would be, with its
+   * own result (`ok`, or `error` with that call's code; a server error on one
+   * is `INTERNAL` for it); not atomic. List with the same filter to see the
+   * matches first. Below Automate only `pause` and `stop` run.
+   * `POST /v1/enrollments/bulk`
+   *
+   * @example
+   * const { results } = await curviate.enrollments.bulk({
+   *   action: "retry",
+   *   filter: { motion_id: "mot_123", done_step: "opener", outcome: "failed" },
+   * });
+   */
+  bulk(body: EnrollmentBulkBody): Promise<EnrollmentBulkResult> {
+    return this.ctx.request<EnrollmentBulkResult>({ method: "POST", path: "/v1/enrollments/bulk", body });
+  }
+
+  /**
+   * Retry the failed Step of one Enrollment: the guarded Retry. It acts only
+   * while that Step's latest outcome is `failed`, so a repeated or looped
+   * call never sends a delivered message again. Resolves with the
+   * Enrollment's result when it was resumed; otherwise throws its refusal as
+   * a `CurviateError` (`NOTHING_TO_RETRY` when nothing failed,
+   * `STEP_IN_FLIGHT`, `ENROLLMENT_NOT_ACTIVE`, `RESOURCE_NOT_FOUND`, ...),
+   * with no `httpStatus`. Sent as `bulk` with this one id.
+   * `POST /v1/enrollments/bulk`
+   *
+   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   *
+   * @example
+   * try {
+   *   await curviate.enrollments.retry("enr_123");
+   * } catch (err) {
+   *   if (isCurviateError(err) && err.code === "NOTHING_TO_RETRY") console.log("nothing failed");
+   * }
+   */
+  async retry(enrollmentId: string): Promise<EnrollmentBulkItem> {
+    const res = await this.bulk({ action: "retry", ids: [enrollmentId] });
+    const item = res.results[0];
+    if (item?.outcome === "ok") return item;
+    const known = item?.error && KNOWN_ERROR_CODES.has(item.error.code);
+    const code = (known ? item.error!.code : "INTERNAL") as ErrorCode;
+    throw new CurviateError({
+      code,
+      message: item?.error?.message ?? `No retry result for ${enrollmentId}.`,
+      userFixable: false,
+      retryLikelyToSucceed: code === "STEP_IN_FLIGHT",
+    });
+  }
+
+  /**
+   * Deprecated alias of {@link EnrollmentsResource.events}, answered the same
+   * plus a `Deprecation` header and warning W13; accepted until 2027-01-19.
+   * `POST /v1/enrollments/{id}/signal`
+   *
+   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   *
+   * @deprecated Use `enrollments.events`; `signal` stops working on 2027-01-19.
+   *
+   * @example
+   * await curviate.enrollments.events("enr_123", { name: "demo_booked" }); // instead of signal
    */
   signal(enrollmentId: string, body: EnrollmentSignalBody): Promise<Enrollment> {
     return this.ctx.request<Enrollment>({ method: "POST", path: apiPath`/v1/enrollments/${enrollmentId}/signal`, body });

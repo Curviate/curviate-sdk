@@ -26,6 +26,7 @@ export {
   type CurviateErrorInit,
   type CurviateErrorJSON,
   type CurviateErrorDetail,
+  type SequenceConflictCurrent,
 } from "./errors.js";
 
 export type {
@@ -152,7 +153,14 @@ export type {
   EnrollmentListParams,
   EnrollmentListPage,
   EnrollmentResumeBody,
+  EnrollmentEventBody,
   EnrollmentSignalBody,
+  EnrollmentReassignBody,
+  EnrollmentReassignResult,
+  EnrollmentBulkBody,
+  EnrollmentBulkResult,
+  EnrollmentBulkItem,
+  EnrollmentReason,
 } from "./resources/motions.js";
 
 export type { TierResult, TierName, TierFeature } from "./resources/tier.js";
@@ -211,6 +219,7 @@ export type { paths, components, operations } from "./generated/types.js";
 export {
   Sequence,
   step,
+  newStepId,
   validateSequence,
   SEQUENCE_SCHEMA_V1,
   SEQUENCE_SCHEMA_URL,
@@ -222,6 +231,7 @@ export {
   type SequenceWarning,
   type SequenceEvent,
   type SequenceTypeError,
+  type StepIdKind,
   type Action as SequenceAction,
   type Duration as SequenceDuration,
   type FieldOperand as SequenceFieldOperand,

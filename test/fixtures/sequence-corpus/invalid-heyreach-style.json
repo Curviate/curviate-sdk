@@ -50,35 +50,75 @@
   "errors": [
     {
       "path": "on_reply",
-      "rule": "required: a step id or \"end\""
+      "rule": "required: a step id or \"end\"",
+      "code": "R11",
+      "message": "required: a step id or \"end\"",
+      "pointer": "",
+      "hint": "Set on_reply to a step id or \"end\".",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r11"
     },
     {
       "path": "invite.by",
-      "rule": "step-level by is not supported; use settings.assign"
+      "rule": "step-level by is not supported; use settings.assign",
+      "code": "R5",
+      "message": "step-level by is not supported; use settings.assign",
+      "pointer": "/steps/0/by",
+      "hint": "Remove the key: each step kind takes only its own keys, and the sending Account is chosen with settings.assign.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r5"
     },
     {
       "path": "invite.with.withdraw_after",
-      "rule": "must be a duration between 14d and 180d: a number then m, h or d, like 30d"
+      "rule": "must be a duration between 14d and 180d: a number then m, h or d, like 30d",
+      "code": "R21",
+      "message": "must be a duration between 14d and 180d: a number then m, h or d, like 30d",
+      "pointer": "/steps/0/with/withdraw_after",
+      "hint": "Set withdraw_after between 14d and 180d, for example 21d.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r21"
     },
     {
       "path": "invite.with.note",
-      "rule": "{FIRST_NAME} is not a variable; write {{contact.<field>}} or remove the braces"
+      "rule": "{FIRST_NAME} is not a variable; write {{contact.<field>}} or remove the braces",
+      "code": "R18",
+      "message": "{FIRST_NAME} is not a variable; write {{contact.<field>}} or remove the braces",
+      "pointer": "/steps/0/with/note",
+      "hint": "Write a variable with double braces, like {{first_name}}, or remove the braces.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r18"
     },
     {
       "path": "msg.with.text",
-      "rule": "unknown variable {{firstName}}; use contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name or motion.<key>"
+      "rule": "unknown variable {{firstName}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "code": "R16",
+      "message": "unknown variable {{firstName}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "pointer": "/steps/1/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     },
     {
       "path": "msg.with.fallback",
-      "rule": "required because the text uses a variable"
+      "rule": "required because the text uses a variable",
+      "code": "R19",
+      "message": "required because the text uses a variable",
+      "pointer": "/steps/1/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19"
     },
     {
       "path": "msg2.with.text",
-      "rule": "variable defaults are not supported; add a fallback"
+      "rule": "variable defaults are not supported; add a fallback",
+      "code": "R17",
+      "message": "variable defaults are not supported; add a fallback",
+      "pointer": "/steps/2/with/text",
+      "hint": "Remove the part after | and add a variable-free fallback on the step instead.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r17"
     },
     {
       "path": "comment.with.text",
-      "rule": "a comment must use a contact variable, such as {{contact.extra.comment}}"
+      "rule": "a comment must use a contact variable, such as {{contact.extra.comment}}",
+      "code": "R20",
+      "message": "a comment must use a contact variable, such as {{contact.extra.comment}}",
+      "pointer": "/steps/3/with/text",
+      "hint": "Use a Contact variable in the comment, for example a custom field {{comment}} your agent writes per Contact.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r20"
     }
   ],
   "warnings": []

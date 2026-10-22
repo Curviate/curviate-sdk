@@ -1,7 +1,8 @@
 {
   "about": "r16 motion undefined",
   "rules": [
-    "R16"
+    "R16",
+    "W13"
   ],
   "only": "server",
   "context": {
@@ -25,8 +26,23 @@
   "errors": [
     {
       "path": "m.with.text",
-      "rule": "{{motion.x}} is not defined in settings.variables"
+      "rule": "{{motion.x}} is not defined in settings.variables",
+      "code": "R16",
+      "message": "{{motion.x}} is not defined in settings.variables",
+      "pointer": "/steps/0/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16"
     }
   ],
-  "warnings": []
+  "warnings": [
+    {
+      "path": "m.with.text",
+      "rule": "{{motion.x}}: Motion variables were removed; accepted until 2027-01-19; write the text in place or use a custom field",
+      "code": "W13",
+      "message": "{{motion.x}}: Motion variables were removed; accepted until 2027-01-19; write the text in place or use a custom field",
+      "pointer": "/steps/0/with/text",
+      "hint": "Use text in place or a custom field such as {{x}} instead.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w13"
+    }
+  ]
 }

@@ -143,6 +143,7 @@ const event = (i: number): EventsPage["items"][number] => ({
   variant_id: null,
   outcome: "executed",
   reason: null,
+  reason_message: null,
   contact: { id: `con_${i}`, full_name: "Test Person", linkedin_url: "https://www.linkedin.com/in/test-person" },
 });
 

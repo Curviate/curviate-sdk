@@ -18,11 +18,21 @@
   "errors": [
     {
       "path": "m.with",
-      "rule": "must be an object"
+      "rule": "must be an object",
+      "code": "R13",
+      "message": "must be an object",
+      "pointer": "/steps/0/with",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13"
     },
     {
       "path": "m.with.text",
-      "rule": "required, or use variants"
+      "rule": "required, or use variants",
+      "code": "R13",
+      "message": "required, or use variants",
+      "pointer": "/steps/0",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13"
     }
   ],
   "warnings": []

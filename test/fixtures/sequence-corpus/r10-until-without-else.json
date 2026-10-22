@@ -18,7 +18,12 @@
   "errors": [
     {
       "path": "u.else",
-      "rule": "the last step must end explicitly; set else to a step id or \"end\""
+      "rule": "the last step must end explicitly; set else to a step id or \"end\"",
+      "code": "R10",
+      "message": "the last step must end explicitly; set else to a step id or \"end\"",
+      "pointer": "/steps/0",
+      "hint": "End the last step explicitly: set its exits to a step id or \"end\".",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r10"
     }
   ],
   "warnings": []

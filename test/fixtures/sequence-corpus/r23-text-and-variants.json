@@ -30,7 +30,12 @@
   "errors": [
     {
       "path": "m.variants",
-      "rule": "use either variants or with.text, not both"
+      "rule": "use either variants or with.text, not both",
+      "code": "R23",
+      "message": "use either variants or with.text, not both",
+      "pointer": "/steps/0/variants",
+      "hint": "Give the step exactly 2 variants (A/B) with ids unique in the document, or one text in with.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r23"
     }
   ],
   "warnings": []
