@@ -390,6 +390,9 @@ export const ERROR_CODES = [
   //   was refused (already enrolled, excluded, in another Motion, filtered).
   // - `CHAT_NOT_ONE_TO_ONE` (422): a Unibox Contact action on a group chat,
   //   or a chat whose counterpart is not a person.
+  // - `CHAT_NOT_VISIBLE` (409): starting a conversation was refused: the
+  //   account already has a private conversation with this person that you
+  //   may not read. Nothing was sent.
   "MOTION_NOT_STARTABLE",
   "MOTION_STATUS_CONFLICT",
   "ENROLLMENT_NOT_ACTIVE",
@@ -400,6 +403,7 @@ export const ERROR_CODES = [
   "KNOWN_CHAT",
   "CONTACT_NOT_ENROLLABLE",
   "CHAT_NOT_ONE_TO_ONE",
+  "CHAT_NOT_VISIBLE",
 
   // Client-side, never sent by the API. `CLIENT_TIMEOUT`: no response within
   // the client's `timeout` (default 30 s, per attempt). A read is retried
