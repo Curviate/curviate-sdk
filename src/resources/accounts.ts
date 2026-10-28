@@ -133,19 +133,18 @@ export class AccountsResource {
    * `quotas[]` REPLACED its earlier `quota_name` / `remaining` / `total` /
    * `reset_time` / `recommended_throttle_hint` shape. Each row now reports
    * `budget_row`, `kind`, `used`, `ceiling`, `effective_ceiling`, `band`,
-   * `posture`, `over_default`, `halt` and the window fields. **Compare `used`
-   * against `effective_ceiling`, not `ceiling`**: the effective one is the
-   * ceiling with the account's warm-up ramp applied, and on a new account the
-   * two differ by roughly a factor of seven. `posture` says what happens at the
-   * ceiling and defaults to `warn`, so nothing here refuses until it is
-   * configured to. Two rows are not counters and say so in `kind`:
+   * `over_default`, `halt` and the window fields. **Compare `used` against
+   * `effective_ceiling`, not `ceiling`**: the effective one is the ceiling
+   * with the account's warm-up ramp applied, and on a new account the two
+   * differ by roughly a factor of seven. Limits are always enforced: at the
+   * effective ceiling the action is refused with `BUDGET_EXHAUSTED`; to send
+   * more, raise the limit. Two rows are not counters and say so in `kind`:
    * `total_actions` (`tally`) and `pending_invites` (`gauge`, whose `used` is
    * `null` until something has observed it).
    *
    * The per-minute REQUEST ceiling is a different thing and is deliberately
    * NOT in this array: it protects Curviate's own servers rather than the
-   * LinkedIn account, and it is always enforced with `429` whatever the
-   * posture.
+   * LinkedIn account, and it is answered with `429 RATE_LIMIT_ACCOUNT`.
    *
    * `activity_window` applies to every account, with or without a zone set.
    * `timezone` and `timezone_unset` report what YOU set; read

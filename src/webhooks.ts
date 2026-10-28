@@ -125,8 +125,6 @@ export interface PostPublishedPayload extends EventPayloadBase {
   post_id: string | null;
   scheduled_at: string;
   published_at: string;
-  /** Present when a warn-posture safety limit was breached by this publish. */
-  safety_warning?: unknown;
 }
 
 /**

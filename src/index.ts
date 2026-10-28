@@ -27,6 +27,7 @@ export {
   type CurviateErrorJSON,
   type CurviateErrorDetail,
   type SequenceConflictCurrent,
+  type CurviateErrorDetails,
 } from "./errors.js";
 
 export type {

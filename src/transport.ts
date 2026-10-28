@@ -21,6 +21,7 @@ import {
   type ConnectionLocation,
   type CurviateErrorDetail,
   type SequenceConflictCurrent,
+  type CurviateErrorDetails,
 } from "./errors.js";
 
 /** HTTP methods the transport issues. */
@@ -75,7 +76,7 @@ interface WireErrorEnvelope {
   hint?: { parameter?: unknown; message?: unknown };
   /** `BUDGET_EXHAUSTED`: which rule refused. */
   reason?: string;
-  /** `BUDGET_EXHAUSTED`: always true on the error; false on the 2xx `safety_warning`. */
+  /** `BUDGET_EXHAUSTED`: always true. */
   blocked?: boolean;
   /** `CONNECTION_LOCATION_UNAVAILABLE` after an applied change: where the account connects from now. */
   connection_location?: unknown;
@@ -88,6 +89,8 @@ interface WireErrorEnvelope {
   required_tier?: unknown;
   current_tier?: unknown;
   upgrade_url?: unknown;
+  /** Per-code details (`removed_key`, `export_id`, `account_id`, `account`). */
+  details?: unknown;
 }
 
 /** The compiler-style keys a wire `errors[]` entry may add to `{path, rule}`. */
@@ -256,6 +259,9 @@ async function errorFromResponse(res: Response): Promise<{ err: CurviateError; r
       ? { currentTier: env.current_tier }
       : {}),
     ...(typeof env?.upgrade_url === "string" ? { upgradeUrl: env.upgrade_url } : {}),
+    ...(env?.details !== null && typeof env?.details === "object" && !Array.isArray(env.details)
+      ? { details: env.details as CurviateErrorDetails }
+      : {}),
   });
   return { err, refusesRetry: env?.retry_likely_to_succeed === false };
 }

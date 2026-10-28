@@ -125,8 +125,9 @@ export const ERROR_CODES = [
   // Curviate's OWN account-safety ceiling, not a request-rate limit and not
   // LinkedIn refusing. A 429 that never reached LinkedIn and spent nothing:
   // the budget row named by `budgetRow` is at its ceiling, set by the account's
-  // safety policy or else the tenant default (`GET`/`PATCH /v1/safety-policy`),
-  // or the account is outside its activity window. Deliberately absent from
+  // safety policy or else the Team default (`GET`/`PATCH /v1/safety-policy`),
+  // or the account is outside its activity window. Limits are always
+  // enforced: to send more, raise the limit. Deliberately absent from
   // RETRYABLE_CODES: a monthly row's reset can be weeks out, so backing off
   // is the wrong recovery.
   // Read `resetAt`, `safetyReason` and `safetyHint` instead.
@@ -499,9 +500,14 @@ export type SafetyReason = "ceiling" | "activity_window";
  * than as prose. Wire field `hint`.
  *
  * `parameter` is addressable on `PATCH /v1/{account_id}/safety-policy` (for
- * example `profile_views.ceiling`, or `posture` where no ceiling can be
- * raised), so an agent can choose between waiting, escalating to a human and
- * reconfiguring without parsing `message`.
+ * example `profile_views.ceiling`), so an agent can choose between waiting,
+ * escalating to a human and raising the limit without parsing `message`. On
+ * an `activity_window` refusal it is `active_hours` (the account's or the
+ * Team's; the message names which), `rows[<row>].activity_window_start` or
+ * `..._end`, or on the Team policy
+ * `profiles[<profile>].rows[<row>].activity_window_start` or `..._end`. It
+ * never names a time zone: the zone follows where the account connects from.
+ * `inmail_credits` is LinkedIn's own InMail balance, not a policy field.
  */
 export interface SafetyHint {
   parameter: string;
@@ -531,6 +537,16 @@ export interface CurviateErrorDetail {
  * `current`, keys as the API sends them.
  */
 export type SequenceConflictCurrent = NonNullable<components["schemas"]["Error"]["current"]>;
+
+/**
+ * Per-code structured details. Wire field `details`, keys as the API sends
+ * them. `removed_key` on an `INVALID_REQUEST` from a safety-policy write that
+ * sent a removed key (`posture`, `tenant_default_posture`, `posture_source`):
+ * drop that key, limits are always enforced. `export_id` on
+ * `EXPORT_IN_PROGRESS`, `account_id` on an account-scoped `TIER_REQUIRED`,
+ * `account` (where the account stands now) on a refused location change.
+ */
+export type CurviateErrorDetails = NonNullable<components["schemas"]["Error"]["details"]>;
 
 /** Constructor input for {@link CurviateError}. */
 export interface CurviateErrorInit {
@@ -595,13 +611,9 @@ export interface CurviateErrorInit {
   /** Which safety rule refused, on a `BUDGET_EXHAUSTED`. Wire field `reason`. */
   safetyReason?: SafetyReason;
   /**
-   * Whether the action was refused. Wire field `blocked`; always `true` here,
-   * because an error means it did not happen and spent nothing.
-   *
-   * The same payload with `blocked: false` rides the SUCCESS body of an account
-   * on the default `warn` posture, under `safety_warning`, and is otherwise
-   * field-identical, so one branch of your code handles both postures and
-   * moving an account to `enforce` is not a breaking change.
+   * Whether the action was refused. Wire field `blocked`; always `true` on a
+   * `BUDGET_EXHAUSTED`, because the action did not happen and spent nothing.
+   * Limits are always enforced: no success response carries a safety warning.
    */
   blocked?: boolean;
   /**
@@ -646,6 +658,8 @@ export interface CurviateErrorInit {
    * should ask an Owner.
    */
   upgradeUrl?: string;
+  /** Per-code structured details. Wire field `details`. See {@link CurviateErrorDetails}. */
+  details?: CurviateErrorDetails;
 }
 
 /** Plain-object shape produced by {@link CurviateError.toJSON}. */
@@ -671,6 +685,7 @@ export interface CurviateErrorJSON {
   requiredTier?: TierName | (string & {}) | null;
   currentTier?: TierName | (string & {}) | null;
   upgradeUrl?: string;
+  details?: CurviateErrorDetails;
 }
 
 /**
@@ -719,6 +734,8 @@ export class CurviateError extends Error {
   readonly currentTier: TierName | (string & {}) | null | undefined;
   /** Where an Owner changes the Tier; absent for other roles. See {@link CurviateErrorInit.upgradeUrl}. */
   readonly upgradeUrl: string | undefined;
+  /** Per-code structured details. See {@link CurviateErrorDetails}. */
+  readonly details: CurviateErrorDetails | undefined;
 
   constructor(init: CurviateErrorInit) {
     super(init.message);
@@ -741,6 +758,7 @@ export class CurviateError extends Error {
     this.requiredTier = init.requiredTier;
     this.currentTier = init.currentTier;
     this.upgradeUrl = init.upgradeUrl;
+    this.details = init.details;
     // Maintains a correct prototype chain when targeting ES5-class semantics.
     Object.setPrototypeOf(this, CurviateError.prototype);
   }
@@ -779,6 +797,7 @@ export class CurviateError extends Error {
     if (this.requiredTier !== undefined) json.requiredTier = this.requiredTier;
     if (this.currentTier !== undefined) json.currentTier = this.currentTier;
     if (this.upgradeUrl !== undefined) json.upgradeUrl = this.upgradeUrl;
+    if (this.details !== undefined) json.details = this.details;
     return json;
   }
 }

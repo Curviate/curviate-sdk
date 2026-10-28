@@ -7,6 +7,47 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## Unreleased
+
+### #2680 Settings v2
+
+#### Breaking
+
+- **Limits are always enforced.** The warn posture is gone: `posture`,
+  `posture_source` and `tenant_default_posture` leave every read (the
+  safety policy and the `quotas[]` rows; on the policy write they remain
+  only as removed keys), and no success body carries a
+  `safety_warning` any more (`PostPublishedPayload.safety_warning` removed).
+  At a ceiling the action is refused with `BUDGET_EXHAUSTED`; to send more,
+  raise the limit. A policy write that still sends `posture` or
+  `tenant_default_posture` is accepted with a `POSTURE_REMOVED` notice until
+  2027-01-25 when it says `"enforce"` or `null`; `"warn"`, or any value after
+  that day, is `400 INVALID_REQUEST` naming the key in `details.removed_key`.
+- **`hint.parameter` on an `activity_window` refusal** is now `active_hours`,
+  `rows[<row>].activity_window_start` / `_end`, or on the Team policy
+  `profiles[<profile>].rows[<row>].activity_window_start` / `_end`. It was
+  the bare `activity_window_start` / `activity_window_end`.
+
+#### Added
+
+- **`err.details`** on `CurviateError` (type `CurviateErrorDetails`): the
+  error body's per-code details, `removed_key` on the posture refusal among
+  them.
+- **`active_hours`** at the top level of the account and Team safety policy:
+  `{days, start, end, source}` or `null`, where `source` (`account`, `team`
+  or `default`) is read-only. Write `{days, start, end}` or `null`.
+- **`activity_window_source`** on every policy row, both scopes, read-only:
+  `account_row`, `account`, `team_row`, `team` or `default`.
+
+#### Changed
+
+- **`activity_window_start` and `activity_window_end`** on a policy row now
+  report the effective edges after the chain (row, account, Team, default).
+  Same shape, wider meaning: a row with no edges of its own reads the edges
+  it inherits.
+- **`blocked`** on `CurviateError` is always `true` on a `BUDGET_EXHAUSTED`;
+  there is no `blocked: false` success payload.
+
 ## [0.44.0] - 2026-10-22
 
 Dashboard v2 API. Fixture and types regenerated from deployed staging (server
