@@ -21,6 +21,7 @@ import {
   type ConnectionLocation,
   type CurviateErrorDetail,
   type SequenceConflictCurrent,
+  type CurviateErrorDetails,
 } from "./errors.js";
 
 /** HTTP methods the transport issues. */
@@ -88,6 +89,8 @@ interface WireErrorEnvelope {
   required_tier?: unknown;
   current_tier?: unknown;
   upgrade_url?: unknown;
+  /** `TIER_REQUIRED` `account_id`, `EXPORT_IN_PROGRESS` `export_id`, ... */
+  details?: unknown;
 }
 
 /** The compiler-style keys a wire `errors[]` entry may add to `{path, rule}`. */
@@ -256,6 +259,9 @@ async function errorFromResponse(res: Response): Promise<{ err: CurviateError; r
       ? { currentTier: env.current_tier }
       : {}),
     ...(typeof env?.upgrade_url === "string" ? { upgradeUrl: env.upgrade_url } : {}),
+    ...(env?.details !== null && typeof env?.details === "object" && !Array.isArray(env.details)
+      ? { details: env.details as CurviateErrorDetails }
+      : {}),
   });
   return { err, refusesRetry: env?.retry_likely_to_succeed === false };
 }

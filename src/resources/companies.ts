@@ -241,6 +241,9 @@ export class CompaniesResource {
    * the whole request rejects with a 404, not a partial result.
    * Re-inviting an already-invited member is a safe no-op, the same
    * invitation id, never a duplicate.
+   *
+   * A person on the Team's do-not-contact list throws `DO_NOT_CONTACT` (409);
+   * nothing is sent.
    */
   followInvite(identifier: string, body: CompanyFollowInviteBody): Promise<CompanyFollowInviteResult> {
     return this.ctx.request<CompanyFollowInviteResult>({

@@ -186,6 +186,14 @@ export class SalesNavigatorResource {
    * base64-encoded file bytes, always sent as JSON, never multipart.
    * `POST /v1/{account_id}/sales-navigator/chats`
    *
+   * If the Account already has a private
+   * conversation with this person that you may not read: it throws
+   * `CHAT_NOT_VISIBLE` (409) and sends nothing. Ask the person who connected
+   * the Account to reply, or to sync the full inbox. It is detected from what
+   * Curviate stored, so a thread older than 90 days that Curviate never
+   * touched is not detected. A person on the do-not-contact list throws
+   * `DO_NOT_CONTACT` (409).
+   *
    * @beta Beta operation. See the namespace note above: while beta-gated it
    * refuses `BETA_NOT_ENABLED` (403) until a human enables beta in Settings,
    * or the request carries the `X-Curviate-Beta` header.

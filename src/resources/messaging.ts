@@ -111,6 +111,14 @@ export class MessagingResource {
    * Company pages are reply-only and cannot start a conversation this way.
    * Reply to an existing one instead, with `sendMessage()` using a
    * `COMPANY_` chat id from `inboxes.listChats()`.
+   *
+   * If the Account already has a private
+   * conversation with this person that you may not read: it throws
+   * `CHAT_NOT_VISIBLE` (409) and sends nothing. Ask the person who connected
+   * the Account to reply, or to sync the full inbox. It is detected from what
+   * Curviate stored, so a thread older than 90 days that Curviate never
+   * touched is not detected. A person on the do-not-contact list throws
+   * `DO_NOT_CONTACT` (409).
    */
   startChat(body: StartChatBody): Promise<StartChatResult> {
     return this.ctx.request<StartChatResult>({
@@ -194,6 +202,9 @@ export class MessagingResource {
    * `{ kind: "personal" }`. Never infer the acting identity from a
    * message's `sender` field, only from `sent_as`.
    *
+   *
+   * A person on the Team's do-not-contact list throws `DO_NOT_CONTACT` (409);
+   * nothing is sent.
    * @example
    * const acc = curviate.account("acc_YOUR_ACCOUNT_ID");
    * const result = await acc.messaging.sendMessage("COMPANY_83734124_2-YTQ3ODU3Njgt", {
@@ -272,7 +283,17 @@ export class MessagingResource {
     });
   }
 
-  /** Send an InMail. `POST /v1/{account_id}/messages/inmail` */
+  /**
+   * Send an InMail. `POST /v1/{account_id}/messages/inmail`
+   *
+   * If the Account already has a private
+   * conversation with this person that you may not read: it throws
+   * `CHAT_NOT_VISIBLE` (409) and sends nothing. Ask the person who connected
+   * the Account to reply, or to sync the full inbox. It is detected from what
+   * Curviate stored, so a thread older than 90 days that Curviate never
+   * touched is not detected. A person on the do-not-contact list throws
+   * `DO_NOT_CONTACT` (409).
+   */
   sendInMail(body: SendInMailBody): Promise<SendInMailResult> {
     return this.ctx.request<SendInMailResult>({
       method: "POST",

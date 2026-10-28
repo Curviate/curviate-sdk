@@ -1,5 +1,5 @@
 /**
- * Accounts resource: connected-account and seat management (9 methods, root-scoped).
+ * Accounts resource: connected-account and seat management (11 methods, root-scoped).
  *
  * Pattern followed by all resource namespaces:
  *   - take a {@link RequestContext} in the constructor,
@@ -19,6 +19,7 @@
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
 import { apiPath } from "../internal/path.js";
+import { commaLists, type WithLists } from "../internal/query.js";
 
 /** `GET /v1/accounts` 200 body, a page of connected accounts plus a cursor. */
 export type AccountListPage =
@@ -69,19 +70,48 @@ export type SeatCancelResult =
 export type SeatCancelRevertResult =
   paths["/v1/billing/seats/{seat_id}/cancel/revert"]["post"]["responses"]["200"]["content"]["application/json"];
 
+/** `GET /v1/accounts/{account_id}/metrics` query: `from`, `to`, `timezone`. */
+export type AccountMetricsParams = NonNullable<
+  paths["/v1/accounts/{account_id}/metrics"]["get"]["parameters"]["query"]
+>;
+
+/** `GET /v1/accounts/{account_id}/metrics` 200 body: one snapshot per day, oldest first. */
+export type AccountMetricList =
+  paths["/v1/accounts/{account_id}/metrics"]["get"]["responses"]["200"]["content"]["application/json"];
+
+/** `GET /v1/accounts/{account_id}/overview` query. `motion_id`, `origin`, `include`, `fields` and `sort` take a comma list or an array. */
+export type AccountOverviewParams = WithLists<
+  NonNullable<paths["/v1/accounts/{account_id}/overview"]["get"]["parameters"]["query"]>,
+  "motion_id" | "origin" | "include" | "fields" | "sort"
+>;
+
+/** `GET /v1/accounts/{account_id}/overview` 200 body. */
+export type AccountOverview =
+  paths["/v1/accounts/{account_id}/overview"]["get"]["responses"]["200"]["content"]["application/json"];
+
 export class AccountsResource {
   constructor(private readonly ctx: RequestContext) {}
 
   /**
-   * List the tenant's connected LinkedIn accounts, cursor-paginated.
+   * List the tenant's connected LinkedIn accounts, cursor-paginated. An
+   * account disconnected when its free trial ended stays listed (`status_reason:
+   * "trial_ended"`); one you disconnected does not.
    *
-   * Each item also carries a small set of cached account-detail fields
-   * (`username`, `premium_id`, `public_identifier`, `substrate_created_at`,
-   * `signatures`, `groups`) populated by an async background enrichment,
-   * `null`/`[]` until the account's first enrichment pass completes.
+   * Each item carries enough to render an account row without a second call:
+   * its profile (`full_name`, `headline`, `photo_url`, `profile_url`,
+   * `public_identifier`, `location`; LinkedIn photo URLs expire), `status` and
+   * `status_reason` (why it is disconnected or needs a reconnect: `trial_ended`
+   * or `proxy`), `warm_up` (the active ramp), `inmail_balance` (the credits
+   * LinkedIn last reported and when, `null` until observed), `motions_count`
+   * with the first 20 Motions in `motion_refs`, and `quotas`: three of the
+   * account's safety rows (`connection_requests_no_note`,
+   * `messages_first_degree`, `inmail`) with `remaining`, absent on an account
+   * you can see but not operate. `get` carries every row. Reading the list
+   * never calls LinkedIn.
    *
-   * Each item carries `external_id` (your own id for the account's end user,
-   * set on `auth.intent` or `update`) and `metadata`, both `null` when unset.
+   * Each item also carries `external_id` (your own id for the account's end
+   * user, set on `auth.intent` or `update`) and `metadata`, both `null` when
+   * unset.
    *
    * @param params - optional `limit` (1-250), `cursor` (from a prior page), and
    *   `external_id` (exact match: only that end user's accounts).
@@ -300,6 +330,53 @@ export class AccountsResource {
     return this.ctx.request<SeatCancelRevertResult>({
       method: "POST",
       path: apiPath`/v1/billing/seats/${seatId}/cancel/revert`,
+    });
+  }
+
+  /**
+   * The account's own numbers, one snapshot per day, oldest first: 1st-degree
+   * `connections`, `followers`, `profile_viewers_90d`,
+   * `search_appearances_week`, `post_impressions_7d`, and `ssi` (Sales
+   * Navigator accounts only, else `null`). Read once a day inside the
+   * account's activity window and stored: this makes no LinkedIn call. `from`
+   * and `to` are the account's local days (default the last 90 days; at most
+   * 366 days across); a day with no snapshot has no item. One response holds
+   * the whole range (`cursor` is always `null`).
+   * `GET /v1/accounts/{account_id}/metrics`
+   *
+   * @example
+   * const { items } = await curviate.accounts.metrics("acc_123", { from: "2026-08-01", to: "2026-10-28" });
+   */
+  metrics(accountId: string, params?: AccountMetricsParams): Promise<AccountMetricList> {
+    return this.ctx.request<AccountMetricList>({
+      method: "GET",
+      path: apiPath`/v1/accounts/${accountId}/metrics`,
+      ...(params !== undefined ? { query: params } : {}),
+    });
+  }
+
+  /**
+   * One account at a glance, with no LinkedIn call: `profile`, its daily
+   * `metrics` snapshot (`null` before the first one, or when you may not
+   * operate the account), `limits` (its three outreach rows now),
+   * `activity` (its latest 10 actions and their outcomes, metadata only), and
+   * its results in the window (`performance`, `daily`, its `motions`) as the
+   * team overview reads them scoped to it. `profile`, `metrics`, `limits` and
+   * `activity` do not follow the window. The window, `motion_id`, `origin`,
+   * `include`, `fields`, `sort`, `limit` and `compare` work as on
+   * `analytics.motions.list`; with none of `include` and `fields` the body is
+   * trimmed to a summary. `flags` includes `account_attention` and
+   * `limit_reached` for this account.
+   * `GET /v1/accounts/{account_id}/overview`
+   *
+   * @example
+   * const { performance, flags } = await curviate.accounts.overview("acc_123", { range: "30d" });
+   */
+  overview(accountId: string, params?: AccountOverviewParams): Promise<AccountOverview> {
+    return this.ctx.request<AccountOverview>({
+      method: "GET",
+      path: apiPath`/v1/accounts/${accountId}/overview`,
+      query: commaLists(params, "motion_id", "origin", "include", "fields", "sort"),
     });
   }
 }

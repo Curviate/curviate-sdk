@@ -286,9 +286,12 @@ export const ERROR_CODES = [
   //   error body names it (`feature`), the lowest Tier that has it
   //   (`required_tier`) and the Tier the team has (`current_tier`), read as
   //   `feature`, `requiredTier` and `currentTier` on {@link CurviateError}; a
-  //   team Owner also gets `upgradeUrl`. Writes in Drafts, Contacts and Motions
-  //   (and Network and Unibox) need Automate; reads, exports, deletes and
-  //   stopping running work pass on any Tier.
+  //   team Owner also gets `upgradeUrl`. When one Account lacks the feature
+  //   while the Team has it (an Account on a seat another Team lent this one
+  //   carries that seat's Tier), `details.account_id` names it: leave it out,
+  //   or ask the Owner who lent the seat. Writes in Drafts, Contacts and
+  //   Motions (and Network and Unibox) need Automate; reads, exports, deletes
+  //   and stopping running work pass on any Tier.
   "INSUFFICIENT_ROLE",
   "TIER_REQUIRED",
   // - `TEAM_ACCESS_DENIED` (403): the request names a team (the `team` client
@@ -373,7 +376,7 @@ export const ERROR_CODES = [
   //   Motion's status; the message names it and the operations it allows.
   //   Only a draft can be deleted: archive instead.
   // - `ENROLLMENT_NOT_ACTIVE` (409): the Enrollment's status does not take
-  //   this operation (stop and pause: pending, active or paused; events:
+  //   this operation (stop and pause: queued, active or paused; events:
   //   active or paused; resume: active, paused or finished, not when the
   //   account or Contact is gone).
   // - `STEP_IN_FLIGHT` (409): a Step of the Enrollment is being sent right
@@ -412,8 +415,11 @@ export const ERROR_CODES = [
   // - `TEAM_REQUIRED` (400): a key that works in all of your Teams called a
   //   Team-level operation without naming the Team. Pass `team` (per call or
   //   in the client config).
-  // - `SEAT_LENT` (409): the seat is lent to another Team; a connect or a
-  //   cancel naming it is refused. Move it back first.
+  // - `SEAT_LENT` (409): the seat is lent to another Team. A connect naming it,
+  //   a cancel of it, and a connect that finishes just as a lend lands are all
+  //   refused. Move it back first (`billing.seats.return`; only once no Account
+  //   uses it). A suspended lent seat reads `NO_ACTIVE_SEAT` with its own
+  //   message.
   // - `LINKEDIN_SIGN_IN_REQUIRED` (403): LinkedIn wants a sign-in on
   //   linkedin.com before it accepts this one. Sign in there, then retry.
   // - `EXPORT_IN_PROGRESS` (409): your team already has an export queued or
@@ -532,6 +538,18 @@ export interface CurviateErrorDetail {
  */
 export type SequenceConflictCurrent = NonNullable<components["schemas"]["Error"]["current"]>;
 
+/**
+ * The wire `details` object, as served: which keys appear depends on `code`.
+ * `TIER_REQUIRED`: `account_id` names the one Account that lacks the feature
+ * while the Team has it (an Account on a seat another Team lent this one
+ * carries that seat's Tier): leave it out, or ask the Owner who lent the seat.
+ * `EXPORT_IN_PROGRESS`: `export_id` is the export your Team already has queued
+ * or running (it may be a teammate's, which `exports.get` answers 404).
+ * `INVALID_REQUEST` on a removed safety-policy key: `removed_key`.
+ * `account` rides the refusal of an Account location change.
+ */
+export type CurviateErrorDetails = NonNullable<components["schemas"]["Error"]["details"]>;
+
 /** Constructor input for {@link CurviateError}. */
 export interface CurviateErrorInit {
   code: ErrorCode;
@@ -646,6 +664,12 @@ export interface CurviateErrorInit {
    * should ask an Owner.
    */
   upgradeUrl?: string;
+  /**
+   * The served `details` object, when the refusal carries one. Wire field
+   * `details`; see {@link CurviateErrorDetails} for the keys per code
+   * (`TIER_REQUIRED` `account_id`, `EXPORT_IN_PROGRESS` `export_id`).
+   */
+  details?: CurviateErrorDetails;
 }
 
 /** Plain-object shape produced by {@link CurviateError.toJSON}. */
@@ -671,6 +695,7 @@ export interface CurviateErrorJSON {
   requiredTier?: TierName | (string & {}) | null;
   currentTier?: TierName | (string & {}) | null;
   upgradeUrl?: string;
+  details?: CurviateErrorDetails;
 }
 
 /**
@@ -719,6 +744,8 @@ export class CurviateError extends Error {
   readonly currentTier: TierName | (string & {}) | null | undefined;
   /** Where an Owner changes the Tier; absent for other roles. See {@link CurviateErrorInit.upgradeUrl}. */
   readonly upgradeUrl: string | undefined;
+  /** The served `details`, e.g. `account_id` on `TIER_REQUIRED`. See {@link CurviateErrorInit.details}. */
+  readonly details: CurviateErrorDetails | undefined;
 
   constructor(init: CurviateErrorInit) {
     super(init.message);
@@ -741,6 +768,7 @@ export class CurviateError extends Error {
     this.requiredTier = init.requiredTier;
     this.currentTier = init.currentTier;
     this.upgradeUrl = init.upgradeUrl;
+    this.details = init.details;
     // Maintains a correct prototype chain when targeting ES5-class semantics.
     Object.setPrototypeOf(this, CurviateError.prototype);
   }
@@ -779,6 +807,7 @@ export class CurviateError extends Error {
     if (this.requiredTier !== undefined) json.requiredTier = this.requiredTier;
     if (this.currentTier !== undefined) json.currentTier = this.currentTier;
     if (this.upgradeUrl !== undefined) json.upgradeUrl = this.upgradeUrl;
+    if (this.details !== undefined) json.details = this.details;
     return json;
   }
 }

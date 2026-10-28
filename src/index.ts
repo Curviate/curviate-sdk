@@ -26,6 +26,7 @@ export {
   type CurviateErrorInit,
   type CurviateErrorJSON,
   type CurviateErrorDetail,
+  type CurviateErrorDetails,
   type SequenceConflictCurrent,
 } from "./errors.js";
 
@@ -37,6 +38,10 @@ export type {
   AccountUpdateResult,
   SeatList,
   AccountTeamAccessResult,
+  AccountMetricsParams,
+  AccountMetricList,
+  AccountOverviewParams,
+  AccountOverview,
 } from "./resources/accounts.js";
 
 export type {
@@ -206,7 +211,27 @@ export type {
   AnalyticsEventListParams,
   AnalyticsEventListPage,
   BudgetRow,
+  AnalyticsExportParams,
 } from "./resources/analytics.js";
+
+export type { ExportCreateBody, Export, ExportGetResult } from "./resources/exports.js";
+
+export type {
+  SeatLendBody,
+  SeatLendResult,
+  SeatReturnResult,
+  InvoiceListParams,
+  InvoiceListPage,
+  Invoice,
+} from "./resources/billing.js";
+
+export type {
+  DoNotContactListParams,
+  DoNotContactPage,
+  DoNotContactEntry,
+  DoNotContactAddBody,
+  DoNotContactUpdateBody,
+} from "./resources/do-not-contact.js";
 
 export type { Pageable } from "./internal/paginate.js";
 
