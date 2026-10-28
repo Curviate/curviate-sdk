@@ -28,7 +28,7 @@ const HINTS: Record<string, (token: string) => string> = {
   R17: () => "Remove the part after | and add a variable-free fallback on the step instead.",
   R18: () => "Write a variable with double braces, like {{first_name}}, or remove the braces.",
   R19: () => 'Add a variable-free fallback: with.fallback, with.note_fallback (or "drop") on an invitation, "skip" on a comment.',
-  R20: () => "Use a Contact variable in the comment, for example a custom field {{comment}} your agent writes per Contact.",
+  R20: () => "Use a Contact variable in the comment, for example a custom field {{comment}} your AI writes per Contact.",
   R21: () => "Set withdraw_after between 14d and 180d, for example 21d.",
   R22: () => "Shorten the text to the limit (variables are not counted) or use fewer variables.",
   R23: () => "Give the step exactly 2 variants (A/B) with ids unique in the document, or one text in with.",
