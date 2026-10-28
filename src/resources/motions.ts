@@ -346,8 +346,8 @@ export class EnrollmentsResource {
   }
 
   /**
-   * Stop a `pending`, `active` or `paused` Enrollment (`finished`,
-   * `stopped`); else `ENROLLMENT_NOT_ACTIVE`.
+   * Stop a `queued`, `active` or `paused` Enrollment (it ends `finished`,
+   * `finish_reason: "stopped"`); else `ENROLLMENT_NOT_ACTIVE`.
    * `POST /v1/enrollments/{id}/stop`
    *
    * @example
@@ -358,7 +358,7 @@ export class EnrollmentsResource {
   }
 
   /**
-   * Hold one `pending`, `active` or `paused` Enrollment until you `resume` it
+   * Hold one `queued`, `active` or `paused` Enrollment until you `resume` it
    * (`waiting.kind: "paused_by_user"`); its waits freeze. A Step being sent
    * right now is `STEP_IN_FLIGHT`: retry in a minute. Works on every plan.
    * `POST /v1/enrollments/{id}/pause`
