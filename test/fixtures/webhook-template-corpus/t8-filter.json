@@ -1,0 +1,23 @@
+{
+  "about": "No defaults or filters.",
+  "rules": [
+    "T8"
+  ],
+  "source": "motion",
+  "template": "{\"name\": \"{{first_name | default: \\\"there\\\"}}\"}",
+  "errors": [
+    {
+      "path": "body_template",
+      "rule": "{{first_name | …}} carries a default or a filter",
+      "code": "T8",
+      "message": "{{first_name | …}} carries a default or a filter",
+      "pointer": "/body_template",
+      "line": 1,
+      "col": 11,
+      "hint": "Remove the part after |: a template has no defaults or filters, and a missing value drops its key.",
+      "docs_url": "https://docs.curviate.com/reference/webhooks/body-templates#t8",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

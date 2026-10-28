@@ -1,0 +1,75 @@
+{
+  "about": "gte/lte only on enrollment.* and contact.extra.*, with a number (R28)",
+  "rules": [
+    "R28"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "booked",
+        "until": "event.meeting_booked",
+        "timeout": "14d",
+        "save": {
+          "score": "lead.score"
+        },
+        "then": "msg",
+        "else": "end"
+      },
+      {
+        "id": "msg",
+        "if": {
+          "contact.company": {
+            "gte": 5
+          }
+        },
+        "then": "low",
+        "else": "low"
+      },
+      {
+        "id": "low",
+        "if": {
+          "enrollment.score": {
+            "lte": "50"
+          }
+        },
+        "then": "ok",
+        "else": "ok"
+      },
+      {
+        "id": "ok",
+        "if": {
+          "contact.extra.seats": {
+            "gte": 10
+          }
+        },
+        "then": "end",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "msg.if",
+      "rule": "gte compares numbers on enrollment.<key> and contact.extra.<key> only",
+      "code": "R28",
+      "message": "gte compares numbers on enrollment.<key> and contact.extra.<key> only",
+      "pointer": "/steps/1/if",
+      "hint": "Use gte or lte with a number, like {\"gte\": 50}, on enrollment.<key> or contact.extra.<key>.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r28",
+      "severity": "error"
+    },
+    {
+      "path": "low.if",
+      "rule": "lte takes a number, like {\"lte\": 50}",
+      "code": "R28",
+      "message": "lte takes a number, like {\"lte\": 50}",
+      "pointer": "/steps/2/if",
+      "hint": "Use gte or lte with a number, like {\"gte\": 50}, on enrollment.<key> or contact.extra.<key>.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r28",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

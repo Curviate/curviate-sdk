@@ -1,0 +1,34 @@
+{
+  "about": "w5 follow after invite",
+  "rules": [
+    "W5"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "inv",
+        "do": "invite.send"
+      },
+      {
+        "id": "f",
+        "do": "profile.follow",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "path": "f.do",
+      "rule": "profile.follow after invite.send on the same path; an invitation already follows",
+      "code": "W5",
+      "message": "profile.follow after invite.send on the same path; an invitation already follows",
+      "pointer": "/steps/1/do",
+      "hint": "Remove the follow step: the invitation already follows the person.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w5",
+      "severity": "warning"
+    }
+  ]
+}

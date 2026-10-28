@@ -1,0 +1,29 @@
+{
+  "about": "r10 fall off last step",
+  "rules": [
+    "R10"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "a",
+        "wait": "1d"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "a.next",
+      "rule": "the last step must end explicitly; set next to a step id or \"end\"",
+      "code": "R10",
+      "message": "the last step must end explicitly; set next to a step id or \"end\"",
+      "pointer": "/steps/0",
+      "hint": "End the last step explicitly: set its exits to a step id or \"end\".",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r10",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

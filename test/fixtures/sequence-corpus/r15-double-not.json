@@ -1,0 +1,37 @@
+{
+  "about": "r15 double not",
+  "rules": [
+    "R15"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "c",
+        "if": {
+          "not": {
+            "not": {
+              "contact.premium": true
+            }
+          }
+        },
+        "then": "end",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "c.if.not",
+      "rule": "not cannot wrap another not",
+      "code": "R15",
+      "message": "not cannot wrap another not",
+      "pointer": "/steps/0/if/not",
+      "hint": "Use one predicate key per object with its typed operand; chain if steps instead of all or any. account.* and message.* work in if steps only.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r15",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

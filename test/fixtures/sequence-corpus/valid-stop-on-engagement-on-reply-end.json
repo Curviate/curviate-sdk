@@ -1,0 +1,21 @@
+{
+  "about": "valid stop on engagement on reply end",
+  "rules": [],
+  "only": "server",
+  "context": {
+    "account_profiles": []
+  },
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "a",
+        "wait": "1d",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": []
+}

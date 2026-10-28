@@ -299,3 +299,33 @@ export {
   type PostPublishFailedPayload,
   type ConstructEventOptions,
 } from "./webhooks.js";
+
+// Offline webhook body templates: the API's lint and renderer (no network)
+export {
+  validateWebhookTemplate,
+  renderWebhookTemplate,
+  type WebhookTemplateContext,
+  type WebhookTemplateFinding,
+  type WebhookTemplateSource,
+} from "./templates.js";
+
+export type {
+  WebhookCreateBody,
+  WebhookCreateResult,
+  WebhookListParams,
+  WebhookListResult,
+  WebhookListEventsResult,
+  WebhookGetResult,
+  WebhookUpdateBody,
+  WebhookUpdateResult,
+  WebhookDeleteResult,
+  WebhookVariablesParams,
+  WebhookVariablesResult,
+  WebhookTestBody,
+  WebhookTestResult,
+  WebhookRotateSecretResult,
+  WebhookDeliveryListParams,
+  WebhookDeliveryPage,
+  WebhookDelivery,
+  WebhookRedeliverResult,
+} from "./resources/webhooks.js";
