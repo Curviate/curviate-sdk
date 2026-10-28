@@ -98,6 +98,20 @@ if (unread_count > 0) {
 
 `curviate.teams` manages the team the credential acts in: `getCurrent`, `updateCurrent`, `listMembers`, `updateMember` (role), `removeMember` (`"me"` leaves), `createInvites`, `listInvites`, `resendInvite`, `revokeInvite`, plus `list` for every team you belong to. Member and invite writes are for Owners (`INSUFFICIENT_ROLE` otherwise). `curviate.accounts.setTeamAccess(accountId, false)` keeps an account you connected to yourself.
 
+```ts
+const team = await curviate.teams.create({ name: "Client A" }); // you become its Owner; no seat yet
+// An All-Teams key: next_step.team_header is "X-Curviate-Team: <team_id>", usable at once (pass team_id as the `team` option).
+// Any other credential: next_step.command and next_step.url (CLI setup, dashboard Teams page).
+const { items } = await curviate.teams.list({ include: "counts" }); // tier, trial, accounts, active_motions, seats (Owner rows)
+await curviate.teams.setLogo(await readFile("logo.png")); // a PNG up to 1 MB; Owners only; removeLogo() clears it
+
+// Lend an unused seat to another of your Teams, and move it back (once no Account uses it).
+const { seat_id } = await curviate.billing.seats.lend({ team_id: "tnt_456" });
+await curviate.billing.seats.return(seat_id);
+```
+
+`teams.list({ include: "counts" })` adds counts on every row for a dashboard session and an All-Teams key, and only on its own row for a Team key. While a seat is lent, a connect naming it or a cancel of it throws `SEAT_LENT`. `curviate.billing.invoices.list()` pages the Team's invoices (Owners only) and `billing.invoices.pdf(number)` resolves with the PDF bytes. `TIER_REQUIRED` carries `err.details.account_id` when one Account (on a seat lent from another Team) lacks the feature while the Team has it.
+
 ## Tiers
 
 A Team's Tier decides which features it has. Drafts, Contacts, Motions (and Network and Unibox) need Automate: a write in one of those groups on a Team below it is refused with `TIER_REQUIRED`, before the request is even validated. Reads, exports, deletes and stopping running work (`motions.pause`, `motions.archive`, `enrollments.stop`) pass on any Tier. The refusal names what is missing:
@@ -137,9 +151,15 @@ const { items: skipped } = await curviate.contacts.imports.rows(imp.id, { outcom
 
 await curviate.contacts.updateMany({ contact_ids: [id], add_tags: ["vip"] });
 const all = await curviate.contacts.export({ format: "json", tag: "vip" });
+
+// One filter everywhere: several lists, an opt-in total, then act on exactly what it matches.
+const filter = { list_id: ["cl_1", "cl_2"], list_match: "all" as const, not_list_id: ["cl_3"], has_email: true };
+const { total } = await curviate.contacts.list({ ...filter, include_total: true, limit: 1 });
+await curviate.contactLists.create({ name: "Both, with email", from: filter }); // a static list of what matches now
+await curviate.contacts.updateMany({ filter, add_tags: ["vip"] }); // or deleteMany({ filter }); over 10,000 matches is refused
 ```
 
-`contacts.enrich` fills profile fields from what Curviate already stores, else queues paced live profile views from an account you name: a live view is a real profile view the person may see. `curviate.contactLists` and `curviate.tags` rename and delete; a Tag has no create call, the first write naming it creates it. Refusals: `NAME_TAKEN`, `RESOURCE_IN_USE` (a live Motion or a running import uses it), `CONTACT_LIMIT_REACHED`, `IMPORT_QUEUE_FULL`. Deletes are for Owners and Managers.
+`list_id` and `not_list_id` take up to 20 Contact list ids (an array or a comma list). `curviate.doNotContact` is the Team-wide do-not-contact list (`list`, `get`, `add`, `update`, `remove`): no Motion contacts a person on it and a write toward them throws `DO_NOT_CONTACT`. `contacts.enrich` fills profile fields from what Curviate already stores, else queues paced live profile views from an account you name: a live view is a real profile view the person may see. `curviate.contactLists` and `curviate.tags` rename and delete; a Tag has no create call, the first write naming it creates it. Refusals: `NAME_TAKEN`, `RESOURCE_IN_USE` (a live Motion or a running import uses it), `CONTACT_LIMIT_REACHED`, `IMPORT_QUEUE_FULL`. Deletes are for Owners and Managers.
 
 ## Sequences
 
@@ -230,6 +250,8 @@ const { items, coverage } = await curviate.network.connections.list({ account_id
 for await (const c of curviate.network.connections.list({ q: "founder" })) console.log(c.public_profile_url);
 const { items: sync } = await curviate.network.syncStatus();
 await curviate.network.resync({ account_id: "acc_1" }); // once per account per 24 h
+await curviate.network.resync(); // Resync all: network_resync_list, one item per account you can operate
+for await (const p of curviate.network.connections.list({ group: "person" })) console.log(p.object); // connection_person: one per person
 
 // One inbox over every account you can operate.
 for await (const chat of curviate.unibox.list({ unread: true })) console.log(chat.chat_id);
@@ -241,10 +263,22 @@ await curviate.unibox.enroll("acc_1", "chat_1", { motion_id: "mot_1" });
 
 // Motion results, activity in budget units, the events feed.
 const overview = await curviate.analytics.motions.list({ from: "2026-10-01", to: "2026-10-31" });
+const summary = await curviate.analytics.motions.list({ range: "30d", compare: "previous_period", origin: ["motion", "unibox"] });
 const detail = await curviate.analytics.motions.get("mot_1");
 const { types } = await curviate.analytics.activity(); // per BudgetRow; never add rows together
 for await (const event of curviate.analytics.events.list({ kind: ["message.replied"] })) console.log(event.motion_name);
+
+// Files: stream the Analytics tables now, or run a background export and download it within 24 hours.
+const csv = await curviate.analytics.export({ table: ["daily"], range: "90d" }); // ArrayBuffer
+const job = await curviate.exports.create({ entity: "analytics", format: "csv", tables: ["daily", "motions"], filters: { range: "12m" } });
+const file = await curviate.exports.download(job.id); // EXPORT_NOT_READY until exports.get(job.id).status is "ready"
+
+// One account at a glance, and its own daily numbers.
+const { performance, flags } = await curviate.accounts.overview("acc_1", { range: "30d" });
+const { items: metrics } = await curviate.accounts.metrics("acc_1", { from: "2026-08-01" });
 ```
+
+Every rate is the outcome so far over what was sent in the window, not over old enough cohorts, so it keeps moving as replies arrive: read it with `maturing` (sent under 7 days ago) and `low_sample` (under 30). Messages and InMails are counted apart (`reply` and `inmail_reply`). Enrollment counts are by state right now (`queued`, `active`, `paused`, `finished`, `failed`, `skipped`); the window does not change them. One export runs per Team at a time (`EXPORT_IN_PROGRESS`, with `err.details.export_id`).
 
 Needs Automate: `network.resync`, `unibox.refresh`, `unibox.tagContact`, `unibox.enroll` and turning full-inbox sync on (off passes on any Tier). Messages and actions on a chat stay on `curviate.account(id).messaging`.
 

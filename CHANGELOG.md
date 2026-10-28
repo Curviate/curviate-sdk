@@ -7,6 +7,106 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## Unreleased
+
+### #2550 (Analytics v2, exports, Account fields)
+
+Types come from the served document (regenerated); the hand-written parts:
+
+- **`analytics.export(params)`** streams the Analytics tables now
+  (`table`, `format`, the overview's filters) and resolves with the file's
+  bytes. **`exports.create` / `get` / `download`** run the same as a
+  background job: poll `status` to `ready`, then `download` within 24 hours;
+  `download` resolves with bytes (a `json` file comes back compact, not
+  byte-for-byte). One export per Team at a time. Types `Export`,
+  `ExportCreateBody`, `ExportGetResult`, `AnalyticsExportParams`.
+- **`accounts.metrics(accountId, { from, to, timezone })`** (the Account's daily
+  snapshots, oldest first, at most 366 days; no LinkedIn call) and
+  **`accounts.overview(accountId, params)`** (one Account at a glance, the
+  overview grammar scoped to it).
+- **Analytics options:** `account_id`, `motion_id`, `origin`, `include`,
+  `fields` and `sort` take an array as well as a comma list. Windows take
+  `range` (`7d`, `30d`, `90d`, `12m`, `all`) and `bucket`; `compare:
+  "previous_period"` adds `previous` and `delta` to every rate.
+- **Same shape, new meaning, analytics:** every rate is the outcome SO FAR over
+  what was sent in the window, no longer over cohorts at least 7 days old; read
+  it with `maturing` and `low_sample`. Messages and InMails are counted apart
+  (`reply`, `inmail_reply`). Enrollment counts are by state right now and the
+  window does not change them; the state `pending` is now `queued` (list
+  filters accept `pending` until 2027-01-21).
+- **Same shape, new meaning, `accounts.list`:** an item carries the profile,
+  `status_reason`, `warm_up`, `inmail_balance`, `motions_count`,
+  `motion_refs` and three `quotas` rows; reading the list never calls
+  LinkedIn.
+- **`CurviateError.details`:** the served `details` object (type
+  `CurviateErrorDetails`): `account_id` on `TIER_REQUIRED` (one Account lacks
+  the feature while the Team has it; an Account on a seat lent from another
+  Team carries that seat's Tier), `export_id` on `EXPORT_IN_PROGRESS`.
+- **JSDoc:** `CHAT_NOT_VISIBLE` (409) on `messaging.startChat`,
+  `messaging.sendInMail`, `recruiter.startChat` and
+  `salesNavigator.startChat`: nothing is sent when the Account already has a
+  private conversation with the person that you may not read. The `EXPORT_*`
+  codes are documented on `exports` and in `ERROR_CODES`.
+
+### #2581 (Teams v2, seat lending)
+
+- **`teams.create({ name })`** returns the new Team and `next_step`: an
+  All-Teams key gets `{ team_header }` (the header line `X-Curviate-Team:
+  <team_id>`, usable at once; with this SDK pass the id as `team`), any other
+  credential gets `{ command, url }`.
+- **`teams.list({ include: "counts" })`** adds `tier`, `trial`, `accounts`,
+  `active_motions` and, on Owner rows, `seats` (`used`, `total`, `lent_out`,
+  `lent_in`). A dashboard session and an All-Teams key get counts on every
+  row; a Team key, or a token for one Team, only on its own row.
+- **`teams.setLogo(png)`** (a PNG up to 1 MB; Owners only; `UNSUPPORTED_MEDIA_TYPE`
+  or `PAYLOAD_TOO_LARGE` otherwise), **`teams.removeLogo()`**, and `logo_url`
+  on every Team.
+- **`billing.seats.lend({ team_id, seat_id? })`** and
+  **`billing.seats.return(seatId)`**. While a seat is lent, a connect naming
+  it or a cancel of it throws `SEAT_LENT`; a seat an Account still uses
+  throws `SEAT_NOT_EMPTY` on return.
+
+### #2628 (do-not-contact list)
+
+- **`doNotContact.list` / `get` / `add` / `update` / `remove`** over the
+  Team-wide list. `add` takes `contact_id` or `linkedin_url` and an optional
+  `reason` (`asked_to_stop`, `existing_customer`, `competitor`, `partner`,
+  `employee`, `other`); a person already listed resolves with their entry.
+  `remove` is for Owners and Managers.
+- **`DO_NOT_CONTACT` (409)** is documented on the writes it refuses:
+  `invites.send`, `messaging.startChat`, `sendMessage`, `sendInMail`,
+  `users.follow`, `endorseSkill`, `companies.followInvite`, `posts.react` and
+  the comment methods. `do_not_contact` joins the skip and finish reasons.
+
+### #2646 (Contacts and Network)
+
+- **`contacts.list` and `contacts.export`:** `list_id` takes up to 20 Contact
+  lists (an array or a comma list; any of them, or all with
+  `list_match: "all"`), plus `not_list_id` and `has_email`; `contacts.list`
+  adds opt-in `include_total` (`total` on the page).
+- **`contacts.updateMany` and `contacts.deleteMany`** take exactly one of
+  `contact_ids` or `filter` (up to 10,000 matches; more throws
+  `INVALID_REQUEST` naming the count and changes nothing).
+- **`contactLists.create({ name, from })`** starts a static list from a
+  filter.
+- **`network.connections.list({ group: "person", include_total })`:** one item
+  per person (`object: "connection_person"`, with `accounts` and `contact`).
+  `Connection` is now a union of the two item shapes: branch on `object`.
+- **`network.resync()`** needs no Account: with none it is Resync all and
+  resolves with `object: "network_resync_list"`. The result type is a union of
+  the two answers: branch on `object`.
+- **Same shape, more often filled:** `location` on a Connection, and
+  `first_name` / `last_name` on `users.listRelations`, are non-null more often.
+
+### #2680 (invoices)
+
+- **`billing.invoices.list(params)`** pages the Team's issued invoices (house
+  auto-pager over `items` / `cursor`; `await` for a page, `for await` for all;
+  Owners only) and **`billing.invoices.pdf(number)`** resolves with the PDF
+  bytes.
+
+---
+
 ## [0.44.0] - 2026-10-22
 
 Dashboard v2 API. Fixture and types regenerated from deployed staging (server
