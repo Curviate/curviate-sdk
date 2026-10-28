@@ -443,6 +443,20 @@ export const ERROR_CODES = [
   //   deleted. Run it again.
   // - `EXPORT_REMOVED` (410): a Contact was deleted, which removes your team's
   //   Contact-level exports. Run it again.
+  // - `NOTHING_TO_REDELIVER` (409): a redeliver of a delivery that was never
+  //   sent (`skipped_no_email`).
+  // - `REDELIVERY_EXPIRED` (410): a redeliver at or after the delivery's
+  //   `redeliverable_until` (receipt + 24 h); its request is no longer kept.
+  // - `WEBHOOK_DISABLED` (409): a redeliver on a webhook that is switched off.
+  //   Switch it on first.
+  // - `DELIVERY_IN_FLIGHT` (409): an attempt of that delivery is being sent
+  //   right now. Retry shortly.
+  // - `WEBHOOK_TEMPLATE_INVALID` (422): the webhook's `body_template` fails
+  //   the lint; nothing was saved. Every finding is in `errors`, each with
+  //   `line` and `col` (1-based) into the template; `validateWebhookTemplate`
+  //   gives the same verdict offline.
+  // - `INCOMING_URL_RETIRED` (410): a post to an incoming event URL that was
+  //   rotated out (after its 24 h) or deleted.
   "CHAT_NOT_VISIBLE",
   "DO_NOT_CONTACT",
   "TEAM_REQUIRED",
@@ -452,6 +466,12 @@ export const ERROR_CODES = [
   "EXPORT_NOT_READY",
   "EXPORT_EXPIRED",
   "EXPORT_REMOVED",
+  "NOTHING_TO_REDELIVER",
+  "REDELIVERY_EXPIRED",
+  "WEBHOOK_DISABLED",
+  "DELIVERY_IN_FLIGHT",
+  "WEBHOOK_TEMPLATE_INVALID",
+  "INCOMING_URL_RETIRED",
 
   // Client-side, never sent by the API. `CLIENT_TIMEOUT`: no response within
   // the client's `timeout` (default 30 s, per attempt). A read is retried
@@ -548,6 +568,13 @@ export interface CurviateErrorDetail {
   pointer?: string;
   hint?: string;
   docs_url?: string;
+  /** `error` (an R rule, or a template rule) or `warning`. */
+  severity?: "error" | "warning";
+  /** Did-you-mean replacements, best first, when the entry has some. */
+  candidates?: string[];
+  /** On `WEBHOOK_TEMPLATE_INVALID`: the finding's position in the template, 1-based. */
+  line?: number;
+  col?: number;
 }
 
 /**
