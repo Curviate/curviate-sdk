@@ -196,7 +196,7 @@ const motion = await curviate.motions.create({
   name: "Q4 webinar follow-up",
   contact_list_ids: ["cl_123"],
   account_ids: ["acc_123"],
-  schedule: { timezone: "Europe/Berlin" },
+  schedule: { days: ["mon", "tue", "wed", "thu", "fri"] }, // read in each sending account's own time zone
   sequence: seq, // a builder: converted with toDocument(); an invalid one throws SEQUENCE_INVALID, nothing is sent
 });
 

@@ -136,6 +136,41 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 - **`recruiter_contract_id`** is selected once the account is connected;
   `contract_selected: false` means connected, not selected.
 
+### #2597 Motions setup and engine v2
+
+#### Breaking
+
+- **`schedule.timezone` and `settings.stop_on_engagement` are retired.**
+  Days and hours are read in each sending account's own time zone. Both keys
+  are accepted with warning `W13` until 2027-01-25, never stored, and gone
+  from every Motion read; `stop_on_engagement: true` with an acting reply
+  route is a 400. `motions.start` no longer reports a missing time zone.
+- **`settings.acceptance_floor` defaults to `null`** (off).
+- **`finish_reason` gains `engaged_elsewhere`**: the Contact replied to, or
+  was messaged from, another account of the Motion. Add the arm to an
+  exhaustive switch.
+
+#### Added
+
+- **Several accounts per list read:** `account_id` on `motions.list`,
+  `enrollments.list` and the `enrollments.bulk` filter takes several
+  accounts (comma list, up to 50; an all-empty list is a 400).
+- **`motions.list({ sort: "activity" })`** (latest step record first;
+  `updated` stays the default) and `last_activity_at` on every item. A
+  cursor belongs to its sort.
+- **`enrollments.list({ step_id })`** takes up to 10 step ids (an array, or a
+  comma list); the bulk `filter.step_id` takes a string or an array.
+- **Several mode** (`settings.accounts_per_contact` above 1): settings
+  `on_reply_elsewhere` (`stop` or `continue`), `withdraw_on_reply_elsewhere`
+  and `account_gap` (`1d` to `30d`), served only in that mode.
+  `accounts_per_contact` is locked once the Motion has started.
+- **`motions.preview`**: `projection.audience` `{ total, skipped, to_enroll }`.
+
+#### Changed
+
+- **`motions.preview` `projection.contacts`** equals `audience.to_enroll`;
+  in Several mode `accounts[].contacts` counts Enrollments (same shape, new
+  meaning), and `projection.fits_before_end_at` is counted per account zone.
 ## [0.44.0] - 2026-10-22
 
 Dashboard v2 API. Fixture and types regenerated from deployed staging (server

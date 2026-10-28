@@ -376,7 +376,7 @@ export const ERROR_CODES = [
   //
   // - `MOTION_NOT_STARTABLE` (422): `start` or `resume` found gaps; `errors`
   //   lists every one as `{path, rule}` (a Contact list, a sending account, a
-  //   timezone, a Sequence). Fix them and retry.
+  //   Sequence). Fix them and retry.
   // - `MOTION_STATUS_CONFLICT` (409): the operation does not apply in the
   //   Motion's status; the message names it and the operations it allows.
   //   Only a draft can be deleted: archive instead.
