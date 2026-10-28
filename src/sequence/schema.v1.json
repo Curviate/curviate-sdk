@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://docs.curviate.com/schemas/sequence/v1.json",
   "title": "Sequence document v1",
-  "description": "A Motion's Sequence: a flat steps array run from the first step, ending explicitly in \"end\". Served documents use this key order: $schema, on_reply, steps; in a step id, the kind key, timeout, variants, with, event, then, else, next, note; in with post, newer_than, reaction, subject, text, note, note_fallback, fallback, withdraw_after; in a variant id, subject, text. A text holds at most 50 variables. Variables: `{{first_name}}` (any standard Contact field), `{{my_first_name}}`, `{{my_last_name}}`, `{{my_full_name}}` (the sending Account), any other `{{<key>}}` is the custom field `contact.extra.<key>`; the long forms `{{contact.<field>}}`, `{{contact.extra.<key>}}` and `{{account.<name>}}` stay valid. Delays are about their duration: every wait and until timeout gets a small random spread that only ever adds time.",
+  "description": "A Motion's Sequence: a flat steps array run from the first step, ending explicitly in \"end\". Served documents use this key order: $schema, on_reply, steps; in a step id, the kind key, timeout, save, save_to_contact, variants, with, event, then, else, next, note; in with post, newer_than, reaction, subject, text, note, note_fallback, fallback, withdraw_after; in a variant id, subject, text. A text holds at most 50 variables. Variables: `{{first_name}}` (any standard Contact field), `{{my_first_name}}`, `{{my_last_name}}`, `{{my_full_name}}` (the sending Account), any other `{{<key>}}` is the custom field `contact.extra.<key>`; the long forms `{{contact.<field>}}`, `{{contact.extra.<key>}}` and `{{account.<name>}}` stay valid; `{{enrollment.<name>}}` is a value a save of this Sequence writes. Delays are about their duration: every wait and until timeout gets a small random spread that only ever adds time.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -17,7 +17,7 @@
     "on_reply": {
       "type": "string",
       "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
-      "description": "Where a reply interrupts to. Used only while stop_on_engagement is false."
+      "description": "Where a reply interrupts to."
     },
     "steps": {
       "type": "array",
@@ -745,6 +745,52 @@
                 "pattern": "^[1-9][0-9]*(m|h|d)$",
                 "description": "Give up waiting after about this long (1h to 180d; a small random spread is added, never subtracted)."
               },
+              "save": {
+                "type": "object",
+                "minProperties": 1,
+                "maxProperties": 20,
+                "propertyNames": {
+                  "pattern": "^[a-z][a-z0-9_]{0,63}$",
+                  "not": {
+                    "const": "id"
+                  }
+                },
+                "additionalProperties": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256,
+                  "description": "A field path into the incoming payload: dots, items[0] and [\"a.b\"]."
+                },
+                "description": "until event.<name> only: Enrollment values saved from the incoming event, name to path (at most 20). Read them as {{enrollment.<name>}} and if enrollment.<name>; they end with the Enrollment."
+              },
+              "save_to_contact": {
+                "type": "object",
+                "minProperties": 1,
+                "maxProperties": 20,
+                "propertyNames": {
+                  "pattern": "^(email|[A-Za-z0-9_]{1,64})$",
+                  "not": {
+                    "enum": [
+                      "full_name",
+                      "first_name",
+                      "last_name",
+                      "headline",
+                      "job_title",
+                      "company",
+                      "location",
+                      "linkedin_url",
+                      "about"
+                    ]
+                  }
+                },
+                "additionalProperties": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256,
+                  "description": "A field path into the incoming payload: dots, items[0] and [\"a.b\"]."
+                },
+                "description": "until event.<name> only: Contact custom fields (contact.extra.<key>) saved from the incoming event, key to path (at most 20); email fills only an empty email."
+              },
               "then": {
                 "type": "string",
                 "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
@@ -1370,11 +1416,72 @@
                           },
                           "exists": {
                             "type": "boolean"
+                          },
+                          "gte": {
+                            "type": "number"
+                          },
+                          "lte": {
+                            "type": "number"
                           }
                         },
-                        "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                        "description": "Exactly one operator. Strings compare trimmed, case-insensitive; gte and lte compare a number, or text that reads as one."
                       }
                     }
+                  },
+                  {
+                    "type": "object",
+                    "minProperties": 1,
+                    "maxProperties": 1,
+                    "additionalProperties": false,
+                    "patternProperties": {
+                      "^enrollment\\.(?!id$)[a-z][a-z0-9_]{0,63}$": {
+                        "type": "object",
+                        "minProperties": 1,
+                        "maxProperties": 1,
+                        "additionalProperties": false,
+                        "properties": {
+                          "eq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "neq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "in": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                              "type": [
+                                "string",
+                                "number",
+                                "boolean"
+                              ]
+                            }
+                          },
+                          "contains": {
+                            "type": "string"
+                          },
+                          "exists": {
+                            "type": "boolean"
+                          },
+                          "gte": {
+                            "type": "number"
+                          },
+                          "lte": {
+                            "type": "number"
+                          }
+                        },
+                        "description": "Exactly one operator. Strings compare trimmed, case-insensitive; gte and lte compare a number, or text that reads as one."
+                      }
+                    },
+                    "description": "if only: an Enrollment value a save of this Sequence writes. Unset is false, except exists:false."
                   },
                   {
                     "type": "object",
@@ -2001,11 +2108,72 @@
                                   },
                                   "exists": {
                                     "type": "boolean"
+                                  },
+                                  "gte": {
+                                    "type": "number"
+                                  },
+                                  "lte": {
+                                    "type": "number"
                                   }
                                 },
-                                "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                                "description": "Exactly one operator. Strings compare trimmed, case-insensitive; gte and lte compare a number, or text that reads as one."
                               }
                             }
+                          },
+                          {
+                            "type": "object",
+                            "minProperties": 1,
+                            "maxProperties": 1,
+                            "additionalProperties": false,
+                            "patternProperties": {
+                              "^enrollment\\.(?!id$)[a-z][a-z0-9_]{0,63}$": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "maxProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "eq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "neq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "in": {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "items": {
+                                      "type": [
+                                        "string",
+                                        "number",
+                                        "boolean"
+                                      ]
+                                    }
+                                  },
+                                  "contains": {
+                                    "type": "string"
+                                  },
+                                  "exists": {
+                                    "type": "boolean"
+                                  },
+                                  "gte": {
+                                    "type": "number"
+                                  },
+                                  "lte": {
+                                    "type": "number"
+                                  }
+                                },
+                                "description": "Exactly one operator. Strings compare trimmed, case-insensitive; gte and lte compare a number, or text that reads as one."
+                              }
+                            },
+                            "description": "if only: an Enrollment value a save of this Sequence writes. Unset is false, except exists:false."
                           },
                           {
                             "type": "object",
@@ -2071,7 +2239,7 @@
               "emit": {
                 "type": "string",
                 "pattern": "^[a-z][a-z0-9_.]{0,63}$",
-                "description": "Legacy: a custom event name. New documents put event on the step that matters."
+                "description": "Send event: the custom event name this step sends (motion.custom_event)."
               },
               "next": {
                 "type": "string",

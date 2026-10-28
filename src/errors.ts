@@ -401,6 +401,39 @@ export const ERROR_CODES = [
   "CONTACT_NOT_ENROLLABLE",
   "CHAT_NOT_ONE_TO_ONE",
 
+  // Dashboard v2 surface.
+  //
+  // - `CHAT_NOT_VISIBLE` (409): a start-chat or InMail to a person the account
+  //   holds a private 1:1 with that you may not read. Nothing is sent; the body
+  //   reveals nothing of the conversation.
+  // - `DO_NOT_CONTACT` (409): the person is on your team's do-not-contact list
+  //   (an invitation, a chat start or send, InMail, follow, endorse, a reaction
+  //   or comment, a live profile read). Nothing is sent.
+  // - `TEAM_REQUIRED` (400): a key that works in all of your Teams called a
+  //   Team-level operation without naming the Team. Pass `team` (per call or
+  //   in the client config).
+  // - `SEAT_LENT` (409): the seat is lent to another Team; a connect or a
+  //   cancel naming it is refused. Move it back first.
+  // - `LINKEDIN_SIGN_IN_REQUIRED` (403): LinkedIn wants a sign-in on
+  //   linkedin.com before it accepts this one. Sign in there, then retry.
+  // - `EXPORT_IN_PROGRESS` (409): your team already has an export queued or
+  //   running (`details.export_id`). Retry when it finishes.
+  // - `EXPORT_NOT_READY` (409): the export is queued, running or failed; its
+  //   file is not there to download yet.
+  // - `EXPORT_EXPIRED` (410): the export's 24 h are over and its file is
+  //   deleted. Run it again.
+  // - `EXPORT_REMOVED` (410): a Contact was deleted, which removes your team's
+  //   Contact-level exports. Run it again.
+  "CHAT_NOT_VISIBLE",
+  "DO_NOT_CONTACT",
+  "TEAM_REQUIRED",
+  "SEAT_LENT",
+  "LINKEDIN_SIGN_IN_REQUIRED",
+  "EXPORT_IN_PROGRESS",
+  "EXPORT_NOT_READY",
+  "EXPORT_EXPIRED",
+  "EXPORT_REMOVED",
+
   // Client-side, never sent by the API. `CLIENT_TIMEOUT`: no response within
   // the client's `timeout` (default 30 s, per attempt). A read is retried
   // first; a write is not, and may still have reached the API, so read back
