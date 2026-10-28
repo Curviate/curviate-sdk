@@ -126,7 +126,36 @@ export class AuthResource {
    * success (200 re-authenticated in place / 201 new), or a checkpoint
    * challenge (202) when LinkedIn requires verification; resolve it with
    * {@link solveCheckpoint} (code) or {@link pollCheckpoint} (mobile-app
-   * approval).
+   * approval, or `checking`: LinkedIn is checking the sign-in, nothing to
+   * answer, keep polling).
+   *
+   * **Checkpoints.** `challenge_type` may be `checking` (poll it, no action)
+   * or `phone_register` (LinkedIn wants a phone number: solve it with
+   * `(+CC)number`, then answer the code check that follows). On `otp` and
+   * `otp_or_mobile_app_approval`, `channel` says where LinkedIn sent the code
+   * (`email`, `sms`, `whatsapp`, or `null` when not known). `expires_at` is
+   * when Curviate stops accepting an answer; a chained checkpoint keeps the
+   * sign-in's original `expires_at`. After it, solve, poll, resend and request
+   * answer `409 CHECKPOINT_EXPIRED`: start the connection again.
+   *
+   * **Refusals.** A cookie connect LinkedIn rejects, for any reason, is
+   * `401 LINKEDIN_COOKIE_INVALID`. `403 LINKEDIN_SIGN_IN_REQUIRED`: LinkedIn
+   * wants the person to sign in on linkedin.com first; sign in there, then
+   * retry, or connect with cookies from a browser where it is signed in. An
+   * intent that times out before any checkpoint is
+   * `503 LINKEDIN_SERVICE_UNAVAILABLE`; the platform's account cap is
+   * `503 PLATFORM_ERROR` with `retryLikelyToSucceed: false`.
+   *
+   * `user_languages` (cookie connects only; a credentials connect ignores
+   * it): the language preferences of the browser the cookies came from, most
+   * preferred first, at most 5 BCP 47 tags (`en-US`), each at most 35
+   * characters.
+   *
+   * `recruiter_contract_id`: the Sales Navigator or Recruiter contract the
+   * account sends from, for a LinkedIn account that holds several. It is
+   * selected once the Account is connected; the answer then carries
+   * `contract_selected`, and `contract_selected: false` means connected, not
+   * selected (select it again with a reconnect).
    *
    * For `auth_method: "cookie"`, `user_agent` is **required**; connecting by
    * session cookie without one is rejected with `INVALID_REQUEST`. It stays
@@ -201,12 +230,21 @@ export class AuthResource {
   }
 
   /**
-   * Solve a checkpoint challenge by submitting an OTP / 2FA code (or the
-   * special value `TRY_ANOTHER_WAY` to switch challenge method).
+   * Solve a checkpoint challenge by submitting an OTP / 2FA code, a phone
+   * number for `phone_register` (`(+CC)number`; `code` accepts `( ) +`), or
+   * the special value `TRY_ANOTHER_WAY`.
    *
-   * Returns the connected account (201) or, when LinkedIn chains a second
+   * `TRY_ANOTHER_WAY` asks LinkedIn for another verification method and
+   * counts no attempt; the answer is the method LinkedIn offers instead (202),
+   * with the same `expires_at`. It is `400 INVALID_REQUEST` on
+   * `contract_selection`, `challenge_selection`, `phone_register` and
+   * `checking`.
+   *
+   * Returns the connected account (201, with `contract_selected` when
+   * `recruiter_contract_id` was sent) or, when LinkedIn chains a second
    * challenge (another checkpoint, 202); resolve that one with a further
-   * `solveCheckpoint` call for the same `accountId`.
+   * `solveCheckpoint` call for the same `accountId`. Past `expires_at` it is
+   * `409 CHECKPOINT_EXPIRED` (409 on every path now).
    *
    * @param accountId - the (provisional) `account_id` from the 202 response.
    * @param body - the verification `code`.
@@ -254,11 +292,14 @@ export class AuthResource {
   }
 
   /**
-   * Poll for mobile-app approval of a pending checkpoint challenge until it
-   * leaves `pending`.
+   * Poll an action-based checkpoint (`mobile_app_approval`,
+   * `otp_or_mobile_app_approval`, `checking`) until it leaves `pending`.
    *
-   * On `status: "expired"`, the response carries `challenge_type`
-   * (`"mobile_app_approval"`) and a human-readable `recovery_hint`.
+   * A transient error on Curviate's side answers `pending`: keep polling.
+   * Only a refusal answers `failed`, and a terminal refusal throws its own
+   * code. Past `expires_at` (also after the expiry sweep) the poll throws
+   * `409 CHECKPOINT_EXPIRED`; there is no `status: "expired"` answer. Start
+   * the connection again.
    *
    * @param accountId - the (provisional) `account_id` from the 202 response.
    */

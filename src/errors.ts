@@ -141,6 +141,9 @@ export const ERROR_CODES = [
   // retrying will not help.
   "LINKEDIN_OPERATION_NOT_SUPPORTED",
   // Checkpoint (account connect flow)
+  // `CHECKPOINT_EXPIRED` is 409 on every path (it was 422 on some solve
+  // paths): past `expires_at`, solve, poll, resend and request answer it, and
+  // a pending checkpoint that times out does too. Start the connection again.
   "CHECKPOINT_NOT_FOUND",
   "CHECKPOINT_EXPIRED",
   "CHECKPOINT_INVALID_CODE",
@@ -213,6 +216,9 @@ export const ERROR_CODES = [
 
   // Upstream failures on the connect and billing paths. All transient in the
   // ordinary sense (502/503 from a dependency), so a retry is reasonable.
+  // `SUBSTRATE_CAP_REACHED` is no longer sent: the account cap answers
+  // `503 PLATFORM_ERROR` with `retry_likely_to_succeed: false`. Kept for older
+  // deployments; removed in a later release.
   "SUBSTRATE_LINK_FAILED",
   "SUBSTRATE_CAP_REACHED",
   "BILLING_CHECKOUT_FAILED",
@@ -416,8 +422,10 @@ export const ERROR_CODES = [
   //   in the client config).
   // - `SEAT_LENT` (409): the seat is lent to another Team; a connect or a
   //   cancel naming it is refused. Move it back first.
-  // - `LINKEDIN_SIGN_IN_REQUIRED` (403): LinkedIn wants a sign-in on
-  //   linkedin.com before it accepts this one. Sign in there, then retry.
+  // - `LINKEDIN_SIGN_IN_REQUIRED` (403, user_fixable): LinkedIn wants the
+  //   person to sign in on linkedin.com before it accepts this connect. Sign
+  //   in there, then retry, or connect with cookies from a browser where it is
+  //   signed in.
   // - `EXPORT_IN_PROGRESS` (409): your team already has an export queued or
   //   running (`details.export_id`). Retry when it finishes.
   // - `EXPORT_NOT_READY` (409): the export is queued, running or failed; its

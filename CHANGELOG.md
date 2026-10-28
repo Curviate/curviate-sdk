@@ -90,6 +90,52 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 - **Docs:** a live write outside the activity window is refused with
   `BUDGET_EXHAUSTED` (`safetyReason: "activity_window"`); reads never are.
 
+### #2250 Connect v2 (checkpoints, connect refusals)
+
+#### Breaking
+
+- **New `challenge_type` values** `checking` (LinkedIn is checking the
+  sign-in: poll it, nothing to answer) and `phone_register` (solve with
+  `(+CC)number`; it was `422 CHECKPOINT_UNSUPPORTED`). Breaking for callers
+  that branch on that 422 or switch exhaustively over `challenge_type`: add
+  both arms.
+- **`auth.pollCheckpoint` never answers `status: "expired"`** and carries no
+  `recovery_hint`. Past `expires_at` (also after the expiry sweep, or when it
+  fires mid-poll) solve, poll, resend and request throw
+  `409 CHECKPOINT_EXPIRED`. Breaking for callers branching on either.
+- **`CHECKPOINT_EXPIRED` is 409 everywhere** (it was 422 on some solve
+  paths), and a pending checkpoint that times out answers it too. Breaking
+  for callers branching on a 422 `CHECKPOINT_EXPIRED`.
+- **Connect refusals:** a cookie connect rejected for any reason is
+  `401 LINKEDIN_COOKIE_INVALID`; the account cap is `503 PLATFORM_ERROR`
+  with `retryLikelyToSucceed: false` (`SUBSTRATE_CAP_REACHED` is no longer
+  sent; it stays in `ERROR_CODES` for older deployments); an intent that
+  times out before any checkpoint is `503 LINKEDIN_SERVICE_UNAVAILABLE`; a
+  poll's terminal refusal throws its own code (a transient error still
+  answers `pending`).
+
+#### Added
+
+- **`LINKEDIN_SIGN_IN_REQUIRED`** (403, user_fixable): LinkedIn wants the
+  person to sign in on linkedin.com first.
+- **`channel`** (`email`, `sms`, `whatsapp` or `null`) on `otp` and
+  `otp_or_mobile_app_approval` checkpoints: where LinkedIn sent the code.
+- **`user_languages`** on `auth.intent` (cookie connects only, at most 5
+  BCP 47 tags, each at most 35 characters).
+- **`contract_selected`** on the connect 201, solve, poll `active` and the
+  reconnect 200 when `recruiter_contract_id` was sent.
+
+#### Changed
+
+- **`TRY_ANOTHER_WAY`** on `auth.solveCheckpoint`: same shape, new meaning.
+  It asks LinkedIn for another method and counts no attempt; it is
+  `400 INVALID_REQUEST` on `contract_selection`, `challenge_selection`,
+  `phone_register` and `checking`. Solve `code` accepts `( ) +`.
+- **`expires_at`** is when Curviate stops accepting an answer; a chained
+  checkpoint keeps the sign-in's original `expires_at`.
+- **`recruiter_contract_id`** is selected once the account is connected;
+  `contract_selected: false` means connected, not selected.
+
 ## [0.44.0] - 2026-10-22
 
 Dashboard v2 API. Fixture and types regenerated from deployed staging (server
