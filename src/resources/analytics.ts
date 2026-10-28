@@ -61,6 +61,13 @@ export class AnalyticsMotionsResource {
    * without `include` and the body is the summary: `performance`, the top 5
    * by sent, `flags`. Give none and you still get the full body, with a
    * `Deprecation` header: it becomes the summary later.
+   *
+   * Window: `from` and `to` reach back up to 3650 days (more is a `400` naming
+   * `from`). Beyond 12 months you get daily counts only:
+   * `window.counts_only_through` is the last day read from the daily counts
+   * (`null` when the whole window has full detail), and
+   * `window.paths_through` says `paths` covers only the days after it, so past
+   * it `paths` does not add up to the totals.
    * `GET /v1/analytics/motions`
    *
    * @example
@@ -80,7 +87,8 @@ export class AnalyticsMotionsResource {
    * {@link AnalyticsMotionsResource.list}; here the summary is `performance`,
    * `accounts` and `flags`, and `steps`, `variants` and `paths` come with
    * `include`. `paths` splits the Motion by the Contact's relationship to the
-   * account when the Enrollment started (provisional).
+   * account when the Enrollment started (provisional); it covers only the
+   * days after `window.paths_through`.
    * `GET /v1/analytics/motions/{motion_id}`
    *
    * @example

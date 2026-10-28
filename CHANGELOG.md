@@ -9,6 +9,12 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## Unreleased
 
+### #2721 Daily counts and the raw reach
+
+- **Analytics windows reach 3650 days** on `analytics.motions.list` / `get` and `accounts.overview` (a longer one is `400 INVALID_REQUEST` naming `from`; the old 365-day cap is gone). Beyond 12 months you get daily counts only. New `window.counts_only_through` and `window.paths_through` (`YYYY-MM-DD | null`): past `paths_through`, `paths` does not add up to the totals. `accounts.metrics` reads up to 3650 days.
+- **`enrollments.get`:** new `history_truncated` (boolean). `history` reaches back 12 months, plus what `retry` reads.
+- **Activity exports:** a window past the 12-month raw reach is `400 INVALID_REQUEST` naming `from`.
+
 ### #2680 Settings v2
 
 #### Breaking

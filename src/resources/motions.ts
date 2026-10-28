@@ -335,7 +335,9 @@ export class EnrollmentsResource {
 
   /**
    * One Enrollment with its `history` of Steps (metadata only, no rendered
-   * text).
+   * text). `history` reaches back 12 months, plus the entries `retry` reads
+   * at any age; `history_truncated: true` says older entries are not listed.
+   * The Enrollment's state has no such limit.
    * `GET /v1/enrollments/{id}`
    *
    * @example

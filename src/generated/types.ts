@@ -2739,7 +2739,7 @@ export interface paths {
         };
         /**
          * List an account's daily metrics
-         * @description The account's own numbers, one snapshot per day (connections, followers, profile viewers, search appearances, post impressions; SSI on Sales Navigator), read once a day and stored: no LinkedIn call. Oldest first, default the last 90 days, at most 366 days.
+         * @description The account's own numbers, one snapshot per day (connections, followers, profile viewers, search appearances, post impressions; SSI on Sales Navigator), read once a day and stored: no LinkedIn call. Oldest first, default the last 90 days, at most 3,650 days: no 12-month limit.
          */
         get: operations["getV1AccountsAccountIdMetrics"];
         put?: never;
@@ -2759,7 +2759,7 @@ export interface paths {
         };
         /**
          * Get an account's overview
-         * @description One account at a glance, no LinkedIn call: profile, its daily numbers, limits, latest activity, and its results in the window (rates, daily, its Motions) with flags. include, fields, sort, limit and compare trim it as on GET /v1/analytics/motions.
+         * @description One account at a glance, no LinkedIn call: profile, its daily numbers, limits, latest activity (its last 10 actions within the last 12 months), and its results in the window (rates, daily, its Motions) with flags. include, fields, sort, limit and compare trim it as on GET /v1/analytics/motions.
          */
         get: operations["getV1AccountsAccountIdOverview"];
         put?: never;
@@ -4367,7 +4367,7 @@ export interface paths {
         };
         /**
          * Motion events feed
-         * @description Recent Motion events, newest first: steps executed, skipped or failed, invitations accepted and replies, with the person's name. Messages and replies only from chats you may read. Keyset paging: events recorded after your first page never shift later pages. Read-only, no LinkedIn call.
+         * @description Recent Motion events, newest first: steps executed, skipped or failed, invitations accepted and replies, with the person's name. Messages and replies only from chats you may read. Reaches back 12 months (the raw reach); older activity is in the daily counts of GET /v1/analytics/motions. Keyset paging: events recorded after your first page never shift later pages. Read-only, no LinkedIn call.
          */
         get: operations["getV1AnalyticsEvents"];
         put?: never;
@@ -35023,7 +35023,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST: from or to is not a calendar date, from is after to, or the range spans more than 366 days (the message names from). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: from or to is not a calendar date, from is after to, or the range spans more than 3,650 days (the message names from). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -35149,6 +35149,10 @@ export interface operations {
                              * @enum {string}
                              */
                             bucket: "day" | "week" | "month";
+                            /** @description YYYY-MM-DD, set when the window reaches back more than 12 months: up to and including this day the figures come from daily counts (UTC days); step and variant rates, seen and paths do not cover those days. null when every day is read in full detail. */
+                            counts_only_through: string | null;
+                            /** @description YYYY-MM-DD, the same day as counts_only_through: paths covers the days after it only, so past it paths does not add up to totals. null when paths covers the whole window. */
+                            paths_through: string | null;
                         };
                         /** @description UTC instant of the read; outcomes so far and maturing are measured at it. */
                         generated_at: string;
@@ -35264,7 +35268,7 @@ export interface operations {
                                 as_of?: string;
                             } | null;
                         } | null;
-                        /** @description The account's latest 10 actions and their outcomes, newest first, whatever the window: invitations, messages and InMails sent, invitations accepted, replies. Source: origin, and the Motion for origin motion. Metadata only, never message text. The full feed: GET /v1/analytics/events?account_id=. */
+                        /** @description The account's latest 10 actions and their outcomes, newest first, whatever the window, within the last 12 months (the raw reach): invitations, messages and InMails sent, invitations accepted, replies. Source: origin, and the Motion for origin motion. Metadata only, never message text. The full feed: GET /v1/analytics/events?account_id=. */
                         activity?: {
                             /** @description Event id (ane_...). */
                             id: string;
@@ -35698,7 +35702,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST: an unknown query parameter, a malformed date (message starts from: or to:), from after to or a custom window over 365 days (from:), range together with from or to (range:), an unknown range, bucket or origin, origin linkedin (never counted), or an unknown zone (timezone:). The grammar: a section this read does not have (include:), a path that is not a field or lies outside the returned sections (fields:), an unknown sort key (sort:), a limit outside 1 to 100 (limit:), a compare other than previous_period (compare:). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: an unknown query parameter, a malformed date (message starts from: or to:), from after to or a custom window over 3650 days (from:), range together with from or to (range:), an unknown range, bucket or origin, origin linkedin (never counted), or an unknown zone (timezone:). The grammar: a section this read does not have (include:), a path that is not a field or lies outside the returned sections (fields:), an unknown sort key (sort:), a limit outside 1 to 100 (limit:), a compare other than previous_period (compare:). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -49756,7 +49760,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The Enrollment with its history: what each Step did, in order. Metadata only; the text that was sent is never stored. */
+            /** @description The Enrollment with its history: what each Step did, in order. Metadata only; the text that was sent is never stored. history reaches back 12 months (the raw reach, the same line as the events feed), plus the entries Retry reads at any age; history_truncated says when older entries are not listed. The Enrollment's state (status, current step, waiting) and the list have no such limit. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -49861,6 +49865,8 @@ export interface operations {
                             /** @description ISO 8601. */
                             at: string;
                         }[];
+                        /** @description true when the Enrollment started more than 12 months ago (before the raw reach), so entries older than that are not in history, except those Retry reads. false when history is complete. */
+                        history_truncated: boolean;
                     };
                 };
             };
@@ -51143,6 +51149,10 @@ export interface operations {
                              * @enum {string}
                              */
                             bucket: "day" | "week" | "month";
+                            /** @description YYYY-MM-DD, set when the window reaches back more than 12 months: up to and including this day the figures come from daily counts (UTC days); step and variant rates, seen and paths do not cover those days. null when every day is read in full detail. */
+                            counts_only_through: string | null;
+                            /** @description YYYY-MM-DD, the same day as counts_only_through: paths covers the days after it only, so past it paths does not add up to totals. null when paths covers the whole window. */
+                            paths_through: string | null;
                         };
                         /** @description UTC instant of the read; outcomes so far and maturing are measured at it. */
                         generated_at: string;
@@ -51884,7 +51894,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST: an unknown query parameter, a malformed date (message starts from: or to:), from after to or a custom window over 365 days (from:), range together with from or to (range:), an unknown range, bucket or origin, origin linkedin (never counted), or an unknown zone (timezone:). The grammar: a section this read does not have (include:), a path that is not a field or lies outside the returned sections (fields:), an unknown sort key (sort:), a limit outside 1 to 100 (limit:), a compare other than previous_period (compare:). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: an unknown query parameter, a malformed date (message starts from: or to:), from after to or a custom window over 3650 days (from:), range together with from or to (range:), an unknown range, bucket or origin, origin linkedin (never counted), or an unknown zone (timezone:). The grammar: a section this read does not have (include:), a path that is not a field or lies outside the returned sections (fields:), an unknown sort key (sort:), a limit outside 1 to 100 (limit:), a compare other than previous_period (compare:). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -52021,6 +52031,10 @@ export interface operations {
                              * @enum {string}
                              */
                             bucket: "day" | "week" | "month";
+                            /** @description YYYY-MM-DD, set when the window reaches back more than 12 months: up to and including this day the figures come from daily counts (UTC days); step and variant rates, seen and paths do not cover those days. null when every day is read in full detail. */
+                            counts_only_through: string | null;
+                            /** @description YYYY-MM-DD, the same day as counts_only_through: paths covers the days after it only, so past it paths does not add up to totals. null when paths covers the whole window. */
+                            paths_through: string | null;
                         };
                         /** @description UTC instant of the read; outcomes so far and maturing are measured at it. */
                         generated_at: string;
@@ -53207,7 +53221,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST: an unknown query parameter, a malformed date (message starts from: or to:), from after to or a custom window over 365 days (from:), range together with from or to (range:), an unknown range, bucket or origin, origin linkedin (never counted), or an unknown zone (timezone:). The grammar: a section this read does not have (include:), a path that is not a field or lies outside the returned sections (fields:), an unknown sort key (sort:), a limit outside 1 to 100 (limit:), a compare other than previous_period (compare:). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: an unknown query parameter, a malformed date (message starts from: or to:), from after to or a custom window over 3650 days (from:), range together with from or to (range:), an unknown range, bucket or origin, origin linkedin (never counted), or an unknown zone (timezone:). The grammar: a section this read does not have (include:), a path that is not a field or lies outside the returned sections (fields:), an unknown sort key (sort:), a limit outside 1 to 100 (limit:), a compare other than previous_period (compare:). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -53804,7 +53818,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST: an unknown entity or table, ndjson with more than one table, an activity or metrics window over 366 days, or an invalid filter (the message names it). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: an unknown entity or table, ndjson with more than one table, an activity or metrics window over 366 days, an activity window that starts before the raw reach (12 months of full activity; the message starts with from: and names the earliest from in your timezone; a 366-day window ending today is always accepted), or an invalid filter (the message names it). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
