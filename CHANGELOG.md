@@ -180,8 +180,7 @@ Types come from the served document (regenerated); the hand-written parts:
   (`table`, `format`, the overview's filters) and resolves with the file's
   bytes. **`exports.create` / `get` / `download`** run the same as a
   background job: poll `status` to `ready`, then `download` within 24 hours;
-  `download` resolves with bytes (a `json` file comes back compact, not
-  byte-for-byte). One export per Team at a time. Types `Export`,
+  `download` resolves with the file's exact bytes. One export per Team at a time. Types `Export`,
   `ExportCreateBody`, `ExportGetResult`, `AnalyticsExportParams`.
 - **`accounts.metrics(accountId, { from, to, timezone })`** (the Account's daily
   snapshots, oldest first, at most 366 days; no LinkedIn call) and

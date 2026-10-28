@@ -60,8 +60,7 @@ export class ExportsResource {
    * Download a ready export's file as bytes (CSV with a BOM, JSON, NDJSON, or
    * a ZIP when several tables were asked). A queued, running or failed export
    * throws `EXPORT_NOT_READY`, an expired one `EXPORT_EXPIRED` and one removed
-   * by a Contact delete `EXPORT_REMOVED` (run it again). A `json` file comes
-   * back compact, not byte-for-byte.
+   * by a Contact delete `EXPORT_REMOVED` (run it again).
    * `GET /v1/exports/{export_id}/file`
    *
    * @example
