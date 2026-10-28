@@ -186,8 +186,8 @@ export class SalesNavigatorResource {
    * base64-encoded file bytes, always sent as JSON, never multipart.
    * `POST /v1/{account_id}/sales-navigator/chats`
    *
-   * If the Account already has a private
-   * conversation with this person that you may not read: it throws
+   * When the Account already has a private
+   * conversation with this person that you may not read, this throws
    * `CHAT_NOT_VISIBLE` (409) and sends nothing. Ask the person who connected
    * the Account to reply, or to sync the full inbox. It is detected from what
    * Curviate stored, so a thread older than 90 days that Curviate never

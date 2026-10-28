@@ -199,8 +199,8 @@ export class RecruiterResource {
    * are REQUIRED; optional attachments ride the body as base64-encoded
    * objects (no multipart). `POST /v1/{account_id}/recruiter/chats`
    *
-   * If the Account already has a private
-   * conversation with this person that you may not read: it throws
+   * When the Account already has a private
+   * conversation with this person that you may not read, this throws
    * `CHAT_NOT_VISIBLE` (409) and sends nothing. Ask the person who connected
    * the Account to reply, or to sync the full inbox. It is detected from what
    * Curviate stored, so a thread older than 90 days that Curviate never

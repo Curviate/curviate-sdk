@@ -112,8 +112,8 @@ export class MessagingResource {
    * Reply to an existing one instead, with `sendMessage()` using a
    * `COMPANY_` chat id from `inboxes.listChats()`.
    *
-   * If the Account already has a private
-   * conversation with this person that you may not read: it throws
+   * When the Account already has a private
+   * conversation with this person that you may not read, this throws
    * `CHAT_NOT_VISIBLE` (409) and sends nothing. Ask the person who connected
    * the Account to reply, or to sync the full inbox. It is detected from what
    * Curviate stored, so a thread older than 90 days that Curviate never
@@ -286,8 +286,8 @@ export class MessagingResource {
   /**
    * Send an InMail. `POST /v1/{account_id}/messages/inmail`
    *
-   * If the Account already has a private
-   * conversation with this person that you may not read: it throws
+   * When the Account already has a private
+   * conversation with this person that you may not read, this throws
    * `CHAT_NOT_VISIBLE` (409) and sends nothing. Ask the person who connected
    * the Account to reply, or to sync the full inbox. It is detected from what
    * Curviate stored, so a thread older than 90 days that Curviate never

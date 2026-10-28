@@ -5,7 +5,7 @@
 // table (namespace -> exact method set), enumerates the real prototype methods
 // on a constructed client, and asserts set-equality per namespace. A phantom
 // (extra) public method fails by name; a missing method fails by name; the
-// total must be 234 methods across 36 namespaces. A separate compile-time block
+// total must be 252 methods across 40 namespaces. A separate compile-time block
 // proves every removed method is gone at the type level.
 import { describe, expect, it } from "vitest";
 import { Curviate } from "../src/index.js";
@@ -25,6 +25,8 @@ const ROOT_SURFACE: Record<string, readonly string[]> = {
     "cancelSeat",
     "revertSeatCancellation",
     "setTeamAccess",
+    "metrics",
+    "overview",
   ],
   auth: [
     "intent",
@@ -55,6 +57,9 @@ const ROOT_SURFACE: Record<string, readonly string[]> = {
     "listInvites",
     "resendInvite",
     "revokeInvite",
+    "create",
+    "setLogo",
+    "removeLogo",
   ],
   // Curviate's own Notifications. Same key as the account-scoped LinkedIn
   // notifications below, different class.
@@ -73,9 +78,13 @@ const ROOT_SURFACE: Record<string, readonly string[]> = {
   "network.connections": ["list"],
   unibox: ["list", "get", "unreadCount", "refresh", "tagContact", "enroll"],
   "unibox.accounts": ["list", "update"],
-  analytics: ["activity"],
+  analytics: ["activity", "export"],
   "analytics.motions": ["list", "get"],
   "analytics.events": ["list"],
+  "billing.seats": ["lend", "return"],
+  "billing.invoices": ["list", "pdf"],
+  doNotContact: ["list", "get", "add", "update", "remove"],
+  exports: ["create", "get", "download"],
 };
 
 // Account-scoped namespaces (hang off account(id) only).
@@ -251,6 +260,10 @@ const rootInstances: Record<string, object> = {
   analytics: client.analytics,
   "analytics.motions": client.analytics.motions,
   "analytics.events": client.analytics.events,
+  "billing.seats": client.billing.seats,
+  "billing.invoices": client.billing.invoices,
+  doNotContact: client.doNotContact,
+  exports: client.exports,
 };
 
 const accountInstances: Record<string, object> = {
@@ -308,17 +321,17 @@ describe("per-namespace method bijection", () => {
 });
 
 describe("total mapped surface", () => {
-  it("the intended table sums to 234 methods across 36 namespaces", () => {
+  it("the intended table sums to 252 methods across 40 namespaces", () => {
     const namespaces = [
       ...Object.values(ROOT_SURFACE),
       ...Object.values(ACCOUNT_SURFACE),
     ];
-    expect(namespaces.length).toBe(36);
+    expect(namespaces.length).toBe(40);
     const total = namespaces.reduce((n, methods) => n + methods.length, 0);
-    expect(total).toBe(234);
+    expect(total).toBe(252);
   });
 
-  it("the real runtime surface also sums to exactly 234", () => {
+  it("the real runtime surface also sums to exactly 252", () => {
     const roots = Object.values(rootInstances).reduce(
       (n, inst) => n + ownMethods(inst).size,
       0,
@@ -327,7 +340,7 @@ describe("total mapped surface", () => {
       (n, inst) => n + ownMethods(inst).size,
       0,
     );
-    expect(roots + accounts).toBe(234);
+    expect(roots + accounts).toBe(252);
   });
 });
 
