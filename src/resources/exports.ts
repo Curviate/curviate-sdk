@@ -11,7 +11,6 @@
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
 import { apiPath } from "../internal/path.js";
-import { asBytes } from "../internal/bytes.js";
 
 export type ExportCreateBody = paths["/v1/exports"]["post"]["requestBody"]["content"]["application/json"];
 export type Export = paths["/v1/exports"]["post"]["responses"]["202"]["content"]["application/json"];
@@ -70,6 +69,6 @@ export class ExportsResource {
    * await fs.promises.writeFile("export.csv", Buffer.from(bytes));
    */
   async download(exportId: string): Promise<ArrayBuffer> {
-    return asBytes(await this.ctx.request<unknown>({ method: "GET", path: apiPath`/v1/exports/${exportId}/file` }));
+    return this.ctx.request<ArrayBuffer>({ bytes: true, method: "GET", path: apiPath`/v1/exports/${exportId}/file` });
   }
 }

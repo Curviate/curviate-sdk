@@ -45,6 +45,8 @@ export interface ExecuteOptions {
   body?: unknown;
   /** A raw body sent as-is under its own `Content-Type` (file upload). */
   rawBody?: { data: Blob | ArrayBuffer | Uint8Array; contentType: string };
+  /** Resolve a 2xx with the response's bytes, whatever its `Content-Type` (file downloads). */
+  bytes?: boolean;
   /** Injectable fetch (edge runtimes / tests). Defaults to global fetch. */
   fetch?: typeof fetch;
   /** Sent as `X-Curviate-Team` when set. */
@@ -323,9 +325,9 @@ function buildUrl(path: string, opts: ExecuteOptions): string {
 }
 
 /** Parse a successful (2xx) response: JSON, or ArrayBuffer for binary. */
-async function parseSuccess<T>(res: Response): Promise<T> {
+async function parseSuccess<T>(res: Response, bytes?: boolean): Promise<T> {
   const ct = res.headers.get("content-type") ?? "";
-  if (ct.includes("application/json")) {
+  if (!bytes && ct.includes("application/json")) {
     return (await res.json()) as T;
   }
   // Any non-JSON 2xx body is returned as binary (e.g. file downloads).
@@ -381,7 +383,7 @@ export async function execute<T = unknown>(
     clearTimeout(timer);
 
     if (res.ok) {
-      return parseSuccess<T>(res);
+      return parseSuccess<T>(res, opts.bytes);
     }
 
     const { err, refusesRetry } = await errorFromResponse(res);

@@ -10,15 +10,15 @@ const client = new Curviate({ apiKey: "cvt_test_ripple_b", baseUrl: BASE, maxRet
 const text = (b: ArrayBuffer) => new TextDecoder("utf-8", { ignoreBOM: true }).decode(b);
 
 describe("downloads resolve with bytes", () => {
-  it("a json file (parsed by the transport) is re-encoded; csv and pdf keep their bytes", async () => {
+  it("every file comes back as the exact bytes served, a json one included", async () => {
     server.use(
-      http.get(`${BASE}/v1/exports/exp_json/file`, () => HttpResponse.json([{ a: 1 }])),
+      http.get(`${BASE}/v1/exports/exp_json/file`, () => new HttpResponse('[ {"a": 1} ]', { headers: { "content-type": "application/json" } })),
       http.get(`${BASE}/v1/analytics/export`, () => new HttpResponse("﻿day,sent\n", { headers: { "content-type": "text/csv" } })),
       http.get(`${BASE}/v1/billing/invoices/INV-1/pdf`, () => new HttpResponse("%PDF-1.7", { headers: { "content-type": "application/pdf" } })),
     );
     const json = await client.exports.download("exp_json");
     expect(json).toBeInstanceOf(ArrayBuffer);
-    expect(JSON.parse(text(json))).toEqual([{ a: 1 }]);
+    expect(text(json)).toBe('[ {"a": 1} ]');
     expect(text(await client.analytics.export({ table: ["daily"] }))).toBe("﻿day,sent\n");
     expect(text(await client.billing.invoices.pdf("INV-1"))).toBe("%PDF-1.7");
   });

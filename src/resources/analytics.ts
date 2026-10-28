@@ -23,7 +23,6 @@ import type { paths } from "../generated/types.js";
 import { apiPath } from "../internal/path.js";
 import { commaLists, type WithLists } from "../internal/query.js";
 import { pageable, type Pageable } from "../internal/paginate.js";
-import { asBytes } from "../internal/bytes.js";
 
 /** `account_id`, `motion_id`, `origin`, `include`, `fields` and `sort` take a comma list or an array. */
 export type MotionAnalyticsParams = WithLists<NonNullable<paths["/v1/analytics/motions"]["get"]["parameters"]["query"]>, "account_id" | "motion_id" | "origin" | "include" | "fields" | "sort">;
@@ -151,6 +150,6 @@ export class AnalyticsResource {
    * const csv = await curviate.analytics.export({ table: "daily", range: "90d" });
    */
   async export(params?: AnalyticsExportParams): Promise<ArrayBuffer> {
-    return asBytes(await this.ctx.request<unknown>({ method: "GET", path: "/v1/analytics/export", query: commaLists(params, "account_id", "motion_id", "origin", "table") }));
+    return this.ctx.request<ArrayBuffer>({ bytes: true, method: "GET", path: "/v1/analytics/export", query: commaLists(params, "account_id", "motion_id", "origin", "table") });
   }
 }
