@@ -2,16 +2,11 @@
  * Tenant settings (root-scoped): `curviate.tenant.beta` (2 methods).
  */
 import type { RequestContext } from "../internal/context.js";
+import type { paths } from "../generated/types.js";
 
-// ponytail: hand-typed until the served OpenAPI carries `/v1/tenant/beta`; swap to `paths[...]` on the next regen.
 /** The Team's persisted beta consent. */
-export interface TenantBetaConsent {
-  object: "tenant_beta_consent";
-  beta_enabled: boolean;
-}
-export interface TenantBetaSetBody {
-  beta_enabled: boolean;
-}
+export type TenantBetaConsent = paths["/v1/tenant/beta"]["get"]["responses"]["200"]["content"]["application/json"];
+export type TenantBetaSetBody = paths["/v1/tenant/beta"]["patch"]["requestBody"]["content"]["application/json"];
 
 /** `curviate.tenant.beta`: whether the Team consents to beta-gated operations. */
 export class TenantBetaResource {
