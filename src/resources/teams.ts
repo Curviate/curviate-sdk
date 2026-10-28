@@ -83,7 +83,7 @@ export class TeamsResource {
    * {@link TeamsResource.list} item shape plus `next_step`, which depends on
    * the credential: an All-Teams key gets `{ team_header }`, the header line
    * to send (`X-Curviate-Team: <team_id>`, usable at once; with this SDK pass
-   * the `team_id` as the `team` option); any other credential gets
+   * the `team_id` to `curviate.withTeam(team_id)`); any other credential gets
    * `{ command, url }` (the CLI command that sets up a key in the new team,
    * and the dashboard page with your teams).
    * `POST /v1/teams`

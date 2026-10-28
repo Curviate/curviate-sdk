@@ -33,7 +33,7 @@ const curviate = new Curviate({
 });
 ```
 
-An API key belongs to one person in one team and acts with that person's role there. `curviate.teams.getCurrent()` says which team and role. A dashboard session token may act in any team you belong to: pick one with `team: "tnt_..."` (sent as `X-Curviate-Team`). Leave `team` unset with an API key; naming another team is refused with `TEAM_ACCESS_DENIED`.
+An API key belongs to one person in one team and acts with that person's role there. `curviate.teams.getCurrent()` says which team and role. A key may work in one Team or in all of a person's Teams. A Team key acts only in its own Team: leave `team` unset with one; naming another team is refused with `TEAM_ACCESS_DENIED`. A key that works in all of your Teams, or a dashboard session token, picks one with `team: "tnt_..."` (sent as `X-Curviate-Team`), or per call with `curviate.withTeam("tnt_...")`, which overrides the option. Without one, an All-Teams key's Team-level operation is refused with `TEAM_REQUIRED` (a call on one of your accounts takes that account's Team), and a session token acts in your default Team.
 
 ---
 

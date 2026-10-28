@@ -215,7 +215,7 @@ Types come from the served document (regenerated); the hand-written parts:
 
 - **`teams.create({ name })`** returns the new Team and `next_step`: an
   All-Teams key gets `{ team_header }` (the header line `X-Curviate-Team:
-  <team_id>`, usable at once; with this SDK pass the id as `team`), any other
+  <team_id>`, usable at once; with this SDK pass the id to `withTeam`), any other
   credential gets `{ command, url }`.
 - **`teams.list({ include: "counts" })`** adds `tier`, `trial`, `accounts`,
   `active_motions` and, on Owner rows, `seats` (`used`, `total`, `lent_out`,
@@ -267,6 +267,23 @@ Types come from the served document (regenerated); the hand-written parts:
   auto-pager over `items` / `cursor`; `await` for a page, `for await` for all;
   Owners only) and **`billing.invoices.pdf(number)`** resolves with the PDF
   bytes.
+
+### #2617 All-Teams key
+
+#### Added
+
+- **`curviate.withTeam(team)`**: the same client acting in that Team. Every
+  call made through it sends `X-Curviate-Team: <team>`, overriding the
+  `team` client option, so one client can act per call in any of your
+  Teams. Works for every method, root and account-scoped.
+- **`TEAM_REQUIRED`** (400): a key that works in all of your Teams called a
+  Team-level operation without naming the Team. Name one with `team` or
+  `withTeam`; a call on one of your accounts takes that account's Team.
+
+#### Changed
+
+- **`TEAM_ACCESS_DENIED`** and the `team` option copy: a key may work in one
+  Team or in all of a person's Teams. A Team key accepts only its own Team.
 
 ---
 
