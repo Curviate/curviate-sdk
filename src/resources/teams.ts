@@ -1,11 +1,12 @@
 /**
- * Teams resource: 10 methods (root-scoped), `curviate.teams`.
+ * Teams resource: 13 methods (root-scoped), `curviate.teams`.
  *
  * A team is the workspace your accounts, Drafts, webhooks and billing belong
  * to. A person can belong to several teams, with a role in each (`owner`,
- * `manager`, `member`). An API key acts in exactly one team, the one it was
- * created in; `current` below is that team. A dashboard session can choose a
- * team with the client's `team` option.
+ * `manager`, `member`). A Team API key acts in exactly one team, the one it
+ * was created in; `current` below is that team. A key that works in all of
+ * your Teams, and a dashboard session, choose a team with the client's `team`
+ * option. `create` makes a new team with you as its Owner.
  *
  * Member and invite writes are for Owners; a refusal reads `INSUFFICIENT_ROLE`.
  * Every list pages with an opaque `cursor` until it is `null`.
@@ -17,6 +18,10 @@ import { apiPath } from "../internal/path.js";
 // ─── Type aliases from generated OpenAPI snapshot ──────────────────────────
 
 export type TeamListParams = NonNullable<paths["/v1/teams"]["get"]["parameters"]["query"]>;
+export type TeamCreateBody = NonNullable<paths["/v1/teams"]["post"]["requestBody"]>["content"]["application/json"];
+/** The new Team: the `GET /v1/teams` item shape plus `next_step`. */
+export type TeamCreateResult = paths["/v1/teams"]["post"]["responses"]["201"]["content"]["application/json"];
+export type TeamLogoResult = paths["/v1/teams/current/logo"]["put"]["responses"]["200"]["content"]["application/json"];
 export type TeamListPage = paths["/v1/teams"]["get"]["responses"]["200"]["content"]["application/json"];
 export type Team = paths["/v1/teams/current"]["get"]["responses"]["200"]["content"]["application/json"];
 export type TeamUpdateBody = NonNullable<paths["/v1/teams/current"]["patch"]["requestBody"]>["content"]["application/json"];
@@ -45,11 +50,23 @@ export class TeamsResource {
   constructor(private readonly ctx: RequestContext) {}
 
   /**
-   * List the teams you belong to, with your role in each.
+   * List the teams you belong to, with your role in each. `is_current` marks
+   * the team this credential acts in; `logo_url` is the team's public PNG or
+   * `null`. Pages with an opaque `cursor` until it is `null`.
+   *
+   * `include: "counts"` adds to each row `tier` (or the Tier of a seat lent to
+   * it; `null` with no subscription), `trial: { days_left }` while a trial is
+   * all the team has, `accounts` and `active_motions` (what you would read in
+   * that team), and `seats: { used, total, lent_out, lent_in }` on rows where
+   * you are an Owner. Which rows get counts depends on the credential: a
+   * dashboard session and an All-Teams key get them on every row; a Team API
+   * key, or a token for one Team, only on its own row (the other rows come
+   * back without them).
    * `GET /v1/teams`
    *
    * @example
    * const { items } = await curviate.teams.list();
+   * const withCounts = await curviate.teams.list({ include: "counts" });
    */
   list(params?: TeamListParams): Promise<TeamListPage> {
     return this.ctx.request<TeamListPage>({
@@ -60,8 +77,28 @@ export class TeamsResource {
   }
 
   /**
-   * The team this credential acts in: its name, your role, and the Owner who
-   * receives invoices.
+   * Create a team with you as its Owner and the Owner who receives its
+   * invoices. It has no subscription and no seat yet. Any role may call it,
+   * and two identical calls create two teams. The result is the
+   * {@link TeamsResource.list} item shape plus `next_step`, which depends on
+   * the credential: an All-Teams key gets `{ team_header }`, the header line
+   * to send (`X-Curviate-Team: <team_id>`, usable at once; with this SDK pass
+   * the `team_id` as the `team` option); any other credential gets
+   * `{ command, url }` (the CLI command that sets up a key in the new team,
+   * and the dashboard page with your teams).
+   * `POST /v1/teams`
+   *
+   * @example
+   * const { team_id, next_step } = await curviate.teams.create({ name: "Agency client A" });
+   * if (next_step?.command) console.log(next_step.command); // set up a key for the new team
+   */
+  create(body: TeamCreateBody): Promise<TeamCreateResult> {
+    return this.ctx.request<TeamCreateResult>({ method: "POST", path: "/v1/teams", body });
+  }
+
+  /**
+   * The team this credential acts in: its name, your role, its `logo_url`, and
+   * the Owner who receives invoices.
    * `GET /v1/teams/current`
    *
    * @example
@@ -85,6 +122,37 @@ export class TeamsResource {
       path: "/v1/teams/current",
       body,
     });
+  }
+
+  /**
+   * Set the current team's logo from a PNG of at most 1 MB. The file's own
+   * bytes are checked, whatever its content type: a file that is not a PNG
+   * throws `UNSUPPORTED_MEDIA_TYPE` (415) and a larger one `PAYLOAD_TOO_LARGE`
+   * (413). Replaces the previous logo and resolves with the team, whose
+   * `logo_url` is the new public PNG URL. Owners only.
+   * `PUT /v1/teams/current/logo`
+   *
+   * @example
+   * await curviate.teams.setLogo(await fs.promises.readFile("logo.png"));
+   */
+  setLogo(png: Blob | ArrayBuffer | Uint8Array): Promise<TeamLogoResult> {
+    return this.ctx.request<TeamLogoResult>({
+      method: "PUT",
+      path: "/v1/teams/current/logo",
+      rawBody: { data: png, contentType: "image/png" },
+    });
+  }
+
+  /**
+   * Remove the current team's logo; the team resolves with `logo_url: null`.
+   * Owners only.
+   * `DELETE /v1/teams/current/logo`
+   *
+   * @example
+   * await curviate.teams.removeLogo();
+   */
+  removeLogo(): Promise<TeamLogoResult> {
+    return this.ctx.request<TeamLogoResult>({ method: "DELETE", path: "/v1/teams/current/logo" });
   }
 
   /**

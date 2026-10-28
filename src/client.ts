@@ -41,6 +41,9 @@ import {
   type NetworkResource,
   type UniboxResource,
   type AnalyticsResource,
+  type BillingResource,
+  type DoNotContactResource,
+  type ExportsResource,
 } from "./resources/index.js";
 
 export class Curviate {
@@ -77,6 +80,12 @@ export class Curviate {
   readonly unibox: UniboxResource;
   /** Read-only Motion results, activity in budget units, the Motion events feed. */
   readonly analytics: AnalyticsResource;
+  /** Seat lending between your Teams, and the Team's invoices. */
+  readonly billing: BillingResource;
+  /** The Team-wide do-not-contact list every Motion and write respects. */
+  readonly doNotContact: DoNotContactResource;
+  /** Background exports and their files. */
+  readonly exports: ExportsResource;
 
   constructor(config: CurviateConfig) {
     this.config = resolveConfig(config);
@@ -98,6 +107,9 @@ export class Curviate {
     this.network = ns.network;
     this.unibox = ns.unibox;
     this.analytics = ns.analytics;
+    this.billing = ns.billing;
+    this.doNotContact = ns.doNotContact;
+    this.exports = ns.exports;
   }
 
   /**

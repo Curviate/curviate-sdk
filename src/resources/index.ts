@@ -45,6 +45,9 @@ import { TierResource } from "./tier.js";
 import { NetworkResource } from "./network.js";
 import { UniboxResource } from "./unibox.js";
 import { AnalyticsResource } from "./analytics.js";
+import { BillingResource } from "./billing.js";
+import { DoNotContactResource } from "./do-not-contact.js";
+import { ExportsResource } from "./exports.js";
 import { SalesNavigatorResource } from "./sales-navigator.js";
 import { RecruiterResource } from "./recruiter.js";
 import { JobsResource } from "./jobs.js";
@@ -76,6 +79,9 @@ export { TierResource } from "./tier.js";
 export { NetworkResource, NetworkConnectionsResource } from "./network.js";
 export { UniboxResource, UniboxAccountsResource } from "./unibox.js";
 export { AnalyticsResource, AnalyticsMotionsResource, AnalyticsEventsResource } from "./analytics.js";
+export { BillingResource, BillingSeatsResource, BillingInvoicesResource } from "./billing.js";
+export { DoNotContactResource } from "./do-not-contact.js";
+export { ExportsResource } from "./exports.js";
 export { SalesNavigatorResource } from "./sales-navigator.js";
 export { RecruiterResource } from "./recruiter.js";
 export { JobsResource } from "./jobs.js";
@@ -153,6 +159,9 @@ export interface RootNamespaces
   network: NetworkResource;
   unibox: UniboxResource;
   analytics: AnalyticsResource;
+  billing: BillingResource;
+  doNotContact: DoNotContactResource;
+  exports: ExportsResource;
 }
 
 /** Build the root-client namespace bag. */
@@ -174,6 +183,9 @@ export function buildRootNamespaces(ctx: RequestContext): RootNamespaces {
     network: new NetworkResource(ctx),
     unibox: new UniboxResource(ctx),
     analytics: new AnalyticsResource(ctx),
+    billing: new BillingResource(ctx),
+    doNotContact: new DoNotContactResource(ctx),
+    exports: new ExportsResource(ctx),
   };
 }
 

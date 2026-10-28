@@ -80,6 +80,9 @@ export type {
 
 export type {
   Team,
+  TeamCreateBody,
+  TeamCreateResult,
+  TeamLogoResult,
   TeamListParams,
   TeamListPage,
   TeamUpdateBody,
