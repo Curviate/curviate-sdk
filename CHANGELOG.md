@@ -9,7 +9,7 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## Unreleased
 
-### #2708 Webhooks v2, incoming events, Enrollment values, the surface header
+### Webhooks v2, incoming events, Enrollment values, the surface header
 
 #### Changed (same shape, new meaning)
 
@@ -34,7 +34,7 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 - **Enrollment `values`** on `enrollments.get`: what the Sequence's `save` maps took, empty once the Enrollment finishes.
 - **Error codes:** `NOTHING_TO_REDELIVER` (409), `REDELIVERY_EXPIRED` (410), `WEBHOOK_DISABLED` (409), `DELIVERY_IN_FLIGHT` (409, retryable), `WEBHOOK_TEMPLATE_INVALID` (422), `INCOMING_URL_RETIRED` (410). Earlier SDKs decode them as `INTERNAL`. `errors[]` entries type `severity`, `candidates`, `line` and `col`.
 
-### #2695 Unibox v2
+### Unibox v2
 
 #### Added
 
@@ -52,13 +52,13 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 - **A send marks the chat read.** `startChat`, `sendMessage` and `sendInMail` through the API turn the chat's `unread` to `false` and clear `marked_unread`, and `chat.updated` reports it. A Motion send leaves the read state as it is.
 - The `unibox.refresh` JSDoc no longer says "5 minutes".
 
-### #2721 Daily counts and the raw reach
+### Daily counts and the raw reach
 
 - **Analytics windows reach 3650 days** on `analytics.motions.list` / `get` and `accounts.overview` (a longer one is `400 INVALID_REQUEST` naming `from`; the old 365-day cap is gone). Beyond 12 months you get daily counts only. New `window.counts_only_through` and `window.paths_through` (`YYYY-MM-DD | null`): past `paths_through`, `paths` does not add up to the totals. `accounts.metrics` reads up to 3650 days.
 - **`enrollments.get`:** new `history_truncated` (boolean). `history` reaches back 12 months, plus what `retry` reads.
 - **Activity exports:** a window past the 12-month raw reach is `400 INVALID_REQUEST` naming `from`.
 
-### #2680 Settings v2
+### Settings v2
 
 #### Breaking
 
@@ -97,7 +97,7 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 - **`blocked`** on `CurviateError` is always `true` on a `BUDGET_EXHAUSTED`;
   there is no `blocked: false` success payload.
 
-### #2681 Account safety
+### Account safety
 
 #### Breaking
 
@@ -139,7 +139,7 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 - **Docs:** a live write outside the activity window is refused with
   `BUDGET_EXHAUSTED` (`safetyReason: "activity_window"`); reads never are.
 
-### #2250 Connect v2 (checkpoints, connect refusals)
+### Connect v2 (checkpoints, connect refusals)
 
 #### Breaking
 
@@ -185,7 +185,7 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 - **`recruiter_contract_id`** is selected once the account is connected;
   `contract_selected: false` means connected, not selected.
 
-### #2597 Motions setup and engine v2
+### Motions setup and engine v2
 
 #### Breaking
 
@@ -221,7 +221,7 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
   in Several mode `accounts[].contacts` counts Enrollments (same shape, new
   meaning), and `projection.fits_before_end_at` is counted per account zone.
 
-### #2550 (Analytics v2, exports, Account fields)
+### Analytics v2, exports, Account fields
 
 Types come from the served document (regenerated); the hand-written parts:
 
@@ -259,7 +259,7 @@ Types come from the served document (regenerated); the hand-written parts:
   private conversation with the person that you may not read. The `EXPORT_*`
   codes are documented on `exports` and in `ERROR_CODES`.
 
-### #2581 (Teams v2, seat lending)
+### Teams v2, seat lending
 
 - **`teams.create({ name })`** returns the new Team and `next_step`: an
   All-Teams key gets `{ team_header }` (the header line `X-Curviate-Team:
@@ -277,7 +277,7 @@ Types come from the served document (regenerated); the hand-written parts:
   it or a cancel of it throws `SEAT_LENT`; a seat an Account still uses
   throws `SEAT_NOT_EMPTY` on return.
 
-### #2628 (do-not-contact list)
+### Do-not-contact list
 
 - **`doNotContact.list` / `get` / `add` / `update` / `remove`** over the
   Team-wide list. `add` takes `contact_id` or `linkedin_url` and an optional
@@ -289,7 +289,7 @@ Types come from the served document (regenerated); the hand-written parts:
   `users.follow`, `endorseSkill`, `companies.followInvite`, `posts.react` and
   the comment methods. `do_not_contact` joins the skip and finish reasons.
 
-### #2646 (Contacts and Network)
+### Contacts and Network
 
 - **`contacts.list` and `contacts.export`:** `list_id` takes up to 20 Contact
   lists (an array or a comma list; any of them, or all with
@@ -309,14 +309,14 @@ Types come from the served document (regenerated); the hand-written parts:
 - **Same shape, more often filled:** `location` on a Connection, and
   `first_name` / `last_name` on `users.listRelations`, are non-null more often.
 
-### #2680 Invoices (the billing part)
+### Invoices (the billing part)
 
 - **`billing.invoices.list(params)`** pages the Team's issued invoices (house
   auto-pager over `items` / `cursor`; `await` for a page, `for await` for all;
   Owners only) and **`billing.invoices.pdf(number)`** resolves with the PDF
   bytes.
 
-### #2617 All-Teams key
+### All-Teams key
 
 #### Added
 
