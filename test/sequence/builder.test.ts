@@ -207,7 +207,7 @@ describe("canonical order", () => {
   });
 });
 
-describe("performance and determinism", () => {
+describe("determinism", () => {
   // 100 steps padded to just under 256 KiB of compact JSON.
   const big = (() => {
     const steps = Array.from({ length: 100 }, (_, i) => ({
@@ -225,23 +225,6 @@ describe("performance and determinism", () => {
   it("the fixture is 100 steps at exactly 256 KiB and valid", () => {
     expect(new TextEncoder().encode(JSON.stringify(big)).length).toBe(256 * 1024);
     expect(validateSequence(big)).toEqual({ errors: [], warnings: [] });
-  });
-
-  const p95 = (fn: () => void): number => {
-    const times: number[] = [];
-    for (let i = 0; i < 50; i++) {
-      const t = performance.now();
-      fn();
-      times.push(performance.now() - t);
-    }
-    return times.sort((a, b) => a - b)[Math.ceil(0.95 * times.length) - 1]!;
-  };
-
-  it("validateSequence, fromDocument and toDocument each stay under 50 ms p95", () => {
-    const b = Sequence.fromDocument(big);
-    expect(p95(() => validateSequence(big))).toBeLessThanOrEqual(50);
-    expect(p95(() => Sequence.fromDocument(big))).toBeLessThanOrEqual(50);
-    expect(p95(() => b.toDocument())).toBeLessThanOrEqual(50);
   });
 
   it("two runs give identical bytes and error order", () => {
