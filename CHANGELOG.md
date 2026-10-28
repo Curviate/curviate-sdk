@@ -9,6 +9,31 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## Unreleased
 
+### #2708 Webhooks v2, incoming events, Enrollment values, the surface header
+
+#### Changed (same shape, new meaning)
+
+- **A delivery's `id` is the delivery id**, the same on every attempt and every redelivery (it changed per attempt before). It is now the key to de-duplicate retries on; the old `event` + `account_id` + `occurred_at` composite still works. `delivered_at` is the time the body was rendered, the same on every attempt (it was the attempt's time); the signature's `t=` stays the attempt's time.
+- **`request_url` reads back masked** (`https://host/•••`): the path and query are never returned. Sending the masked value back on `webhooks.update` keeps the stored URL. New `request_url_fingerprint` changes when the URL does.
+- **A `headers` entry with a key and no value keeps that header's stored value** on `webhooks.update`; a new key needs a value.
+- **`emit` steps are first-class again** ("Send event"): `step.emit` is no longer described as legacy. `event` on a `do` or `tag` step stays.
+- **`constructEvent` accepts any matching `v1`.** For 24 hours after a secret rotation `Curviate-Signature` carries two (`v1=<new>,v1=<old>`); either secret verifies, any other is still `invalid_signature`. Older SDKs check only the last `v1`: upgrade before you rotate.
+- **Every request sends `Curviate-Client: sdk/<version>`**, once. Informational only (it shows which tools use a key). The new `client` option replaces the value, for a tool built on the SDK.
+
+#### Added
+
+- **Webhook deliveries:** `webhooks.deliveries.list(id, { failed, cursor, limit })` (last 30 days, newest first; `for await` pages) and `webhooks.deliveries.get(id, deliveryId)`, metadata only. `webhooks.redeliver(id, deliveryId)` sends the original bytes again, freshly signed, within `redeliverable_until` (receipt + 24 h).
+- **`webhooks.rotateSecret(id)`:** a new secret, returned once, with `previous_valid_until`. Creator only.
+- **`webhooks.test(id, { event })`:** a synthetic delivery for one subscribed event (default: the first), answering `delivery_id` and `test_id`.
+- **Webhook fields:** `disabled_reason`, `failing_since`, `last_delivery_status_code`, `created_by`, `request_url_fingerprint`, `body_template`, `custom_event_names`, and `warnings` on an edit that sets a template.
+- **`webhooks.variables({ source })`:** the variables a body template of that source may use; on `motion`, also the Enrollment values your Sequences save.
+- **`validateWebhookTemplate(template, { source })` and `renderWebhookTemplate(template, context)`:** the API's own template lint and renderer, offline. `errors` equal what `WEBHOOK_TEMPLATE_INVALID` lists, each with `line` and `col`.
+- **`incomingEvents`:** `create`, `list`, `get`, `update`, `delete`, `rotate`, `capture`, `arrivals`. A private URL your tools post JSON to, moving Enrollments waiting on `until event.<name>`.
+- **`tenant.beta.get()` and `tenant.beta.set({ beta_enabled })`:** the Team's persisted beta consent (`set`: Owners only).
+- **Sequences:** `save` (and `save_to_contact`) on `until event.<name>` waits, typed on `step.until` and the builder, number gates (`gte`, `lte`) on `enrollment.<name>` predicates, rules R25 to R28 and warnings W14 and W16 in `validateSequence`; every entry carries `severity`, and `candidates` for a did-you-mean. R29 is the API's only. The validator now runs the API's own rule code.
+- **Enrollment `values`** on `enrollments.get`: what the Sequence's `save` maps took, empty once the Enrollment finishes.
+- **Error codes:** `NOTHING_TO_REDELIVER` (409), `REDELIVERY_EXPIRED` (410), `WEBHOOK_DISABLED` (409), `DELIVERY_IN_FLIGHT` (409, retryable), `WEBHOOK_TEMPLATE_INVALID` (422), `INCOMING_URL_RETIRED` (410). Earlier SDKs decode them as `INTERNAL`. `errors[]` entries type `severity`, `candidates`, `line` and `col`.
+
 ### #2695 Unibox v2
 
 #### Added

@@ -30,6 +30,7 @@ const curviate = new Curviate({
   // baseUrl: "https://api.curviate.com", // default
   // timeout: 30_000,                     // per-attempt timeout, ms
   // maxRetries: 3,                        // GET/HEAD retries with backoff
+  // client: "my-agent/1.2.0",             // Curviate-Client header; default sdk/<version>
 });
 ```
 
@@ -188,7 +189,7 @@ const document = seq.toDocument(); // the Sequence document, keys in canonical o
 
 Field names are the document's keys (`on_reply`, `note_fallback`, `withdraw_after`). Variables: `{{first_name}}` (any standard Contact field), `{{my_first_name}}`, `{{my_last_name}}`, `{{my_full_name}}` (the sending account), and any other `{{<key>}}` is the custom field `contact.extra.<key>`; the long forms `{{contact.first_name}}`, `{{contact.extra.opener}}` and `{{account.first_name}}` stay valid. A messaging step takes one text in `with` or exactly 2 `variants` (A/B). An optional `event` on a `do` or `tag` step sends a custom event each time the step runs; `until event.<name>` waits for one your agent sends (`enrollments.events`). With literal arguments, the type checker refuses what the API would: a typo'd action, event, reaction or predicate, a `{{...}}` that is not a variable (`{{firstName}}`, `{{my_title}}`, a `| default:` filter), a text with a variable and no fallback, one variant, a duration like `"1w"`, the reserved id `"end"`, and a jump to a step you never added (at `toDocument()`). Text the type checker cannot see (a `string` variable) is checked when you call `validate()` or `toDocument()`.
 
-Every builder operation (`add`, `insertBefore`, `replace`, `remove`, `onReply`) returns a new builder. `toDocument()` throws `SEQUENCE_INVALID` with every error in `err.errors`, the same list the API returns: `path`, `rule`, and the compiler-style `code` (`R1` to `R24`), `pointer` (a JSON Pointer into the document), `hint` (the fix) and `docs_url`. Warnings (`W1` to `W13`) never block, read them with `validate()`. `JSON.stringify(seq)` equals `JSON.stringify(seq.toDocument())`. `newStepId(document, kind)` names a new step as the dashboard editor does (`message`, `message_2`, `w_<step>` for a wait before a step).
+Every builder operation (`add`, `insertBefore`, `replace`, `remove`, `onReply`) returns a new builder. `toDocument()` throws `SEQUENCE_INVALID` with every error in `err.errors`, the same list the API returns: `path`, `rule`, and the compiler-style `code` (`R1` to `R28`), `pointer` (a JSON Pointer into the document), `hint` (the fix), `docs_url`, `severity` and, for a did-you-mean, `candidates`. Warnings (`W1` to `W16`) never block, read them with `validate()`. `JSON.stringify(seq)` equals `JSON.stringify(seq.toDocument())`. `newStepId(document, kind)` names a new step as the dashboard editor does (`message`, `message_2`, `w_<step>` for a wait before a step).
 
 Raw JSON stays first class. Validate a document you wrote by hand, or load one (a Motion's `sequence`) to edit it:
 
@@ -203,7 +204,7 @@ const edited = Sequence.fromDocument(motion.sequence) // throws SEQUENCE_INVALID
   .toDocument();
 ```
 
-Deprecated forms are accepted with warning `W13` until 2027-01-19, then refused: 3 to 5 variants (use 2), `until signal.<name>` (use `until event.<name>`) and `{{motion.<key>}}` (write the text in place or use a custom field; offline it also gives `W9`). Warnings that need the Motion's sending accounts or settings come from the API only. `SEQUENCE_SCHEMA_V1` is the published JSON Schema (`SEQUENCE_SCHEMA_URL`) for editors and tooling. The validator knows the vocabulary of the schema it ships with: a document using an action or event added to the API later is refused offline while the API accepts it; upgrade the SDK.
+Deprecated forms are accepted with warning `W13` until 2027-01-19, then refused: 3 to 5 variants (use 2), `until signal.<name>` (use `until event.<name>`) and `{{motion.<key>}}` (write the text in place or use a custom field; offline it also gives `W9`). Warnings that need the Motion's sending accounts or settings come from the API only. `SEQUENCE_SCHEMA_V1` is the published JSON Schema (`SEQUENCE_SCHEMA_URL`) for editors and tooling. R29 (an `until event.<name>` gate on a field the incoming event's sample does not carry) needs your Team's incoming events, so it comes from the API only. The validator is the API's own rule code, shipped with this SDK: a document using an action or event added to the API later is refused offline while the API accepts it; upgrade the SDK.
 
 ## Motions and Enrollments
 
@@ -618,21 +619,43 @@ Each event also carries its delivery metadata: `event.id`, `event.webhook_id`, a
 
 ### De-duplicating retries
 
-Delivery is at-least-once, so your handler can see the same logical event more than
-once. The key that survives a retry is the payload composite `event.event` plus
-`event.data.account_id` plus `event.data.occurred_at`, which the platform re-sends
-byte-identical on every attempt:
+Delivery is at-least-once, so your handler can see the same event more than once. Key on
+`event.id`: it is the delivery id (`wdl_`), the same on every attempt and every redelivery
+(before this release it changed per attempt). `event.delivered_at` is when the body was
+rendered, also the same on every attempt.
 
 ```ts
-const key = `${event.event}:${event.data.account_id}:${event.data.occurred_at}`;
-if (await alreadyProcessed(key)) return res.sendStatus(200);
+if (await alreadyProcessed(event.id)) return res.sendStatus(200);
 ```
 
-**Do not key on `event.id`.** That is a `wdl_` id minted per delivery *attempt*, so a
-retry arrives with a different one and storing it would record the same event twice,
-missing exactly the duplicates you were guarding against. It is still worth logging:
-`event.id` is how you match one attempt to one line in your delivery logs, keyed
-alongside the stable `occurred_at` composite above.
+`curviate.webhooks.deliveries.get(event.webhook_id, event.id)` reads that delivery's status and
+attempts; `deliveries.list(id, { failed: true })` lists what did not get through, and
+`webhooks.redeliver(id, deliveryId)` sends one again, byte for byte, within 24 hours.
+
+### Rotating the secret
+
+`webhooks.rotateSecret(id)` returns a new secret once. For 24 hours every delivery is signed
+with both (`Curviate-Signature: t=...,v1=<new>,v1=<old>`) and `constructEvent` accepts the
+delivery when any `v1` matches the secret you pass, so the old and the new secret both verify
+while you deploy. Older SDK versions check only the last `v1`: upgrade before you rotate.
+
+### Body templates
+
+A webhook's `body_template` replaces the standard payload with your own JSON (`{{variables}}`
+inside its strings; `webhooks.variables({ source })` lists them). Check it offline with the
+API's own lint, and preview it:
+
+```ts
+import { renderWebhookTemplate, validateWebhookTemplate } from "@curviate/sdk";
+
+const { errors } = validateWebhookTemplate(template, { source: "motion" });
+for (const e of errors) console.error(`${e.line}:${e.col} ${e.code} ${e.rule}`);
+const body = renderWebhookTemplate(template, { event: "enrollment.finished", contact: { email: "alex@example.com" } });
+```
+
+A webhook's `request_url` reads back masked (`https://host/•••`); sending that value back on
+`update` keeps the stored URL. A `headers` entry with a key and no value keeps that header's
+stored value.
 
 `WebhookSignatureError` is NOT a `CurviateError`. Narrow with `instanceof WebhookSignatureError`.
 Its `reason` tells you where to look: `malformed_header` means the signature header could not be

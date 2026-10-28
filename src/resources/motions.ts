@@ -337,7 +337,10 @@ export class EnrollmentsResource {
    * One Enrollment with its `history` of Steps (metadata only, no rendered
    * text). `history` reaches back 12 months, plus the entries `retry` reads
    * at any age; `history_truncated: true` says older entries are not listed.
-   * The Enrollment's state has no such limit.
+   * The Enrollment's state has no such limit. `values` are what the
+   * Sequence's `save` maps took from an incoming event (name to value; read
+   * them as `{{enrollment.<name>}}` and `if enrollment.<name>`); they are
+   * empty once it finishes, and after a resume.
    * `GET /v1/enrollments/{id}`
    *
    * @example

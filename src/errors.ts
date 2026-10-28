@@ -555,7 +555,7 @@ export interface SafetyHint {
 /**
  * One failure of a refused document: `path` into it, `rule` saying what to
  * change. Wire `errors[]` entry. A Sequence rule or warning also carries the
- * compiler-style keys: `code` (`R1` to `R24`, `W1` to `W13`), `message`
+ * compiler-style keys: `code` (`R1` to `R29`, `W1` to `W16`), `message`
  * (equal to `rule`), `pointer` (a JSON Pointer into the document you sent),
  * `hint` (the fix) and `docs_url` (the rule's docs entry). A
  * `MOTION_NOT_STARTABLE` gap is `{path, rule}` only.

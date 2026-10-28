@@ -70,11 +70,9 @@ export class WebhookSignatureError extends Error {
 /**
  * The three fields every Curviate event payload carries, whatever its type.
  *
- * `occurred_at` matters beyond timestamping: together with `event` and
- * `account_id` it is the only key that survives a retry, because the platform
- * re-sends the identical payload while minting a fresh envelope `id` per
- * attempt. Typing it here is what lets a consumer build that key without
- * widening to `unknown`.
+ * `occurred_at` is when the event happened, stable across every attempt. To
+ * discard duplicate retries, key on the envelope `id` (the delivery id, the
+ * same on every attempt and redelivery).
  */
 export interface EventPayloadBase {
   /** The account the event happened on. */
@@ -181,8 +179,8 @@ export interface PostPublishFailedPayload extends EventPayloadBase {
  * Contact record, `null` once deleted). No payload carries the text Curviate
  * sent.
  *
- * `motion.custom_event` fires once when a step carrying an `event` ran (or a
- * legacy `emit` step is reached). `motion.signal` is its deprecated name: a
+ * `motion.custom_event` fires once when a step carrying an `event` ran or an
+ * `emit` step is reached. `motion.signal` is its deprecated name: a
  * webhook subscribed to it receives the same `data` under that name until
  * 2027-01-19.
  *
@@ -214,17 +212,19 @@ export interface MotionPayload {
  */
 export interface CurviateEventEnvelope {
   /**
-   * Unique id for this delivery attempt, e.g. `wdl_01J...`. Every retry mints a
-   * new one, so it identifies an attempt rather than a logical event and is
-   * **not** a de-duplication key. To discard duplicate retries, key on `event`
-   * plus `data.account_id` plus `data.occurred_at`, which are identical across
-   * every attempt of the same event. Use `id` to correlate one attempt with
-   * your own delivery logs.
+   * The delivery id, e.g. `wdl_01J...`: one event rendered once for this
+   * webhook. The same value on every attempt and every redelivery (it used to
+   * change per attempt), so it is the de-duplication key, and it is the id
+   * `webhooks.deliveries.get(webhook_id, id)` reads.
    */
   id?: string;
   /** Id of the webhook registration this delivery belongs to, e.g. `wh_01J...`. */
   webhook_id?: string;
-  /** ISO-8601 timestamp of the delivery attempt. */
+  /**
+   * ISO-8601 time the body was rendered, at the first attempt; the same on
+   * every retry and redelivery (it used to be the attempt's time). The
+   * signature's `t=` is the attempt's time.
+   */
   delivered_at?: string;
 }
 
