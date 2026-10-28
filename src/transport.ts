@@ -70,7 +70,7 @@ interface WireErrorEnvelope {
   row?: string;
   /** Seconds until a paused row is usable again. Mirrors the `Retry-After` header. */
   retry_after?: number;
-  /** `BUDGET_EXHAUSTED`: when the refusal lifts. Null on the `pending_invites` gauge and on InMail credits. */
+  /** `BUDGET_EXHAUSTED`: when the refusal lifts. Null when no clock frees it (gauge, InMail credits, unknown zone). */
   reset_at?: string | null;
   /** `BUDGET_EXHAUSTED`: the settable parameter that would lift the refusal. */
   hint?: { parameter?: unknown; message?: unknown };
@@ -232,7 +232,8 @@ async function errorFromResponse(res: Response): Promise<{ err: CurviateError; r
       ? { retryAfterSeconds: env.retry_after }
       : {}),
     // `reset_at` is null-BEARING: null means "no clock frees this" (the
-    // pending_invites gauge, or an InMail credit exhaustion), which is a
+    // pending_invites gauge, an InMail credit exhaustion, or an unknown zone
+    // with no candidate), which is a
     // different fact from the field being absent, so both survive the round
     // trip.
     ...(typeof env?.reset_at === "string" || env?.reset_at === null

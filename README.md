@@ -334,9 +334,12 @@ try {
       // nothing reached LinkedIn and nothing was spent, so backing off is the
       // wrong move. Wait until err.resetAt, or raise the setting the hint
       // names on PATCH /v1/{account_id}/safety-policy. The ceiling comes from the
-      // account's safety policy or the tenant default (GET/PATCH /v1/safety-policy).
-      // resetAt is null in the two cases no clock frees: the pending_invites
-      // backlog, and an InMail credit pool LinkedIn regrants on its own schedule.
+      // account's safety policy or the Team default (GET/PATCH /v1/safety-policy).
+      // Limits are always enforced. err.safetyReason "activity_window": a live
+      // write outside the account's active hours (the hint names active_hours).
+      // resetAt is null in the three cases no clock frees: the pending_invites
+      // backlog, an InMail credit pool LinkedIn regrants on its own schedule,
+      // and an account whose time zone is not known yet.
       console.warn(`${err.budgetRow} is spent until ${err.resetAt ?? "no fixed time"}`);
       console.warn(`change ${err.safetyHint?.parameter} to lift it`);
       break;

@@ -146,11 +146,28 @@ export class AccountsResource {
    * NOT in this array: it protects Curviate's own servers rather than the
    * LinkedIn account, and it is answered with `429 RATE_LIMIT_ACCOUNT`.
    *
-   * `activity_window` applies to every account, with or without a zone set.
-   * `timezone` and `timezone_unset` report what YOU set; read
-   * `activity_window.effective_timezone` for the zone the window is actually
-   * read in and `activity_window.source` (`account`, `browser`, `location` or
-   * `default`) for where it came from.
+   * `activity_window` says which time zone the account's active hours are
+   * read in. Nobody sets it: it follows where the account connects from.
+   * `effective_timezone` is that IANA zone, or `null` while it is unknown;
+   * `source` says where it came from (`country`, `region`, `detected` or
+   * `none`); `zone_state` is `known`, `pinned` (a check agreed on one zone,
+   * kept until the next location change) or `unknown`, when the account acts
+   * only in the hours every zone in `fallback_timezones` shares (an empty list
+   * means the window is closed). A live write outside the window is refused
+   * with `BUDGET_EXHAUSTED` (`safetyReason: "activity_window"`); reads are
+   * never affected.
+   *
+   * `warm_up` is the account's ramp: `enabled` (the switch, default `true`;
+   * set it with `PATCH /v1/{account_id}/safety-policy` and
+   * `warm_up: { enabled }`), `dormant` (no action for more than 30 days),
+   * `state` and the `triggers` that apply now (`connect`, `dormant`,
+   * `post_restriction`). Off skips the connect and quiet ramps; recovery after
+   * a LinkedIn restriction still applies.
+   *
+   * `connection_location` carries `checked_at` (the last location check, or
+   * `null`), `detected_country` (where your own proxy was found to connect
+   * from, or `null`) and `flags` (`country_mismatch`, `zone_moved`). It never
+   * carries an IP.
    *
    * `account_states[]` lists platform conditions the account is in right now,
    * additive to `status` and independent of it: `recruiter_session_evicted`,
@@ -196,7 +213,8 @@ export class AccountsResource {
    * `event_log`). After a location change its `connection_location` is re-read,
    * so it shows where the account really connects from now. A change that did
    * not land where asked throws `CONNECTION_LOCATION_UNAVAILABLE`, whose
-   * `connectionLocation` carries the actual location.
+   * `connectionLocation` carries the actual location. The account's time zone
+   * follows its connection location: there is no zone to set.
    *
    * @example
    * await curviate.accounts.update("acc_123", { external_id: "usr_42", metadata: { plan: "pro" } });

@@ -48,6 +48,48 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 - **`blocked`** on `CurviateError` is always `true` on a `BUDGET_EXHAUSTED`;
   there is no `blocked: false` success payload.
 
+### #2681 Account safety
+
+#### Breaking
+
+- **`activity_window`** on `accounts.get` (and the safety policy read)
+  loses `timezone` and `timezone_unset`. `effective_timezone` is
+  `string | null` (null while the zone is unknown); `source` is `country`,
+  `region`, `detected` or `none`; new `zone_state` (`known`, `pinned`,
+  `unknown`) and `fallback_timezones` (the candidate zones while unknown;
+  empty means the window is closed). `network.syncStatus()`'s `read_window`
+  carries the same four fields in place of `timezone` and `source`. The zone
+  follows where the account connects from: nobody sets it.
+- **A time zone on the safety policy is refused.** The policy write's
+  `timezone` and a row's `activity_window_timezone` are `400 INVALID_REQUEST`
+  unless `null` (accepted and ignored, so an older document round-trips).
+  Change the account's `country` or own `proxy` instead.
+- **`warm_up`**: `triggers` is now `connect`, `dormant` or
+  `post_restriction` (`account_age` and `connections` removed);
+  `unevaluated` removed. `state: "ramping"` keeps its shape and now follows
+  those triggers.
+
+#### Added
+
+- **`warm_up.enabled`** (default `true`, set with
+  `PATCH /v1/{account_id}/safety-policy` and `warm_up: { enabled }`; a
+  Team-scope `warm_up` is a 400) and **`warm_up.dormant`** on the account and
+  the policy read.
+- **`warm_up: false`** on `auth.intent` and `connectRequests.create` connects
+  a new account with warm-up off. With `account_id` it is
+  `400 INVALID_REQUEST`.
+- **`connection_location`** gains `checked_at`, `detected_country` and
+  `flags` (`country_mismatch`, `zone_moved`). No IP field anywhere.
+
+#### Changed
+
+- **`auth.intent` `timezone`** is `@deprecated` and ignored.
+- **`err.resetAt`** is also `null` on an `activity_window` refusal while the
+  account's zone is unknown with no candidate zone (three null cases now).
+  `hint.parameter` never names `timezone` or `activity_window_timezone`.
+- **Docs:** a live write outside the activity window is refused with
+  `BUDGET_EXHAUSTED` (`safetyReason: "activity_window"`); reads never are.
+
 ## [0.44.0] - 2026-10-22
 
 Dashboard v2 API. Fixture and types regenerated from deployed staging (server

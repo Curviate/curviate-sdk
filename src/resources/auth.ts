@@ -174,7 +174,14 @@ export class AuthResource {
    * to keep the account's configured one. The account's `connection_location`
    * says where it connects from; when a connect re-attached an account you
    * already had and moved it, `connection_location.previous_country` names
-   * where it was.
+   * where it was. The account's time zone follows its connection location;
+   * `timezone` is deprecated and ignored.
+   *
+   * `warm_up: false` connects a NEW account with warm-up off (no connect ramp,
+   * no ramp after a quiet spell; recovery after a LinkedIn restriction still
+   * applies). Default `true`. Sent with `account_id` it is
+   * `400 INVALID_REQUEST`: change an existing account's switch on its safety
+   * policy instead.
    *
    * @example
    * const result = await curviate.auth.intent({

@@ -126,7 +126,8 @@ export const ERROR_CODES = [
   // LinkedIn refusing. A 429 that never reached LinkedIn and spent nothing:
   // the budget row named by `budgetRow` is at its ceiling, set by the account's
   // safety policy or else the Team default (`GET`/`PATCH /v1/safety-policy`),
-  // or the account is outside its activity window. Limits are always
+  // or the account is outside its activity window (a live write only; reads
+  // are never refused for the hour). Limits are always
   // enforced: to send more, raise the limit. Deliberately absent from
   // RETRYABLE_CODES: a monthly row's reset can be weeks out, so backing off
   // is the wrong recovery.
@@ -599,11 +600,14 @@ export interface CurviateErrorInit {
    * however long you hold it. It is the window roll on a spent ceiling and the
    * next window open on an activity-window refusal.
    *
-   * `null`, present rather than absent, in exactly two cases where no clock
+   * `null`, present rather than absent, in exactly three cases where no clock
    * frees the account: the `pending_invites` row, whose backlog falls when
-   * invitations are accepted or withdrawn rather than at any window boundary,
-   * and an InMail CREDIT exhaustion (`row: inmail`), which LinkedIn regrants on
-   * a schedule this product cannot read. Null-check it before scheduling on it.
+   * invitations are accepted or withdrawn rather than at any window boundary;
+   * an InMail CREDIT exhaustion (`row: inmail`), which LinkedIn regrants on a
+   * schedule this product cannot read; and an `activity_window` refusal while
+   * the account's time zone is unknown with no candidate zone, which lifts
+   * once Curviate can tell where the account connects from. Null-check it
+   * before scheduling on it.
    */
   resetAt?: string | null;
   /** The settable parameter that would lift a `BUDGET_EXHAUSTED`. Wire field `hint`. */
@@ -712,7 +716,7 @@ export class CurviateError extends Error {
   readonly budgetRow: string | undefined;
   /** Seconds until a paused row lifts. See {@link CurviateErrorInit.retryAfterSeconds}. */
   readonly retryAfterSeconds: number | undefined;
-  /** When the refusal lifts; `null` on the gauge and on InMail credits. See {@link CurviateErrorInit.resetAt}. */
+  /** When the refusal lifts; `null` when no clock frees it. See {@link CurviateErrorInit.resetAt}. */
   readonly resetAt: string | null | undefined;
   /** The settable parameter that would lift the refusal. See {@link CurviateErrorInit.safetyHint}. */
   readonly safetyHint: SafetyHint | undefined;
@@ -782,7 +786,8 @@ export class CurviateError extends Error {
     if (this.budgetRow !== undefined) json.budgetRow = this.budgetRow;
     if (this.retryAfterSeconds !== undefined) json.retryAfterSeconds = this.retryAfterSeconds;
     // `resetAt` is null-BEARING: null says "no clock frees this" (the
-    // pending_invites gauge, or an InMail credit exhaustion), which is a
+    // pending_invites gauge, an InMail credit exhaustion, or an unknown zone
+    // with no candidate), which is a
     // different fact from the field being absent. Guard on undefined, not on
     // falsiness.
     if (this.resetAt !== undefined) json.resetAt = this.resetAt;
