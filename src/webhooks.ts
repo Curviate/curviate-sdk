@@ -311,22 +311,23 @@ export type CurviateEvent = CurviateEventEnvelope &
 
 interface ParsedHeader {
   timestamp: number;
-  v1: string;
+  /** Every `v1` in the header, in order: two during a secret rotation (new first, old last). */
+  v1: string[];
 }
 
 function parseHeader(header: string): ParsedHeader {
   const parts = header.split(",");
   let tStr: string | undefined;
-  let v1: string | undefined;
+  const v1: string[] = [];
   for (const part of parts) {
     const eq = part.indexOf("=");
     if (eq === -1) continue;
     const key = part.slice(0, eq).trim();
     const val = part.slice(eq + 1).trim();
     if (key === "t") tStr = val;
-    else if (key === "v1") v1 = val;
+    else if (key === "v1") v1.push(val);
   }
-  if (tStr === undefined || v1 === undefined) {
+  if (tStr === undefined || v1.length === 0) {
     throw new WebhookSignatureError(
       "malformed_header",
       'Webhook signature header must contain both "t=<timestamp>" and "v1=<hmac>".',
@@ -427,27 +428,38 @@ export interface ConstructEventOptions {
 
 function verifyAndParse(
   computedHex: string,
-  v1: string,
+  v1: readonly string[],
   timestamp: number,
   bodyStr: string,
   replayWindowSecs: number,
 ): CurviateEvent {
-  // Step 3, constant-time HMAC comparison.
-  let providedBytes: Uint8Array;
-  try {
-    providedBytes = hexToBytes(v1);
-  } catch {
-    // hexToBytes throws WebhookSignatureError for invalid hex
+  // Step 3, constant-time HMAC comparison against every v1. During a secret
+  // rotation the header carries two (new first, old last) and either secret
+  // must verify. Every candidate is compared (no early exit), so the time
+  // taken does not say which one matched.
+  const computedBytes = hexToBytes(computedHex);
+  let matched = false;
+  let validHex = false;
+  for (const candidate of v1) {
+    let providedBytes: Uint8Array;
+    try {
+      providedBytes = hexToBytes(candidate);
+    } catch {
+      continue;
+    }
+    validHex = true;
+    if (constantTimeEqual(computedBytes, providedBytes)) matched = true;
+  }
+  if (!validHex) {
     throw new WebhookSignatureError(
       "invalid_signature",
       "Webhook signature v1 value is not valid hex.",
     );
   }
-  const computedBytes = hexToBytes(computedHex);
-  if (!constantTimeEqual(computedBytes, providedBytes)) {
+  if (!matched) {
     throw new WebhookSignatureError(
       "invalid_signature",
-      "Webhook signature does not match. Verify your signing secret.",
+      "Webhook signature does not match any v1. Verify your signing secret.",
     );
   }
 
@@ -528,6 +540,9 @@ function verifyAndParse(
  *   **Must be the exact bytes received**, do not JSON.parse then re-serialize.
  * @param signatureHeader - Full value of the `Curviate-Signature` header.
  * @param secret - The webhook signing secret from your webhook registration.
+ *   The delivery is accepted when any `v1` in the header matches it: for 24
+ *   hours after `webhooks.rotateSecret` every delivery carries two (new first,
+ *   old last), so the old and the new secret both verify while you deploy.
  * @param opts - Optional verification settings.
  * @returns `Promise<CurviateEvent>`, a typed event once verified.
  * @throws {WebhookSignatureError} if the header is malformed, the HMAC is

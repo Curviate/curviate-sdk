@@ -233,6 +233,18 @@ export type {
   DoNotContactUpdateBody,
 } from "./resources/do-not-contact.js";
 
+export type {
+  IncomingEvent,
+  IncomingEventCreateBody,
+  IncomingEventCreateResult,
+  IncomingEventListParams,
+  IncomingEventPage,
+  IncomingEventUpdateBody,
+  IncomingEventArrivals,
+} from "./resources/incoming-events.js";
+
+export type { TenantBetaConsent, TenantBetaSetBody } from "./resources/tenant.js";
+
 export type { Pageable } from "./internal/paginate.js";
 
 export type {

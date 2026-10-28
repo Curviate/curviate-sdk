@@ -134,6 +134,15 @@ describe("constructEvent — tampered signature", () => {
     await expect(constructEvent(BODY, flipped, SECRET)).rejects.toBeInstanceOf(WebhookSignatureError);
   });
 
+  it("rotation window (v1=<new>,v1=<old>): either secret verifies, a third is refused", async () => {
+    const t = nowSecs();
+    const v1 = (secret: string) => createHmac("sha256", secret).update(`${t}.${BODY}`, "utf8").digest("hex");
+    const header = `t=${t},v1=${v1("whsec_new")},v1=${v1("whsec_old")}`;
+    await expect(constructEvent(BODY, header, "whsec_new")).resolves.toMatchObject({ event: "message.received" });
+    await expect(constructEvent(BODY, header, "whsec_old")).resolves.toMatchObject({ event: "message.received" });
+    await expect(constructEvent(BODY, header, "whsec_wrong")).rejects.toMatchObject({ reason: "invalid_signature" });
+  });
+
   it("throws on wrong secret", async () => {
     const t = nowSecs();
     const header = makeHeader(BODY, "wrong_secret", t);

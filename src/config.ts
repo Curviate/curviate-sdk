@@ -5,6 +5,7 @@
  * resolved config is frozen; the client is immutable after construction.
  */
 import { CurviateError } from "./errors.js";
+import { version } from "../package.json";
 
 /** Public constructor input. */
 export interface CurviateConfig {
@@ -30,6 +31,13 @@ export interface CurviateConfig {
    * one acts in your default Team.
    */
   team?: string;
+  /**
+   * The `Curviate-Client` header sent on every request, informational only
+   * (it is how your Team's settings show which tools use a key). Default
+   * `sdk/<this SDK's version>`. A tool built on the SDK may pass its own
+   * `<name>/<version>`; it replaces the default, never adds a second header.
+   */
+  client?: string;
 }
 
 /** Fully-resolved, frozen config carried by a {@link Curviate} instance. */
@@ -40,6 +48,7 @@ export interface ResolvedConfig {
   readonly maxRetries: number;
   readonly fetch: typeof fetch | undefined;
   readonly team?: string;
+  readonly client: string;
 }
 
 export const DEFAULT_BASE_URL = "https://api.curviate.com";
@@ -69,6 +78,14 @@ export function resolveConfig(config: CurviateConfig): ResolvedConfig {
       retryLikelyToSucceed: false,
     });
   }
+  if (config.client !== undefined && !/^[\x21-\x7e]+$/.test(String(config.client))) {
+    throw new CurviateError({
+      code: "INVALID_REQUEST",
+      message: "client, when given, must be <name>/<version>: non-empty, no spaces.",
+      userFixable: true,
+      retryLikelyToSucceed: false,
+    });
+  }
   return Object.freeze({
     apiKey: config.apiKey,
     baseUrl: config.baseUrl ?? DEFAULT_BASE_URL,
@@ -76,5 +93,6 @@ export function resolveConfig(config: CurviateConfig): ResolvedConfig {
     maxRetries: config.maxRetries ?? DEFAULT_MAX_RETRIES,
     fetch: config.fetch,
     ...(config.team !== undefined ? { team: config.team } : {}),
+    client: config.client ?? `sdk/${version}`,
   });
 }

@@ -44,6 +44,8 @@ import {
   type BillingResource,
   type DoNotContactResource,
   type ExportsResource,
+  type IncomingEventsResource,
+  type TenantResource,
 } from "./resources/index.js";
 
 export class Curviate {
@@ -86,6 +88,10 @@ export class Curviate {
   readonly doNotContact: DoNotContactResource;
   /** Background exports and their files. */
   readonly exports: ExportsResource;
+  /** Private URLs your tools post to, moving Enrollments waiting for the event. */
+  readonly incomingEvents: IncomingEventsResource;
+  /** Team settings: `tenant.beta` consent. */
+  readonly tenant: TenantResource;
 
   constructor(config: CurviateConfig) {
     this.config = resolveConfig(config);
@@ -110,6 +116,8 @@ export class Curviate {
     this.billing = ns.billing;
     this.doNotContact = ns.doNotContact;
     this.exports = ns.exports;
+    this.incomingEvents = ns.incomingEvents;
+    this.tenant = ns.tenant;
   }
 
   /**

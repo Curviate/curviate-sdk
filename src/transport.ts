@@ -30,6 +30,8 @@ export type HttpMethod = "GET" | "HEAD" | "POST" | "PATCH" | "PUT" | "DELETE";
 /** Options for a single {@link execute} call. */
 export interface ExecuteOptions {
   apiKey: string;
+  /** The `Curviate-Client` value, sent once on every request. */
+  client: string;
   baseUrl: string;
   /** Per-attempt timeout in ms. */
   timeout: number;
@@ -282,6 +284,7 @@ function retryDelay(err: CurviateError, attempt: number, jitter: number): number
 function buildInit(method: HttpMethod, opts: ExecuteOptions, signal: AbortSignal): RequestInit {
   const headers: Record<string, string> = {
     authorization: `Bearer ${opts.apiKey}`,
+    "curviate-client": opts.client,
   };
   if (opts.team !== undefined) headers["x-curviate-team"] = opts.team;
   const init: RequestInit = { method, headers, signal };

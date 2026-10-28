@@ -106,6 +106,7 @@ export function createContext(
 
     return execute<T>(args.method, path, {
       apiKey: config.apiKey,
+      client: config.client,
       baseUrl: config.baseUrl,
       timeout: config.timeout,
       maxRetries: config.maxRetries,
