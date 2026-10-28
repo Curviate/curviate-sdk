@@ -93,6 +93,33 @@ export interface MessagePayload extends EventPayloadBase {
   message_id?: string;
 }
 
+/** Who sent a message the connected account sent (derived by Curviate, never set by a caller). */
+export type MessageOrigin = "motion" | "unibox" | "api" | "linkedin";
+
+/**
+ * Payload of the own-message events `message.read`, `message.reaction`,
+ * `message.edited` and `message.deleted`. `origin` says who sent the message
+ * the event is about; it is omitted when unknown (a `message.read` carries it
+ * only where the payload names the message). `message.received` is
+ * {@link MessagePayload} and never carries `origin`.
+ */
+export interface OwnMessagePayload extends MessagePayload {
+  origin?: MessageOrigin;
+}
+
+/**
+ * Payload of `chat.updated`. `chat_id` is always present. On a change of the
+ * chat's stored read state it also carries `unread` (the new value) and
+ * `origin` (`unibox` or `api` for a change Curviate made, `linkedin` for one
+ * made on LinkedIn); an update that changed nothing carries neither. A new
+ * incoming message emits no `chat.updated`.
+ */
+export interface ChatUpdatedPayload extends EventPayloadBase {
+  chat_id: string;
+  unread?: boolean;
+  origin?: "unibox" | "api" | "linkedin";
+}
+
 /**
  * Payload carried by connection-type events.
  */
@@ -240,11 +267,11 @@ export interface CurviateEventEnvelope {
 export type CurviateEvent = CurviateEventEnvelope &
   (
     | { event: "message.received"; data: MessagePayload }
-    | { event: "message.read"; data: MessagePayload }
-    | { event: "message.edited"; data: MessagePayload }
-    | { event: "message.deleted"; data: MessagePayload }
-    | { event: "message.reaction"; data: MessagePayload }
-    | { event: "chat.updated"; data: MessagePayload }
+    | { event: "message.read"; data: OwnMessagePayload }
+    | { event: "message.edited"; data: OwnMessagePayload }
+    | { event: "message.deleted"; data: OwnMessagePayload }
+    | { event: "message.reaction"; data: OwnMessagePayload }
+    | { event: "chat.updated"; data: ChatUpdatedPayload }
     | { event: "chat.deleted"; data: MessagePayload }
     | { event: "connection.accepted"; data: ConnectionPayload }
     | { event: "connection.new"; data: ConnectionPayload }

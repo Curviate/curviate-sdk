@@ -255,6 +255,7 @@ for await (const p of curviate.network.connections.list({ group: "person" })) co
 
 // One inbox over every account you can operate.
 for await (const chat of curviate.unibox.list({ unread: true })) console.log(chat.chat_id);
+const { items: theirs, total } = await curviate.unibox.list({ person: "con_1", motion_ids: ["none"], include_total: true }); // total: every match, not the page
 const { unread_chats } = await curviate.unibox.unreadCount();
 await curviate.unibox.accounts.update("acc_1", { sync_full_inbox: true }); // by the person who connected it
 await curviate.unibox.refresh();
@@ -267,6 +268,7 @@ const summary = await curviate.analytics.motions.list({ range: "30d", compare: "
 const detail = await curviate.analytics.motions.get("mot_1");
 const { types } = await curviate.analytics.activity(); // per BudgetRow; never add rows together
 for await (const event of curviate.analytics.events.list({ kind: ["message.replied"] })) console.log(event.motion_name);
+const { items: forOne } = await curviate.analytics.events.list({ contact_id: "con_1", origin: ["unibox", "api"] }); // 404 for an unknown, other-team or merged-away id
 
 // Files: stream the Analytics tables now, or run a background export and download it within 24 hours.
 const csv = await curviate.analytics.export({ table: ["daily"], range: "90d" }); // ArrayBuffer
@@ -279,6 +281,8 @@ const { items: metrics } = await curviate.accounts.metrics("acc_1", { from: "202
 ```
 
 Every rate is the outcome so far over what was sent in the window, not over old enough cohorts, so it keeps moving as replies arrive: read it with `maturing` (sent under 7 days ago) and `low_sample` (under 30). Messages and InMails are counted apart (`reply` and `inmail_reply`). Enrollment counts are by state right now (`queued`, `active`, `paused`, `finished`, `failed`, `skipped`); the window does not change them. One export runs per Team at a time (`EXPORT_IN_PROGRESS`, with `err.details.export_id`).
+
+Unibox traps. A send through the API (`messaging.sendMessage`, `startChat`, `sendInMail`) marks the chat read, so `unread` turns `false` and `marked_unread` clears; a Motion send leaves it. `marked_unread` is `{origin: "unibox" | "api" | "linkedin", at}` when a chat was made unread without a new message from them. A disconnected account stays in `unibox.accounts.list()` and `unibox.list()` (`account_status: "disconnected"`), read-only: its messages come from the stored copy (`coverage.complete`, attachments `unavailable`), and a write on it throws `REAUTH_REQUIRED` (409). `unibox.refresh` runs once per account per 2 minutes (`cooldown` with `next_allowed_at` after that) and covers accounts with Motion chats or Motion outreach even without full-inbox sync; `not_synced` means none of those apply. A sent message carries `origin` (`motion`, `unibox`, `api`, `linkedin`; omitted when unknown, never on a received message or `last_message`) and `is_deleted`. Analytics `origin` is `motion`, `unibox` or `api`; `direct` is an alias for `unibox` and `api`.
 
 Needs Automate: `network.resync`, `unibox.refresh`, `unibox.tagContact`, `unibox.enroll` and turning full-inbox sync on (off passes on any Tier). Messages and actions on a chat stay on `curviate.account(id).messaging`.
 

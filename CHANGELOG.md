@@ -9,6 +9,24 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## Unreleased
 
+### #2695 Unibox v2
+
+#### Added
+
+- **Message `origin` and `is_deleted`:** a message the connected account sent carries `origin` (`motion`, `unibox`, `api` or `linkedin`). It is omitted when unknown, absent on a received message and never on a chat's `last_message`. `is_deleted` is `true` for a deleted message.
+- **`marked_unread`** on a Unibox chat: `{origin: "unibox" | "api" | "linkedin", at}` when the chat was made unread without a newer message from the other person, else `null`.
+- **`unibox.list` options:** `person` (one Contact id or LinkedIn id), `motion_ids` also takes `"none"` (chats no Motion links), `include_total: true` adds `total` (the chats matching the filters, not the page).
+- **Disconnected Accounts** appear in `unibox.accounts.list()` and `unibox.list()` (`account_status: "disconnected"`), read-only. Their messages come from the stored copy: `coverage.complete` and attachment `unavailable`. A write on one throws `REAUTH_REQUIRED` (409).
+- **Webhook payload types:** `chat.updated` is `ChatUpdatedPayload` (always `chat_id`; `unread` and `origin` on a change of read state). `message.read`, `message.reaction`, `message.edited` and `message.deleted` are `OwnMessagePayload` (optional `origin`); `message.received` never carries `origin`. New exports `ChatUpdatedPayload`, `OwnMessagePayload`, `MessageOrigin`.
+- **`analytics.events.list`:** `contact_id` keeps one person's events (`RESOURCE_NOT_FOUND` for an unknown, other-team or merged-away id); `origin` takes a comma list or an array.
+- **Analytics `origin`** is `motion`, `unibox` or `api`; `direct` stays valid as an alias for `unibox` and `api`.
+
+#### Changed
+
+- **`unibox.refresh` cooldown is 2 minutes** (was 5). It also covers accounts with Motion chats or Motion outreach but no full-inbox sync (`not_synced` only for an account with none of those), and `sync.next_run_at` for a `complete` account is the next poll tick. Same shape, new meaning.
+- **A send marks the chat read.** `startChat`, `sendMessage` and `sendInMail` through the API turn the chat's `unread` to `false` and clear `marked_unread`, and `chat.updated` reports it. A Motion send leaves the read state as it is.
+- The `unibox.refresh` JSDoc no longer says "5 minutes".
+
 ### #2721 Daily counts and the raw reach
 
 - **Analytics windows reach 3650 days** on `analytics.motions.list` / `get` and `accounts.overview` (a longer one is `400 INVALID_REQUEST` naming `from`; the old 365-day cap is gone). Beyond 12 months you get daily counts only. New `window.counts_only_through` and `window.paths_through` (`YYYY-MM-DD | null`): past `paths_through`, `paths` does not add up to the totals. `accounts.metrics` reads up to 3650 days.
