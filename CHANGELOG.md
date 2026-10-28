@@ -9,6 +9,169 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## Unreleased
 
+### #2680 Settings v2
+
+#### Breaking
+
+- **Limits are always enforced.** The warn posture is gone: `posture`,
+  `posture_source` and `tenant_default_posture` leave every read (the
+  safety policy and the `quotas[]` rows; on the policy write they remain
+  only as removed keys), and no success body carries a
+  `safety_warning` any more (`PostPublishedPayload.safety_warning` removed).
+  At a ceiling the action is refused with `BUDGET_EXHAUSTED`; to send more,
+  raise the limit. A policy write that still sends `posture` or
+  `tenant_default_posture` is accepted with a `POSTURE_REMOVED` notice until
+  2027-01-25 when it says `"enforce"` or `null`; `"warn"`, or any value after
+  that day, is `400 INVALID_REQUEST` naming the key in `details.removed_key`.
+- **`hint.parameter` on an `activity_window` refusal** is now `active_hours`,
+  `rows[<row>].activity_window_start` / `_end`, or on the Team policy
+  `profiles[<profile>].rows[<row>].activity_window_start` / `_end`. It was
+  the bare `activity_window_start` / `activity_window_end`.
+
+#### Added
+
+- **`err.details`** on `CurviateError` (type `CurviateErrorDetails`): the
+  error body's per-code details, `removed_key` on the posture refusal among
+  them.
+- **`active_hours`** at the top level of the account and Team safety policy:
+  `{days, start, end, source}` or `null`, where `source` (`account`, `team`
+  or `default`) is read-only. Write `{days, start, end}` or `null`.
+- **`activity_window_source`** on every policy row, both scopes, read-only:
+  `account_row`, `account`, `team_row`, `team` or `default`.
+
+#### Changed
+
+- **`activity_window_start` and `activity_window_end`** on a policy row now
+  report the effective edges after the chain (row, account, Team, default).
+  Same shape, wider meaning: a row with no edges of its own reads the edges
+  it inherits.
+- **`blocked`** on `CurviateError` is always `true` on a `BUDGET_EXHAUSTED`;
+  there is no `blocked: false` success payload.
+
+### #2681 Account safety
+
+#### Breaking
+
+- **`activity_window`** on `accounts.get` (and the safety policy read)
+  loses `timezone` and `timezone_unset`. `effective_timezone` is
+  `string | null` (null while the zone is unknown); `source` is `country`,
+  `region`, `detected` or `none`; new `zone_state` (`known`, `pinned`,
+  `unknown`) and `fallback_timezones` (the candidate zones while unknown;
+  empty means the window is closed). `network.syncStatus()`'s `read_window`
+  carries the same four fields in place of `timezone` and `source`. The zone
+  follows where the account connects from: nobody sets it.
+- **A time zone on the safety policy is refused.** The policy write's
+  `timezone` and a row's `activity_window_timezone` are `400 INVALID_REQUEST`
+  unless `null` (accepted and ignored, so an older document round-trips).
+  Change the account's `country` or own `proxy` instead.
+- **`warm_up`**: `triggers` is now `connect`, `dormant` or
+  `post_restriction` (`account_age` and `connections` removed);
+  `unevaluated` removed. `state: "ramping"` keeps its shape and now follows
+  those triggers.
+
+#### Added
+
+- **`warm_up.enabled`** (default `true`, set with
+  `PATCH /v1/{account_id}/safety-policy` and `warm_up: { enabled }`; a
+  Team-scope `warm_up` is a 400) and **`warm_up.dormant`** on the account and
+  the policy read.
+- **`warm_up: false`** on `auth.intent` and `connectRequests.create` connects
+  a new account with warm-up off. With `account_id` it is
+  `400 INVALID_REQUEST`.
+- **`connection_location`** gains `checked_at`, `detected_country` and
+  `flags` (`country_mismatch`, `zone_moved`). No IP field anywhere.
+
+#### Changed
+
+- **`auth.intent` `timezone`** is `@deprecated` and ignored.
+- **`err.resetAt`** is also `null` on an `activity_window` refusal while the
+  account's zone is unknown with no candidate zone (three null cases now).
+  `hint.parameter` never names `timezone` or `activity_window_timezone`.
+- **Docs:** a live write outside the activity window is refused with
+  `BUDGET_EXHAUSTED` (`safetyReason: "activity_window"`); reads never are.
+
+### #2250 Connect v2 (checkpoints, connect refusals)
+
+#### Breaking
+
+- **New `challenge_type` values** `checking` (LinkedIn is checking the
+  sign-in: poll it, nothing to answer) and `phone_register` (solve with
+  `(+CC)number`; it was `422 CHECKPOINT_UNSUPPORTED`). Breaking for callers
+  that branch on that 422 or switch exhaustively over `challenge_type`: add
+  both arms.
+- **`auth.pollCheckpoint` never answers `status: "expired"`** and carries no
+  `recovery_hint`. Past `expires_at` (also after the expiry sweep, or when it
+  fires mid-poll) solve, poll, resend and request throw
+  `409 CHECKPOINT_EXPIRED`. Breaking for callers branching on either.
+- **`CHECKPOINT_EXPIRED` is 409 everywhere** (it was 422 on some solve
+  paths), and a pending checkpoint that times out answers it too. Breaking
+  for callers branching on a 422 `CHECKPOINT_EXPIRED`.
+- **Connect refusals:** a cookie connect rejected for any reason is
+  `401 LINKEDIN_COOKIE_INVALID`; the account cap is `503 PLATFORM_ERROR`
+  with `retryLikelyToSucceed: false` (`SUBSTRATE_CAP_REACHED` is no longer
+  sent; it stays in `ERROR_CODES` for older deployments); an intent that
+  times out before any checkpoint is `503 LINKEDIN_SERVICE_UNAVAILABLE`; a
+  poll's terminal refusal throws its own code (a transient error still
+  answers `pending`).
+
+#### Added
+
+- **`LINKEDIN_SIGN_IN_REQUIRED`** (403, user_fixable): LinkedIn wants the
+  person to sign in on linkedin.com first.
+- **`channel`** (`email`, `sms`, `whatsapp` or `null`) on `otp` and
+  `otp_or_mobile_app_approval` checkpoints: where LinkedIn sent the code.
+- **`user_languages`** on `auth.intent` (cookie connects only, at most 5
+  BCP 47 tags, each at most 35 characters).
+- **`contract_selected`** on the connect 201, solve, poll `active` and the
+  reconnect 200 when `recruiter_contract_id` was sent.
+
+#### Changed
+
+- **`TRY_ANOTHER_WAY`** on `auth.solveCheckpoint`: same shape, new meaning.
+  It asks LinkedIn for another method and counts no attempt; it is
+  `400 INVALID_REQUEST` on `contract_selection`, `challenge_selection`,
+  `phone_register` and `checking`. Solve `code` accepts `( ) +`.
+- **`expires_at`** is when Curviate stops accepting an answer; a chained
+  checkpoint keeps the sign-in's original `expires_at`.
+- **`recruiter_contract_id`** is selected once the account is connected;
+  `contract_selected: false` means connected, not selected.
+
+### #2597 Motions setup and engine v2
+
+#### Breaking
+
+- **`schedule.timezone` and `settings.stop_on_engagement` are retired.**
+  Days and hours are read in each sending account's own time zone. Both keys
+  are accepted with warning `W13` until 2027-01-25, never stored, and gone
+  from every Motion read; `stop_on_engagement: true` with an acting reply
+  route is a 400. `motions.start` no longer reports a missing time zone.
+- **`settings.acceptance_floor` defaults to `null`** (off).
+- **`finish_reason` gains `engaged_elsewhere`**: the Contact replied to, or
+  was messaged from, another account of the Motion. Add the arm to an
+  exhaustive switch.
+
+#### Added
+
+- **Several accounts per list read:** `account_id` on `motions.list`,
+  `enrollments.list` and the `enrollments.bulk` filter takes several
+  accounts (comma list, up to 50; an all-empty list is a 400).
+- **`motions.list({ sort: "activity" })`** (latest step record first;
+  `updated` stays the default) and `last_activity_at` on every item. A
+  cursor belongs to its sort.
+- **`enrollments.list({ step_id })`** takes up to 10 step ids (an array, or a
+  comma list); the bulk `filter.step_id` takes a string or an array.
+- **Several mode** (`settings.accounts_per_contact` above 1): settings
+  `on_reply_elsewhere` (`stop` or `continue`), `withdraw_on_reply_elsewhere`
+  and `account_gap` (`1d` to `30d`), served only in that mode.
+  `accounts_per_contact` is locked once the Motion has started.
+- **`motions.preview`**: `projection.audience` `{ total, skipped, to_enroll }`.
+
+#### Changed
+
+- **`motions.preview` `projection.contacts`** equals `audience.to_enroll`;
+  in Several mode `accounts[].contacts` counts Enrollments (same shape, new
+  meaning), and `projection.fits_before_end_at` is counted per account zone.
+
 ### #2550 (Analytics v2, exports, Account fields)
 
 Types come from the served document (regenerated); the hand-written parts:
@@ -38,10 +201,10 @@ Types come from the served document (regenerated); the hand-written parts:
   `status_reason`, `warm_up`, `inmail_balance`, `motions_count`,
   `motion_refs` and three `quotas` rows; reading the list never calls
   LinkedIn.
-- **`CurviateError.details`:** the served `details` object (type
-  `CurviateErrorDetails`): `account_id` on `TIER_REQUIRED` (one Account lacks
+- **`err.details` keys:** `account_id` on `TIER_REQUIRED` (one Account lacks
   the feature while the Team has it; an Account on a seat lent from another
-  Team carries that seat's Tier), `export_id` on `EXPORT_IN_PROGRESS`.
+  Team carries that seat's Tier: leave it out, or ask the Owner who lent the
+  seat) and `export_id` on `EXPORT_IN_PROGRESS`.
 - **JSDoc:** `CHAT_NOT_VISIBLE` (409) on `messaging.startChat`,
   `messaging.sendInMail`, `recruiter.startChat` and
   `salesNavigator.startChat`: nothing is sent when the Account already has a
@@ -98,7 +261,7 @@ Types come from the served document (regenerated); the hand-written parts:
 - **Same shape, more often filled:** `location` on a Connection, and
   `first_name` / `last_name` on `users.listRelations`, are non-null more often.
 
-### #2680 (invoices)
+### #2680 Invoices (the billing part)
 
 - **`billing.invoices.list(params)`** pages the Team's issued invoices (house
   auto-pager over `items` / `cursor`; `await` for a page, `for await` for all;

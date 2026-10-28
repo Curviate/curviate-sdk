@@ -125,8 +125,10 @@ export const ERROR_CODES = [
   // Curviate's OWN account-safety ceiling, not a request-rate limit and not
   // LinkedIn refusing. A 429 that never reached LinkedIn and spent nothing:
   // the budget row named by `budgetRow` is at its ceiling, set by the account's
-  // safety policy or else the tenant default (`GET`/`PATCH /v1/safety-policy`),
-  // or the account is outside its activity window. Deliberately absent from
+  // safety policy or else the Team default (`GET`/`PATCH /v1/safety-policy`),
+  // or the account is outside its activity window (a live write only; reads
+  // are never refused for the hour). Limits are always
+  // enforced: to send more, raise the limit. Deliberately absent from
   // RETRYABLE_CODES: a monthly row's reset can be weeks out, so backing off
   // is the wrong recovery.
   // Read `resetAt`, `safetyReason` and `safetyHint` instead.
@@ -139,6 +141,9 @@ export const ERROR_CODES = [
   // retrying will not help.
   "LINKEDIN_OPERATION_NOT_SUPPORTED",
   // Checkpoint (account connect flow)
+  // `CHECKPOINT_EXPIRED` is 409 on every path (it was 422 on some solve
+  // paths): past `expires_at`, solve, poll, resend and request answer it, and
+  // a pending checkpoint that times out does too. Start the connection again.
   "CHECKPOINT_NOT_FOUND",
   "CHECKPOINT_EXPIRED",
   "CHECKPOINT_INVALID_CODE",
@@ -211,6 +216,9 @@ export const ERROR_CODES = [
 
   // Upstream failures on the connect and billing paths. All transient in the
   // ordinary sense (502/503 from a dependency), so a retry is reasonable.
+  // `SUBSTRATE_CAP_REACHED` is no longer sent: the account cap answers
+  // `503 PLATFORM_ERROR` with `retry_likely_to_succeed: false`. Kept for older
+  // deployments; removed in a later release.
   "SUBSTRATE_LINK_FAILED",
   "SUBSTRATE_CAP_REACHED",
   "BILLING_CHECKOUT_FAILED",
@@ -371,7 +379,7 @@ export const ERROR_CODES = [
   //
   // - `MOTION_NOT_STARTABLE` (422): `start` or `resume` found gaps; `errors`
   //   lists every one as `{path, rule}` (a Contact list, a sending account, a
-  //   timezone, a Sequence). Fix them and retry.
+  //   Sequence). Fix them and retry.
   // - `MOTION_STATUS_CONFLICT` (409): the operation does not apply in the
   //   Motion's status; the message names it and the operations it allows.
   //   Only a draft can be deleted: archive instead.
@@ -420,8 +428,10 @@ export const ERROR_CODES = [
   //   refused. Move it back first (`billing.seats.return`; only once no Account
   //   uses it). A suspended lent seat reads `NO_ACTIVE_SEAT` with its own
   //   message.
-  // - `LINKEDIN_SIGN_IN_REQUIRED` (403): LinkedIn wants a sign-in on
-  //   linkedin.com before it accepts this one. Sign in there, then retry.
+  // - `LINKEDIN_SIGN_IN_REQUIRED` (403, user_fixable): LinkedIn wants the
+  //   person to sign in on linkedin.com before it accepts this connect. Sign
+  //   in there, then retry, or connect with cookies from a browser where it is
+  //   signed in.
   // - `EXPORT_IN_PROGRESS` (409): your team already has an export queued or
   //   running (`details.export_id`). Retry when it finishes.
   // - `EXPORT_NOT_READY` (409): the export is queued, running or failed; its
@@ -505,9 +515,14 @@ export type SafetyReason = "ceiling" | "activity_window";
  * than as prose. Wire field `hint`.
  *
  * `parameter` is addressable on `PATCH /v1/{account_id}/safety-policy` (for
- * example `profile_views.ceiling`, or `posture` where no ceiling can be
- * raised), so an agent can choose between waiting, escalating to a human and
- * reconfiguring without parsing `message`.
+ * example `profile_views.ceiling`), so an agent can choose between waiting,
+ * escalating to a human and raising the limit without parsing `message`. On
+ * an `activity_window` refusal it is `active_hours` (the account's or the
+ * Team's; the message names which), `rows[<row>].activity_window_start` or
+ * `..._end`, or on the Team policy
+ * `profiles[<profile>].rows[<row>].activity_window_start` or `..._end`. It
+ * never names a time zone: the zone follows where the account connects from.
+ * `inmail_credits` is LinkedIn's own InMail balance, not a policy field.
  */
 export interface SafetyHint {
   parameter: string;
@@ -539,14 +554,12 @@ export interface CurviateErrorDetail {
 export type SequenceConflictCurrent = NonNullable<components["schemas"]["Error"]["current"]>;
 
 /**
- * The wire `details` object, as served: which keys appear depends on `code`.
- * `TIER_REQUIRED`: `account_id` names the one Account that lacks the feature
- * while the Team has it (an Account on a seat another Team lent this one
- * carries that seat's Tier): leave it out, or ask the Owner who lent the seat.
- * `EXPORT_IN_PROGRESS`: `export_id` is the export your Team already has queued
- * or running (it may be a teammate's, which `exports.get` answers 404).
- * `INVALID_REQUEST` on a removed safety-policy key: `removed_key`.
- * `account` rides the refusal of an Account location change.
+ * Per-code structured details. Wire field `details`, keys as the API sends
+ * them. `removed_key` on an `INVALID_REQUEST` from a safety-policy write that
+ * sent a removed key (`posture`, `tenant_default_posture`, `posture_source`):
+ * drop that key, limits are always enforced. `export_id` on
+ * `EXPORT_IN_PROGRESS`, `account_id` on an account-scoped `TIER_REQUIRED`,
+ * `account` (where the account stands now) on a refused location change.
  */
 export type CurviateErrorDetails = NonNullable<components["schemas"]["Error"]["details"]>;
 
@@ -601,11 +614,14 @@ export interface CurviateErrorInit {
    * however long you hold it. It is the window roll on a spent ceiling and the
    * next window open on an activity-window refusal.
    *
-   * `null`, present rather than absent, in exactly two cases where no clock
+   * `null`, present rather than absent, in exactly three cases where no clock
    * frees the account: the `pending_invites` row, whose backlog falls when
-   * invitations are accepted or withdrawn rather than at any window boundary,
-   * and an InMail CREDIT exhaustion (`row: inmail`), which LinkedIn regrants on
-   * a schedule this product cannot read. Null-check it before scheduling on it.
+   * invitations are accepted or withdrawn rather than at any window boundary;
+   * an InMail CREDIT exhaustion (`row: inmail`), which LinkedIn regrants on a
+   * schedule this product cannot read; and an `activity_window` refusal while
+   * the account's time zone is unknown with no candidate zone, which lifts
+   * once Curviate can tell where the account connects from. Null-check it
+   * before scheduling on it.
    */
   resetAt?: string | null;
   /** The settable parameter that would lift a `BUDGET_EXHAUSTED`. Wire field `hint`. */
@@ -613,13 +629,9 @@ export interface CurviateErrorInit {
   /** Which safety rule refused, on a `BUDGET_EXHAUSTED`. Wire field `reason`. */
   safetyReason?: SafetyReason;
   /**
-   * Whether the action was refused. Wire field `blocked`; always `true` here,
-   * because an error means it did not happen and spent nothing.
-   *
-   * The same payload with `blocked: false` rides the SUCCESS body of an account
-   * on the default `warn` posture, under `safety_warning`, and is otherwise
-   * field-identical, so one branch of your code handles both postures and
-   * moving an account to `enforce` is not a breaking change.
+   * Whether the action was refused. Wire field `blocked`; always `true` on a
+   * `BUDGET_EXHAUSTED`, because the action did not happen and spent nothing.
+   * Limits are always enforced: no success response carries a safety warning.
    */
   blocked?: boolean;
   /**
@@ -664,11 +676,7 @@ export interface CurviateErrorInit {
    * should ask an Owner.
    */
   upgradeUrl?: string;
-  /**
-   * The served `details` object, when the refusal carries one. Wire field
-   * `details`; see {@link CurviateErrorDetails} for the keys per code
-   * (`TIER_REQUIRED` `account_id`, `EXPORT_IN_PROGRESS` `export_id`).
-   */
+  /** Per-code structured details. Wire field `details`. See {@link CurviateErrorDetails}. */
   details?: CurviateErrorDetails;
 }
 
@@ -722,7 +730,7 @@ export class CurviateError extends Error {
   readonly budgetRow: string | undefined;
   /** Seconds until a paused row lifts. See {@link CurviateErrorInit.retryAfterSeconds}. */
   readonly retryAfterSeconds: number | undefined;
-  /** When the refusal lifts; `null` on the gauge and on InMail credits. See {@link CurviateErrorInit.resetAt}. */
+  /** When the refusal lifts; `null` when no clock frees it. See {@link CurviateErrorInit.resetAt}. */
   readonly resetAt: string | null | undefined;
   /** The settable parameter that would lift the refusal. See {@link CurviateErrorInit.safetyHint}. */
   readonly safetyHint: SafetyHint | undefined;
@@ -744,7 +752,7 @@ export class CurviateError extends Error {
   readonly currentTier: TierName | (string & {}) | null | undefined;
   /** Where an Owner changes the Tier; absent for other roles. See {@link CurviateErrorInit.upgradeUrl}. */
   readonly upgradeUrl: string | undefined;
-  /** The served `details`, e.g. `account_id` on `TIER_REQUIRED`. See {@link CurviateErrorInit.details}. */
+  /** Per-code structured details. See {@link CurviateErrorDetails}. */
   readonly details: CurviateErrorDetails | undefined;
 
   constructor(init: CurviateErrorInit) {
@@ -792,7 +800,8 @@ export class CurviateError extends Error {
     if (this.budgetRow !== undefined) json.budgetRow = this.budgetRow;
     if (this.retryAfterSeconds !== undefined) json.retryAfterSeconds = this.retryAfterSeconds;
     // `resetAt` is null-BEARING: null says "no clock frees this" (the
-    // pending_invites gauge, or an InMail credit exhaustion), which is a
+    // pending_invites gauge, an InMail credit exhaustion, or an unknown zone
+    // with no candidate), which is a
     // different fact from the field being absent. Guard on undefined, not on
     // falsiness.
     if (this.resetAt !== undefined) json.resetAt = this.resetAt;
