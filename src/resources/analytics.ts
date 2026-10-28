@@ -7,7 +7,11 @@
  * A window is `from` and `to` (dates, inclusive) or `range` (`7d`, `30d`,
  * `90d`, `12m`, `all`), read in `timezone` (default UTC), and `bucket` groups
  * the daily series (`auto`, `day`, `week`, `month`). `account_id`, `motion_id`
- * and `origin` filter; each takes an array or a comma list.
+ * and `origin` filter; each takes an array or a comma list. `origin` names who
+ * sent an action: `motion`, `unibox` (the Unibox) or `api` (any API key or MCP
+ * grant: REST, CLI, MCP, SDK); `direct` stays valid as an alias for `unibox`
+ * and `api`. `linkedin` (actions taken on LinkedIn itself) is never counted:
+ * it is `400 INVALID_REQUEST`.
  *
  * Every rate is the outcome SO FAR over what was sent in the window, not over
  * old enough cohorts: it moves as replies and acceptances arrive. Read it
@@ -33,7 +37,8 @@ export type ActivityParams = WithLists<NonNullable<paths["/v1/analytics/activity
 export type Activity = paths["/v1/analytics/activity"]["get"]["responses"]["200"]["content"]["application/json"];
 /** `table`, `account_id`, `motion_id` and `origin` take a comma list or an array. */
 export type AnalyticsExportParams = WithLists<NonNullable<paths["/v1/analytics/export"]["get"]["parameters"]["query"]>, "account_id" | "motion_id" | "origin" | "table">;
-export type AnalyticsEventListParams = NonNullable<paths["/v1/analytics/events"]["get"]["parameters"]["query"]>;
+/** `origin` takes a comma list or an array. */
+export type AnalyticsEventListParams = WithLists<NonNullable<paths["/v1/analytics/events"]["get"]["parameters"]["query"]>, "origin">;
 export type AnalyticsEventListPage = paths["/v1/analytics/events"]["get"]["responses"]["200"]["content"]["application/json"];
 export type AnalyticsEvent = AnalyticsEventListPage["items"][number];
 /** An account-safety budget row; each counts its own unit. */
@@ -105,8 +110,13 @@ export class AnalyticsEventsResource {
 
   /**
    * Recent Motion events, newest first: steps executed, skipped or failed,
-   * invitations accepted and replies. Filters: `account_id`, `motion_id`,
-   * `kind` (several). Keyset paging: events recorded after your first page
+   * invitations accepted and replies, plus the direct actions (Unibox, API).
+   * Filters: `account_id`, `motion_id`, `contact_id`, `kind` and `origin`
+   * (several). `origin` is `motion`, `unibox`, `api` or `direct` (an alias
+   * for `unibox` and `api`). `contact_id` (`con_...`) keeps one person's
+   * events, their Enrollments' and the direct actions with them; an unknown
+   * id, another team's, or one merged into another Contact throws
+   * `RESOURCE_NOT_FOUND` (404). Keyset paging: events recorded after your first page
    * never shift later pages. `await` it for one page; `for await` it for
    * every event across pages.
    * `GET /v1/analytics/events`
@@ -116,7 +126,7 @@ export class AnalyticsEventsResource {
    */
   list(params?: AnalyticsEventListParams): Pageable<AnalyticsEventListPage> {
     return pageable(
-      (p) => this.ctx.request<AnalyticsEventListPage>({ method: "GET", path: "/v1/analytics/events", query: commaLists(p, "kind") }),
+      (p) => this.ctx.request<AnalyticsEventListPage>({ method: "GET", path: "/v1/analytics/events", query: commaLists(p, "kind", "origin") }),
       params,
     );
   }
