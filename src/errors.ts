@@ -300,8 +300,10 @@ export const ERROR_CODES = [
   "INSUFFICIENT_ROLE",
   "TIER_REQUIRED",
   // - `TEAM_ACCESS_DENIED` (403): the request names a team (the `team` client
-  //   option, header `X-Curviate-Team`) this credential cannot act in. An API
-  //   key works in exactly one team. Drop the option, or use that team's key.
+  //   option or `withTeam`, header `X-Curviate-Team`) this credential cannot
+  //   act in. A key may work in one Team or in all of a person's Teams: a Team
+  //   key accepts only its own Team, an All-Teams key only the Teams its person
+  //   belongs to. Name a Team the key works in, or use that Team's key.
   // - `ACCOUNT_NOT_SHARED` (403): the person who connected the account turned
   //   its team access off; only they can use it.
   // - `ACCOUNT_OWNER_ONLY` (403): only the person who connected the account can
@@ -418,8 +420,9 @@ export const ERROR_CODES = [
   //   (an invitation, a chat start or send, InMail, follow, endorse, a reaction
   //   or comment, a live profile read). Nothing is sent.
   // - `TEAM_REQUIRED` (400): a key that works in all of your Teams called a
-  //   Team-level operation without naming the Team. Pass `team` (per call or
-  //   in the client config).
+  //   Team-level operation without naming the Team. Pass `team` in the client
+  //   config, or call through `curviate.withTeam(team)`; `teams.list()` lists
+  //   yours. A call on one of your accounts takes that account's Team.
   // - `SEAT_LENT` (409): the seat is lent to another Team; a connect or a
   //   cancel naming it is refused. Move it back first.
   // - `LINKEDIN_SIGN_IN_REQUIRED` (403, user_fixable): LinkedIn wants the

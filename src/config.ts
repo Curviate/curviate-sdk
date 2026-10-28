@@ -19,11 +19,15 @@ export interface CurviateConfig {
   /** Injectable transport for tests / edge runtimes without a global `fetch`. */
   fetch?: typeof fetch;
   /**
-   * The team to act in (`tnt_...`), sent as `X-Curviate-Team` on every
-   * request. For a dashboard session token, which may act in any team you
-   * belong to; omitted, it acts in your default team. An API key acts only in
-   * the team it was created in: naming another is refused with
-   * `TEAM_ACCESS_DENIED`, so leave this unset with an API key.
+   * The Team to act in (`tnt_...`), sent as `X-Curviate-Team` on every
+   * request; {@link Curviate.withTeam} overrides it for the calls made
+   * through the client it returns. A key may work in one Team or in all of
+   * a person's Teams. A Team key acts only in its own Team: naming another is
+   * refused with `TEAM_ACCESS_DENIED`, so leave this unset with one. A key
+   * that works in all of your Teams needs a Team for Team-level operations:
+   * without one they are refused with `TEAM_REQUIRED` (a call on one of your
+   * accounts takes that account's Team). A dashboard session token without
+   * one acts in your default Team.
    */
   team?: string;
 }

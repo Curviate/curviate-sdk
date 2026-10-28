@@ -171,6 +171,24 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 - **`motions.preview` `projection.contacts`** equals `audience.to_enroll`;
   in Several mode `accounts[].contacts` counts Enrollments (same shape, new
   meaning), and `projection.fits_before_end_at` is counted per account zone.
+
+### #2617 All-Teams key
+
+#### Added
+
+- **`curviate.withTeam(team)`**: the same client acting in that Team. Every
+  call made through it sends `X-Curviate-Team: <team>`, overriding the
+  `team` client option, so one client can act per call in any of your
+  Teams. Works for every method, root and account-scoped.
+- **`TEAM_REQUIRED`** (400): a key that works in all of your Teams called a
+  Team-level operation without naming the Team. Name one with `team` or
+  `withTeam`; a call on one of your accounts takes that account's Team.
+
+#### Changed
+
+- **`TEAM_ACCESS_DENIED`** and the `team` option copy: a key may work in one
+  Team or in all of a person's Teams. A Team key accepts only its own Team.
+
 ## [0.44.0] - 2026-10-22
 
 Dashboard v2 API. Fixture and types regenerated from deployed staging (server

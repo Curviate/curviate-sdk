@@ -124,6 +124,26 @@ export class Curviate {
   }
 
   /**
+   * The same client acting in another Team: every call made through the
+   * returned client sends `X-Curviate-Team: <team>`, overriding the `team`
+   * client option. Use it per call with a key that works in all of your
+   * Teams, which a Team-level operation otherwise refuses with
+   * `TEAM_REQUIRED`. A Team key accepts only its own Team
+   * (`TEAM_ACCESS_DENIED`). No network call; `team` is checked as in the
+   * constructor.
+   *
+   * @param team - a Team id (`tnt_...`); `curviate.teams.list()` lists yours.
+   *
+   * @example
+   * for (const team of (await curviate.teams.list()).items) {
+   *   const { items } = await curviate.withTeam(team.id).motions.list({ status: ["active"] });
+   * }
+   */
+  withTeam(team: string): Curviate {
+    return new Curviate({ ...this.config, team });
+  }
+
+  /**
    * Transparent cursor-pagination iterator.
    *
    * Calls `fn` repeatedly, injecting the `cursor` from each response into the
