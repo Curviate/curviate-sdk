@@ -183,7 +183,9 @@ export class MessagingResource {
    * `api` (any API key or MCP grant) or `linkedin` (sent on LinkedIn itself).
    * It is derived by Curviate, omitted when unknown, absent on a received
    * message and never on a chat's `last_message`. `is_deleted` is `true` for a
-   * deleted message.
+   * deleted message. For an API key or MCP grant, a message's `quoted` is
+   * omitted when the quoted message is from before the Motion chat's visible
+   * start, the same line the message list stops at.
    *
    * On a disconnected Account the page comes from Curviate's stored copy
    * alone: `coverage.complete` is `false` when the stored history is not

@@ -36,6 +36,8 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ### Unibox v2
 
+- **Same shape, new behaviour, `listMessages`:** for an API key or MCP grant, `quoted` is omitted when the quoted message is from before a Motion chat's visible start.
+
 #### Added
 
 - **Message `origin` and `is_deleted`:** a message the connected account sent carries `origin` (`motion`, `unibox`, `api` or `linkedin`). It is omitted when unknown, absent on a received message and never on a chat's `last_message`. `is_deleted` is `true` for a deleted message.
