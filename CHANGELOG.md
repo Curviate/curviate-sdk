@@ -9,6 +9,13 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## Unreleased
 
+### Served schema fixes (regenerated types)
+
+- `GET /v1/billing/seats` now has a typed 200 response: each seat carries `lent_to` / `lent_from` (`{team_id, team_name}` or null).
+- `Error.errors[]` items gain `line` and `col` on `WEBHOOK_TEMPLATE_INVALID`; their `severity` is `error` only on a refusal (warnings come back in `warnings[]` on success).
+- The safety-policy write fields `timezone` and `activity_window_timezone` are typed `null`: any other value is a `400`.
+- `DO_NOT_CONTACT` (409) and `SEAT_LENT` (409) are declared on the routes that answer them.
+
 ### Webhooks v2, incoming events, Enrollment values, the surface header
 
 #### Changed (same shape, new meaning)

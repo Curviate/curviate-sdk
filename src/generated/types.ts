@@ -4482,6 +4482,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/billing/seats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List seats and billing summary
+         * @description Returns the Team's seats and billing state: each seat's status, Account and cost, the Tier bought, the next invoice, and trial state while the Team is on a free trial. A seat lent to another Team carries lent_to; a seat received from another Team carries lent_from. Owners only.
+         */
+        get: operations["getV1BillingSeats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/billing/seats/add": {
         parameters: {
             query?: never;
@@ -4693,29 +4713,33 @@ export interface components {
             merged_into?: string;
             /** @description Present alongside row: whole seconds until that row is usable again. This response carries no Retry-After header and no delay retry_hint, deliberately: a paused row can be paused for an hour, and a client that sleeps that inside the call hangs. Do not retry this row before the wait elapses; switch to other work instead. Seconds, not milliseconds. */
             retry_after?: number;
-            /** @description Present on SEQUENCE_INVALID: every failure of the refused Sequence document, not only the first (the first 100; the message counts them all), in step order, so one fix round covers them all, each compiler-style with code, message, pointer, hint and docs_url. Also on MOTION_NOT_STARTABLE: every gap that keeps the Motion from starting, as path and rule only. path is relative to the document (for example opener.variants.opener_named.text or invite.with.withdraw_after); rule says what to change. The message repeats the first entry. */
+            /** @description Present on SEQUENCE_INVALID: every failure of the refused Sequence document, not only the first (the first 100; the message counts them all), in step order, so one fix round covers them all, each compiler-style with code, message, pointer, hint and docs_url. Also on WEBHOOK_TEMPLATE_INVALID: every finding of the refused body_template, in template order, in the same shape plus line and col. Also on MOTION_NOT_STARTABLE: every gap that keeps the Motion from starting, as path and rule only. path is relative to the document (for example opener.variants.opener_named.text or invite.with.withdraw_after); rule says what to change. The message repeats the first entry. */
             errors?: {
-                /** @description Where in the Sequence document: step id, then field. */
+                /** @description Where in the Sequence document: step id, then field. On WEBHOOK_TEMPLATE_INVALID: always body_template. */
                 path: string;
                 /** @description The broken rule, phrased as the fix. */
                 rule: string;
-                /** @description On SEQUENCE_INVALID: the rule id, R1 to R29. */
+                /** @description On SEQUENCE_INVALID: the rule id, R1 to R29. On WEBHOOK_TEMPLATE_INVALID: the rule id, T1 to T10. */
                 code?: string;
-                /** @description On SEQUENCE_INVALID: equal to rule. */
+                /** @description On SEQUENCE_INVALID and WEBHOOK_TEMPLATE_INVALID: equal to rule. */
                 message?: string;
-                /** @description On SEQUENCE_INVALID: an RFC 6901 JSON Pointer into the document you sent (for example /steps/5/with/withdraw_after), so a tool finds the line without parsing path. A missing key points at the object that lacks it. */
+                /** @description On SEQUENCE_INVALID: an RFC 6901 JSON Pointer into the document you sent (for example /steps/5/with/withdraw_after), so a tool finds the line without parsing path. A missing key points at the object that lacks it. On WEBHOOK_TEMPLATE_INVALID: /body_template; line and col place the finding inside it. */
                 pointer?: string;
-                /** @description On SEQUENCE_INVALID: one sentence saying what to do. */
+                /** @description On SEQUENCE_INVALID and WEBHOOK_TEMPLATE_INVALID: one sentence saying what to do. */
                 hint?: string;
-                /** @description On SEQUENCE_INVALID: the rule's entry on the Sequence rules page. */
+                /** @description On SEQUENCE_INVALID: the rule's entry on the Sequence rules page. On WEBHOOK_TEMPLATE_INVALID: the rule's entry on the body templates page. */
                 docs_url?: string;
                 /**
-                 * @description On SEQUENCE_INVALID: error (an R rule refuses the document) or warning.
+                 * @description On SEQUENCE_INVALID and WEBHOOK_TEMPLATE_INVALID: always error here, an entry that refuses the document. Warnings never refuse; they come back in warnings[] on the success response.
                  * @enum {string}
                  */
-                severity?: "error" | "warning";
-                /** @description On SEQUENCE_INVALID, when there are some: did-you-mean replacements, best first. */
+                severity?: "error";
+                /** @description On SEQUENCE_INVALID and WEBHOOK_TEMPLATE_INVALID, when there are some: did-you-mean replacements, best first. */
                 candidates?: string[];
+                /** @description On WEBHOOK_TEMPLATE_INVALID: the line in the body_template where the finding starts, counting from 1. */
+                line?: number;
+                /** @description On WEBHOOK_TEMPLATE_INVALID: the column in that line, counting from 1. */
+                col?: number;
             }[];
             /** @description Present on SEQUENCE_CONFLICT: the Motion's stored Sequence your PATCH was refused against, so you can merge or overwrite without a second read. To replace it with yours, send the PATCH again with if_sequence_revision set to current.sequence_revision. */
             current?: {
@@ -6056,6 +6080,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description DO_NOT_CONTACT: the person is on your Team's do-not-contact list, and this read would view their profile live (LinkedIn records a view). Nothing was read and no limit was spent. A read Curviate answers from stored data is not refused. Do not retry; an Owner or Manager can remove them from the list. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description The account is restricted and cannot be queried (ACCOUNT_RESTRICTED). Nothing is stored for this resource and `mode=cache_only` never fetches (NOT_STORED). Not the same as a 404: the resource may exist, and this API holds no copy of it. Re-read with `mode=refill` or `mode=auto` to fetch it. */
             422: {
                 headers: {
@@ -6645,6 +6678,15 @@ export interface operations {
             };
             /** @description The account_id does not belong to this tenant, or the user_id was not found. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description DO_NOT_CONTACT: the person is on your Team's do-not-contact list. Nothing was sent or read and no limit was spent. Do not retry; an Owner or Manager can remove them from the list. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -7917,6 +7959,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description DO_NOT_CONTACT: the person is on your Team's do-not-contact list. Nothing was sent or read and no limit was spent. Do not retry; an Owner or Manager can remove them from the list. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description The account is restricted, or is already following this user. */
             422: {
                 headers: {
@@ -8997,6 +9048,15 @@ export interface operations {
             };
             /** @description The account_id does not belong to this tenant, or a wholly-invalid invitee did not resolve. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description DO_NOT_CONTACT: the person is on your Team's do-not-contact list. Nothing was sent or read and no limit was spent. Do not retry; an Owner or Manager can remove them from the list. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -13317,7 +13377,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description CHAT_NOT_VISIBLE: this Account already has a private conversation with this person that you may not read. Nothing was sent. Ask the person who connected the Account to reply, or to sync the full inbox. Detected from what Curviate stored; a thread older than 90 days that Curviate never touched is not detected. Or REAUTH_REQUIRED: the account is disconnected; reconnect it. */
+            /** @description CHAT_NOT_VISIBLE: this Account already has a private conversation with this person that you may not read. Nothing was sent. Ask the person who connected the Account to reply, or to sync the full inbox. Detected from what Curviate stored; a thread older than 90 days that Curviate never touched is not detected. Or REAUTH_REQUIRED: the account is disconnected; reconnect it. Or DO_NOT_CONTACT: the person is on your Team's do-not-contact list. Nothing was sent or read and no limit was spent. Do not retry; an Owner or Manager can remove them from the list. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -14162,7 +14222,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description REAUTH_REQUIRED: the account is disconnected, so its conversations are read-only. Nothing was sent or changed. Reconnect the account. */
+            /** @description REAUTH_REQUIRED: the account is disconnected, so its conversations are read-only. Nothing was sent or changed. Reconnect the account. Or DO_NOT_CONTACT: this is a first message to a person on your Team's do-not-contact list (a reply in a conversation they have written in is still allowed). Nothing was sent and no limit was spent. Do not retry; an Owner or Manager can remove them from the list. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -15271,7 +15331,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description CHAT_NOT_VISIBLE: this Account already has a private conversation with this person that you may not read. Nothing was sent. Ask the person who connected the Account to reply, or to sync the full inbox. Detected from what Curviate stored; a thread older than 90 days that Curviate never touched is not detected. */
+            /** @description CHAT_NOT_VISIBLE: this Account already has a private conversation with this person that you may not read. Nothing was sent. Ask the person who connected the Account to reply, or to sync the full inbox. Detected from what Curviate stored; a thread older than 90 days that Curviate never touched is not detected. Or DO_NOT_CONTACT: the person is on your Team's do-not-contact list. Nothing was sent or read and no limit was spent. Do not retry; an Owner or Manager can remove them from the list. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -16911,6 +16971,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description DO_NOT_CONTACT: the person is on your Team's do-not-contact list. Nothing was sent or read and no limit was spent. Do not retry; an Owner or Manager can remove them from the list. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Payload too large. Three triggers, smallest first: the platform's own ceiling on total request size, which rejects bodies from roughly 1 MB and is the one most callers hit; then the caps enforced here, 5 MiB per attachment and 9 MiB for the whole request body. Base64 inflates a file by about 33 percent, so a 5 MiB file costs about 6.7 MiB of the body budget. Send fewer or smaller attachments; retrying the same request unchanged will not help. */
             413: {
                 headers: {
@@ -17116,6 +17185,15 @@ export interface operations {
             };
             /** @description The account_id does not belong to this tenant (ACCOUNT_NOT_FOUND), or the comment was not found (RESOURCE_NOT_FOUND). An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description DO_NOT_CONTACT: the person is on your Team's do-not-contact list. Nothing was sent or read and no limit was spent. Do not retry; an Owner or Manager can remove them from the list. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -17926,6 +18004,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description DO_NOT_CONTACT: the person is on your Team's do-not-contact list. Nothing was sent or read and no limit was spent. Do not retry; an Owner or Manager can remove them from the list. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Payload too large, the request body exceeds the size limit. */
             413: {
                 headers: {
@@ -18243,7 +18330,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A connect-request to this member already exists, or you are already connected (CONNECTION_REQUEST_CONFLICT). Do not re-send. */
+            /** @description A connect-request to this member already exists, or you are already connected (CONNECTION_REQUEST_CONFLICT). Do not re-send. Or DO_NOT_CONTACT: the person is on your Team's do-not-contact list. Nothing was sent or read and no limit was spent. Do not retry; an Owner or Manager can remove them from the list. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -23504,6 +23591,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description DO_NOT_CONTACT: the person is on your Team's do-not-contact list. Nothing was sent or read and no limit was spent. Do not retry; an Owner or Manager can remove them from the list. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Payload too large, the request body exceeds the size limit. */
             413: {
                 headers: {
@@ -26227,6 +26323,15 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description DO_NOT_CONTACT: the person is on your Team's do-not-contact list, and this read would view their profile live (LinkedIn records a view). Nothing was read and no limit was spent. A read Curviate answers from stored data is not refused. Do not retry; an Owner or Manager can remove them from the list. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description ACCOUNT_RESTRICTED, the connected LinkedIn account is restricted. */
             422: {
                 headers: {
@@ -26449,7 +26554,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description CHAT_NOT_VISIBLE: this Account already has a private conversation with this person that you may not read. Nothing was sent. Ask the person who connected the Account to reply, or to sync the full inbox. Detected from what Curviate stored; a thread older than 90 days that Curviate never touched is not detected. */
+            /** @description CHAT_NOT_VISIBLE: this Account already has a private conversation with this person that you may not read. Nothing was sent. Ask the person who connected the Account to reply, or to sync the full inbox. Detected from what Curviate stored; a thread older than 90 days that Curviate never touched is not detected. Or DO_NOT_CONTACT: the person is on your Team's do-not-contact list. Nothing was sent or read and no limit was spent. Do not retry; an Owner or Manager can remove them from the list. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -31160,7 +31265,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description CHAT_NOT_VISIBLE: this Account already has a private conversation with this person that you may not read. Nothing was sent. Ask the person who connected the Account to reply, or to sync the full inbox. Detected from what Curviate stored; a thread older than 90 days that Curviate never touched is not detected. */
+            /** @description CHAT_NOT_VISIBLE: this Account already has a private conversation with this person that you may not read. Nothing was sent. Ask the person who connected the Account to reply, or to sync the full inbox. Detected from what Curviate stored; a thread older than 90 days that Curviate never touched is not detected. Or DO_NOT_CONTACT: the person is on your Team's do-not-contact list. Nothing was sent or read and no limit was spent. Do not retry; an Owner or Manager can remove them from the list. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -31481,6 +31586,15 @@ export interface operations {
             };
             /** @description RESOURCE_NOT_FOUND, the profile does not exist, or ACCOUNT_NOT_FOUND; the account_id does not exist or does not belong to this tenant. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description DO_NOT_CONTACT: the person is on your Team's do-not-contact list, and this read would view their profile live (LinkedIn records a view). Nothing was read and no limit was spent. A read Curviate answers from stored data is not refused. Do not retry; an Owner or Manager can remove them from the list. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -36381,7 +36495,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ACCOUNT_ALREADY_LINKED: this LinkedIn account is already linked. It names your own account_id when your tenant owns it; otherwise no id is named, it is not one you can manage here, and retrying will not help. CONNECTION_IN_PROGRESS: another connection attempt for this identity is open; wait for it to finish or expire. LINKEDIN_ACCOUNT_MISMATCH (a reconnect, account_id given): the sign-in is a different LinkedIn account than the one being reconnected, which is unchanged; sign in to LinkedIn as that account's person, then try again. */
+            /** @description ACCOUNT_ALREADY_LINKED: this LinkedIn account is already linked. It names your own account_id when your tenant owns it; otherwise no id is named, it is not one you can manage here, and retrying will not help. CONNECTION_IN_PROGRESS: another connection attempt for this identity is open; wait for it to finish or expire. LINKEDIN_ACCOUNT_MISMATCH (a reconnect, account_id given): the sign-in is a different LinkedIn account than the one being reconnected, which is unchanged; sign in to LinkedIn as that account's person, then try again. Or SEAT_LENT: the seat chosen for this connection is lent to another Team, or was lent while the sign-in was open (the connection is rolled back and nothing is attached). Move the seat back first (POST /v1/billing/seats/{seat_id}/return), or connect on another seat. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -36608,7 +36722,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description CHECKPOINT_EXPIRED or CHECKPOINT_ALREADY_RESOLVED: restart the connection. ACCOUNT_ALREADY_LINKED: the LinkedIn identity is already connected; it names your own account_id when you own it, otherwise it is not one you can manage here. CONNECTION_IN_PROGRESS: another connection attempt for this identity is open; wait for it to finish or expire. */
+            /** @description CHECKPOINT_EXPIRED or CHECKPOINT_ALREADY_RESOLVED: restart the connection. ACCOUNT_ALREADY_LINKED: the LinkedIn identity is already connected; it names your own account_id when you own it, otherwise it is not one you can manage here. CONNECTION_IN_PROGRESS: another connection attempt for this identity is open; wait for it to finish or expire. Or SEAT_LENT: the seat chosen for this connection is lent to another Team, or was lent while the sign-in was open (the connection is rolled back and nothing is attached). Move the seat back first (POST /v1/billing/seats/{seat_id}/return), or connect on another seat. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -37004,7 +37118,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description CHECKPOINT_EXPIRED: the sign-in passed its expires_at; start the connection again. ACCOUNT_ALREADY_LINKED. The approved LinkedIn identity is already connected and is not one you can manage here; not retryable. CONNECTION_IN_PROGRESS. Another connection attempt for this identity is open; wait for it to finish or expire. */
+            /** @description CHECKPOINT_EXPIRED: the sign-in passed its expires_at; start the connection again. ACCOUNT_ALREADY_LINKED. The approved LinkedIn identity is already connected and is not one you can manage here; not retryable. CONNECTION_IN_PROGRESS. Another connection attempt for this identity is open; wait for it to finish or expire. Or SEAT_LENT: the seat chosen for this connection is lent to another Team, or was lent while the sign-in was open (the connection is rolled back and nothing is attached). Move the seat back first (POST /v1/billing/seats/{seat_id}/return), or connect on another seat. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -40119,7 +40233,7 @@ export interface operations {
                      */
                     limit_profile?: "basic" | "premium" | "sales_navigator" | "recruiter";
                     /** @description Not a setting: the time zone follows where this account connects from (activity_window shows it). Any value but null is a 400 INVALID_REQUEST; change where the account connects instead (its `country`, or your own `proxy`). Null is accepted and ignored, so a document read before this change can be sent back once its zone is null. */
-                    timezone?: string | null;
+                    timezone?: null;
                     /**
                      * @description REMOVED: limits are always enforced; to send more, raise the limit. "enforce" (or null) is still accepted until 2027-01-25, changes nothing and earns a POSTURE_REMOVED notice; "warn", or any value after that day, is refused with INVALID_REQUEST.
                      * @enum {string|null}
@@ -40164,7 +40278,7 @@ export interface operations {
                         /** @description Local time the activity window closes, HH:MM. Must differ from activity_window_start (in force after the write); equal edges are a 400. */
                         activity_window_end?: string | null;
                         /** @description Not a setting: the time zone follows where this account connects from (activity_window on the policy shows it). Any value but null is a 400 INVALID_REQUEST; change where the account connects instead (its `country`, or your own `proxy`). Null is accepted and ignored, so a row read before this change can be sent back once its zone is null. */
-                        activity_window_timezone?: string | null;
+                        activity_window_timezone?: null;
                         /**
                          * @description What the activity window governs. `writes` (the default) covers live writes to LinkedIn; `all` widens it to live reads. A read Curviate answers from its own store never reaches LinkedIn and so is never covered; the same read IS covered when the store cannot answer it, or when you ask for it live. Stored reads and inbound events are never subject to the window under either setting, at any hour. One action set to `all` reaches the whole account's live reads that spend no budget of their own (notifications, profile analytics, SSI, profile visitors, the invitation and saved-list listings): those calls debit no action type, so they have none to read this setting from and take the account-wide answer instead. Reads that DO debit an action type read that action type's own setting.
                          * @enum {string|null}
@@ -41294,7 +41408,7 @@ export interface operations {
                             /** @description Local time the activity window closes, HH:MM. Must differ from activity_window_start (in force after the write); equal edges are a 400. */
                             activity_window_end?: string | null;
                             /** @description Not a setting: the time zone follows where this account connects from (activity_window on the policy shows it). Any value but null is a 400 INVALID_REQUEST; change where the account connects instead (its `country`, or your own `proxy`). Null is accepted and ignored, so a row read before this change can be sent back once its zone is null. */
-                            activity_window_timezone?: string | null;
+                            activity_window_timezone?: null;
                             /**
                              * @description What the activity window governs. `writes` (the default) covers live writes to LinkedIn; `all` widens it to live reads. A read Curviate answers from its own store never reaches LinkedIn and so is never covered; the same read IS covered when the store cannot answer it, or when you ask for it live. Stored reads and inbound events are never subject to the window under either setting, at any hour. One action set to `all` reaches the whole account's live reads that spend no budget of their own (notifications, profile analytics, SSI, profile visitors, the invitation and saved-list listings): those calls debit no action type, so they have none to read this setting from and take the account-wide answer instead. Reads that DO debit an action type read that action type's own setting.
                              * @enum {string|null}
@@ -54771,6 +54885,176 @@ export interface operations {
             };
         };
     };
+    getV1BillingSeats: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The seat and billing summary. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description How the subscription is billed; none before any purchase.
+                         * @enum {string}
+                         */
+                        billing_period: "none" | "monthly" | "annual";
+                        /**
+                         * @description The Tier the subscription buys, or null.
+                         * @enum {string|null}
+                         */
+                        bought_tier: "build" | "automate" | "enhance" | null;
+                        /** @description Seats counted, trial and lent-in seats included. */
+                        seat_total: number;
+                        /** @description Seats with an Account. */
+                        seats_used: number;
+                        /** @description Seats without an Account. */
+                        seats_empty: number;
+                        /** @description Seats with a scheduled cancellation. */
+                        seats_pending_cancel: number;
+                        /** @description Seats bought and not confirmed yet. */
+                        seats_provisional: number;
+                        /** @description The recurring monthly cost in euros: the sum of the seats' monthly_eur. */
+                        monthly_cost_eur: number;
+                        /**
+                         * Format: date-time
+                         * @description When the next invoice is due, or null.
+                         */
+                        next_invoice_at: string | null;
+                        /** @description The prorated charge waiting on the next invoice, in euros, or null. */
+                        pending_charge_eur: number | null;
+                        /**
+                         * Format: date-time
+                         * @description When the subscription's own trial ends, only while it is trialing; null otherwise.
+                         */
+                        subscription_trial_end: string | null;
+                        /** @description The card on file as text (for example `Visa ending 4242`), or null. */
+                        payment_method_display: string | null;
+                        /** @description The billing state: none, trialing, active, past_due, payment_failed or disputed_fraud. */
+                        billing_status: string;
+                        /** @description The free trial state: none, active, converted, expired or ended_abuse. */
+                        trial_status: string;
+                        /**
+                         * Format: date-time
+                         * @description When the free trial ends or ended; null when there was none.
+                         */
+                        trial_expires_at: string | null;
+                        /** @description A scheduled switch from monthly to annual billing, or null. */
+                        pending_period_switch: {
+                            /** @enum {string} */
+                            from: "monthly";
+                            /** @enum {string} */
+                            to: "annual";
+                            /** Format: date-time */
+                            effective_at: string;
+                        } | null;
+                        /** @description One row per seat. */
+                        seats: {
+                            /** @description The seat id (`seat_...`). */
+                            seat_id: string;
+                            /**
+                             * @description active: paid and usable. pending_cancel: ends at cancellation_effective_at. provisional: bought, not confirmed yet. trial and trial_expired: the free trial seat. expired: the cancellation date has passed.
+                             * @enum {string}
+                             */
+                            status: "active" | "pending_cancel" | "provisional" | "trial" | "trial_expired" | "expired";
+                            /**
+                             * Format: date-time
+                             * @description When a scheduled cancellation takes effect, or null.
+                             */
+                            cancellation_effective_at: string | null;
+                            /**
+                             * @description seat_decrement: this seat alone was cancelled (revert it with POST /v1/billing/seats/{seat_id}/cancel/revert). subscription_cancel: the whole subscription is ending. Null when nothing is scheduled.
+                             * @enum {string|null}
+                             */
+                            cancellation_source: "seat_decrement" | "subscription_cancel" | null;
+                            /** @description The Account on the seat, or null when it is empty. */
+                            attached_account_id: string | null;
+                            /** @description That Account's name, or null. */
+                            attached_account_name: string | null;
+                            /** @description What the seat costs per month, in euros. 0 for a trial, provisional or lent-in seat. */
+                            monthly_eur: number;
+                            /** @description Set on a seat this Team lent out: the Team using it. Null when the seat is not lent out. team_id and team_name are null inside it when you are not a member of that Team. */
+                            lent_to: {
+                                /** @description The other Team's id, or null when you are not a member of it. */
+                                team_id: string | null;
+                                /** @description The other Team's name, or null when you are not a member of it. */
+                                team_name: string | null;
+                            } | null;
+                            /** @description Set on a seat this Team received: the Team that lent it. Null on a seat of its own. team_id and team_name are null inside it when you are not a member of that Team. */
+                            lent_from: {
+                                /** @description The other Team's id, or null when you are not a member of it. */
+                                team_id: string | null;
+                                /** @description The other Team's name, or null when you are not a member of it. */
+                                team_name: string | null;
+                            } | null;
+                        }[];
+                        /**
+                         * Format: date-time
+                         * @description When the whole subscription ends, if it is scheduled to; null otherwise.
+                         */
+                        subscription_cancels_at: string | null;
+                        /** @description True when an entitlement existed and is gone. */
+                        is_churned: boolean;
+                        /** @description True once a payment profile exists for the Team. */
+                        has_stripe_customer: boolean;
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description In a team, only an Owner reads billing. INSUFFICIENT_ROLE for anyone else. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     postV1BillingSeatsAdd: {
         parameters: {
             query?: never;
@@ -54975,7 +55259,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The workspace is on a free trial and cannot change seats. Buy a seat to convert to a paid subscription first. */
+            /** @description The workspace is on a free trial and cannot change seats. Buy a seat to convert to a paid subscription first. Or SEAT_LENT: the seat is lent to another Team, so it cannot be cancelled on its own. Nothing changed. Move it back first (POST /v1/billing/seats/{seat_id}/return). */
             409: {
                 headers: {
                     [name: string]: unknown;
