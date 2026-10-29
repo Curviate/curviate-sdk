@@ -126,6 +126,11 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
   `PATCH /v1/{account_id}/safety-policy` and `warm_up: { enabled }`; a
   Team-scope `warm_up` is a 400) and **`warm_up.dormant`** on the account and
   the policy read.
+- **`accounts.getSafetyPolicy(accountId)` and
+  `accounts.updateSafetyPolicy(accountId, body)`**
+  (`GET` / `PATCH /v1/{account_id}/safety-policy`), typed from the generated
+  policy types. `updateSafetyPolicy(id, { warm_up: { enabled } })` is the
+  warm-up switch.
 - **`warm_up: false`** on `auth.intent` and `connectRequests.create` connects
   a new account with warm-up off. With `account_id` it is
   `400 INVALID_REQUEST`.

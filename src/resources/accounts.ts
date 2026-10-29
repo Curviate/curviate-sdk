@@ -1,5 +1,5 @@
 /**
- * Accounts resource: connected-account and seat management (11 methods, root-scoped).
+ * Accounts resource: connected-account and seat management (13 methods, root-scoped).
  *
  * Pattern followed by all resource namespaces:
  *   - take a {@link RequestContext} in the constructor,
@@ -78,6 +78,18 @@ export type AccountMetricsParams = NonNullable<
 /** `GET /v1/accounts/{account_id}/metrics` 200 body: one snapshot per day, oldest first. */
 export type AccountMetricList =
   paths["/v1/accounts/{account_id}/metrics"]["get"]["responses"]["200"]["content"]["application/json"];
+
+/** `GET /v1/{account_id}/safety-policy` 200 body: every configurable field per budget row, plus the derived `warm_up` and `activity_window`. */
+export type SafetyPolicy =
+  paths["/v1/{account_id}/safety-policy"]["get"]["responses"]["200"]["content"]["application/json"];
+
+/** `PATCH /v1/{account_id}/safety-policy` request body: only the fields you are changing. */
+export type SafetyPolicyUpdateBody =
+  paths["/v1/{account_id}/safety-policy"]["patch"]["requestBody"]["content"]["application/json"];
+
+/** `PATCH /v1/{account_id}/safety-policy` 200 body: the policy after the write. */
+export type SafetyPolicyUpdateResult =
+  paths["/v1/{account_id}/safety-policy"]["patch"]["responses"]["200"]["content"]["application/json"];
 
 /** `GET /v1/accounts/{account_id}/overview` query. `motion_id`, `origin`, `include`, `fields` and `sort` take a comma list or an array. */
 export type AccountOverviewParams = WithLists<
@@ -394,6 +406,53 @@ export class AccountsResource {
       method: "GET",
       path: apiPath`/v1/accounts/${accountId}/overview`,
       query: commaLists(params, "motion_id", "origin", "include", "fields", "sort"),
+    });
+  }
+
+  /**
+   * Read an account's safety policy: every configurable field for every
+   * budget row, and where each value was inherited from. Also carries the
+   * derived `warm_up` (`enabled`, `dormant`, `state`, `factor`, `triggers`)
+   * and `activity_window` (the zone the hours are read in, from where the
+   * account connects). Limits are always enforced.
+   * `GET /v1/{account_id}/safety-policy`
+   *
+   * @example
+   * const { warm_up } = await curviate.accounts.getSafetyPolicy("acc_123");
+   */
+  getSafetyPolicy(accountId: string): Promise<SafetyPolicy> {
+    return this.ctx.request<SafetyPolicy>({
+      method: "GET",
+      path: apiPath`/v1/${accountId}/safety-policy`,
+    });
+  }
+
+  /**
+   * Update an account's safety policy. Send only the fields you are changing;
+   * `null` clears an override back to the Team or Curviate default. Limits are
+   * always enforced: to send more, raise the limit. Returns the policy as
+   * `getSafetyPolicy` reads it.
+   *
+   * `warm_up: { enabled }` turns the account's warm-up ramp on or off (default
+   * on; off skips the connect and quiet ramps, recovery after a LinkedIn
+   * restriction still applies). `active_hours` sets the account's own days and
+   * local hours; a row's own `activity_window_start` / `activity_window_end`
+   * win over it. Read-only fields (`activity_window`, a row's
+   * `effective_ceiling`, `over_default`, `warm_up_state` ...) are accepted and
+   * ignored, so a read document can be sent back unchanged. A time zone is not
+   * a setting: `timezone` and a row's `activity_window_timezone` other than
+   * `null` are `400 INVALID_REQUEST`; change the account's `country` or own
+   * `proxy` instead.
+   * `PATCH /v1/{account_id}/safety-policy`
+   *
+   * @example
+   * await curviate.accounts.updateSafetyPolicy("acc_123", { warm_up: { enabled: false } });
+   */
+  updateSafetyPolicy(accountId: string, body: SafetyPolicyUpdateBody): Promise<SafetyPolicyUpdateResult> {
+    return this.ctx.request<SafetyPolicyUpdateResult>({
+      method: "PATCH",
+      path: apiPath`/v1/${accountId}/safety-policy`,
+      body,
     });
   }
 }

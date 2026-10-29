@@ -5,7 +5,7 @@
 // table (namespace -> exact method set), enumerates the real prototype methods
 // on a constructed client, and asserts set-equality per namespace. A phantom
 // (extra) public method fails by name; a missing method fails by name; the
-// total must be 268 methods across 43 namespaces. A separate compile-time block
+// total must be 270 methods across 43 namespaces. A separate compile-time block
 // proves every removed method is gone at the type level.
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
@@ -28,6 +28,8 @@ const ROOT_SURFACE: Record<string, readonly string[]> = {
     "setTeamAccess",
     "metrics",
     "overview",
+    "getSafetyPolicy",
+    "updateSafetyPolicy",
   ],
   auth: [
     "intent",
@@ -328,17 +330,17 @@ describe("per-namespace method bijection", () => {
 });
 
 describe("total mapped surface", () => {
-  it("the intended table sums to 268 methods across 43 namespaces", () => {
+  it("the intended table sums to 270 methods across 43 namespaces", () => {
     const namespaces = [
       ...Object.values(ROOT_SURFACE),
       ...Object.values(ACCOUNT_SURFACE),
     ];
     expect(namespaces.length).toBe(43);
     const total = namespaces.reduce((n, methods) => n + methods.length, 0);
-    expect(total).toBe(268);
+    expect(total).toBe(270);
   });
 
-  it("the real runtime surface also sums to exactly 268", () => {
+  it("the real runtime surface also sums to exactly 270", () => {
     const roots = Object.values(rootInstances).reduce(
       (n, inst) => n + ownMethods(inst).size,
       0,
@@ -347,7 +349,7 @@ describe("total mapped surface", () => {
       (n, inst) => n + ownMethods(inst).size,
       0,
     );
-    expect(roots + accounts).toBe(268);
+    expect(roots + accounts).toBe(270);
   });
 });
 
