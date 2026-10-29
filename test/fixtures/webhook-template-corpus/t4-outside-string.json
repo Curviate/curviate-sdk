@@ -1,0 +1,23 @@
+{
+  "about": "A variable as a bare JSON value.",
+  "rules": [
+    "T4"
+  ],
+  "source": "motion",
+  "template": "{\"score\": {{enrollment.score}}}",
+  "errors": [
+    {
+      "path": "body_template",
+      "rule": "{{enrollment.score}} is outside a JSON string",
+      "code": "T4",
+      "message": "{{enrollment.score}} is outside a JSON string",
+      "pointer": "/body_template",
+      "line": 1,
+      "col": 11,
+      "hint": "Put the variable inside a JSON string: \"{{enrollment.score}}\" keeps the value's type.",
+      "docs_url": "https://docs.curviate.com/reference/webhooks/body-templates#t4",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

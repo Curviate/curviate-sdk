@@ -1,0 +1,55 @@
+{
+  "about": "Three errors in one template, all reported, in template order, with lines and columns.",
+  "rules": [
+    "T6",
+    "T7",
+    "T9"
+  ],
+  "source": "motion",
+  "template": "{\n  \"id\": \"{{enrollment.id}}\",\n  \"greeting\": \"Hello {first_name}\",\n  \"who\": \"{{contact.fullname}}\"\n}",
+  "errors": [
+    {
+      "path": "body_template",
+      "rule": "{{enrollment.id}} is reserved",
+      "code": "T7",
+      "message": "{{enrollment.id}} is reserved",
+      "pointer": "/body_template",
+      "line": 2,
+      "col": 10,
+      "hint": "Use {{enrollment_id}} for the Enrollment's id.",
+      "docs_url": "https://docs.curviate.com/reference/webhooks/body-templates#t7",
+      "severity": "error",
+      "candidates": [
+        "{{enrollment_id}}"
+      ]
+    },
+    {
+      "path": "body_template",
+      "rule": "{first_name} is a single-brace placeholder",
+      "code": "T9",
+      "message": "{first_name} is a single-brace placeholder",
+      "pointer": "/body_template",
+      "line": 3,
+      "col": 22,
+      "hint": "Write the variable with double braces, like {{first_name}}.",
+      "docs_url": "https://docs.curviate.com/reference/webhooks/body-templates#t9",
+      "severity": "error"
+    },
+    {
+      "path": "body_template",
+      "rule": "unknown variable {{contact.fullname}}",
+      "code": "T6",
+      "message": "unknown variable {{contact.fullname}}",
+      "pointer": "/body_template",
+      "line": 4,
+      "col": 11,
+      "hint": "Use {{contact.full_name}}.",
+      "docs_url": "https://docs.curviate.com/reference/webhooks/body-templates#t6",
+      "severity": "error",
+      "candidates": [
+        "{{contact.full_name}}"
+      ]
+    }
+  ],
+  "warnings": []
+}

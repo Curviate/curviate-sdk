@@ -422,25 +422,6 @@ describe("entitlement taxonomy after the tier retirement", () => {
         "not finish its own sweep.",
     ).toEqual([]);
   });
-
-  // TRIPWIRE, not an invariant. `BETA_NOT_ENABLED` is absent from the served
-  // document BY DESIGN today: the beta BADGE is live on 39 operations, but the
-  // beta GATE is still empty, and only a gated operation's 403 description
-  // names the code. So the SDK exports a code the document does not mention,
-  // which is correct and is the one place the two sides legitimately disagree.
-  //
-  // A RED HERE IS NOT A BUG — it means the gate has opened and the document
-  // now documents the refusal. When that happens: refresh the fixture, confirm
-  // the code the document names matches the one exported here, and delete this
-  // test (the superset guard above then covers it for free).
-  it("does not yet document BETA_NOT_ENABLED, because the gate is still empty", () => {
-    expect(
-      documentBytes.includes("BETA_NOT_ENABLED"),
-      "the deployed document now names BETA_NOT_ENABLED, so at least one " +
-        "operation is beta-GATED rather than merely beta-badged. Nothing is " +
-        "broken: re-read the note above this assertion and retire it.",
-    ).toBe(false);
-  });
 });
 
 // Compile-time lock: the ErrorCode type and the ERROR_CODES element type must

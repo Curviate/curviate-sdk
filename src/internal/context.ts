@@ -46,6 +46,8 @@ export interface RequestArgs {
    * exclusive with `body`.
    */
   rawBody?: { data: Blob | ArrayBuffer | Uint8Array; contentType: string };
+  /** Resolve with the response's bytes, even a JSON one (file downloads). */
+  bytes?: boolean;
 }
 
 /** The bound caller a resource receives. */
@@ -104,6 +106,7 @@ export function createContext(
 
     return execute<T>(args.method, path, {
       apiKey: config.apiKey,
+      client: config.client,
       baseUrl: config.baseUrl,
       timeout: config.timeout,
       maxRetries: config.maxRetries,
@@ -112,6 +115,7 @@ export function createContext(
       ...(args.query !== undefined ? { query: args.query } : {}),
       ...(args.body !== undefined ? { body: args.body } : {}),
       ...(args.rawBody !== undefined ? { rawBody: args.rawBody } : {}),
+      ...(args.bytes ? { bytes: true } : {}),
     });
   };
   return { request, accountId };

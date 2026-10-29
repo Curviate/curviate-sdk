@@ -57,8 +57,10 @@ type BasePredicate =
   | { "contact.posted_within": string }
   | { "contact.tag": string }
   | { [F in StandardField]: { [P in `contact.${F}`]: FieldOperand } }[StandardField]
-  | { [key: `contact.extra.${string}`]: FieldOperand };
-/** An `if` predicate: one key, `contact.*`, `account.*` or `message.seen`, optionally wrapped in one `not`. */
+  | { [key: `contact.extra.${string}`]: FieldOperand }
+  /** An Enrollment value a `save` of this Sequence writes; numbers also take `gte` and `lte`. */
+  | { [key: `enrollment.${string}`]: FieldOperand | { gte: number } | { lte: number } };
+/** An `if` predicate: one key, `contact.*`, `account.*`, `enrollment.*` or `message.seen`, optionally wrapped in one `not`. */
 export type Predicate = BasePredicate | { not: BasePredicate };
 
 /** `with` of each action, keys as the document writes them. */
@@ -104,7 +106,7 @@ type DoStepOf<A extends Action> = {
 export type SequenceStep =
   | { [A in Action]: DoStepOf<A> }[Action]
   | ({ id: string; wait: string; next?: string; note?: string } & Only<"wait">)
-  | ({ id: string; until: SequenceEvent; timeout: string; then: string; else?: string; note?: string } & Only<"until">)
+  | ({ id: string; until: SequenceEvent; timeout: string; save?: Record<string, string>; save_to_contact?: Record<string, string>; then: string; else?: string; note?: string } & Only<"until">)
   | ({ id: string; if: Predicate; then: string; else?: string; note?: string } & Only<"if">)
   | ({ id: string; emit: string; next?: string; note?: string } & Only<"emit">)
   | ({ id: string; tag: string; event?: string; next?: string; note?: string } & Only<"tag">);

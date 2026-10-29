@@ -1,0 +1,64 @@
+{
+  "about": "21 save entries refuse R25 (EV-01)",
+  "rules": [
+    "R25"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "booked",
+        "until": "event.meeting_booked",
+        "timeout": "14d",
+        "save": {
+          "v0": "lead.f0",
+          "v1": "lead.f1",
+          "v2": "lead.f2",
+          "v3": "lead.f3",
+          "v4": "lead.f4",
+          "v5": "lead.f5",
+          "v6": "lead.f6",
+          "v7": "lead.f7",
+          "v8": "lead.f8",
+          "v9": "lead.f9",
+          "v10": "lead.f10",
+          "v11": "lead.f11",
+          "v12": "lead.f12",
+          "v13": "lead.f13",
+          "v14": "lead.f14",
+          "v15": "lead.f15",
+          "v16": "lead.f16",
+          "v17": "lead.f17",
+          "v18": "lead.f18",
+          "v19": "lead.f19",
+          "v20": "lead.f20"
+        },
+        "then": "msg",
+        "else": "end"
+      },
+      {
+        "id": "msg",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{enrollment.v0}} {{enrollment.v1}} {{enrollment.v2}} {{enrollment.v3}} {{enrollment.v4}} {{enrollment.v5}} {{enrollment.v6}} {{enrollment.v7}} {{enrollment.v8}} {{enrollment.v9}} {{enrollment.v10}} {{enrollment.v11}} {{enrollment.v12}} {{enrollment.v13}} {{enrollment.v14}} {{enrollment.v15}} {{enrollment.v16}} {{enrollment.v17}} {{enrollment.v18}} {{enrollment.v19}} {{enrollment.v20}}",
+          "fallback": "Thanks for booking."
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "booked.save",
+      "rule": "21 entries; the limit is 20",
+      "code": "R25",
+      "message": "21 entries; the limit is 20",
+      "pointer": "/steps/0/save",
+      "hint": "Put save and save_to_contact on an until event.<name> step, 1 to 20 entries each: save names are lowercase (not id), save_to_contact keys are custom fields or email.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r25",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

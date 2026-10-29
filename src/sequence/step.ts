@@ -24,7 +24,8 @@ import type {
 type Flow = { next?: string; note?: string };
 type TagFlow = Flow & { event?: string };
 type Branch = { then: string; else?: string; note?: string };
-type Timed = Branch & { timeout: string };
+/** `save` / `save_to_contact` (name or key to a path in the post) apply to `until: "event.<name>"` only. */
+type Timed = Branch & { timeout: string; save?: Record<string, string>; save_to_contact?: Record<string, string> };
 type TimeoutOf<F> = F extends { readonly timeout: infer D } ? D : never;
 
 function build(id: string, kind: string, value: unknown, fields: object | undefined): Record<string, unknown> {
@@ -71,11 +72,16 @@ export const step: {
   /**
    * An `until` step: wait for an event, at most `timeout`; `then` on the event,
    * `else` (or the next step) on timeout. `event.<name>` waits for a custom
-   * event your agent sends with `enrollments.events`.
+   * event your agent sends with `enrollments.events` or a tool posts to an
+   * incoming event. On `event.<name>`, `save` keeps values from that post on
+   * the Enrollment (name to path; read as `{{enrollment.<name>}}` and
+   * `if: { "enrollment.<name>": ... }`) and `save_to_contact` writes Contact
+   * custom fields.
    *
    * @example
    * step.until("w_accept", "invite.accepted", { timeout: "14d", then: "opener", else: "end" });
    * step.until("w_research", "event.research_ready", { timeout: "3d", then: "opener", else: "end" });
+   * step.until("w_score", "event.lead_scored", { timeout: "3d", save: { score: "lead.score" }, then: "gate", else: "end" });
    */
   until<const Id extends string, const E extends SequenceEvent, const F extends Timed>(
     id: Id & CheckId<Id>,
@@ -96,9 +102,10 @@ export const step: {
     fields: F & Exact<F, keyof Branch>,
   ): { id: Id; if: Predicate } & F;
   /**
-   * Legacy: an `emit` step sends a custom event (the `motion.custom_event`
-   * webhook) with this name. New Sequences put `event` on the `do` or `tag`
-   * step that matters instead.
+   * An `emit` step ("Send event") sends a custom event with this name: the
+   * `motion.custom_event` webhook, and what an `until: "event.<name>"` wait
+   * elsewhere can react to. `event` on a `do` or `tag` step does the same as
+   * part of that step.
    *
    * @example
    * step.emit("notify", "reply.received", { next: "end" });

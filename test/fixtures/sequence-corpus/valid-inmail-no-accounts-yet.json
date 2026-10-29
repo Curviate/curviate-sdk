@@ -1,0 +1,25 @@
+{
+  "about": "valid inmail no accounts yet",
+  "rules": [],
+  "only": "server",
+  "context": {
+    "account_profiles": []
+  },
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "im",
+        "do": "inmail.send",
+        "with": {
+          "subject": "Hi",
+          "text": "Body"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": []
+}

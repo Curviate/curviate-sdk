@@ -1,0 +1,37 @@
+{
+  "about": "w6 accepted only from on reply",
+  "rules": [
+    "W6"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "u",
+    "steps": [
+      {
+        "id": "a",
+        "wait": "1d",
+        "next": "end"
+      },
+      {
+        "id": "u",
+        "until": "invite.accepted",
+        "timeout": "7d",
+        "then": "end",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "path": "u.until",
+      "rule": "until invite.accepted on a path with no invite.send before it",
+      "code": "W6",
+      "message": "until invite.accepted on a path with no invite.send before it",
+      "pointer": "/steps/1/until",
+      "hint": "Send an invitation on this path before waiting for its acceptance.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w6",
+      "severity": "warning"
+    }
+  ]
+}

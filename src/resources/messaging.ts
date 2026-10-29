@@ -24,6 +24,13 @@
  * `string | string[] | null`, not a bare string: `null` when no message was
  * actually sent, and an array when the message was delivered as several, one
  * per attachment. Confirm a send with `chat_id`, which is always present.
+ *
+ * A send through the API (this SDK included) marks the chat read: the Unibox
+ * chat reads `unread: false` with `marked_unread: null`, and a `chat.updated`
+ * webhook with `unread` and `origin` reports the change. This holds for
+ * `startChat`, `sendMessage` and `sendInMail`; a Motion send leaves the read
+ * state as it is. On a disconnected Account every write here throws
+ * `REAUTH_REQUIRED` (409) and changes nothing; reconnect the Account first.
  */
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
@@ -111,6 +118,15 @@ export class MessagingResource {
    * Company pages are reply-only and cannot start a conversation this way.
    * Reply to an existing one instead, with `sendMessage()` using a
    * `COMPANY_` chat id from `inboxes.listChats()`.
+   *
+   * When the Account already has a private
+   * conversation with this person that you may not read, this throws
+   * `CHAT_NOT_VISIBLE` (409) and sends nothing. Ask the person who connected
+   * the Account to reply, or to sync the full inbox. It is detected from what
+   * Curviate stored, so a thread older than 90 days that Curviate never
+   * touched is not detected. A person on the do-not-contact list throws
+   * `DO_NOT_CONTACT` (409). A send marks the chat read, and a disconnected
+   * Account throws `REAUTH_REQUIRED` (409).
    */
   startChat(body: StartChatBody): Promise<StartChatResult> {
     return this.ctx.request<StartChatResult>({
@@ -139,6 +155,10 @@ export class MessagingResource {
   /**
    * Mark a chat read or unread. `PATCH /v1/{account_id}/chats/{chat_id}`
    * Body: `{read}`.
+   *
+   * `read: false` makes the Unibox chat's `marked_unread` read
+   * `{origin: "api", at}`. A later send through the API marks the chat read
+   * again. A disconnected Account throws `REAUTH_REQUIRED` (409).
    */
   markChatRead(chatId: string, body: MarkChatReadBody): Promise<MarkChatReadResult> {
     return this.ctx.request<MarkChatReadResult>({
@@ -158,6 +178,18 @@ export class MessagingResource {
    * display name rather than a folded-in subject, so read the subject from the
    * first message rather than from the chat. Ordinary (non-InMail) messages
    * return `specifics: {}`.
+   *
+   * A message the connected Account sent carries `origin`: `motion`, `unibox`,
+   * `api` (any API key or MCP grant) or `linkedin` (sent on LinkedIn itself).
+   * It is derived by Curviate, omitted when unknown, absent on a received
+   * message and never on a chat's `last_message`. `is_deleted` is `true` for a
+   * deleted message. For an API key or MCP grant, a message's `quoted` is
+   * omitted when the quoted message is from before the Motion chat's visible
+   * start, the same line the message list stops at.
+   *
+   * On a disconnected Account the page comes from Curviate's stored copy
+   * alone: `coverage.complete` is `false` when the stored history is not
+   * whole, and an attachment reads `unavailable: true`.
    *
    * A CHAT READ CARRIES NO SUBJECT AT ALL, including on its embedded
    * `last_message`: the preview is deliberately narrower than a message read, so
@@ -194,6 +226,13 @@ export class MessagingResource {
    * `{ kind: "personal" }`. Never infer the acting identity from a
    * message's `sender` field, only from `sent_as`.
    *
+   *
+   * A person on the Team's do-not-contact list throws `DO_NOT_CONTACT` (409);
+   * nothing is sent.
+   *
+   * Marks the chat read (its `unread` turns `false`, `marked_unread` clears,
+   * and `chat.updated` reports it). A disconnected Account throws
+   * `REAUTH_REQUIRED` (409); nothing is sent.
    * @example
    * const acc = curviate.account("acc_YOUR_ACCOUNT_ID");
    * const result = await acc.messaging.sendMessage("COMPANY_83734124_2-YTQ3ODU3Njgt", {
@@ -272,7 +311,18 @@ export class MessagingResource {
     });
   }
 
-  /** Send an InMail. `POST /v1/{account_id}/messages/inmail` */
+  /**
+   * Send an InMail. `POST /v1/{account_id}/messages/inmail`
+   *
+   * When the Account already has a private
+   * conversation with this person that you may not read, this throws
+   * `CHAT_NOT_VISIBLE` (409) and sends nothing. Ask the person who connected
+   * the Account to reply, or to sync the full inbox. It is detected from what
+   * Curviate stored, so a thread older than 90 days that Curviate never
+   * touched is not detected. A person on the do-not-contact list throws
+   * `DO_NOT_CONTACT` (409). A send marks the chat read, and a disconnected
+   * Account throws `REAUTH_REQUIRED` (409).
+   */
   sendInMail(body: SendInMailBody): Promise<SendInMailResult> {
     return this.ctx.request<SendInMailResult>({
       method: "POST",

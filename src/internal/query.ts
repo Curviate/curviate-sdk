@@ -13,3 +13,6 @@ export function commaLists<T extends object>(params: T | undefined, ...keys: (ke
   }
   return out as Record<string, string | number | boolean | undefined>;
 }
+
+/** Query params whose generated type is a comma-list string, also accepted as an array (join it with {@link commaLists}). */
+export type WithLists<P, K extends keyof P> = Omit<P, K> & { [k in K]?: string | string[] };

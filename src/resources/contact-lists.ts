@@ -27,13 +27,20 @@ export class ContactListsResource {
   constructor(private readonly ctx: RequestContext) {}
 
   /**
-   * Create an empty Contact list.
+   * Create a static Contact list: empty, or with `from`, a filter as in
+   * `contacts.updateMany({ filter })`, holding every Contact it matches right
+   * now (up to 10,000; more throws `INVALID_REQUEST` naming the count and
+   * creates nothing). `from.list_id` of two lists combines them (a Contact in
+   * both counts once), `list_match: "all"` keeps those in both and
+   * `not_list_id` leaves some out. The lists named in `from` are not changed,
+   * and `contact_count` is how many Contacts matched.
    * `POST /v1/contact-lists`
    *
    * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
    *
    * @example
    * const list = await curviate.contactLists.create({ name: "Q4 webinar" });
+   * const both = await curviate.contactLists.create({ name: "Both", from: { list_id: ["cl_1", "cl_2"], list_match: "all" } });
    */
   create(body: ContactListCreateBody): Promise<ContactListObject> {
     return this.ctx.request<ContactListObject>({

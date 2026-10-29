@@ -1,0 +1,51 @@
+{
+  "about": "w12 if message.seen on a path with no message before it (always false there); the path through the message does not warn",
+  "rules": [
+    "W12"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "first",
+        "if": {
+          "not": {
+            "message.seen": true
+          }
+        },
+        "then": "msg",
+        "else": "end"
+      },
+      {
+        "id": "msg",
+        "do": "message.send",
+        "with": {
+          "text": "Hello there"
+        },
+        "next": "after"
+      },
+      {
+        "id": "after",
+        "if": {
+          "message.seen": true
+        },
+        "then": "end",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "code": "W12",
+      "path": "first.if",
+      "rule": "if message.seen on a path with no message.send or inmail.send before it; it is always false there",
+      "message": "if message.seen on a path with no message.send or inmail.send before it; it is always false there",
+      "pointer": "/steps/0/if",
+      "hint": "Send a message on this path before checking whether it was seen.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w12",
+      "severity": "warning"
+    }
+  ]
+}

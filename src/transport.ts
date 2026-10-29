@@ -21,6 +21,7 @@ import {
   type ConnectionLocation,
   type CurviateErrorDetail,
   type SequenceConflictCurrent,
+  type CurviateErrorDetails,
 } from "./errors.js";
 
 /** HTTP methods the transport issues. */
@@ -29,6 +30,8 @@ export type HttpMethod = "GET" | "HEAD" | "POST" | "PATCH" | "PUT" | "DELETE";
 /** Options for a single {@link execute} call. */
 export interface ExecuteOptions {
   apiKey: string;
+  /** The `Curviate-Client` value, sent once on every request. */
+  client: string;
   baseUrl: string;
   /** Per-attempt timeout in ms. */
   timeout: number;
@@ -44,6 +47,8 @@ export interface ExecuteOptions {
   body?: unknown;
   /** A raw body sent as-is under its own `Content-Type` (file upload). */
   rawBody?: { data: Blob | ArrayBuffer | Uint8Array; contentType: string };
+  /** Resolve a 2xx with the response's bytes, whatever its `Content-Type` (file downloads). */
+  bytes?: boolean;
   /** Injectable fetch (edge runtimes / tests). Defaults to global fetch. */
   fetch?: typeof fetch;
   /** Sent as `X-Curviate-Team` when set. */
@@ -69,13 +74,13 @@ interface WireErrorEnvelope {
   row?: string;
   /** Seconds until a paused row is usable again. Mirrors the `Retry-After` header. */
   retry_after?: number;
-  /** `BUDGET_EXHAUSTED`: when the refusal lifts. Null on the `pending_invites` gauge and on InMail credits. */
+  /** `BUDGET_EXHAUSTED`: when the refusal lifts. Null when no clock frees it (gauge, InMail credits, unknown zone). */
   reset_at?: string | null;
   /** `BUDGET_EXHAUSTED`: the settable parameter that would lift the refusal. */
   hint?: { parameter?: unknown; message?: unknown };
   /** `BUDGET_EXHAUSTED`: which rule refused. */
   reason?: string;
-  /** `BUDGET_EXHAUSTED`: always true on the error; false on the 2xx `safety_warning`. */
+  /** `BUDGET_EXHAUSTED`: always true. */
   blocked?: boolean;
   /** `CONNECTION_LOCATION_UNAVAILABLE` after an applied change: where the account connects from now. */
   connection_location?: unknown;
@@ -88,6 +93,8 @@ interface WireErrorEnvelope {
   required_tier?: unknown;
   current_tier?: unknown;
   upgrade_url?: unknown;
+  /** Per-code details (`removed_key`, `export_id`, `account_id`, `account`). */
+  details?: unknown;
 }
 
 /** The compiler-style keys a wire `errors[]` entry may add to `{path, rule}`. */
@@ -229,7 +236,8 @@ async function errorFromResponse(res: Response): Promise<{ err: CurviateError; r
       ? { retryAfterSeconds: env.retry_after }
       : {}),
     // `reset_at` is null-BEARING: null means "no clock frees this" (the
-    // pending_invites gauge, or an InMail credit exhaustion), which is a
+    // pending_invites gauge, an InMail credit exhaustion, or an unknown zone
+    // with no candidate), which is a
     // different fact from the field being absent, so both survive the round
     // trip.
     ...(typeof env?.reset_at === "string" || env?.reset_at === null
@@ -256,6 +264,9 @@ async function errorFromResponse(res: Response): Promise<{ err: CurviateError; r
       ? { currentTier: env.current_tier }
       : {}),
     ...(typeof env?.upgrade_url === "string" ? { upgradeUrl: env.upgrade_url } : {}),
+    ...(env?.details !== null && typeof env?.details === "object" && !Array.isArray(env.details)
+      ? { details: env.details as CurviateErrorDetails }
+      : {}),
   });
   return { err, refusesRetry: env?.retry_likely_to_succeed === false };
 }
@@ -273,6 +284,7 @@ function retryDelay(err: CurviateError, attempt: number, jitter: number): number
 function buildInit(method: HttpMethod, opts: ExecuteOptions, signal: AbortSignal): RequestInit {
   const headers: Record<string, string> = {
     authorization: `Bearer ${opts.apiKey}`,
+    "curviate-client": opts.client,
   };
   if (opts.team !== undefined) headers["x-curviate-team"] = opts.team;
   const init: RequestInit = { method, headers, signal };
@@ -316,9 +328,9 @@ function buildUrl(path: string, opts: ExecuteOptions): string {
 }
 
 /** Parse a successful (2xx) response: JSON, or ArrayBuffer for binary. */
-async function parseSuccess<T>(res: Response): Promise<T> {
+async function parseSuccess<T>(res: Response, bytes?: boolean): Promise<T> {
   const ct = res.headers.get("content-type") ?? "";
-  if (ct.includes("application/json")) {
+  if (!bytes && ct.includes("application/json")) {
     return (await res.json()) as T;
   }
   // Any non-JSON 2xx body is returned as binary (e.g. file downloads).
@@ -374,7 +386,7 @@ export async function execute<T = unknown>(
     clearTimeout(timer);
 
     if (res.ok) {
-      return parseSuccess<T>(res);
+      return parseSuccess<T>(res, opts.bytes);
     }
 
     const { err, refusesRetry } = await errorFromResponse(res);

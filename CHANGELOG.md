@@ -7,6 +7,354 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## Unreleased
+
+### Save Connections as Contacts (curviate#2990)
+
+- The account (`accounts.get`, `accounts.update`'s result) gains `save_connections_as_contacts` and `save_connections_paused_reason` (`"contact_limit_reached"` | `null`); both are absent on an account without Automate.
+- `accounts.update` takes `save_connections_as_contacts`. Without Automate it throws `TIER_REQUIRED`.
+- The generated types carry both fields from the next fixture regen from staging after curviate#2990 deploys (pre-publish regen targets the deployed document).
+
+### Served schema fixes (regenerated types)
+
+- `GET /v1/billing/seats` now has a typed 200 response: each seat carries `lent_to` / `lent_from` (`{team_id, team_name}` or null).
+- `Error.errors[]` items gain `line` and `col` on `WEBHOOK_TEMPLATE_INVALID`; their `severity` is `error` only on a refusal (warnings come back in `warnings[]` on success).
+- The safety-policy write fields `timezone` and `activity_window_timezone` are typed `null`: any other value is a `400`.
+- `DO_NOT_CONTACT` (409) and `SEAT_LENT` (409) are declared on the routes that answer them.
+
+### Webhooks v2, incoming events, Enrollment values, the surface header
+
+#### Changed (same shape, new meaning)
+
+- **A delivery's `id` is the delivery id**, the same on every attempt and every redelivery (it changed per attempt before). It is now the key to de-duplicate retries on; the old `event` + `account_id` + `occurred_at` composite still works. `delivered_at` is the time the body was rendered, the same on every attempt (it was the attempt's time); the signature's `t=` stays the attempt's time.
+- **`request_url` reads back masked** (`https://host/•••`): the path and query are never returned. Sending the masked value back on `webhooks.update` keeps the stored URL. New `request_url_fingerprint` changes when the URL does.
+- **A `headers` entry with a key and no value keeps that header's stored value** on `webhooks.update`; a new key needs a value.
+- **`emit` steps are first-class again** ("Send event"): `step.emit` is no longer described as legacy. `event` on a `do` or `tag` step stays.
+- **`constructEvent` accepts any matching `v1`.** For 24 hours after a secret rotation `Curviate-Signature` carries two (`v1=<new>,v1=<old>`); either secret verifies, any other is still `invalid_signature`. Older SDKs check only the last `v1`: upgrade before you rotate.
+- **Every request sends `Curviate-Client: sdk/<version>`**, once. Informational only (it shows which tools use a key). The new `client` option replaces the value, for a tool built on the SDK.
+
+#### Added
+
+- **Webhook deliveries:** `webhooks.deliveries.list(id, { failed, cursor, limit })` (last 30 days, newest first; `for await` pages) and `webhooks.deliveries.get(id, deliveryId)`, metadata only. `webhooks.redeliver(id, deliveryId)` sends the original bytes again, freshly signed, within `redeliverable_until` (receipt + 24 h).
+- **`webhooks.rotateSecret(id)`:** a new secret, returned once, with `previous_valid_until`. Creator only.
+- **`webhooks.test(id, { event })`:** a synthetic delivery for one subscribed event (default: the first), answering `delivery_id` and `test_id`.
+- **Webhook fields:** `disabled_reason`, `failing_since`, `last_delivery_status_code`, `created_by`, `request_url_fingerprint`, `body_template`, `custom_event_names`, and `warnings` on an edit that sets a template.
+- **`webhooks.variables({ source })`:** the variables a body template of that source may use; on `motion`, also the Enrollment values your Sequences save.
+- **`validateWebhookTemplate(template, { source })` and `renderWebhookTemplate(template, context)`:** the API's own template lint and renderer, offline. `errors` equal what `WEBHOOK_TEMPLATE_INVALID` lists, each with `line` and `col`.
+- **`incomingEvents`:** `create`, `list`, `get`, `update`, `delete`, `rotate`, `capture`, `arrivals`. A private URL your tools post JSON to, moving Enrollments waiting on `until event.<name>`.
+- **`tenant.beta.get()` and `tenant.beta.set({ beta_enabled })`:** the Team's persisted beta consent (`set`: Owners only).
+- **Sequences:** `save` (and `save_to_contact`) on `until event.<name>` waits, typed on `step.until` and the builder, number gates (`gte`, `lte`) on `enrollment.<name>` predicates, rules R25 to R28 and warnings W14 and W16 in `validateSequence`; every entry carries `severity`, and `candidates` for a did-you-mean. R29 is the API's only. The validator now runs the API's own rule code.
+- **Enrollment `values`** on `enrollments.get`: what the Sequence's `save` maps took, empty once the Enrollment finishes.
+- **Error codes:** `NOTHING_TO_REDELIVER` (409), `REDELIVERY_EXPIRED` (410), `WEBHOOK_DISABLED` (409), `DELIVERY_IN_FLIGHT` (409, retryable), `WEBHOOK_TEMPLATE_INVALID` (422), `INCOMING_URL_RETIRED` (410). Earlier SDKs decode them as `INTERNAL`. `errors[]` entries type `severity`, `candidates`, `line` and `col`.
+
+### Unibox v2
+
+- **Same shape, new behaviour, `listMessages`:** for an API key or MCP grant, `quoted` is omitted when the quoted message is from before a Motion chat's visible start.
+
+#### Added
+
+- **Message `origin` and `is_deleted`:** a message the connected account sent carries `origin` (`motion`, `unibox`, `api` or `linkedin`). It is omitted when unknown, absent on a received message and never on a chat's `last_message`. `is_deleted` is `true` for a deleted message.
+- **`marked_unread`** on a Unibox chat: `{origin: "unibox" | "api" | "linkedin", at}` when the chat was made unread without a newer message from the other person, else `null`.
+- **`unibox.list` options:** `person` (one Contact id or LinkedIn id), `motion_ids` also takes `"none"` (chats no Motion links), `include_total: true` adds `total` (the chats matching the filters, not the page).
+- **Disconnected Accounts** appear in `unibox.accounts.list()` and `unibox.list()` (`account_status: "disconnected"`), read-only. Their messages come from the stored copy: `coverage.complete` and attachment `unavailable`. A write on one throws `REAUTH_REQUIRED` (409).
+- **Webhook payload types:** `chat.updated` is `ChatUpdatedPayload` (always `chat_id`; `unread` and `origin` on a change of read state). `message.read`, `message.reaction`, `message.edited` and `message.deleted` are `OwnMessagePayload` (optional `origin`); `message.received` never carries `origin`. New exports `ChatUpdatedPayload`, `OwnMessagePayload`, `MessageOrigin`.
+- **`analytics.events.list`:** `contact_id` keeps one person's events (`RESOURCE_NOT_FOUND` for an unknown, other-team or merged-away id); `origin` takes a comma list or an array.
+- **Analytics `origin`** is `motion`, `unibox` or `api`; `direct` stays valid as an alias for `unibox` and `api`.
+
+#### Changed
+
+- **`unibox.refresh` cooldown is 2 minutes** (was 5). It also covers accounts with Motion chats or Motion outreach but no full-inbox sync (`not_synced` only for an account with none of those), and `sync.next_run_at` for a `complete` account is the next poll tick. Same shape, new meaning.
+- **A send marks the chat read.** `startChat`, `sendMessage` and `sendInMail` through the API turn the chat's `unread` to `false` and clear `marked_unread`, and `chat.updated` reports it. A Motion send leaves the read state as it is.
+- The `unibox.refresh` JSDoc no longer says "5 minutes".
+
+### Daily counts and the raw reach
+
+- **Analytics windows reach 3650 days** on `analytics.motions.list` / `get` and `accounts.overview` (a longer one is `400 INVALID_REQUEST` naming `from`; the old 365-day cap is gone). Beyond 12 months you get daily counts only. New `window.counts_only_through` and `window.paths_through` (`YYYY-MM-DD | null`): past `paths_through`, `paths` does not add up to the totals. `accounts.metrics` reads up to 3650 days.
+- **`enrollments.get`:** new `history_truncated` (boolean). `history` reaches back 12 months, plus what `retry` reads.
+- **Activity exports:** a window past the 12-month raw reach is `400 INVALID_REQUEST` naming `from`.
+
+### Settings v2
+
+#### Breaking
+
+- **Limits are always enforced.** The warn posture is gone: `posture`,
+  `posture_source` and `tenant_default_posture` leave every read (the
+  safety policy and the `quotas[]` rows; on the policy write they remain
+  only as removed keys), and no success body carries a
+  `safety_warning` any more (`PostPublishedPayload.safety_warning` removed).
+  At a ceiling the action is refused with `BUDGET_EXHAUSTED`; to send more,
+  raise the limit. A policy write that still sends `posture` or
+  `tenant_default_posture` is accepted with a `POSTURE_REMOVED` notice until
+  2027-01-25 when it says `"enforce"` or `null`; `"warn"`, or any value after
+  that day, is `400 INVALID_REQUEST` naming the key in `details.removed_key`.
+- **`hint.parameter` on an `activity_window` refusal** is now `active_hours`,
+  `rows[<row>].activity_window_start` / `_end`, or on the Team policy
+  `profiles[<profile>].rows[<row>].activity_window_start` / `_end`. It was
+  the bare `activity_window_start` / `activity_window_end`.
+
+#### Added
+
+- **`err.details`** on `CurviateError` (type `CurviateErrorDetails`): the
+  error body's per-code details, `removed_key` on the posture refusal among
+  them.
+- **`active_hours`** at the top level of the account and Team safety policy:
+  `{days, start, end, source}` or `null`, where `source` (`account`, `team`
+  or `default`) is read-only. Write `{days, start, end}` or `null`.
+- **`activity_window_source`** on every policy row, both scopes, read-only:
+  `account_row`, `account`, `team_row`, `team` or `default`.
+
+#### Changed
+
+- **`activity_window_start` and `activity_window_end`** on a policy row now
+  report the effective edges after the chain (row, account, Team, default).
+  Same shape, wider meaning: a row with no edges of its own reads the edges
+  it inherits.
+- **`blocked`** on `CurviateError` is always `true` on a `BUDGET_EXHAUSTED`;
+  there is no `blocked: false` success payload.
+
+### Account safety
+
+#### Breaking
+
+- **`activity_window`** on `accounts.get` (and the safety policy read)
+  loses `timezone` and `timezone_unset`. `effective_timezone` is
+  `string | null` (null while the zone is unknown); `source` is `country`,
+  `region`, `detected` or `none`; new `zone_state` (`known`, `pinned`,
+  `unknown`) and `fallback_timezones` (the candidate zones while unknown;
+  empty means the window is closed). `network.syncStatus()`'s `read_window`
+  carries the same four fields in place of `timezone` and `source`. The zone
+  follows where the account connects from: nobody sets it.
+- **A time zone on the safety policy is refused.** The policy write's
+  `timezone` and a row's `activity_window_timezone` are `400 INVALID_REQUEST`
+  unless `null` (accepted and ignored, so an older document round-trips).
+  Change the account's `country` or own `proxy` instead.
+- **`warm_up`**: `triggers` is now `connect`, `dormant` or
+  `post_restriction` (`account_age` and `connections` removed);
+  `unevaluated` removed. `state: "ramping"` keeps its shape and now follows
+  those triggers.
+
+#### Added
+
+- **`warm_up.enabled`** (default `true`, set with
+  `PATCH /v1/{account_id}/safety-policy` and `warm_up: { enabled }`; a
+  Team-scope `warm_up` is a 400) and **`warm_up.dormant`** on the account and
+  the policy read.
+- **`accounts.getSafetyPolicy(accountId)` and
+  `accounts.updateSafetyPolicy(accountId, body)`**
+  (`GET` / `PATCH /v1/{account_id}/safety-policy`), typed from the generated
+  policy types. `updateSafetyPolicy(id, { warm_up: { enabled } })` is the
+  warm-up switch.
+- **`warm_up: false`** on `auth.intent` and `connectRequests.create` connects
+  a new account with warm-up off. With `account_id` it is
+  `400 INVALID_REQUEST`.
+- **`connection_location`** gains `checked_at`, `detected_country` and
+  `flags` (`country_mismatch`, `zone_moved`). No IP field anywhere.
+
+#### Changed
+
+- **`auth.intent` `timezone`** is `@deprecated` and ignored.
+- **`err.resetAt`** is also `null` on an `activity_window` refusal while the
+  account's zone is unknown with no candidate zone (three null cases now).
+  `hint.parameter` never names `timezone` or `activity_window_timezone`.
+- **Docs:** a live write outside the activity window is refused with
+  `BUDGET_EXHAUSTED` (`safetyReason: "activity_window"`); reads never are.
+
+### Connect v2 (checkpoints, connect refusals)
+
+#### Breaking
+
+- **New `challenge_type` values** `checking` (LinkedIn is checking the
+  sign-in: poll it, nothing to answer) and `phone_register` (solve with
+  `(+CC)number`; it was `422 CHECKPOINT_UNSUPPORTED`). Breaking for callers
+  that branch on that 422 or switch exhaustively over `challenge_type`: add
+  both arms.
+- **`auth.pollCheckpoint` never answers `status: "expired"`** and carries no
+  `recovery_hint`. Past `expires_at` (also after the expiry sweep, or when it
+  fires mid-poll) solve, poll, resend and request throw
+  `409 CHECKPOINT_EXPIRED`. Breaking for callers branching on either.
+- **`CHECKPOINT_EXPIRED` is 409 everywhere** (it was 422 on some solve
+  paths), and a pending checkpoint that times out answers it too. Breaking
+  for callers branching on a 422 `CHECKPOINT_EXPIRED`.
+- **Connect refusals:** a cookie connect rejected for any reason is
+  `401 LINKEDIN_COOKIE_INVALID`; the account cap is `503 PLATFORM_ERROR`
+  with `retryLikelyToSucceed: false` (`SUBSTRATE_CAP_REACHED` is no longer
+  sent; it stays in `ERROR_CODES` for older deployments); an intent that
+  times out before any checkpoint is `503 LINKEDIN_SERVICE_UNAVAILABLE`; a
+  poll's terminal refusal throws its own code (a transient error still
+  answers `pending`).
+
+#### Added
+
+- **`LINKEDIN_SIGN_IN_REQUIRED`** (403, user_fixable): LinkedIn wants the
+  person to sign in on linkedin.com first.
+- **`channel`** (`email`, `sms`, `whatsapp` or `null`) on `otp` and
+  `otp_or_mobile_app_approval` checkpoints: where LinkedIn sent the code.
+- **`user_languages`** on `auth.intent` (cookie connects only, at most 5
+  BCP 47 tags, each at most 35 characters).
+- **`contract_selected`** on the connect 201, solve, poll `active` and the
+  reconnect 200 when `recruiter_contract_id` was sent.
+
+#### Changed
+
+- **`TRY_ANOTHER_WAY`** on `auth.solveCheckpoint`: same shape, new meaning.
+  It asks LinkedIn for another method and counts no attempt; it is
+  `400 INVALID_REQUEST` on `contract_selection`, `challenge_selection`,
+  `phone_register` and `checking`. Solve `code` accepts `( ) +`.
+- **`expires_at`** is when Curviate stops accepting an answer; a chained
+  checkpoint keeps the sign-in's original `expires_at`.
+- **`recruiter_contract_id`** is selected once the account is connected;
+  `contract_selected: false` means connected, not selected.
+
+### Motions setup and engine v2
+
+#### Breaking
+
+- **`schedule.timezone` and `settings.stop_on_engagement` are retired.**
+  Days and hours are read in each sending account's own time zone. Both keys
+  are accepted with warning `W13` until 2027-01-25, never stored, and gone
+  from every Motion read; `stop_on_engagement: true` with an acting reply
+  route is a 400. `motions.start` no longer reports a missing time zone.
+- **`settings.acceptance_floor` defaults to `null`** (off).
+- **`finish_reason` gains `engaged_elsewhere`**: the Contact replied to, or
+  was messaged from, another account of the Motion. Add the arm to an
+  exhaustive switch.
+
+#### Added
+
+- **Several accounts per list read:** `account_id` on `motions.list`,
+  `enrollments.list` and the `enrollments.bulk` filter takes several
+  accounts (comma list, up to 50; an all-empty list is a 400).
+- **`motions.list({ sort: "activity" })`** (latest step record first;
+  `updated` stays the default) and `last_activity_at` on every item. A
+  cursor belongs to its sort.
+- **`enrollments.list({ step_id })`** takes up to 10 step ids (an array, or a
+  comma list); the bulk `filter.step_id` takes a string or an array.
+- **Several mode** (`settings.accounts_per_contact` above 1): settings
+  `on_reply_elsewhere` (`stop` or `continue`), `withdraw_on_reply_elsewhere`
+  and `account_gap` (`1d` to `30d`), served only in that mode.
+  `accounts_per_contact` is locked once the Motion has started.
+- **`motions.preview`**: `projection.audience` `{ total, skipped, to_enroll }`.
+
+#### Changed
+
+- **`motions.preview` `projection.contacts`** equals `audience.to_enroll`;
+  in Several mode `accounts[].contacts` counts Enrollments (same shape, new
+  meaning), and `projection.fits_before_end_at` is counted per account zone.
+
+### Analytics v2, exports, Account fields
+
+Types come from the served document (regenerated); the hand-written parts:
+
+- **`analytics.export(params)`** streams the Analytics tables now
+  (`table`, `format`, the overview's filters) and resolves with the file's
+  bytes. **`exports.create` / `get` / `download`** run the same as a
+  background job: poll `status` to `ready`, then `download` within 24 hours;
+  `download` resolves with the file's exact bytes. One export per Team at a time. Types `Export`,
+  `ExportCreateBody`, `ExportGetResult`, `AnalyticsExportParams`.
+- **`accounts.metrics(accountId, { from, to, timezone })`** (the Account's daily
+  snapshots, oldest first, at most 366 days; no LinkedIn call) and
+  **`accounts.overview(accountId, params)`** (one Account at a glance, the
+  overview grammar scoped to it).
+- **Analytics options:** `account_id`, `motion_id`, `origin`, `include`,
+  `fields` and `sort` take an array as well as a comma list. Windows take
+  `range` (`7d`, `30d`, `90d`, `12m`, `all`) and `bucket`; `compare:
+  "previous_period"` adds `previous` and `delta` to every rate.
+- **Same shape, new meaning, analytics:** every rate is the outcome SO FAR over
+  what was sent in the window, no longer over cohorts at least 7 days old; read
+  it with `maturing` and `low_sample`. Messages and InMails are counted apart
+  (`reply`, `inmail_reply`). Enrollment counts are by state right now and the
+  window does not change them; the state `pending` is now `queued` (list
+  filters accept `pending` until 2027-01-21).
+- **Same shape, new meaning, `accounts.list`:** an item carries the profile,
+  `status_reason`, `warm_up`, `inmail_balance`, `motions_count`,
+  `motion_refs` and three `quotas` rows; reading the list never calls
+  LinkedIn.
+- **`err.details` keys:** `account_id` on `TIER_REQUIRED` (one Account lacks
+  the feature while the Team has it; an Account on a seat lent from another
+  Team carries that seat's Tier: leave it out, or ask the Owner who lent the
+  seat) and `export_id` on `EXPORT_IN_PROGRESS`.
+- **JSDoc:** `CHAT_NOT_VISIBLE` (409) on `messaging.startChat`,
+  `messaging.sendInMail`, `recruiter.startChat` and
+  `salesNavigator.startChat`: nothing is sent when the Account already has a
+  private conversation with the person that you may not read. The `EXPORT_*`
+  codes are documented on `exports` and in `ERROR_CODES`.
+
+### Teams v2, seat lending
+
+- **`teams.create({ name })`** returns the new Team and `next_step`: an
+  All-Teams key gets `{ team_header }` (the header line `X-Curviate-Team:
+  <team_id>`, usable at once; with this SDK pass the id to `withTeam`), any other
+  credential gets `{ command, url }`.
+- **`teams.list({ include: "counts" })`** adds `tier`, `trial`, `accounts`,
+  `active_motions` and, on Owner rows, `seats` (`used`, `total`, `lent_out`,
+  `lent_in`). A dashboard session and an All-Teams key get counts on every
+  row; a Team key, or a token for one Team, only on its own row.
+- **`teams.setLogo(png)`** (a PNG up to 1 MB; Owners only; `UNSUPPORTED_MEDIA_TYPE`
+  or `PAYLOAD_TOO_LARGE` otherwise), **`teams.removeLogo()`**, and `logo_url`
+  on every Team.
+- **`billing.seats.lend({ team_id, seat_id? })`** and
+  **`billing.seats.return(seatId)`**. While a seat is lent, a connect naming
+  it or a cancel of it throws `SEAT_LENT`; a seat an Account still uses
+  throws `SEAT_NOT_EMPTY` on return.
+
+### Do-not-contact list
+
+- **`doNotContact.list` / `get` / `add` / `update` / `remove`** over the
+  Team-wide list. `add` takes `contact_id` or `linkedin_url` and an optional
+  `reason` (`asked_to_stop`, `existing_customer`, `competitor`, `partner`,
+  `employee`, `other`); a person already listed resolves with their entry.
+  `remove` is for Owners and Managers.
+- **`DO_NOT_CONTACT` (409)** is documented on the writes it refuses:
+  `invites.send`, `messaging.startChat`, `sendMessage`, `sendInMail`,
+  `users.follow`, `endorseSkill`, `companies.followInvite`, `posts.react` and
+  the comment methods. `do_not_contact` joins the skip and finish reasons.
+
+### Contacts and Network
+
+- **`contacts.list` and `contacts.export`:** `list_id` takes up to 20 Contact
+  lists (an array or a comma list; any of them, or all with
+  `list_match: "all"`), plus `not_list_id` and `has_email`; `contacts.list`
+  adds opt-in `include_total` (`total` on the page).
+- **`contacts.updateMany` and `contacts.deleteMany`** take exactly one of
+  `contact_ids` or `filter` (up to 10,000 matches; more throws
+  `INVALID_REQUEST` naming the count and changes nothing).
+- **`contactLists.create({ name, from })`** starts a static list from a
+  filter.
+- **`network.connections.list({ group: "person", include_total })`:** one item
+  per person (`object: "connection_person"`, with `accounts` and `contact`).
+  `Connection` is now a union of the two item shapes: branch on `object`.
+- **`network.resync()`** needs no Account: with none it is Resync all and
+  resolves with `object: "network_resync_list"`. The result type is a union of
+  the two answers: branch on `object`.
+- **Same shape, more often filled:** `location` on a Connection, and
+  `first_name` / `last_name` on `users.listRelations`, are non-null more often.
+
+### Invoices (the billing part)
+
+- **`billing.invoices.list(params)`** pages the Team's issued invoices (house
+  auto-pager over `items` / `cursor`; `await` for a page, `for await` for all;
+  Owners only) and **`billing.invoices.pdf(number)`** resolves with the PDF
+  bytes.
+
+### All-Teams key
+
+#### Added
+
+- **`curviate.withTeam(team)`**: the same client acting in that Team. Every
+  call made through it sends `X-Curviate-Team: <team>`, overriding the
+  `team` client option, so one client can act per call in any of your
+  Teams. Works for every method, root and account-scoped.
+- **`TEAM_REQUIRED`** (400): a key that works in all of your Teams called a
+  Team-level operation without naming the Team. Name one with `team` or
+  `withTeam`; a call on one of your accounts takes that account's Team.
+
+#### Changed
+
+- **`TEAM_ACCESS_DENIED`** and the `team` option copy: a key may work in one
+  Team or in all of a person's Teams. A Team key accepts only its own Team.
+
+---
+
 ## [0.44.0] - 2026-10-22
 
 Dashboard v2 API. Fixture and types regenerated from deployed staging (server

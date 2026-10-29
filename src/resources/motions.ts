@@ -91,6 +91,16 @@ export class MotionsResource {
    *
    * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
    *
+   * Days and hours in `schedule` are read in each sending account's own time
+   * zone. `schedule.timezone` and `settings.stop_on_engagement` are retired:
+   * accepted with warning W13 until 2027-01-25, never stored or returned
+   * (`stop_on_engagement: true` with an acting reply route is a 400).
+   * `settings.acceptance_floor` defaults to `null` (off). With
+   * `settings.accounts_per_contact` above 1 (Several mode) the settings gain
+   * `on_reply_elsewhere` (`stop` or `continue`), `withdraw_on_reply_elsewhere`
+   * and `account_gap` (`1d` to `30d`), served only in that mode;
+   * `accounts_per_contact` is locked once the Motion has started.
+   *
    * @example
    * const motion = await curviate.motions.create({
    *   name: "Q4 webinar follow-up",
@@ -104,14 +114,17 @@ export class MotionsResource {
   }
 
   /**
-   * List Motions, most recently updated first. `status` (any of them; default
-   * all but `archived`), `account_id`, `q` (name substring). Items carry no
+   * List Motions. `status` (any of them; default all but `archived`),
+   * `account_id` (one or several accounts as a comma list, up to 50: Motions
+   * sending from any of them), `q` (name substring), `sort`: `updated`
+   * (default, latest edit first) or `activity` (latest step record first,
+   * else `updated_at`). Items carry `last_activity_at` (or `null`) but no
    * `sequence`: read it with `get`. Pages with an opaque `cursor` until it is
-   * `null`.
+   * `null`; a cursor belongs to its sort.
    * `GET /v1/motions`
    *
    * @example
-   * const { items } = await curviate.motions.list({ status: ["active", "paused"] });
+   * const { items } = await curviate.motions.list({ status: ["active", "paused"], account_id: "acc_1,acc_2", sort: "activity" });
    */
   list(params?: MotionListParams): Promise<MotionListPage> {
     return this.ctx.request<MotionListPage>({ method: "GET", path: "/v1/motions", query: commaLists(params, "status") });
@@ -222,6 +235,13 @@ export class MotionsResource {
    * Sequence, rendered messages for `sample` Contacts (1 to 20, default 5) or
    * the `contact_ids` you name (up to 20, not with `sample`), and the budget
    * projection. A read: never reaches LinkedIn, spends nothing.
+   *
+   * `projection.audience` is `{ total, skipped, to_enroll }`, `skipped`
+   * counted per reason (`do_not_contact`, `excluded`, `other_motion`,
+   * `known_chat`, `filtered`; a Contact counts under the first that applies);
+   * `projection.contacts` equals `to_enroll`. In
+   * Several mode `accounts[].contacts` counts Enrollments, not people, and
+   * `projection.fits_before_end_at` is counted per account zone.
    * `GET /v1/motions/{id}/preview`
    *
    * @example
@@ -290,15 +310,20 @@ export class EnrollmentsResource {
 
   /**
    * List Enrollments, newest first. Filters: `motion_id`, `contact_id`,
-   * `account_id`, `status` (any of them), `step_id` (at that Step now),
-   * `version`; by Step outcome: `done_step` with `outcome` (how that Step
+   * `account_id` (one or several as a comma list, up to 50), `status` (any of
+   * them), `step_id` (at any of these Steps now, up to 10), `version`; by Step outcome: `done_step` with `outcome` (how that Step
    * ended), `reason` (catalogue codes, any of them), `variant_id`,
    * `relationship_at_enrollment` (any of them). Pages with an opaque `cursor`
    * until it is `null`.
    * `GET /v1/enrollments`
    *
+   * A finished Enrollment's `finish_reason` may be `engaged_elsewhere`: the
+   * Contact replied to, or was messaged from, another account of the Motion
+   * (Several mode).
+   *
    * @example
    * const { items } = await curviate.enrollments.list({ motion_id: "mot_123", done_step: "opener", outcome: "failed" });
+   * const atEither = await curviate.enrollments.list({ motion_id: "mot_123", step_id: ["opener", "bump"] });
    */
   list(params?: EnrollmentListParams): Promise<EnrollmentListPage> {
     return this.ctx.request<EnrollmentListPage>({
@@ -310,7 +335,12 @@ export class EnrollmentsResource {
 
   /**
    * One Enrollment with its `history` of Steps (metadata only, no rendered
-   * text).
+   * text). `history` reaches back 12 months, plus the entries `retry` reads
+   * at any age; `history_truncated: true` says older entries are not listed.
+   * The Enrollment's state has no such limit. `values` are what the
+   * Sequence's `save` maps took from an incoming event (name to value; read
+   * them as `{{enrollment.<name>}}` and `if enrollment.<name>`); they are
+   * empty once it finishes, and after a resume.
    * `GET /v1/enrollments/{id}`
    *
    * @example
@@ -321,8 +351,8 @@ export class EnrollmentsResource {
   }
 
   /**
-   * Stop a `pending`, `active` or `paused` Enrollment (`finished`,
-   * `stopped`); else `ENROLLMENT_NOT_ACTIVE`.
+   * Stop a `queued`, `active` or `paused` Enrollment (it ends `finished`,
+   * `finish_reason: "stopped"`); else `ENROLLMENT_NOT_ACTIVE`.
    * `POST /v1/enrollments/{id}/stop`
    *
    * @example
@@ -333,7 +363,7 @@ export class EnrollmentsResource {
   }
 
   /**
-   * Hold one `pending`, `active` or `paused` Enrollment until you `resume` it
+   * Hold one `queued`, `active` or `paused` Enrollment until you `resume` it
    * (`waiting.kind: "paused_by_user"`); its waits freeze. A Step being sent
    * right now is `STEP_IN_FLIGHT`: retry in a minute. Works on every plan.
    * `POST /v1/enrollments/{id}/pause`

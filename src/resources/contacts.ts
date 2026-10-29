@@ -17,11 +17,12 @@
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
 import { apiPath } from "../internal/path.js";
-import { commaLists } from "../internal/query.js";
+import { commaLists, type WithLists } from "../internal/query.js";
 
 // ─── Type aliases from generated OpenAPI snapshot ──────────────────────────
 
-export type ContactListParams = NonNullable<paths["/v1/contacts"]["get"]["parameters"]["query"]>;
+/** `list_id` and `not_list_id` take a comma list of up to 20 Contact list ids, or an array of them. */
+export type ContactListParams = WithLists<NonNullable<paths["/v1/contacts"]["get"]["parameters"]["query"]>, "list_id" | "not_list_id">;
 export type ContactListPage = paths["/v1/contacts"]["get"]["responses"]["200"]["content"]["application/json"];
 export type Contact = paths["/v1/contacts/{id}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type ContactUpsertBody = NonNullable<paths["/v1/contacts"]["post"]["requestBody"]>["content"]["application/json"];
@@ -37,7 +38,7 @@ export type ContactUpdateManyBody = NonNullable<paths["/v1/contacts/update"]["po
 export type ContactUpdateManyResult = paths["/v1/contacts/update"]["post"]["responses"]["200"]["content"]["application/json"];
 export type ContactEnrichBody = NonNullable<paths["/v1/contacts/enrich"]["post"]["requestBody"]>["content"]["application/json"];
 export type ContactEnrichResult = paths["/v1/contacts/enrich"]["post"]["responses"]["200"]["content"]["application/json"];
-export type ContactExportParams = NonNullable<paths["/v1/contacts/export"]["get"]["parameters"]["query"]>;
+export type ContactExportParams = WithLists<NonNullable<paths["/v1/contacts/export"]["get"]["parameters"]["query"]>, "list_id" | "not_list_id">;
 
 export type ContactImportCreateBody = NonNullable<paths["/v1/contacts/imports"]["post"]["requestBody"]>["content"]["application/json"];
 /** `201` with the finished report for a small import, `202` with a `queued` import for a large one. */
@@ -148,23 +149,33 @@ export class ContactsResource {
   }
 
   /**
-   * List Contacts, newest first (`order: "asc"` for oldest). Filters combine:
-   * `list_id`, `tag` (comma list, any of them), `import_id`, `linkedin_url`,
+   * List Contacts, newest first (`order: "asc"` for oldest). Filters combine
+   * with AND: `list_id` (up to 20 Contact lists, as an array or a comma list:
+   * Contacts in any of them, or in every one with `list_match: "all"`; one id
+   * is one list), `not_list_id` (Contacts in none of those lists), `has_email`
+   * (`true`: only Contacts with an email address, `false`: only those
+   * without), `tag` (comma list, any of them), `import_id`, `linkedin_url`,
    * `q` (substring over names, headline, job title, company, email,
    * location), `enrichment_status`, `connected`, `account_id` (Connections of
    * that account), `motion_id` + `enrollment_status` (any of the statuses
-   * given). Pages with an opaque
-   * `cursor` until it is `null`.
+   * given). A list id that is not your team's throws `RESOURCE_NOT_FOUND`
+   * naming the key. Pages with an opaque `cursor` until it is `null`.
+   * `include_total: true` adds `total` to the page, the number of Contacts the
+   * filters match (with `limit: 1` it is the count before a bulk call or a new
+   * list); it is left out unless asked for.
    * `GET /v1/contacts`
    *
    * @example
    * const { items, cursor } = await curviate.contacts.list({ tag: "warm", limit: 100 });
+   *
+   * @example
+   * const { total } = await curviate.contacts.list({ list_id: ["cl_1", "cl_2"], list_match: "all", has_email: true, include_total: true, limit: 1 });
    */
   list(params?: ContactListParams): Promise<ContactListPage> {
     return this.ctx.request<ContactListPage>({
       method: "GET",
       path: "/v1/contacts",
-      query: commaLists(params, "enrollment_status"),
+      query: commaLists(params, "enrollment_status", "list_id", "not_list_id"),
     });
   }
 
@@ -243,12 +254,22 @@ export class ContactsResource {
   }
 
   /**
-   * Delete up to 1,000 Contacts. Ids that are not your team's come back in
-   * `not_found`. Owners and Managers only.
+   * Delete up to 1,000 Contacts by `contact_ids`, or every Contact a `filter`
+   * matches (up to 10,000). Send exactly one of the two. `filter` takes the
+   * {@link ContactsResource.list} filters as JSON, comma lists as arrays
+   * (`list_id`, `not_list_id`, `list_match`, `has_email`, `tag`, ...); a
+   * filter matching more than 10,000 Contacts throws `INVALID_REQUEST`
+   * naming the count and deletes nothing, so count first with
+   * `list({ ...filter, include_total: true, limit: 1 })`. Ids that are not your
+   * team's come back in `not_found` (always empty with a filter). Owners and
+   * Managers only.
    * `POST /v1/contacts/delete`
    *
    * @example
    * const { deleted, not_found } = await curviate.contacts.deleteMany({ contact_ids: ["con_1", "con_2"] });
+   *
+   * @example
+   * await curviate.contacts.deleteMany({ filter: { list_id: ["cl_1"], has_email: false } });
    */
   deleteMany(body: ContactDeleteManyBody): Promise<ContactDeleteManyResult> {
     return this.ctx.request<ContactDeleteManyResult>({
@@ -261,13 +282,17 @@ export class ContactsResource {
   /**
    * Add or remove Tags and list memberships on up to 1,000 Contacts at once:
    * `add_tags`, `remove_tags`, `add_list_id` or `add_list_name` (created if
-   * new), `remove_list_id`.
+   * new), `remove_list_id`. Name the Contacts with exactly one of
+   * `contact_ids` or `filter`: every Contact the {@link ContactsResource.list}
+   * filters match (comma lists as arrays), up to 10,000. A filter over the
+   * cap throws `INVALID_REQUEST` naming the count and changes nothing.
    * `POST /v1/contacts/update`
    *
    * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
    *
    * @example
    * await curviate.contacts.updateMany({ contact_ids: ["con_1", "con_2"], add_tags: ["vip"], add_list_name: "Q4" });
+   * await curviate.contacts.updateMany({ filter: { tag: ["warm"], has_email: true }, add_list_name: "Warm with email" });
    */
   updateMany(body: ContactUpdateManyBody): Promise<ContactUpdateManyResult> {
     return this.ctx.request<ContactUpdateManyResult>({
@@ -303,7 +328,8 @@ export class ContactsResource {
    * Export every Contact matching the {@link ContactsResource.list} filters in
    * one download, no paging. `format: "json"` resolves with the Contact
    * array; `csv` (UTF-8 with a BOM) and `ndjson` (the default) resolve with
-   * the raw bytes. `fields` picks and orders the columns. A CSV cell that
+   * the raw bytes. `fields` picks and orders the columns; `list_id`,
+   * `not_list_id`, `list_match` and `has_email` filter as on `list`. A CSV cell that
    * could run as a spreadsheet formula is prefixed with `'`.
    * `GET /v1/contacts/export`
    *
@@ -318,7 +344,7 @@ export class ContactsResource {
     return this.ctx.request<Contact[] | ArrayBuffer>({
       method: "GET",
       path: "/v1/contacts/export",
-      query: commaLists(params, "enrollment_status"),
+      query: commaLists(params, "enrollment_status", "list_id", "not_list_id"),
     });
   }
 }

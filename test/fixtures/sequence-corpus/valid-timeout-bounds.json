@@ -1,0 +1,25 @@
+{
+  "about": "valid timeout bounds",
+  "rules": [],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "u",
+        "until": "message.replied",
+        "timeout": "1h",
+        "then": "end"
+      },
+      {
+        "id": "v",
+        "until": "message.read",
+        "timeout": "180d",
+        "then": "end",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": []
+}

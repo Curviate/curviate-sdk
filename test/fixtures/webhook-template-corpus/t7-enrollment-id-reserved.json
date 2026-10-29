@@ -1,0 +1,26 @@
+{
+  "about": "enrollment.id is reserved; the hint names enrollment_id.",
+  "rules": [
+    "T7"
+  ],
+  "source": "motion",
+  "template": "{\"id\": \"{{enrollment.id}}\"}",
+  "errors": [
+    {
+      "path": "body_template",
+      "rule": "{{enrollment.id}} is reserved",
+      "code": "T7",
+      "message": "{{enrollment.id}} is reserved",
+      "pointer": "/body_template",
+      "line": 1,
+      "col": 9,
+      "hint": "Use {{enrollment_id}} for the Enrollment's id.",
+      "docs_url": "https://docs.curviate.com/reference/webhooks/body-templates#t7",
+      "severity": "error",
+      "candidates": [
+        "{{enrollment_id}}"
+      ]
+    }
+  ],
+  "warnings": []
+}

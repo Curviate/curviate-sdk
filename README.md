@@ -30,10 +30,11 @@ const curviate = new Curviate({
   // baseUrl: "https://api.curviate.com", // default
   // timeout: 30_000,                     // per-attempt timeout, ms
   // maxRetries: 3,                        // GET/HEAD retries with backoff
+  // client: "my-agent/1.2.0",             // Curviate-Client header; default sdk/<version>
 });
 ```
 
-An API key belongs to one person in one team and acts with that person's role there. `curviate.teams.getCurrent()` says which team and role. A dashboard session token may act in any team you belong to: pick one with `team: "tnt_..."` (sent as `X-Curviate-Team`). Leave `team` unset with an API key; naming another team is refused with `TEAM_ACCESS_DENIED`.
+An API key belongs to one person in one team and acts with that person's role there. `curviate.teams.getCurrent()` says which team and role. A key may work in one Team or in all of a person's Teams. A Team key acts only in its own Team: leave `team` unset with one; naming another team is refused with `TEAM_ACCESS_DENIED`. A key that works in all of your Teams, or a dashboard session token, picks one with `team: "tnt_..."` (sent as `X-Curviate-Team`), or per call with `curviate.withTeam("tnt_...")`, which overrides the option. Without one, an All-Teams key's Team-level operation is refused with `TEAM_REQUIRED` (a call on one of your accounts takes that account's Team), and a session token acts in your default Team.
 
 ---
 
@@ -98,6 +99,20 @@ if (unread_count > 0) {
 
 `curviate.teams` manages the team the credential acts in: `getCurrent`, `updateCurrent`, `listMembers`, `updateMember` (role), `removeMember` (`"me"` leaves), `createInvites`, `listInvites`, `resendInvite`, `revokeInvite`, plus `list` for every team you belong to. Member and invite writes are for Owners (`INSUFFICIENT_ROLE` otherwise). `curviate.accounts.setTeamAccess(accountId, false)` keeps an account you connected to yourself.
 
+```ts
+const team = await curviate.teams.create({ name: "Client A" }); // you become its Owner; no seat yet
+// An All-Teams key: next_step.team_header is "X-Curviate-Team: <team_id>", usable at once (pass team_id as the `team` option).
+// Any other credential: next_step.command and next_step.url (CLI setup, dashboard Teams page).
+const { items } = await curviate.teams.list({ include: "counts" }); // tier, trial, accounts, active_motions, seats (Owner rows)
+await curviate.teams.setLogo(await readFile("logo.png")); // a PNG up to 1 MB; Owners only; removeLogo() clears it
+
+// Lend an unused seat to another of your Teams, and move it back (once no Account uses it).
+const { seat_id } = await curviate.billing.seats.lend({ team_id: "tnt_456" });
+await curviate.billing.seats.return(seat_id);
+```
+
+`teams.list({ include: "counts" })` adds counts on every row for a dashboard session and an All-Teams key, and only on its own row for a Team key. While a seat is lent, a connect naming it or a cancel of it throws `SEAT_LENT`. `curviate.billing.invoices.list()` pages the Team's invoices (Owners only) and `billing.invoices.pdf(number)` resolves with the PDF bytes. `TIER_REQUIRED` carries `err.details.account_id` when one Account (on a seat lent from another Team) lacks the feature while the Team has it.
+
 ## Tiers
 
 A Team's Tier decides which features it has. Drafts, Contacts, Motions (and Network and Unibox) need Automate: a write in one of those groups on a Team below it is refused with `TIER_REQUIRED`, before the request is even validated. Reads, exports, deletes and stopping running work (`motions.pause`, `motions.archive`, `enrollments.stop`) pass on any Tier. The refusal names what is missing:
@@ -137,9 +152,15 @@ const { items: skipped } = await curviate.contacts.imports.rows(imp.id, { outcom
 
 await curviate.contacts.updateMany({ contact_ids: [id], add_tags: ["vip"] });
 const all = await curviate.contacts.export({ format: "json", tag: "vip" });
+
+// One filter everywhere: several lists, an opt-in total, then act on exactly what it matches.
+const filter = { list_id: ["cl_1", "cl_2"], list_match: "all" as const, not_list_id: ["cl_3"], has_email: true };
+const { total } = await curviate.contacts.list({ ...filter, include_total: true, limit: 1 });
+await curviate.contactLists.create({ name: "Both, with email", from: filter }); // a static list of what matches now
+await curviate.contacts.updateMany({ filter, add_tags: ["vip"] }); // or deleteMany({ filter }); over 10,000 matches is refused
 ```
 
-`contacts.enrich` fills profile fields from what Curviate already stores, else queues paced live profile views from an account you name: a live view is a real profile view the person may see. `curviate.contactLists` and `curviate.tags` rename and delete; a Tag has no create call, the first write naming it creates it. Refusals: `NAME_TAKEN`, `RESOURCE_IN_USE` (a live Motion or a running import uses it), `CONTACT_LIMIT_REACHED`, `IMPORT_QUEUE_FULL`. Deletes are for Owners and Managers.
+`list_id` and `not_list_id` take up to 20 Contact list ids (an array or a comma list). `curviate.doNotContact` is the Team-wide do-not-contact list (`list`, `get`, `add`, `update`, `remove`): no Motion contacts a person on it and a write toward them throws `DO_NOT_CONTACT`. `contacts.enrich` fills profile fields from what Curviate already stores, else queues paced live profile views from an account you name: a live view is a real profile view the person may see. `curviate.contactLists` and `curviate.tags` rename and delete; a Tag has no create call, the first write naming it creates it. Refusals: `NAME_TAKEN`, `RESOURCE_IN_USE` (a live Motion or a running import uses it), `CONTACT_LIMIT_REACHED`, `IMPORT_QUEUE_FULL`. Deletes are for Owners and Managers.
 
 ## Sequences
 
@@ -168,7 +189,7 @@ const document = seq.toDocument(); // the Sequence document, keys in canonical o
 
 Field names are the document's keys (`on_reply`, `note_fallback`, `withdraw_after`). Variables: `{{first_name}}` (any standard Contact field), `{{my_first_name}}`, `{{my_last_name}}`, `{{my_full_name}}` (the sending account), and any other `{{<key>}}` is the custom field `contact.extra.<key>`; the long forms `{{contact.first_name}}`, `{{contact.extra.opener}}` and `{{account.first_name}}` stay valid. A messaging step takes one text in `with` or exactly 2 `variants` (A/B). An optional `event` on a `do` or `tag` step sends a custom event each time the step runs; `until event.<name>` waits for one your agent sends (`enrollments.events`). With literal arguments, the type checker refuses what the API would: a typo'd action, event, reaction or predicate, a `{{...}}` that is not a variable (`{{firstName}}`, `{{my_title}}`, a `| default:` filter), a text with a variable and no fallback, one variant, a duration like `"1w"`, the reserved id `"end"`, and a jump to a step you never added (at `toDocument()`). Text the type checker cannot see (a `string` variable) is checked when you call `validate()` or `toDocument()`.
 
-Every builder operation (`add`, `insertBefore`, `replace`, `remove`, `onReply`) returns a new builder. `toDocument()` throws `SEQUENCE_INVALID` with every error in `err.errors`, the same list the API returns: `path`, `rule`, and the compiler-style `code` (`R1` to `R24`), `pointer` (a JSON Pointer into the document), `hint` (the fix) and `docs_url`. Warnings (`W1` to `W13`) never block, read them with `validate()`. `JSON.stringify(seq)` equals `JSON.stringify(seq.toDocument())`. `newStepId(document, kind)` names a new step as the dashboard editor does (`message`, `message_2`, `w_<step>` for a wait before a step).
+Every builder operation (`add`, `insertBefore`, `replace`, `remove`, `onReply`) returns a new builder. `toDocument()` throws `SEQUENCE_INVALID` with every error in `err.errors`, the same list the API returns: `path`, `rule`, and the compiler-style `code` (`R1` to `R28`), `pointer` (a JSON Pointer into the document), `hint` (the fix), `docs_url`, `severity` and, for a did-you-mean, `candidates`. Warnings (`W1` to `W16`) never block, read them with `validate()`. `JSON.stringify(seq)` equals `JSON.stringify(seq.toDocument())`. `newStepId(document, kind)` names a new step as the dashboard editor does (`message`, `message_2`, `w_<step>` for a wait before a step).
 
 Raw JSON stays first class. Validate a document you wrote by hand, or load one (a Motion's `sequence`) to edit it:
 
@@ -183,7 +204,7 @@ const edited = Sequence.fromDocument(motion.sequence) // throws SEQUENCE_INVALID
   .toDocument();
 ```
 
-Deprecated forms are accepted with warning `W13` until 2027-01-19, then refused: 3 to 5 variants (use 2), `until signal.<name>` (use `until event.<name>`) and `{{motion.<key>}}` (write the text in place or use a custom field; offline it also gives `W9`). Warnings that need the Motion's sending accounts or settings come from the API only. `SEQUENCE_SCHEMA_V1` is the published JSON Schema (`SEQUENCE_SCHEMA_URL`) for editors and tooling. The validator knows the vocabulary of the schema it ships with: a document using an action or event added to the API later is refused offline while the API accepts it; upgrade the SDK.
+Deprecated forms are accepted with warning `W13` until 2027-01-19, then refused: 3 to 5 variants (use 2), `until signal.<name>` (use `until event.<name>`) and `{{motion.<key>}}` (write the text in place or use a custom field; offline it also gives `W9`). Warnings that need the Motion's sending accounts or settings come from the API only. `SEQUENCE_SCHEMA_V1` is the published JSON Schema (`SEQUENCE_SCHEMA_URL`) for editors and tooling. R29 (an `until event.<name>` gate on a field the incoming event's sample does not carry) needs your Team's incoming events, so it comes from the API only. The validator is the API's own rule code, shipped with this SDK: a document using an action or event added to the API later is refused offline while the API accepts it; upgrade the SDK.
 
 ## Motions and Enrollments
 
@@ -196,7 +217,7 @@ const motion = await curviate.motions.create({
   name: "Q4 webinar follow-up",
   contact_list_ids: ["cl_123"],
   account_ids: ["acc_123"],
-  schedule: { timezone: "Europe/Berlin" },
+  schedule: { days: ["mon", "tue", "wed", "thu", "fri"] }, // read in each sending account's own time zone
   sequence: seq, // a builder: converted with toDocument(); an invalid one throws SEQUENCE_INVALID, nothing is sent
 });
 
@@ -230,9 +251,12 @@ const { items, coverage } = await curviate.network.connections.list({ account_id
 for await (const c of curviate.network.connections.list({ q: "founder" })) console.log(c.public_profile_url);
 const { items: sync } = await curviate.network.syncStatus();
 await curviate.network.resync({ account_id: "acc_1" }); // once per account per 24 h
+await curviate.network.resync(); // Resync all: network_resync_list, one item per account you can operate
+for await (const p of curviate.network.connections.list({ group: "person" })) console.log(p.object); // connection_person: one per person
 
 // One inbox over every account you can operate.
 for await (const chat of curviate.unibox.list({ unread: true })) console.log(chat.chat_id);
+const { items: theirs, total } = await curviate.unibox.list({ person: "con_1", motion_ids: ["none"], include_total: true }); // total: every match, not the page
 const { unread_chats } = await curviate.unibox.unreadCount();
 await curviate.unibox.accounts.update("acc_1", { sync_full_inbox: true }); // by the person who connected it
 await curviate.unibox.refresh();
@@ -241,10 +265,25 @@ await curviate.unibox.enroll("acc_1", "chat_1", { motion_id: "mot_1" });
 
 // Motion results, activity in budget units, the events feed.
 const overview = await curviate.analytics.motions.list({ from: "2026-10-01", to: "2026-10-31" });
+const summary = await curviate.analytics.motions.list({ range: "30d", compare: "previous_period", origin: ["motion", "unibox"] });
 const detail = await curviate.analytics.motions.get("mot_1");
 const { types } = await curviate.analytics.activity(); // per BudgetRow; never add rows together
 for await (const event of curviate.analytics.events.list({ kind: ["message.replied"] })) console.log(event.motion_name);
+const { items: forOne } = await curviate.analytics.events.list({ contact_id: "con_1", origin: ["unibox", "api"] }); // 404 for an unknown, other-team or merged-away id
+
+// Files: stream the Analytics tables now, or run a background export and download it within 24 hours.
+const csv = await curviate.analytics.export({ table: ["daily"], range: "90d" }); // ArrayBuffer
+const job = await curviate.exports.create({ entity: "analytics", format: "csv", tables: ["daily", "motions"], filters: { range: "12m" } });
+const file = await curviate.exports.download(job.id); // EXPORT_NOT_READY until exports.get(job.id).status is "ready"
+
+// One account at a glance, and its own daily numbers.
+const { performance, flags } = await curviate.accounts.overview("acc_1", { range: "30d" });
+const { items: metrics } = await curviate.accounts.metrics("acc_1", { from: "2026-08-01" });
 ```
+
+Every rate is the outcome so far over what was sent in the window, not over old enough cohorts, so it keeps moving as replies arrive: read it with `maturing` (sent under 7 days ago) and `low_sample` (under 30). Messages and InMails are counted apart (`reply` and `inmail_reply`). Enrollment counts are by state right now (`queued`, `active`, `paused`, `finished`, `failed`, `skipped`); the window does not change them. One export runs per Team at a time (`EXPORT_IN_PROGRESS`, with `err.details.export_id`).
+
+Unibox traps. A send through the API (`messaging.sendMessage`, `startChat`, `sendInMail`) marks the chat read, so `unread` turns `false` and `marked_unread` clears; a Motion send leaves it. `marked_unread` is `{origin: "unibox" | "api" | "linkedin", at}` when a chat was made unread without a new message from them. A disconnected account stays in `unibox.accounts.list()` and `unibox.list()` (`account_status: "disconnected"`), read-only: its messages come from the stored copy (`coverage.complete`, attachments `unavailable`), and a write on it throws `REAUTH_REQUIRED` (409). `unibox.refresh` runs once per account per 2 minutes (`cooldown` with `next_allowed_at` after that) and covers accounts with Motion chats or Motion outreach even without full-inbox sync; `not_synced` means none of those apply. A sent message carries `origin` (`motion`, `unibox`, `api`, `linkedin`; omitted when unknown, never on a received message or `last_message`) and `is_deleted`. Analytics `origin` is `motion`, `unibox` or `api`; `direct` is an alias for `unibox` and `api`.
 
 Needs Automate: `network.resync`, `unibox.refresh`, `unibox.tagContact`, `unibox.enroll` and turning full-inbox sync on (off passes on any Tier). Messages and actions on a chat stay on `curviate.account(id).messaging`.
 
@@ -334,9 +373,12 @@ try {
       // nothing reached LinkedIn and nothing was spent, so backing off is the
       // wrong move. Wait until err.resetAt, or raise the setting the hint
       // names on PATCH /v1/{account_id}/safety-policy. The ceiling comes from the
-      // account's safety policy or the tenant default (GET/PATCH /v1/safety-policy).
-      // resetAt is null in the two cases no clock frees: the pending_invites
-      // backlog, and an InMail credit pool LinkedIn regrants on its own schedule.
+      // account's safety policy or the Team default (GET/PATCH /v1/safety-policy).
+      // Limits are always enforced. err.safetyReason "activity_window": a live
+      // write outside the account's active hours (the hint names active_hours).
+      // resetAt is null in the three cases no clock frees: the pending_invites
+      // backlog, an InMail credit pool LinkedIn regrants on its own schedule,
+      // and an account whose time zone is not known yet.
       console.warn(`${err.budgetRow} is spent until ${err.resetAt ?? "no fixed time"}`);
       console.warn(`change ${err.safetyHint?.parameter} to lift it`);
       break;
@@ -577,21 +619,43 @@ Each event also carries its delivery metadata: `event.id`, `event.webhook_id`, a
 
 ### De-duplicating retries
 
-Delivery is at-least-once, so your handler can see the same logical event more than
-once. The key that survives a retry is the payload composite `event.event` plus
-`event.data.account_id` plus `event.data.occurred_at`, which the platform re-sends
-byte-identical on every attempt:
+Delivery is at-least-once, so your handler can see the same event more than once. Key on
+`event.id`: it is the delivery id (`wdl_`), the same on every attempt and every redelivery
+(before this release it changed per attempt). `event.delivered_at` is when the body was
+rendered, also the same on every attempt.
 
 ```ts
-const key = `${event.event}:${event.data.account_id}:${event.data.occurred_at}`;
-if (await alreadyProcessed(key)) return res.sendStatus(200);
+if (await alreadyProcessed(event.id)) return res.sendStatus(200);
 ```
 
-**Do not key on `event.id`.** That is a `wdl_` id minted per delivery *attempt*, so a
-retry arrives with a different one and storing it would record the same event twice,
-missing exactly the duplicates you were guarding against. It is still worth logging:
-`event.id` is how you match one attempt to one line in your delivery logs, keyed
-alongside the stable `occurred_at` composite above.
+`curviate.webhooks.deliveries.get(event.webhook_id, event.id)` reads that delivery's status and
+attempts; `deliveries.list(id, { failed: true })` lists what did not get through, and
+`webhooks.redeliver(id, deliveryId)` sends one again, byte for byte, within 24 hours.
+
+### Rotating the secret
+
+`webhooks.rotateSecret(id)` returns a new secret once. For 24 hours every delivery is signed
+with both (`Curviate-Signature: t=...,v1=<new>,v1=<old>`) and `constructEvent` accepts the
+delivery when any `v1` matches the secret you pass, so the old and the new secret both verify
+while you deploy. Older SDK versions check only the last `v1`: upgrade before you rotate.
+
+### Body templates
+
+A webhook's `body_template` replaces the standard payload with your own JSON (`{{variables}}`
+inside its strings; `webhooks.variables({ source })` lists them). Check it offline with the
+API's own lint, and preview it:
+
+```ts
+import { renderWebhookTemplate, validateWebhookTemplate } from "@curviate/sdk";
+
+const { errors } = validateWebhookTemplate(template, { source: "motion" });
+for (const e of errors) console.error(`${e.line}:${e.col} ${e.code} ${e.rule}`);
+const body = renderWebhookTemplate(template, { event: "enrollment.finished", contact: { email: "alex@example.com" } });
+```
+
+A webhook's `request_url` reads back masked (`https://host/•••`); sending that value back on
+`update` keeps the stored URL. A `headers` entry with a key and no value keeps that header's
+stored value.
 
 `WebhookSignatureError` is NOT a `CurviateError`. Narrow with `instanceof WebhookSignatureError`.
 Its `reason` tells you where to look: `malformed_header` means the signature header could not be
