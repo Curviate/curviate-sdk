@@ -251,6 +251,14 @@ export class AccountsResource {
    * proxy can only take a `country` together with `proxy: null`. The
    * `proxy.password`, if given, is never returned.
    *
+   * `save_connections_as_contacts` (Automate; on by default) saves the
+   * account's Connections as Contacts: each person becomes one Contact in your
+   * team, an existing Contact is only filled in, do-not-contact people are
+   * skipped. `true` also saves the Connections already synced; `false` keeps
+   * the Contacts saved so far. Without Automate it throws `TIER_REQUIRED`, and
+   * `get` omits the field. `save_connections_paused_reason` reads
+   * `"contact_limit_reached"` while your team holds its 100,000 Contacts.
+   *
    * Returns the account (as `get` returns it, without `quotas` and
    * `event_log`). After a location change its `connection_location` is re-read,
    * so it shows where the account really connects from now. A change that did
@@ -264,6 +272,9 @@ export class AccountsResource {
    * @example
    * const account = await curviate.accounts.update("acc_123", { country: "DE" });
    * console.log(account.connection_location?.country); // "DE"
+   *
+   * @example
+   * await curviate.accounts.update("acc_123", { save_connections_as_contacts: false });
    */
   update(accountId: string, body: AccountUpdateBody): Promise<AccountUpdateResult> {
     return this.ctx.request<AccountUpdateResult>({

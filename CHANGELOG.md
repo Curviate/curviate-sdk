@@ -9,6 +9,12 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## Unreleased
 
+### Save Connections as Contacts (curviate#2990)
+
+- The account (`accounts.get`, `accounts.update`'s result) gains `save_connections_as_contacts` and `save_connections_paused_reason` (`"contact_limit_reached"` | `null`); both are absent on an account without Automate.
+- `accounts.update` takes `save_connections_as_contacts`. Without Automate it throws `TIER_REQUIRED`.
+- The generated types carry both fields from the next fixture regen from staging after curviate#2990 deploys (pre-publish regen targets the deployed document).
+
 ### Served schema fixes (regenerated types)
 
 - `GET /v1/billing/seats` now has a typed 200 response: each seat carries `lent_to` / `lent_from` (`{team_id, team_name}` or null).
