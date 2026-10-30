@@ -9,11 +9,20 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## Unreleased
 
-### Save Connections as Contacts (curviate#2990)
+### Save Connections as Contacts
 
 - The account (`accounts.get`, `accounts.update`'s result) gains `save_connections_as_contacts` and `save_connections_paused_reason` (`"contact_limit_reached"` | `null`); both are absent on an account without Automate.
 - `accounts.update` takes `save_connections_as_contacts`. Without Automate it throws `TIER_REQUIRED`.
-- The generated types carry both fields from the next fixture regen from staging after curviate#2990 deploys (pre-publish regen targets the deployed document).
+- The generated types carry both fields (regenerated from the deployed document, staging 21b2531).
+
+### Staging regen: Contact fields, roles, filters
+
+- **Contact `company_linkedin_url`** (`string | null`, read-only): the current company's LinkedIn page, filled with `company` from a profile read. Served on every Contact read and export.
+- **Contact `email`** reads as what you supplied, else the first email a LinkedIn profile read returned (yours is never overwritten). Description only; webhook payloads now deliver fields they stripped before (no schema change).
+- **`contacts.list` / `contacts.export` `account_id`** takes up to 50 account ids (an array or a comma list; one id is unchanged). The bulk `filter` body takes a string or an array.
+- **`person_name`** (`string | null`) on `analytics.events.list` items and the `accounts.overview` activity items: the person of a direct action, name only.
+- **Same shape, new meaning:** `teams.listMembers` `name` falls back to the email (`null` only when neither is known). Managers now rename the team, set or remove its logo, manage Member invites, remove Members and change the Team safety policy (JSDoc and the `INSUFFICIENT_ROLE` text).
+- **Same shape, new text:** `photo_url` is a stored copy refreshed daily, so it does not expire. The seeded active hours fall back to Monday to Friday 07:00 to 22:00.
 
 ### Served schema fixes (regenerated types)
 

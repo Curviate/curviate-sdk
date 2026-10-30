@@ -109,8 +109,9 @@ export class TeamsResource {
   }
 
   /**
-   * Rename the current team, or set `billing_owner_user_id` (an Owner of this
-   * team, whose email receives invoices). Owners only.
+   * Rename the current team (Owners and Managers), or set
+   * `billing_owner_user_id` (an Owner of this team, whose email receives
+   * invoices; Owners only).
    * `PATCH /v1/teams/current`
    *
    * @example
@@ -129,7 +130,7 @@ export class TeamsResource {
    * bytes are checked, whatever its content type: a file that is not a PNG
    * throws `UNSUPPORTED_MEDIA_TYPE` (415) and a larger one `PAYLOAD_TOO_LARGE`
    * (413). Replaces the previous logo and resolves with the team, whose
-   * `logo_url` is the new public PNG URL. Owners only.
+   * `logo_url` is the new public PNG URL. Owners and Managers.
    * `PUT /v1/teams/current/logo`
    *
    * @example
@@ -145,7 +146,7 @@ export class TeamsResource {
 
   /**
    * Remove the current team's logo; the team resolves with `logo_url: null`.
-   * Owners only.
+   * Owners and Managers.
    * `DELETE /v1/teams/current/logo`
    *
    * @example
@@ -156,7 +157,8 @@ export class TeamsResource {
   }
 
   /**
-   * List the current team's members and their roles.
+   * List the current team's members and their roles. A member's `name` is
+   * their name, else their email (`null` only when neither is known).
    * `GET /v1/teams/current/members`
    *
    * @example
@@ -189,7 +191,7 @@ export class TeamsResource {
   }
 
   /**
-   * Remove a member (Owners only), or pass `"me"` to leave the team yourself.
+   * Remove a member (an Owner removes anyone, a Manager removes Members), or pass `"me"` to leave the team yourself.
    * Their API key and connectors for this team stop working at once. Same
    * refusals as {@link TeamsResource.updateMember}.
    * `DELETE /v1/teams/current/members/{user_id}`
@@ -208,7 +210,8 @@ export class TeamsResource {
    * Invite 1 to 20 people by email, each with a role (`member` by default).
    * Each gets a link valid for 7 days. All or nothing: if any row is refused
    * (`ALREADY_MEMBER`, `INVITE_ALREADY_PENDING`, `INVITE_LIMIT_REACHED`),
-   * nothing is created or sent and the error names the row. Owners only.
+   * nothing is created or sent and the error names the row. Owners and Managers
+   * (a Manager invites Members only).
    * `POST /v1/teams/current/invites`
    *
    * @example
@@ -223,7 +226,7 @@ export class TeamsResource {
   }
 
   /**
-   * List the current team's invites, optionally by `status`.
+   * List the current team's invites, optionally by `status`. Owners and Managers.
    * `GET /v1/teams/current/invites`
    *
    * @example
@@ -239,7 +242,8 @@ export class TeamsResource {
 
   /**
    * Re-send a pending or expired invite; its link is valid for 7 more days.
-   * An accepted or revoked one is refused with `INVITE_NOT_PENDING`.
+   * An accepted or revoked one is refused with `INVITE_NOT_PENDING`. Owners,
+   * and Managers for Member invites.
    * `POST /v1/teams/current/invites/{invite_id}/resend`
    *
    * @example
@@ -253,7 +257,8 @@ export class TeamsResource {
   }
 
   /**
-   * Revoke an invite; its link stops working.
+   * Revoke an invite; its link stops working. Owners, and Managers for Member
+   * invites.
    * `DELETE /v1/teams/current/invites/{invite_id}`
    *
    * @example

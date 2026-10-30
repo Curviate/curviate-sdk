@@ -111,7 +111,8 @@ export class AccountsResource {
    *
    * Each item carries enough to render an account row without a second call:
    * its profile (`full_name`, `headline`, `photo_url`, `profile_url`,
-   * `public_identifier`, `location`; LinkedIn photo URLs expire), `status` and
+   * `public_identifier`, `location`; `photo_url` is a copy we store and refresh
+   * daily, so it does not expire), `status` and
    * `status_reason` (why it is disconnected or needs a reconnect: `trial_ended`
    * or `proxy`), `warm_up` (the active ramp), `inmail_balance` (the credits
    * LinkedIn last reported and when, `null` until observed), `motions_count`

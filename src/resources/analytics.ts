@@ -118,7 +118,8 @@ export class AnalyticsEventsResource {
    * id, another team's, or one merged into another Contact throws
    * `RESOURCE_NOT_FOUND` (404). Keyset paging: events recorded after your first page
    * never shift later pages. `await` it for one page; `for await` it for
-   * every event across pages.
+   * every event across pages. A direct action's `person_name` names the
+   * person (they may not be a Contact); `null` for a Motion event.
    * `GET /v1/analytics/events`
    *
    * @example

@@ -2685,7 +2685,7 @@ export interface paths {
         head?: never;
         /**
          * Update an account's metadata or connection location
-         * @description Updates metadata, external_id, the connection location (country) or your own proxy (null plus a country returns to the Curviate proxy). Returns the account; connection_location is re-read after a location change.
+         * @description Updates metadata, external_id, whether its Connections are saved as Contacts, the connection location (country) or your own proxy (null plus a country returns to the Curviate proxy). Returns the account; connection_location is re-read after a location change.
          */
         patch: operations["patchV1AccountsAccountId"];
         trace?: never;
@@ -3303,13 +3303,13 @@ export interface paths {
         };
         /**
          * List your teams
-         * @description The teams you are a member of, with your role in each. is_current marks the team this credential acts in; a team API key acts in exactly one team. include=counts adds tier, trial, accounts and active_motions, each what you would read in that team, and seats where you are an Owner: on every team for a dashboard session or an all-teams credential, on its own team only for a team API key or a one-team token.
+         * @description The teams you are a member of, with your role in each. is_current marks the team this call acts in: a Team key's own team, or, with an All-Teams key, your default team (this call needs no team header; the calls that act in one team take X-Curviate-Team). include=counts adds tier, trial, accounts and active_motions, each what you would read in that team, and seats where you are an Owner: on every team for a dashboard session or an All-Teams credential, on its own team only for a Team key or a one-team token.
          */
         get: operations["getV1Teams"];
         put?: never;
         /**
          * Create a team
-         * @description Creates a team with you as its Owner and the Owner who receives its invoices, with no subscription or seat. Any role may call it; two identical calls create two teams. next_step: an all-teams API key gets team_header, usable at once; a team API key or a token gets command (CLI setup) and url.
+         * @description Creates a team with you as its Owner and the Owner who receives its invoices, with no subscription or seat. Any role may call it; two identical calls create two teams. next_step: an All-Teams key gets team_header, usable at once; a Team key or a token gets command (CLI setup) and url.
          */
         post: operations["postV1Teams"];
         delete?: never;
@@ -3337,7 +3337,7 @@ export interface paths {
         head?: never;
         /**
          * Update the current team
-         * @description Renames the team, or sets billing_owner_user_id: the Owner whose email receives invoices. The user named must be an Owner of this team. Owners only.
+         * @description Renames the team (Owners and Managers), or sets billing_owner_user_id: the Owner whose email receives invoices (Owners only). The user named must be an Owner of this team.
          */
         patch: operations["patchV1TeamsCurrent"];
         trace?: never;
@@ -3352,13 +3352,13 @@ export interface paths {
         get?: never;
         /**
          * Set the team's logo
-         * @description Sets the team's logo from the raw request body: a PNG of at most 1 MB. The file's own bytes are checked, whatever Content-Type says; anything that is not a PNG answers 415 and a larger file 413. Replaces the previous logo. Returns the team with its logo_url. Owners only.
+         * @description Sets the team's logo from the raw request body: a PNG of at most 1 MB. The file's own bytes are checked, whatever Content-Type says; anything that is not a PNG answers 415 and a larger file 413. Replaces the previous logo. Returns the team with its logo_url. Owners and Managers.
          */
         put: operations["putV1TeamsCurrentLogo"];
         post?: never;
         /**
          * Remove the team's logo
-         * @description Removes the team's logo, and its file. Returns the team with logo_url null; removing a logo that is not set changes nothing. Owners only.
+         * @description Removes the team's logo, and its file. Returns the team with logo_url null; removing a logo that is not set changes nothing. Owners and Managers.
          */
         delete: operations["deleteV1TeamsCurrentLogo"];
         options?: never;
@@ -3398,7 +3398,7 @@ export interface paths {
         post?: never;
         /**
          * Remove a member, or leave the team
-         * @description An Owner removes a member; anyone leaves with user_id me. Nobody leaves or is removed from their own default team, the last Owner stays, and the Owner who receives invoices stays until billing_owner_user_id names another Owner. The member's API key and connectors for this team stop working at once.
+         * @description An Owner removes a member, a Manager removes a Member; anyone leaves with user_id me. Nobody leaves or is removed from their own default team, the last Owner stays, and the Owner who receives invoices stays until billing_owner_user_id names another Owner. The member's API key and connectors for this team stop working at once.
          */
         delete: operations["deleteV1TeamsCurrentMembersUserId"];
         options?: never;
@@ -3419,13 +3419,13 @@ export interface paths {
         };
         /**
          * List the team's invites
-         * @description Invites of the current team, newest first. Never includes the invite link. Owners only.
+         * @description Invites of the current team, newest first. Never includes the invite link. Owners and Managers.
          */
         get: operations["getV1TeamsCurrentInvites"];
         put?: never;
         /**
          * Invite people to the team
-         * @description Invites up to 20 people by email, each with a role (member by default), and emails each a link valid for 7 days. All or nothing: if any row fails, nothing is created or sent, and the error names the row. The invitee accepts in the dashboard, signed in with the invited email. Owners only.
+         * @description Invites up to 20 people by email, each with a role (member by default), and emails each a link valid for 7 days. All or nothing: if any row fails, nothing is created or sent, and the error names the row. The invitee accepts in the dashboard, signed in with the invited email. Owners invite any role, Managers invite Members.
          */
         post: operations["postV1TeamsCurrentInvites"];
         delete?: never;
@@ -3445,7 +3445,7 @@ export interface paths {
         put?: never;
         /**
          * Re-send an invite
-         * @description Emails a pending or expired invite again with a new link; the previous link stops working and the 7 days start again. Owners only.
+         * @description Emails a pending or expired invite again with a new link; the previous link stops working and the 7 days start again. Owners, and Managers for Member invites.
          */
         post: operations["postV1TeamsCurrentInvitesInviteIdResend"];
         delete?: never;
@@ -3466,7 +3466,7 @@ export interface paths {
         post?: never;
         /**
          * Revoke an invite
-         * @description Revokes a pending or expired invite; its link stops working. Owners only.
+         * @description Revokes a pending or expired invite; its link stops working. Owners, and Managers for Member invites.
          */
         delete: operations["deleteV1TeamsCurrentInvitesInviteId"];
         options?: never;
@@ -34406,7 +34406,7 @@ export interface operations {
                                 id?: string;
                                 name?: string;
                             }[];
-                            /** @description The account's LinkedIn profile photo URL. LinkedIn's photo URLs expire; null when none is known. */
+                            /** @description The account's profile photo, a copy we store and refresh daily, so the URL does not expire; null when none is known. */
                             photo_url?: string | null;
                             /** @description The account's own LinkedIn profile URL. */
                             profile_url?: string | null;
@@ -34653,7 +34653,7 @@ export interface operations {
                             id?: string;
                             name?: string;
                         }[];
-                        /** @description The account's LinkedIn profile photo URL. LinkedIn's photo URLs expire; null when none is known. */
+                        /** @description The account's profile photo, a copy we store and refresh daily, so the URL does not expire; null when none is known. */
                         photo_url?: string | null;
                         /** @description The account's own LinkedIn profile URL. */
                         profile_url?: string | null;
@@ -34689,6 +34689,13 @@ export interface operations {
                             /** @description True while the cap is biting and incoming events are not being retained. Delivery to a registered webhook is unaffected. */
                             at_row_cap?: boolean;
                         };
+                        /** @description Whether Curviate saves this account's Connections as Contacts: each person becomes one Contact in your team, an existing Contact is only filled in, do-not-contact people are skipped. On by default. Absent when the account's plan has no Automate: nothing is saved then. Change it with PATCH. */
+                        save_connections_as_contacts?: boolean;
+                        /**
+                         * @description Why saving is stopped while save_connections_as_contacts is true: contact_limit_reached, your team holds its 100,000 Contacts. Delete Contacts you no longer need and saving resumes with the next synced Connections. null while saving. Absent with save_connections_as_contacts.
+                         * @enum {string|null}
+                         */
+                        save_connections_paused_reason?: "contact_limit_reached" | null;
                         /** @description The latest daily snapshot of the account's own numbers, read once a day inside its activity window and stored, never read live on this request. null before the first snapshot. The history is GET /v1/accounts/{account_id}/metrics. */
                         metrics?: {
                             /** @description ISO-8601 UTC time the snapshot was read. */
@@ -34964,11 +34971,13 @@ export interface operations {
                     country?: "AE" | "AO" | "AR" | "AT" | "AU" | "BD" | "BE" | "BG" | "BR" | "CA" | "CH" | "CL" | "CN" | "CO" | "CY" | "CZ" | "DE" | "DK" | "EE" | "EG" | "ES" | "FI" | "FR" | "GB" | "GT" | "HK" | "ID" | "IE" | "IL" | "IN" | "IT" | "JP" | "KR" | "KZ" | "MA" | "MX" | "MY" | "NL" | "NO" | "PA" | "PH" | "PK" | "PL" | "PR" | "PT" | "RO" | "SA" | "SE" | "SG" | "TH" | "TN" | "TR" | "UA" | "US" | "VN" | "ZA";
                     /** @description Optional. false (the default with country or ip): only ever connect from that country; a connect fails when no connection is free there. true: a connection from another country may be used when none is free in the chosen one. Not accepted with proxy. */
                     allow_country_fallback?: boolean;
+                    /** @description Save this account's Connections as Contacts (Automate; on by default): each person becomes one Contact in your team, an existing Contact is only filled in, do-not-contact people are skipped. true also saves the Connections already synced; false keeps the Contacts saved so far. */
+                    save_connections_as_contacts?: boolean;
                 };
             };
         };
         responses: {
-            /** @description The updated account: the object GET /v1/accounts/{account_id} returns, without quotas and event_log (read those on GET). After a location change, connection_location is re-read from LinkedIn's side, so it shows where the account really connects from now. metadata and external_id are stored by Curviate; a PATCH carrying only those makes no LinkedIn call. */
+            /** @description The updated account: the object GET /v1/accounts/{account_id} returns, without quotas and event_log (read those on GET). After a location change, connection_location is re-read from LinkedIn's side, so it shows where the account really connects from now. metadata, external_id and save_connections_as_contacts are stored by Curviate; a PATCH carrying only those makes no LinkedIn call. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -35067,7 +35076,7 @@ export interface operations {
                             id?: string;
                             name?: string;
                         }[];
-                        /** @description The account's LinkedIn profile photo URL. LinkedIn's photo URLs expire; null when none is known. */
+                        /** @description The account's profile photo, a copy we store and refresh daily, so the URL does not expire; null when none is known. */
                         photo_url?: string | null;
                         /** @description The account's own LinkedIn profile URL. */
                         profile_url?: string | null;
@@ -35094,11 +35103,27 @@ export interface operations {
                             /** @description The candidate zones while zone_state is unknown, empty otherwise. Empty while unknown means the window is closed. */
                             fallback_timezones?: string[];
                         };
+                        /** @description Whether Curviate saves this account's Connections as Contacts: each person becomes one Contact in your team, an existing Contact is only filled in, do-not-contact people are skipped. On by default. Absent when the account's plan has no Automate: nothing is saved then. Change it with PATCH. */
+                        save_connections_as_contacts?: boolean;
+                        /**
+                         * @description Why saving is stopped while save_connections_as_contacts is true: contact_limit_reached, your team holds its 100,000 Contacts. Delete Contacts you no longer need and saving resumes with the next synced Connections. null while saving. Absent with save_connections_as_contacts.
+                         * @enum {string|null}
+                         */
+                        save_connections_paused_reason?: "contact_limit_reached" | null;
                     };
                 };
             };
             /** @description INVALID_REQUEST: a malformed proxy object; proxy together with country or allow_country_fallback; country on an account that uses your own proxy without proxy: null; allow_country_fallback alone on such an account; an unsupported country; ip (not changeable after connect; reconnect with ip instead); metadata over its limits (16 keys, key 40 chars, value 500); external_id outside 1-255 chars. CONNECTION_LOCATION_REQUIRED: proxy: null without country (clearing your own proxy alone would let the connection land anywhere). A proxy your request sent that refused its credentials, could not be reached or did not answer: the message names proxy and nothing changed. Any refused location write carries details.account (status, status_reason, connection_location) as re-read. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description TIER_REQUIRED: save_connections_as_contacts on an account without Automate (details.account_id names it). INSUFFICIENT_ROLE or ACCOUNT_NOT_SHARED: only the account's person, Owners and Managers change it. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -35619,7 +35644,7 @@ export interface operations {
                             account_id?: string;
                             name?: string | null;
                             headline?: string | null;
-                            /** @description The account's LinkedIn profile photo URL. LinkedIn's photo URLs expire; null when none is known. */
+                            /** @description The account's profile photo, a copy we store and refresh daily, so the URL does not expire; null when none is known. */
                             photo_url?: string | null;
                             /** @description The account's own LinkedIn profile URL. */
                             profile_url?: string | null;
@@ -35754,6 +35779,8 @@ export interface operations {
                                 /** @description LinkedIn profile URL. */
                                 linkedin_url?: string | null;
                             } | null;
+                            /** @description A direct action's person, name only (they may not be a Contact); null for a Motion action or a person LinkedIn never named. */
+                            person_name: string | null;
                         }[];
                         /** @description The account's results in the window: the team overview's totals scoped to it. The summary keeps its rates and sends. */
                         performance?: {
@@ -39814,7 +39841,7 @@ export interface operations {
                             /** @description The candidate zones while zone_state is unknown, empty otherwise. Empty while unknown means the window is closed. */
                             fallback_timezones?: string[];
                         };
-                        /** @description This account's active hours in force for an action type with no edges of its own: its own `active_hours` when set (source `account`), else the Team's (`team`), else Curviate's default, 07:00 to 22:00 every day (`default`). Set it here; null falls back to the Team's. Live writes happen only on these days, between start and end, in each account's own time zone; each edge varies by up to 45 minutes a day. Write `{days, start, end}` (at least one day, start and end different, an end before the start wraps past midnight) or null to clear; no days, equal edges, an unknown day or a time that is not HH:MM is a 400. `source` is read-only: sending the read back changes nothing. */
+                        /** @description This account's active hours in force for an action type with no edges of its own: its own `active_hours` when set (source `account`), else the Team's (`team`), else Curviate's default, Monday to Friday 07:00 to 22:00 (`default`). Set it here; null falls back to the Team's. Live writes happen only on these days, between start and end, in each account's own time zone; each edge varies by up to 45 minutes a day. Write `{days, start, end}` (at least one day, start and end different, an end before the start wraps past midnight) or null to clear; no days, equal edges, an unknown day or a time that is not HH:MM is a 400. `source` is read-only: sending the read back changes nothing. */
                         active_hours?: {
                             /** @description The active days, in week order. */
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
@@ -40429,7 +40456,7 @@ export interface operations {
                             /** @description The candidate zones while zone_state is unknown, empty otherwise. Empty while unknown means the window is closed. */
                             fallback_timezones?: string[];
                         };
-                        /** @description This account's active hours in force for an action type with no edges of its own: its own `active_hours` when set (source `account`), else the Team's (`team`), else Curviate's default, 07:00 to 22:00 every day (`default`). Set it here; null falls back to the Team's. Live writes happen only on these days, between start and end, in each account's own time zone; each edge varies by up to 45 minutes a day. Write `{days, start, end}` (at least one day, start and end different, an end before the start wraps past midnight) or null to clear; no days, equal edges, an unknown day or a time that is not HH:MM is a 400. `source` is read-only: sending the read back changes nothing. */
+                        /** @description This account's active hours in force for an action type with no edges of its own: its own `active_hours` when set (source `account`), else the Team's (`team`), else Curviate's default, Monday to Friday 07:00 to 22:00 (`default`). Set it here; null falls back to the Team's. Live writes happen only on these days, between start and end, in each account's own time zone; each edge varies by up to 45 minutes a day. Write `{days, start, end}` (at least one day, start and end different, an end before the start wraps past midnight) or null to clear; no days, equal edges, an unknown day or a time that is not HH:MM is a 400. `source` is read-only: sending the read back changes nothing. */
                         active_hours?: {
                             /** @description The active days, in week order. */
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
@@ -40969,7 +40996,7 @@ export interface operations {
                          * @enum {string}
                          */
                         object?: "tenant_safety_policy";
-                        /** @description The Team default active hours every account without its own uses: the Team's `active_hours` when set (source `team`), else Curviate's default, 07:00 to 22:00 every day (`default`). A Team created from 2026-10 on starts with Monday to Friday, 07:00 to 22:00. Live writes happen only on these days, between start and end, in each account's own time zone; each edge varies by up to 45 minutes a day. Write `{days, start, end}` (at least one day, start and end different, an end before the start wraps past midnight) or null to clear; no days, equal edges, an unknown day or a time that is not HH:MM is a 400. `source` is read-only: sending the read back changes nothing. */
+                        /** @description The Team default active hours every account without its own uses: the Team's `active_hours` when set (source `team`), else Curviate's default, Monday to Friday 07:00 to 22:00 (`default`). A Team created from 2026-10 on starts with the same, set on the Team. Live writes happen only on these days, between start and end, in each account's own time zone; each edge varies by up to 45 minutes a day. Write `{days, start, end}` (at least one day, start and end different, an end before the start wraps past midnight) or null to clear; no days, equal edges, an unknown day or a time that is not HH:MM is a 400. `source` is read-only: sending the read back changes nothing. */
                         active_hours?: {
                             /** @description The active days, in week order. */
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
@@ -41446,7 +41473,7 @@ export interface operations {
                             over_default?: unknown;
                         } | null;
                     };
-                    /** @description The Team default active hours: the days and local hours live writes happen in. Null falls back to Curviate's default, 07:00-22:00 every day. The read reports the hours in force and their source; sent back, it changes nothing. */
+                    /** @description The Team default active hours: the days and local hours live writes happen in. Null falls back to Curviate's default, 07:00-22:00 Monday to Friday. The read reports the hours in force and their source; sent back, it changes nothing. */
                     active_hours?: {
                         /** @description At least one day. */
                         days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
@@ -41479,7 +41506,7 @@ export interface operations {
                          * @enum {string}
                          */
                         object?: "tenant_safety_policy";
-                        /** @description The Team default active hours every account without its own uses: the Team's `active_hours` when set (source `team`), else Curviate's default, 07:00 to 22:00 every day (`default`). A Team created from 2026-10 on starts with Monday to Friday, 07:00 to 22:00. Live writes happen only on these days, between start and end, in each account's own time zone; each edge varies by up to 45 minutes a day. Write `{days, start, end}` (at least one day, start and end different, an end before the start wraps past midnight) or null to clear; no days, equal edges, an unknown day or a time that is not HH:MM is a 400. `source` is read-only: sending the read back changes nothing. */
+                        /** @description The Team default active hours every account without its own uses: the Team's `active_hours` when set (source `team`), else Curviate's default, Monday to Friday 07:00 to 22:00 (`default`). A Team created from 2026-10 on starts with the same, set on the Team. Live writes happen only on these days, between start and end, in each account's own time zone; each edge varies by up to 45 minutes a day. Write `{days, start, end}` (at least one day, start and end different, an end before the start wraps past midnight) or null to clear; no days, equal edges, an unknown day or a time that is not HH:MM is a 400. `source` is read-only: sending the read back changes nothing. */
                         active_hours?: {
                             /** @description The active days, in week order. */
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
@@ -41857,7 +41884,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: in a team, only an Owner changes the tenant safety defaults. Not fixed by retrying. */
+            /** @description INSUFFICIENT_ROLE: in a team, only an Owner or a Manager changes the tenant safety defaults. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -42054,7 +42081,7 @@ export interface operations {
                             is_default: boolean;
                             /** @description Whether this credential acts in this team. */
                             is_current: boolean;
-                            /** @description The team's logo, a public PNG URL, or null when it has none. Owners set it with PUT /v1/teams/current/logo. */
+                            /** @description The team's logo, a public PNG URL, or null when it has none. Owners and Managers set it with PUT /v1/teams/current/logo. */
                             logo_url: string | null;
                             /**
                              * @description The team's Tier, or the Tier of a seat lent to it; null with no subscription. Only with include=counts, on a team this credential may count (see the operation).
@@ -42165,15 +42192,15 @@ export interface operations {
                         is_default: boolean;
                         /** @description Whether this credential acts in this team. */
                         is_current: boolean;
-                        /** @description The team's logo, a public PNG URL, or null when it has none. Owners set it with PUT /v1/teams/current/logo. */
+                        /** @description The team's logo, a public PNG URL, or null when it has none. Owners and Managers set it with PUT /v1/teams/current/logo. */
                         logo_url: string | null;
-                        /** @description What to do next. An all-teams API key gets team_header; a team API key or a token gets command and url. */
+                        /** @description What to do next. An All-Teams key gets team_header; a Team key or a token gets command and url. */
                         next_step: {
                             /** @description All-teams API key: the header to send to act in the new team, usable at once. */
                             team_header?: string;
-                            /** @description Team API key or token: the CLI command that sets up a key in the new team. */
+                            /** @description Team key or token: the CLI command that sets up a key in the new team. */
                             command?: string;
-                            /** @description Team API key or token: the dashboard page with your teams. */
+                            /** @description Team key or token: the dashboard page with your teams. */
                             url?: string;
                         };
                     };
@@ -42261,7 +42288,7 @@ export interface operations {
                         is_default: boolean;
                         /** @description Whether this credential acts in this team. */
                         is_current: boolean;
-                        /** @description The team's logo, a public PNG URL, or null when it has none. Owners set it with PUT /v1/teams/current/logo. */
+                        /** @description The team's logo, a public PNG URL, or null when it has none. Owners and Managers set it with PUT /v1/teams/current/logo. */
                         logo_url: string | null;
                         /** @description The Owner whose email receives invoices. */
                         billing_owner_user_id: string | null;
@@ -42288,7 +42315,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: only an Owner of the team may do this. */
+            /** @description INSUFFICIENT_ROLE: only an Owner or a Manager renames the team; only an Owner sets billing_owner_user_id. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -42361,7 +42388,7 @@ export interface operations {
                         is_default: boolean;
                         /** @description Whether this credential acts in this team. */
                         is_current: boolean;
-                        /** @description The team's logo, a public PNG URL, or null when it has none. Owners set it with PUT /v1/teams/current/logo. */
+                        /** @description The team's logo, a public PNG URL, or null when it has none. Owners and Managers set it with PUT /v1/teams/current/logo. */
                         logo_url: string | null;
                         /** @description The Owner whose email receives invoices. */
                         billing_owner_user_id: string | null;
@@ -42388,7 +42415,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: only an Owner of the team may do this. */
+            /** @description INSUFFICIENT_ROLE: only an Owner or a Manager renames the team; only an Owner sets billing_owner_user_id. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -42465,7 +42492,7 @@ export interface operations {
                         is_default: boolean;
                         /** @description Whether this credential acts in this team. */
                         is_current: boolean;
-                        /** @description The team's logo, a public PNG URL, or null when it has none. Owners set it with PUT /v1/teams/current/logo. */
+                        /** @description The team's logo, a public PNG URL, or null when it has none. Owners and Managers set it with PUT /v1/teams/current/logo. */
                         logo_url: string | null;
                         /** @description The Owner whose email receives invoices. */
                         billing_owner_user_id: string | null;
@@ -42492,7 +42519,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: only an Owner of the team may do this. */
+            /** @description INSUFFICIENT_ROLE: only an Owner or a Manager of the team may do this. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -42574,7 +42601,7 @@ export interface operations {
                         is_default: boolean;
                         /** @description Whether this credential acts in this team. */
                         is_current: boolean;
-                        /** @description The team's logo, a public PNG URL, or null when it has none. Owners set it with PUT /v1/teams/current/logo. */
+                        /** @description The team's logo, a public PNG URL, or null when it has none. Owners and Managers set it with PUT /v1/teams/current/logo. */
                         logo_url: string | null;
                         /** @description The Owner whose email receives invoices. */
                         billing_owner_user_id: string | null;
@@ -42601,7 +42628,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: only an Owner of the team may do this. */
+            /** @description INSUFFICIENT_ROLE: only an Owner or a Manager of the team may do this. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -42686,7 +42713,7 @@ export interface operations {
                             user_id: string;
                             /** @description The member's login email. */
                             email: string | null;
-                            /** @description The member's name, when they set one. */
+                            /** @description The member's name; their email when they set no name (null only when neither is known). */
                             name: string | null;
                             /**
                              * @description The role in the team.
@@ -42796,7 +42823,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: only an Owner may remove someone else. */
+            /** @description INSUFFICIENT_ROLE: only an Owner removes someone else; a Manager removes Members only. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -42882,7 +42909,7 @@ export interface operations {
                         user_id: string;
                         /** @description The member's login email. */
                         email: string | null;
-                        /** @description The member's name, when they set one. */
+                        /** @description The member's name; their email when they set no name (null only when neither is known). */
                         name: string | null;
                         /**
                          * @description The role in the team.
@@ -43022,7 +43049,7 @@ export interface operations {
                              * @enum {string}
                              */
                             status: "pending" | "expired" | "accepted" | "revoked";
-                            /** @description The Owner who sent it last. */
+                            /** @description The Owner or Manager who sent it last. */
                             invited_by_user_id: string;
                             /** @description When the link stops working (UTC). */
                             expires_at: string;
@@ -43052,7 +43079,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: only an Owner of the team may do this. */
+            /** @description INSUFFICIENT_ROLE: only an Owner or a Manager of the team may do this. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -43139,7 +43166,7 @@ export interface operations {
                              * @enum {string}
                              */
                             status: "pending" | "expired" | "accepted" | "revoked";
-                            /** @description The Owner who sent it last. */
+                            /** @description The Owner or Manager who sent it last. */
                             invited_by_user_id: string;
                             /** @description When the link stops working (UTC). */
                             expires_at: string;
@@ -43169,7 +43196,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: only an Owner of the team may do this. */
+            /** @description INSUFFICIENT_ROLE: only an Owner or a Manager of the team may do this, and a Manager acts on Member invites only. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -43255,7 +43282,7 @@ export interface operations {
                          * @enum {string}
                          */
                         status: "pending" | "expired" | "accepted" | "revoked";
-                        /** @description The Owner who sent it last. */
+                        /** @description The Owner or Manager who sent it last. */
                         invited_by_user_id: string;
                         /** @description When the link stops working (UTC). */
                         expires_at: string;
@@ -43282,7 +43309,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: only an Owner of the team may do this. */
+            /** @description INSUFFICIENT_ROLE: only an Owner or a Manager of the team may do this, and a Manager acts on Member invites only. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -43368,7 +43395,7 @@ export interface operations {
                          * @enum {string}
                          */
                         status: "pending" | "expired" | "accepted" | "revoked";
-                        /** @description The Owner who sent it last. */
+                        /** @description The Owner or Manager who sent it last. */
                         invited_by_user_id: string;
                         /** @description When the link stops working (UTC). */
                         expires_at: string;
@@ -43395,7 +43422,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: only an Owner of the team may do this. */
+            /** @description INSUFFICIENT_ROLE: only an Owner or a Manager of the team may do this, and a Manager acts on Member invites only. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -44476,7 +44503,7 @@ export interface operations {
                 enrichment_status?: "none" | "queued" | "done" | "failed";
                 /** @description true: Connections of your accounts only; false: everyone else. */
                 connected?: boolean;
-                /** @description Only Contacts that are Connections of this account (acc_...). */
+                /** @description Only Contacts that are Connections of any of these accounts: a comma list of up to 50 account ids (acc_...). One id is one account. It implies connected=true. */
                 account_id?: string;
                 /** @description Only Contacts with an Enrollment in this Motion (mot_...). */
                 motion_id?: string;
@@ -44549,7 +44576,9 @@ export interface operations {
                             job_title: string | null;
                             /** @description Current company. */
                             company: string | null;
-                            /** @description Email, only ever what you supplied. */
+                            /** @description `https://www.linkedin.com/company/<id>/`, the current company's LinkedIn page, filled with `company` from a profile read at no extra LinkedIn call. Read-only. Null when LinkedIn gave no company id, or when `company` is a value you supplied. */
+                            company_linkedin_url: string | null;
+                            /** @description Email: what you supplied, else the first email a LinkedIn profile read returned. Yours is never overwritten. */
                             email: string | null;
                             /** @description Location. */
                             location: string | null;
@@ -44671,7 +44700,7 @@ export interface operations {
                     job_title?: string | null;
                     /** @description Current company, up to 300 characters. */
                     company?: string | null;
-                    /** @description Email address, only ever what you supply (Curviate never fills it), up to 320 characters. */
+                    /** @description Email address: what you supply, else filled from the first email a LinkedIn profile read returns (yours is never overwritten), up to 320 characters. */
                     email?: string | null;
                     /** @description Location, up to 300 characters. */
                     location?: string | null;
@@ -44729,7 +44758,9 @@ export interface operations {
                         job_title: string | null;
                         /** @description Current company. */
                         company: string | null;
-                        /** @description Email, only ever what you supplied. */
+                        /** @description `https://www.linkedin.com/company/<id>/`, the current company's LinkedIn page, filled with `company` from a profile read at no extra LinkedIn call. Read-only. Null when LinkedIn gave no company id, or when `company` is a value you supplied. */
+                        company_linkedin_url: string | null;
+                        /** @description Email: what you supplied, else the first email a LinkedIn profile read returned. Yours is never overwritten. */
                         email: string | null;
                         /** @description Location. */
                         location: string | null;
@@ -44807,7 +44838,9 @@ export interface operations {
                         job_title: string | null;
                         /** @description Current company. */
                         company: string | null;
-                        /** @description Email, only ever what you supplied. */
+                        /** @description `https://www.linkedin.com/company/<id>/`, the current company's LinkedIn page, filled with `company` from a profile read at no extra LinkedIn call. Read-only. Null when LinkedIn gave no company id, or when `company` is a value you supplied. */
+                        company_linkedin_url: string | null;
+                        /** @description Email: what you supplied, else the first email a LinkedIn profile read returned. Yours is never overwritten. */
                         email: string | null;
                         /** @description Location. */
                         location: string | null;
@@ -44932,7 +44965,7 @@ export interface operations {
                 enrichment_status?: "none" | "queued" | "done" | "failed";
                 /** @description true: Connections of your accounts only; false: everyone else. */
                 connected?: boolean;
-                /** @description Only Contacts that are Connections of this account (acc_...). */
+                /** @description Only Contacts that are Connections of any of these accounts: a comma list of up to 50 account ids (acc_...). One id is one account. It implies connected=true. */
                 account_id?: string;
                 /** @description Only Contacts with an Enrollment in this Motion (mot_...). */
                 motion_id?: string;
@@ -45000,7 +45033,9 @@ export interface operations {
                         job_title: string | null;
                         /** @description Current company. */
                         company: string | null;
-                        /** @description Email, only ever what you supplied. */
+                        /** @description `https://www.linkedin.com/company/<id>/`, the current company's LinkedIn page, filled with `company` from a profile read at no extra LinkedIn call. Read-only. Null when LinkedIn gave no company id, or when `company` is a value you supplied. */
+                        company_linkedin_url: string | null;
+                        /** @description Email: what you supplied, else the first email a LinkedIn profile read returned. Yours is never overwritten. */
                         email: string | null;
                         /** @description Location. */
                         location: string | null;
@@ -45131,8 +45166,8 @@ export interface operations {
                         enrichment_status?: "none" | "queued" | "done" | "failed";
                         /** @description true: Connections of your accounts only; false: everyone else. */
                         connected?: boolean;
-                        /** @description Only Contacts that are Connections of this account (acc_...). */
-                        account_id?: string;
+                        /** @description Only Contacts that are Connections of this account (acc_...), or of any of up to 50. */
+                        account_id?: string | string[];
                         /** @description Only Contacts with an Enrollment in this Motion (mot_...). */
                         motion_id?: string;
                         /** @description With motion_id: queued, active, paused, finished, failed, skipped; pending = queued until 2027-01-21. */
@@ -45285,8 +45320,8 @@ export interface operations {
                         enrichment_status?: "none" | "queued" | "done" | "failed";
                         /** @description true: Connections of your accounts only; false: everyone else. */
                         connected?: boolean;
-                        /** @description Only Contacts that are Connections of this account (acc_...). */
-                        account_id?: string;
+                        /** @description Only Contacts that are Connections of this account (acc_...), or of any of up to 50. */
+                        account_id?: string | string[];
                         /** @description Only Contacts with an Enrollment in this Motion (mot_...). */
                         motion_id?: string;
                         /** @description With motion_id: queued, active, paused, finished, failed, skipped; pending = queued until 2027-01-21. */
@@ -46154,7 +46189,9 @@ export interface operations {
                         job_title: string | null;
                         /** @description Current company. */
                         company: string | null;
-                        /** @description Email, only ever what you supplied. */
+                        /** @description `https://www.linkedin.com/company/<id>/`, the current company's LinkedIn page, filled with `company` from a profile read at no extra LinkedIn call. Read-only. Null when LinkedIn gave no company id, or when `company` is a value you supplied. */
+                        company_linkedin_url: string | null;
+                        /** @description Email: what you supplied, else the first email a LinkedIn profile read returned. Yours is never overwritten. */
                         email: string | null;
                         /** @description Location. */
                         location: string | null;
@@ -46339,7 +46376,7 @@ export interface operations {
                     job_title?: string | null;
                     /** @description Current company, up to 300 characters. */
                     company?: string | null;
-                    /** @description Email address, only ever what you supply (Curviate never fills it), up to 320 characters. */
+                    /** @description Email address: what you supply, else filled from the first email a LinkedIn profile read returns (yours is never overwritten), up to 320 characters. */
                     email?: string | null;
                     /** @description Location, up to 300 characters. */
                     location?: string | null;
@@ -46391,7 +46428,9 @@ export interface operations {
                         job_title: string | null;
                         /** @description Current company. */
                         company: string | null;
-                        /** @description Email, only ever what you supplied. */
+                        /** @description `https://www.linkedin.com/company/<id>/`, the current company's LinkedIn page, filled with `company` from a profile read at no extra LinkedIn call. Read-only. Null when LinkedIn gave no company id, or when `company` is a value you supplied. */
+                        company_linkedin_url: string | null;
+                        /** @description Email: what you supplied, else the first email a LinkedIn profile read returned. Yours is never overwritten. */
                         email: string | null;
                         /** @description Location. */
                         location: string | null;
@@ -46886,8 +46925,8 @@ export interface operations {
                         enrichment_status?: "none" | "queued" | "done" | "failed";
                         /** @description true: Connections of your accounts only; false: everyone else. */
                         connected?: boolean;
-                        /** @description Only Contacts that are Connections of this account (acc_...). */
-                        account_id?: string;
+                        /** @description Only Contacts that are Connections of this account (acc_...), or of any of up to 50. */
+                        account_id?: string | string[];
                         /** @description Only Contacts with an Enrollment in this Motion (mot_...). */
                         motion_id?: string;
                         /** @description With motion_id: queued, active, paused, finished, failed, skipped; pending = queued until 2027-01-21. */
@@ -47115,15 +47154,6 @@ export interface operations {
             };
             /** @description Missing or invalid API key. */
             401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-            /** @description INSUFFICIENT_ROLE: in a team, only an Owner or a Manager deletes. Not fixed by retrying. */
-            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -54352,6 +54382,8 @@ export interface operations {
                                 /** @description LinkedIn profile URL. */
                                 linkedin_url: string | null;
                             } | null;
+                            /** @description A direct action's person (origin unibox or api), name only: they may not be a Contact. Null for a Motion event or a person LinkedIn never named. */
+                            person_name: string | null;
                         }[];
                         /** @description Pass back as cursor for the next page; null on the last page. */
                         cursor: string | null;

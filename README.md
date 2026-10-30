@@ -97,14 +97,14 @@ if (unread_count > 0) {
 
 ## Teams
 
-`curviate.teams` manages the team the credential acts in: `getCurrent`, `updateCurrent`, `listMembers`, `updateMember` (role), `removeMember` (`"me"` leaves), `createInvites`, `listInvites`, `resendInvite`, `revokeInvite`, plus `list` for every team you belong to. Member and invite writes are for Owners (`INSUFFICIENT_ROLE` otherwise). `curviate.accounts.setTeamAccess(accountId, false)` keeps an account you connected to yourself.
+`curviate.teams` manages the team the credential acts in: `getCurrent`, `updateCurrent`, `listMembers`, `updateMember` (role), `removeMember` (`"me"` leaves), `createInvites`, `listInvites`, `resendInvite`, `revokeInvite`, plus `list` for every team you belong to. Member and invite writes are for Owners; Managers also rename the team, set its logo and manage Member invites (`INSUFFICIENT_ROLE` otherwise). `curviate.accounts.setTeamAccess(accountId, false)` keeps an account you connected to yourself.
 
 ```ts
 const team = await curviate.teams.create({ name: "Client A" }); // you become its Owner; no seat yet
 // An All-Teams key: next_step.team_header is "X-Curviate-Team: <team_id>", usable at once (pass team_id as the `team` option).
 // Any other credential: next_step.command and next_step.url (CLI setup, dashboard Teams page).
 const { items } = await curviate.teams.list({ include: "counts" }); // tier, trial, accounts, active_motions, seats (Owner rows)
-await curviate.teams.setLogo(await readFile("logo.png")); // a PNG up to 1 MB; Owners only; removeLogo() clears it
+await curviate.teams.setLogo(await readFile("logo.png")); // a PNG up to 1 MB; Owners and Managers; removeLogo() clears it
 
 // Lend an unused seat to another of your Teams, and move it back (once no Account uses it).
 const { seat_id } = await curviate.billing.seats.lend({ team_id: "tnt_456" });

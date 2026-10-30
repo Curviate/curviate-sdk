@@ -4,6 +4,10 @@
  *
  * A Contact is a person your team keeps: a LinkedIn URL plus your own fields
  * (`job_title`, `email`, `extra`, ...), Tags and Contact list memberships.
+ * `email` is what you supplied, else the first email a LinkedIn profile read
+ * returned (yours is never overwritten). `company_linkedin_url` is read-only:
+ * the current company's LinkedIn page (`https://www.linkedin.com/company/<id>/`),
+ * filled with `company` from a profile read, `null` when LinkedIn gave none.
  * Contacts belong to the team, not to an account. Any spelling of one person's
  * profile or Sales Navigator URL resolves to the same Contact, so writing the
  * same person twice updates one Contact rather than creating a second.
@@ -21,8 +25,8 @@ import { commaLists, type WithLists } from "../internal/query.js";
 
 // ─── Type aliases from generated OpenAPI snapshot ──────────────────────────
 
-/** `list_id` and `not_list_id` take a comma list of up to 20 Contact list ids, or an array of them. */
-export type ContactListParams = WithLists<NonNullable<paths["/v1/contacts"]["get"]["parameters"]["query"]>, "list_id" | "not_list_id">;
+/** `list_id`, `not_list_id` and `account_id` take a comma list of up to 20 Contact list ids, or an array of them. */
+export type ContactListParams = WithLists<NonNullable<paths["/v1/contacts"]["get"]["parameters"]["query"]>, "list_id" | "not_list_id" | "account_id">;
 export type ContactListPage = paths["/v1/contacts"]["get"]["responses"]["200"]["content"]["application/json"];
 export type Contact = paths["/v1/contacts/{id}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type ContactUpsertBody = NonNullable<paths["/v1/contacts"]["post"]["requestBody"]>["content"]["application/json"];
@@ -38,7 +42,7 @@ export type ContactUpdateManyBody = NonNullable<paths["/v1/contacts/update"]["po
 export type ContactUpdateManyResult = paths["/v1/contacts/update"]["post"]["responses"]["200"]["content"]["application/json"];
 export type ContactEnrichBody = NonNullable<paths["/v1/contacts/enrich"]["post"]["requestBody"]>["content"]["application/json"];
 export type ContactEnrichResult = paths["/v1/contacts/enrich"]["post"]["responses"]["200"]["content"]["application/json"];
-export type ContactExportParams = WithLists<NonNullable<paths["/v1/contacts/export"]["get"]["parameters"]["query"]>, "list_id" | "not_list_id">;
+export type ContactExportParams = WithLists<NonNullable<paths["/v1/contacts/export"]["get"]["parameters"]["query"]>, "list_id" | "not_list_id" | "account_id">;
 
 export type ContactImportCreateBody = NonNullable<paths["/v1/contacts/imports"]["post"]["requestBody"]>["content"]["application/json"];
 /** `201` with the finished report for a small import, `202` with a `queued` import for a large one. */
@@ -157,7 +161,7 @@ export class ContactsResource {
    * without), `tag` (comma list, any of them), `import_id`, `linkedin_url`,
    * `q` (substring over names, headline, job title, company, email,
    * location), `enrichment_status`, `connected`, `account_id` (Connections of
-   * that account), `motion_id` + `enrollment_status` (any of the statuses
+   * that account, or of any of up to 50, as an array or a comma list), `motion_id` + `enrollment_status` (any of the statuses
    * given). A list id that is not your team's throws `RESOURCE_NOT_FOUND`
    * naming the key. Pages with an opaque `cursor` until it is `null`.
    * `include_total: true` adds `total` to the page, the number of Contacts the
@@ -175,7 +179,7 @@ export class ContactsResource {
     return this.ctx.request<ContactListPage>({
       method: "GET",
       path: "/v1/contacts",
-      query: commaLists(params, "enrollment_status", "list_id", "not_list_id"),
+      query: commaLists(params, "enrollment_status", "list_id", "not_list_id", "account_id"),
     });
   }
 
@@ -344,7 +348,7 @@ export class ContactsResource {
     return this.ctx.request<Contact[] | ArrayBuffer>({
       method: "GET",
       path: "/v1/contacts/export",
-      query: commaLists(params, "enrollment_status", "list_id", "not_list_id"),
+      query: commaLists(params, "enrollment_status", "list_id", "not_list_id", "account_id"),
     });
   }
 }
