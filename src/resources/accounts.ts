@@ -119,7 +119,8 @@ export class AccountsResource {
    * with the first 20 Motions in `motion_refs`, and `quotas`: three of the
    * account's safety rows (`connection_requests_no_note`,
    * `messages_first_degree`, `inmail`) with `remaining`, absent on an account
-   * you can see but not operate. `get` carries every row. Reading the list
+   * you can see but not operate. `connection_requests_no_note` now counts
+   * every invitation, noted or not: read it as "Invitations". `get` carries every row. Reading the list
    * never calls LinkedIn.
    *
    * Each item also carries `external_id` (your own id for the account's end
@@ -184,6 +185,26 @@ export class AccountsResource {
    * more, raise the limit. Two rows are not counters and say so in `kind`:
    * `total_actions` (`tally`) and `pending_invites` (`gauge`, whose `used` is
    * `null` until something has observed it).
+   *
+   * **Same name, new meaning:** `connection_requests_no_note` counts all
+   * invitations, so its `used` is the invitation total (a noted one also
+   * counts on `connection_requests_with_note` where that row has a ceiling:
+   * Free profiles, 3 a month). The strict rows (invitations, `inmail`,
+   * `profile_views`) also carry `target` (what the account aims at per
+   * window, below the ceiling; `green` is now this target) and
+   * `effective_target` (target times warm-up times health), both `null` on
+   * other rows and read-only. Aim at the target, not the ceiling.
+   *
+   * `health` is Curviate's inference of how LinkedIn sees the account:
+   * `{ state, factor, reasons, until }`, `state` one of `healthy`, `watch`,
+   * `slowed` or `stopped`. It multiplies with warm-up. `health` is absent on
+   * an account you can see but not operate.
+   *
+   * Curviate sees only what it sends. Invitations or messages sent by hand on
+   * LinkedIn, or through another automation tool on the same account, are
+   * invisible to it and to every limit here; LinkedIn's refusal is the only
+   * way they show up. Do not run another automation tool on a connected
+   * account.
    *
    * The per-minute REQUEST ceiling is a different thing and is deliberately
    * NOT in this array: it protects Curviate's own servers rather than the
@@ -426,7 +447,10 @@ export class AccountsResource {
    * budget row, and where each value was inherited from. Also carries the
    * derived `warm_up` (`enabled`, `dormant`, `state`, `factor`, `triggers`)
    * and `activity_window` (the zone the hours are read in, from where the
-   * account connects). Limits are always enforced.
+   * account connects) and `auto_withdraw` (default `true`: Curviate withdraws
+   * its own invitations older than 14 days once more than 400 are pending;
+   * hand-sent ones are never touched). Rows carry `target` and
+   * `effective_target` (read-only). Limits are always enforced.
    * `GET /v1/{account_id}/safety-policy`
    *
    * @example
@@ -445,7 +469,9 @@ export class AccountsResource {
    * always enforced: to send more, raise the limit. Returns the policy as
    * `getSafetyPolicy` reads it.
    *
-   * `warm_up: { enabled }` turns the account's warm-up ramp on or off (default
+   * `auto_withdraw` (boolean) switches the automatic withdrawal of old
+   * Curviate-sent invitations; a change is ledgered. A row's `green` is its
+   * target. `warm_up: { enabled }` turns the account's warm-up ramp on or off (default
    * on; off skips the connect and quiet ramps, recovery after a LinkedIn
    * restriction still applies). `active_hours` sets the account's own days and
    * local hours; a row's own `activity_window_start` / `activity_window_end`

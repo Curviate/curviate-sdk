@@ -9,6 +9,21 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## Unreleased
 
+### Account orchestration (regenerated from staging 1635e59)
+
+- **Motion `settings.priority`** (`normal` | `prioritized`, default `normal`): the Motion's weighted share (1 : 2) of each sending account's daily allowance on `motions.create` / `motions.update`.
+- **Account `health`** `{ state, factor, reasons, until }` (`healthy` | `watch` | `slowed` | `stopped`) on `accounts.get` and `accounts.update`. Absent on an account you can see but not operate.
+- **`target` and `effective_target`** on the strict rows (invitations, `inmail`, `profile_views`) of `quotas[]` and the safety policy; `null` elsewhere. Read-only. `green` on those rows is now the target.
+- **`auto_withdraw`** (boolean, default `true`) on the safety policy, read and written: old Motion-sent invitations are withdrawn once more than 400 are pending.
+- **`global.jitter_seconds`** in the Motion pacing settings.
+- **`waiting.kind: "budget"`** on an Enrollment whose allowance is spent or whose share is not yet its turn; `until` is the next session.
+- **Preview projection:** `accounts[].expected_actions_per_day`, the binding pool in `binding`, and `warnings[]` (`hours_below_share`, `no_sending_account`). `daily_cap` is gone.
+- **Same shape, new meaning:** `quotas[]` row `connection_requests_no_note` counts **every** invitation (noted or not), so its `used` is the invitation total; a noted one also counts on `connection_requests_with_note` where that row has a ceiling (Free, 3 a month; paid profiles none). A row's `green` is its `target`.
+- **Same shape, new meaning:** `account_id` on an Enrollment is `null` while it waits unassigned in its Motion's pool; the `account_id` list filter leaves such Enrollments out.
+- **Retired, accepted and ignored until 2027-01-28:** `settings.new_enrollments_per_account_per_day` and `settings.assign: "even"` (`SETTING_REMOVED` in `notices[]`, `Deprecation: true`). Never returned; the response `assign` enum is `auto` | `already_connected`. The request types still carry both until the cut.
+- **Changed text:** the InMail credit hint no longer says credits can be bought; it tells you to wait for LinkedIn to regrant them (a reply to an InMail refunds its credit).
+- **Blind spot, documented:** invitations and messages sent by hand on LinkedIn, or by another automation tool on the same account, are invisible to Curviate and to every limit. Do not run another automation tool on a connected account.
+
 ### Save Connections as Contacts
 
 - The account (`accounts.get`, `accounts.update`'s result) gains `save_connections_as_contacts` and `save_connections_paused_reason` (`"contact_limit_reached"` | `null`); both are absent on an account without Automate.

@@ -4695,7 +4695,7 @@ export interface components {
             row?: string | null;
             /** @description Present on BUDGET_EXHAUSTED: the instant the refusal lifts, as an absolute instant rather than a duration, so it stays true however long you hold it. It is the window roll on a ceiling refusal and the next window open on an activity-window one. It is null in the two cases where no clock frees the account: the pending_invites gauge, whose backlog falls when invitations are accepted or withdrawn, and an InMail credit exhaustion (row inmail, hint.parameter inmail_credits), which LinkedIn regrants on a schedule this product cannot read. */
             reset_at?: string | null;
-            /** @description Present on BUDGET_EXHAUSTED: the exact setting to change, as a field rather than as prose. Limits are always enforced: to send more, raise the limit. parameter is addressable on PATCH /v1/{account_id}/safety-policy (update_safety_policy in MCP), so an agent can decide between waiting until reset_at, escalating to a human, and raising the limit, without parsing the message. The one exception is inmail_credits: not a policy field, LinkedIn's own InMail balance. Wait for LinkedIn to regrant credits, or buy more on LinkedIn. */
+            /** @description Present on BUDGET_EXHAUSTED: the exact setting to change, as a field rather than as prose. Limits are always enforced: to send more, raise the limit. parameter is addressable on PATCH /v1/{account_id}/safety-policy (update_safety_policy in MCP), so an agent can decide between waiting until reset_at, escalating to a human, and raising the limit, without parsing the message. The one exception is inmail_credits: not a policy field, LinkedIn's own InMail balance. Wait for LinkedIn to regrant credits; a reply to an InMail refunds its credit. */
             hint?: {
                 /** @description The setting to change, for example profile_views.ceiling, active_hours (the account's or the Team's; the message names which), rows[posts].activity_window_end, profiles[basic].rows[posts].activity_window_start on the Team policy, or inmail_credits (LinkedIn's own balance, not a policy field). */
                 parameter: string;
@@ -19186,7 +19186,7 @@ export interface operations {
                             company: string | null;
                             /** @description Location, when a read of this person has stored it. Null otherwise. */
                             location: string | null;
-                            /** @description The last observed picture link. LinkedIn picture links expire, so tolerate a dead image. */
+                            /** @description The person's picture: a copy we store once a read has delivered one, so the link does not expire. Null when none is held. */
                             profile_picture_url: string | null;
                             /** @description When LinkedIn says the connection was made, or null when it did not say. */
                             connected_at: string | null;
@@ -19220,7 +19220,7 @@ export interface operations {
                             company: string | null;
                             /** @description Location, when a read of this person has stored it. Null otherwise. */
                             location: string | null;
-                            /** @description The last observed picture link. LinkedIn picture links expire, so tolerate a dead image. */
+                            /** @description The person's picture: a copy we store once a read has delivered one, so the link does not expire. Null when none is held. */
                             profile_picture_url: string | null;
                             /** @description When this person's stored fields were last written, by any read of that person. */
                             observed_at: string | null;
@@ -20573,7 +20573,7 @@ export interface operations {
                         motion_id: string;
                         /** @description The Contact (con_...); null once the Contact is deleted. */
                         contact_id: string | null;
-                        /** @description The sending account (acc_...); null until one is assigned. */
+                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Motion takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
                         account_id: string | null;
                         /** @description The Sequence version this Enrollment runs on. */
                         sequence_version: number;
@@ -20587,7 +20587,7 @@ export interface operations {
                         /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -25577,7 +25577,7 @@ export interface operations {
                             object: "curviate_notification";
                             /** @description Notification id (ntf_...). Valid for you only. */
                             id: string;
-                            /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, motion.auto_paused, motion.no_sending_account, motion.completed, contacts.import_finished, export.finished, team.invite_accepted, team.member_left. */
+                            /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, account.motion_work_paused, account.health_worsened, motion.auto_paused, motion.no_sending_account, motion.completed, contacts.import_finished, export.finished, team.invite_accepted, team.member_left. */
                             type: string;
                             /** @description What the Notification is about. */
                             subject: {
@@ -25839,7 +25839,7 @@ export interface operations {
                         object: "curviate_notification";
                         /** @description Notification id (ntf_...). Valid for you only. */
                         id: string;
-                        /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, motion.auto_paused, motion.no_sending_account, motion.completed, contacts.import_finished, export.finished, team.invite_accepted, team.member_left. */
+                        /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, account.motion_work_paused, account.health_worsened, motion.auto_paused, motion.no_sending_account, motion.completed, contacts.import_finished, export.finished, team.invite_accepted, team.member_left. */
                         type: string;
                         /** @description What the Notification is about. */
                         subject: {
@@ -34337,6 +34337,10 @@ export interface operations {
                                 ceiling: number | null;
                                 /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (its first four weeks after connect, after a quiet spell, or while it recovers from a restriction) the two differ, and in the first week after connect they differ by a factor of about seven. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
                                 effective_ceiling?: number | null;
+                                /** @description What the Account aims at per window on this row. Only the invitation total, InMail and profile views carry one (null on other rows): the row's configured `green` when set, otherwise `ceiling` times the profile's seeded ratio. */
+                                target?: number | null;
+                                /** @description `target` with the account's warm-up and health applied, rounded down. Null where `target` is null. */
+                                effective_target?: number | null;
                                 /** @description What a call through the matching ELEVATED interface is held to on this row: the `/v1/{account_id}/sales-navigator/...` and `/v1/{account_id}/recruiter/...` operations. Null when this row and limit profile have no such figure, which is every row on `basic` and `premium` and most rows everywhere. Everything else on this row (`ceiling`, `effective_ceiling`, `band` and `over_default`) is the STANDARD-interface figure, because one counter serves both interfaces and the standard side is the conservative one to band against. The consequence is worth reading: on a `sales_navigator` or `recruiter` account a row can report `band: "over"` while a call through the elevated interface still succeeds; the refusal the band predicts is the one a standard call gets. */
                                 interface_ceiling?: number | null;
                                 /** @description `effective_ceiling` minus `used`, never below 0: what this account can still do on this row in the current window. Null when the row has no ceiling (`total_actions`) or no level yet (`pending_invites` before it was read). */
@@ -34350,7 +34354,7 @@ export interface operations {
                                 band: "green" | "amber" | "hard" | "over";
                                 /** @description Whether something on this row is configured above Curviate's own default. The safety policy carries the detail: which field, the value, the default and how well calibrated that default is. */
                                 over_default: boolean;
-                                /** @description An active pause on this row because the platform refused a recent request on it, or `null`. A halt is not a ceiling: no limit you raise lifts it, and it clears itself when it expires. To lift one before it expires, send this row in `clear_halts` on `PATCH /v1/{account_id}/safety-policy`; that is recorded, and the pause returns if the platform refuses the account again. */
+                                /** @description An active pause on this row because the platform refused a recent request on it, or `null`. Motion work on other rows keeps running. A Motion also waits longer than this pause after LinkedIn refuses invitations or views for going too fast: 6 hours, then 24, then 72, at most 7 days on each repeat, resetting after 7 clean days; `health` on the account shows it. A halt is not a ceiling: no limit you raise lifts it, and it clears itself when it expires. To lift one before it expires, send this row in `clear_halts` on `PATCH /v1/{account_id}/safety-policy`; that is recorded, and the pause returns if the platform refuses the account again. */
                                 halt: {
                                     /** @description What the platform did: `rate_limited`, `platform_fault`, or `resend_cooldown` (the same invitation was sent too recently). */
                                     reason?: string;
@@ -34584,6 +34588,10 @@ export interface operations {
                             ceiling: number | null;
                             /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (its first four weeks after connect, after a quiet spell, or while it recovers from a restriction) the two differ, and in the first week after connect they differ by a factor of about seven. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
                             effective_ceiling?: number | null;
+                            /** @description What the Account aims at per window on this row. Only the invitation total, InMail and profile views carry one (null on other rows): the row's configured `green` when set, otherwise `ceiling` times the profile's seeded ratio. */
+                            target?: number | null;
+                            /** @description `target` with the account's warm-up and health applied, rounded down. Null where `target` is null. */
+                            effective_target?: number | null;
                             /** @description What a call through the matching ELEVATED interface is held to on this row: the `/v1/{account_id}/sales-navigator/...` and `/v1/{account_id}/recruiter/...` operations. Null when this row and limit profile have no such figure, which is every row on `basic` and `premium` and most rows everywhere. Everything else on this row (`ceiling`, `effective_ceiling`, `band` and `over_default`) is the STANDARD-interface figure, because one counter serves both interfaces and the standard side is the conservative one to band against. The consequence is worth reading: on a `sales_navigator` or `recruiter` account a row can report `band: "over"` while a call through the elevated interface still succeeds; the refusal the band predicts is the one a standard call gets. */
                             interface_ceiling?: number | null;
                             /** @description `effective_ceiling` minus `used`, never below 0: what this account can still do on this row in the current window. Null when the row has no ceiling (`total_actions`) or no level yet (`pending_invites` before it was read). */
@@ -34597,7 +34605,7 @@ export interface operations {
                             band: "green" | "amber" | "hard" | "over";
                             /** @description Whether something on this row is configured above Curviate's own default. The safety policy carries the detail: which field, the value, the default and how well calibrated that default is. */
                             over_default: boolean;
-                            /** @description An active pause on this row because the platform refused a recent request on it, or `null`. A halt is not a ceiling: no limit you raise lifts it, and it clears itself when it expires. To lift one before it expires, send this row in `clear_halts` on `PATCH /v1/{account_id}/safety-policy`; that is recorded, and the pause returns if the platform refuses the account again. */
+                            /** @description An active pause on this row because the platform refused a recent request on it, or `null`. Motion work on other rows keeps running. A Motion also waits longer than this pause after LinkedIn refuses invitations or views for going too fast: 6 hours, then 24, then 72, at most 7 days on each repeat, resetting after 7 clean days; `health` on the account shows it. A halt is not a ceiling: no limit you raise lifts it, and it clears itself when it expires. To lift one before it expires, send this row in `clear_halts` on `PATCH /v1/{account_id}/safety-policy`; that is recorded, and the pause returns if the platform refuses the account again. */
                             halt: {
                                 /** @description What the platform did: `rate_limited`, `platform_fault`, or `resend_cooldown` (the same invitation was sent too recently). */
                                 reason?: string;
@@ -34663,6 +34671,17 @@ export interface operations {
                         location?: string | null;
                         /** @description Platform conditions this LinkedIn account is currently in, additive to `status` and independent of it. `recruiter_session_evicted`: the account is signed in somewhere else and LinkedIn allows one session at a time for it, so a person has to close the other session; reconnecting will not help. `commercial_use_limited`: LinkedIn's commercial-use limit has tripped, so people search returns only a handful of results per query. It is a paywall, not a penalty, and nothing else about the account is affected. `profile_view_limited`: profile views outside this account's own network are being blocked; first-degree views still work. The two limits are detected from their symptom: LinkedIn publishes no threshold for either, exposes no counter, and lifts neither on request, so no number is reported. `commercial_use_limited` is a present-tense reading and a genuinely narrow search can also produce the shape it looks for, so treat it as a reason to check rather than a certainty; the next people search that returns a full page clears it. An account in none of these reports an empty array. */
                         account_states?: ("recruiter_session_evicted" | "commercial_use_limited" | "profile_view_limited")[];
+                        /** @description Curviate's inference of how LinkedIn sees this account; LinkedIn publishes no score. `state`: `healthy`; `watch` (a sign to look at, nothing slowed); `slowed` (fewer invitations and views, or one action paused, while other work keeps running); `stopped` (a restriction stops all Motion work, or 650 or more waiting invitations stop new invitations while withdrawals still run). It is per account, and nothing moves work between Motions by itself. One Notification announces each worsening, none an improvement. */
+                        health?: {
+                            /** @enum {string} */
+                            state: "healthy" | "watch" | "slowed" | "stopped";
+                            /** @description The lowest factor in force, from 0 to 1, multiplying the account's invitation and view targets with warm-up. 1 is unaffected. Recovers +0.15 every 4 days once its cause clears; the factor from waiting invitations follows their number. */
+                            factor: number;
+                            /** @description Why, and what to do, in plain words. For people, not for branching: branch on `state`. */
+                            reasons: string[];
+                            /** @description ISO-8601 UTC time the limits in force are expected to lift. Null when nothing is limited or the end is not known. */
+                            until: string | null;
+                        };
                         /** @description The time zone the account's activity window is read in, derived from where it connects; outside the window Curviate refuses live writes to LinkedIn. Reads and anything served from Curviate's own store are never affected, at any hour. Set the hours on the account's safety policy. */
                         activity_window?: {
                             /** @description The IANA zone the activity window is read in, from where the account connects (its Curviate proxy's country, or your own proxy's detected location). Nobody sets it. Null while the zone is unknown: see fallback_timezones. */
@@ -35086,6 +35105,17 @@ export interface operations {
                         location?: string | null;
                         /** @description Platform conditions this LinkedIn account is currently in, additive to `status` and independent of it. `recruiter_session_evicted`: the account is signed in somewhere else and LinkedIn allows one session at a time for it, so a person has to close the other session; reconnecting will not help. `commercial_use_limited`: LinkedIn's commercial-use limit has tripped, so people search returns only a handful of results per query. It is a paywall, not a penalty, and nothing else about the account is affected. `profile_view_limited`: profile views outside this account's own network are being blocked; first-degree views still work. The two limits are detected from their symptom: LinkedIn publishes no threshold for either, exposes no counter, and lifts neither on request, so no number is reported. `commercial_use_limited` is a present-tense reading and a genuinely narrow search can also produce the shape it looks for, so treat it as a reason to check rather than a certainty; the next people search that returns a full page clears it. An account in none of these reports an empty array. */
                         account_states?: ("recruiter_session_evicted" | "commercial_use_limited" | "profile_view_limited")[];
+                        /** @description Curviate's inference of how LinkedIn sees this account; LinkedIn publishes no score. `state`: `healthy`; `watch` (a sign to look at, nothing slowed); `slowed` (fewer invitations and views, or one action paused, while other work keeps running); `stopped` (a restriction stops all Motion work, or 650 or more waiting invitations stop new invitations while withdrawals still run). It is per account, and nothing moves work between Motions by itself. One Notification announces each worsening, none an improvement. */
+                        health?: {
+                            /** @enum {string} */
+                            state: "healthy" | "watch" | "slowed" | "stopped";
+                            /** @description The lowest factor in force, from 0 to 1, multiplying the account's invitation and view targets with warm-up. 1 is unaffected. Recovers +0.15 every 4 days once its cause clears; the factor from waiting invitations follows their number. */
+                            factor: number;
+                            /** @description Why, and what to do, in plain words. For people, not for branching: branch on `state`. */
+                            reasons: string[];
+                            /** @description ISO-8601 UTC time the limits in force are expected to lift. Null when nothing is limited or the end is not known. */
+                            until: string | null;
+                        };
                         /** @description The time zone the account's activity window is read in, derived from where it connects; outside the window Curviate refuses live writes to LinkedIn. Reads and anything served from Curviate's own store are never affected, at any hour. Set the hours on the account's safety policy. */
                         activity_window?: {
                             /** @description The IANA zone the activity window is read in, from where the account connects (its Curviate proxy's country, or your own proxy's detected location). Nobody sets it. Null while the zone is unknown: see fallback_timezones. */
@@ -39824,6 +39854,8 @@ export interface operations {
                             /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. With warm-up on, its next action starts the ramp at 0.15. */
                             dormant?: boolean;
                         };
+                        /** @description Whether Curviate withdraws this account's old Motion-sent invitations on its own (default true). Past 400 pending invitations, those over 14 days old go oldest first, at most the larger of 25 and the day's invitation allowance a day, one at a time inside the account's working hours, each after a check that it is still pending. Invitations sent by hand or through the API are never withdrawn, and a withdrawn person is never invited again by a Motion. It runs while invitations are stopped at 650 pending. Set it with PATCH /v1/{account_id}/safety-policy and `auto_withdraw`; a change is recorded in the account's ledger. */
+                        auto_withdraw?: boolean;
                         /** @description The zone the activity window is read in, derived from where the account connects. Outside the window, a live write to LinkedIn is refused; reads and anything served from Curviate's own store are never affected, at any hour. Read-only: a write accepts it back and ignores it, so a read policy can be sent back unchanged. */
                         activity_window?: {
                             /** @description The IANA zone the activity window is read in, from where the account connects (its Curviate proxy's country, or your own proxy's detected location). Nobody sets it. Null while the zone is unknown: see fallback_timezones. */
@@ -39908,6 +39940,10 @@ export interface operations {
                             source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
                             /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Read this one, not `ceiling`, to know where the next call will be stopped. On an account in warm-up the two differ, and in the first week after connect they differ by a factor of about seven. Null when the row has no ceiling to ramp. `warm_up_state` and `warm_up_factor` beside it are the values ACTIVE on this row, not the seeded ones. */
                             effective_ceiling?: number | null;
+                            /** @description What the Account aims at per window on this row. Only the invitation total, InMail and profile views carry one (null on other rows): the row's configured `green` when set, otherwise `ceiling` times the profile's seeded ratio. Read-only. */
+                            target?: number | null;
+                            /** @description `target` with the account's warm-up and health factor applied, rounded down: LinkedIn pushback, forced sign-ins and low acceptance lower it, waiting invitations slow invitations separately. Null where `target` is null. Read-only. */
+                            effective_target?: number | null;
                             /** @description What a call through the matching ELEVATED interface is held to on this row: the `/v1/{account_id}/sales-navigator/...` and `/v1/{account_id}/recruiter/...` operations. Null when this row and limit profile have no such figure, which is every row on `basic` and `premium` and most rows everywhere. Everything else on this row (`ceiling`, `effective_ceiling`, `band` and `over_default`) is the STANDARD-interface figure, because one counter serves both interfaces and the standard side is the conservative one to band against. The consequence is worth reading: on a `sales_navigator` or `recruiter` account a row can report `band: "over"` with `posture: "enforce"` while a call through the elevated interface still succeeds; the refusal the band predicts is the one a standard call gets. */
                             interface_ceiling?: number | null;
                             /** @description `interface_ceiling` with the account's warm-up ramp applied, and null wherever `interface_ceiling` is null. Read THIS to know where an elevated-interface call stops, for the same reason `effective_ceiling` rather than `ceiling` answers that for a standard one. */
@@ -39935,7 +39971,7 @@ export interface operations {
                             "invite.send"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -39958,7 +39994,7 @@ export interface operations {
                             "post.comment"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -39981,7 +40017,7 @@ export interface operations {
                             "message.send"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -40004,7 +40040,7 @@ export interface operations {
                             "inmail.send"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -40027,7 +40063,7 @@ export interface operations {
                             "profile.follow"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -40050,7 +40086,7 @@ export interface operations {
                             "profile.unfollow"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -40073,7 +40109,7 @@ export interface operations {
                             "skill.endorse"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -40096,7 +40132,7 @@ export interface operations {
                             "invite.withdraw"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -40119,7 +40155,7 @@ export interface operations {
                             "post.react"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -40142,7 +40178,7 @@ export interface operations {
                             read?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -40165,7 +40201,7 @@ export interface operations {
                             global?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -40331,6 +40367,10 @@ export interface operations {
                         source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded" | null;
                         /** @description READ-ONLY. `ceiling` with the account's warm-up ramp applied, which is what this row is actually held to. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                         effective_ceiling?: unknown;
+                        /** @description READ-ONLY. What this Account aims at per window on this row (invitations, InMail, profile views only; null elsewhere): the row's `green` when set, otherwise `ceiling` times the profile's seeded ratio, so raising a ceiling alone moves it. Read-only. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                        target?: unknown;
+                        /** @description READ-ONLY. `target` with the account's warm-up and health applied, rounded down. Read-only. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                        effective_target?: unknown;
                         /** @description READ-ONLY. What a call through the matching elevated interface (the Sales Navigator and Recruiter operations) is held to on this row, or null when this row and limit profile have no such figure. `ceiling`, `effective_ceiling`, `band` and `over_default` are all the STANDARD-interface figure, so on a `sales_navigator` or `recruiter` account a row can report `over` while a call through the elevated interface still succeeds. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                         interface_ceiling?: unknown;
                         /** @description READ-ONLY. `interface_ceiling` with the account's warm-up ramp applied. Read THIS to know where an elevated-interface call stops, for the same reason `effective_ceiling` and not `ceiling` answers that for a standard one. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
@@ -40347,7 +40387,7 @@ export interface operations {
                         [key: string]: {
                             /** @description Whole seconds, 0 to 86400. Null clears it. */
                             min_gap_seconds?: unknown;
-                            /** @description Whole seconds, 0 to 86400. Not on `global`. Null clears it. */
+                            /** @description Whole seconds, 0 to 86400. On `global` it defaults to 25. Null clears it. */
                             jitter_seconds?: unknown;
                             /** @description READ-ONLY. The over-default warnings (a value below the default). Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                             over_default?: unknown;
@@ -40382,6 +40422,8 @@ export interface operations {
                         /** @description Turn this account's warm-up on (true, the default) or off (false). Off skips the connect ramp and the quiet ramp; recovery after a LinkedIn restriction still applies. */
                         enabled?: boolean;
                     };
+                    /** @description Automatic withdrawal of old invitations Curviate sent for this account's Motions, default true. While this account has more than 400 pending invitations, Curviate withdraws the Motion-sent ones older than 14 days, oldest first, a few a day (at most the larger of 25 and the day's invitation allowance), inside its working hours and one at a time with the usual gaps, after checking each is still pending. It never touches an invitation you sent by hand or through the API, and never invites a withdrawn person again. It keeps working while invitations are stopped at 650 pending, which is how the account comes back under. Set false to keep every old invitation pending; the level then falls only as people accept or you withdraw. */
+                    auto_withdraw?: boolean;
                     /** @description Read-only: the time zone the activity window is read in, from where this account connects. Accepted and ignored, so the read's object can be sent back unchanged. The window's settable inputs are per row: `activity_window_start`, `activity_window_end`, `activity_window_applies_to`. */
                     activity_window?: unknown;
                 };
@@ -40439,6 +40481,8 @@ export interface operations {
                             /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. With warm-up on, its next action starts the ramp at 0.15. */
                             dormant?: boolean;
                         };
+                        /** @description Whether Curviate withdraws this account's old Motion-sent invitations on its own (default true). Past 400 pending invitations, those over 14 days old go oldest first, at most the larger of 25 and the day's invitation allowance a day, one at a time inside the account's working hours, each after a check that it is still pending. Invitations sent by hand or through the API are never withdrawn, and a withdrawn person is never invited again by a Motion. It runs while invitations are stopped at 650 pending. Set it with PATCH /v1/{account_id}/safety-policy and `auto_withdraw`; a change is recorded in the account's ledger. */
+                        auto_withdraw?: boolean;
                         /** @description The zone the activity window is read in, derived from where the account connects. Outside the window, a live write to LinkedIn is refused; reads and anything served from Curviate's own store are never affected, at any hour. Read-only: a write accepts it back and ignores it, so a read policy can be sent back unchanged. */
                         activity_window?: {
                             /** @description The IANA zone the activity window is read in, from where the account connects (its Curviate proxy's country, or your own proxy's detected location). Nobody sets it. Null while the zone is unknown: see fallback_timezones. */
@@ -40523,6 +40567,10 @@ export interface operations {
                             source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
                             /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Read this one, not `ceiling`, to know where the next call will be stopped. On an account in warm-up the two differ, and in the first week after connect they differ by a factor of about seven. Null when the row has no ceiling to ramp. `warm_up_state` and `warm_up_factor` beside it are the values ACTIVE on this row, not the seeded ones. */
                             effective_ceiling?: number | null;
+                            /** @description What the Account aims at per window on this row. Only the invitation total, InMail and profile views carry one (null on other rows): the row's configured `green` when set, otherwise `ceiling` times the profile's seeded ratio. Read-only. */
+                            target?: number | null;
+                            /** @description `target` with the account's warm-up and health factor applied, rounded down: LinkedIn pushback, forced sign-ins and low acceptance lower it, waiting invitations slow invitations separately. Null where `target` is null. Read-only. */
+                            effective_target?: number | null;
                             /** @description What a call through the matching ELEVATED interface is held to on this row: the `/v1/{account_id}/sales-navigator/...` and `/v1/{account_id}/recruiter/...` operations. Null when this row and limit profile have no such figure, which is every row on `basic` and `premium` and most rows everywhere. Everything else on this row (`ceiling`, `effective_ceiling`, `band` and `over_default`) is the STANDARD-interface figure, because one counter serves both interfaces and the standard side is the conservative one to band against. The consequence is worth reading: on a `sales_navigator` or `recruiter` account a row can report `band: "over"` with `posture: "enforce"` while a call through the elevated interface still succeeds; the refusal the band predicts is the one a standard call gets. */
                             interface_ceiling?: number | null;
                             /** @description `interface_ceiling` with the account's warm-up ramp applied, and null wherever `interface_ceiling` is null. Read THIS to know where an elevated-interface call stops, for the same reason `effective_ceiling` rather than `ceiling` answers that for a standard one. */
@@ -40550,7 +40598,7 @@ export interface operations {
                             "invite.send"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -40573,7 +40621,7 @@ export interface operations {
                             "post.comment"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -40596,7 +40644,7 @@ export interface operations {
                             "message.send"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -40619,7 +40667,7 @@ export interface operations {
                             "inmail.send"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -40642,7 +40690,7 @@ export interface operations {
                             "profile.follow"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -40665,7 +40713,7 @@ export interface operations {
                             "profile.unfollow"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -40688,7 +40736,7 @@ export interface operations {
                             "skill.endorse"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -40711,7 +40759,7 @@ export interface operations {
                             "invite.withdraw"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -40734,7 +40782,7 @@ export interface operations {
                             "post.react"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -40757,7 +40805,7 @@ export interface operations {
                             read?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -40780,7 +40828,7 @@ export interface operations {
                             global?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -41089,7 +41137,7 @@ export interface operations {
                             "invite.send"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -41112,7 +41160,7 @@ export interface operations {
                             "post.comment"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -41135,7 +41183,7 @@ export interface operations {
                             "message.send"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -41158,7 +41206,7 @@ export interface operations {
                             "inmail.send"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -41181,7 +41229,7 @@ export interface operations {
                             "profile.follow"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -41204,7 +41252,7 @@ export interface operations {
                             "profile.unfollow"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -41227,7 +41275,7 @@ export interface operations {
                             "skill.endorse"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -41250,7 +41298,7 @@ export interface operations {
                             "invite.withdraw"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -41273,7 +41321,7 @@ export interface operations {
                             "post.react"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -41296,7 +41344,7 @@ export interface operations {
                             read?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -41319,7 +41367,7 @@ export interface operations {
                             global?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -41467,7 +41515,7 @@ export interface operations {
                         [key: string]: {
                             /** @description Whole seconds, 0 to 86400. Null clears it. */
                             min_gap_seconds?: unknown;
-                            /** @description Whole seconds, 0 to 86400. Not on `global`. Null clears it. */
+                            /** @description Whole seconds, 0 to 86400. On `global` it defaults to 25. Null clears it. */
                             jitter_seconds?: unknown;
                             /** @description READ-ONLY. The over-default warnings (a value below the default). Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                             over_default?: unknown;
@@ -41599,7 +41647,7 @@ export interface operations {
                             "invite.send"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -41622,7 +41670,7 @@ export interface operations {
                             "post.comment"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -41645,7 +41693,7 @@ export interface operations {
                             "message.send"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -41668,7 +41716,7 @@ export interface operations {
                             "inmail.send"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -41691,7 +41739,7 @@ export interface operations {
                             "profile.follow"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -41714,7 +41762,7 @@ export interface operations {
                             "profile.unfollow"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -41737,7 +41785,7 @@ export interface operations {
                             "skill.endorse"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -41760,7 +41808,7 @@ export interface operations {
                             "invite.withdraw"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -41783,7 +41831,7 @@ export interface operations {
                             "post.react"?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -41806,7 +41854,7 @@ export interface operations {
                             read?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -41829,7 +41877,7 @@ export interface operations {
                             global?: {
                                 /** @description The least time between two Motion calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
-                                /** @description A random extra of up to this many seconds added to each gap. Absent on `global`, which has no jitter. */
+                                /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
                                 /** @description READ-ONLY. Empty when nothing on this entry is below default. */
                                 over_default?: {
@@ -44562,7 +44610,7 @@ export interface operations {
                             provider_id: string | null;
                             /** @description LinkedIn's member id, when observed. */
                             member_id: string | null;
-                            /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. The link is signed and expires: show initials when it fails to load. */
+                            /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. A copy we store, so the link does not expire; show initials when null. */
                             profile_picture_url: string | null;
                             /** @description Full name. */
                             full_name: string | null;
@@ -44744,7 +44792,7 @@ export interface operations {
                         provider_id: string | null;
                         /** @description LinkedIn's member id, when observed. */
                         member_id: string | null;
-                        /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. The link is signed and expires: show initials when it fails to load. */
+                        /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. A copy we store, so the link does not expire; show initials when null. */
                         profile_picture_url: string | null;
                         /** @description Full name. */
                         full_name: string | null;
@@ -44824,7 +44872,7 @@ export interface operations {
                         provider_id: string | null;
                         /** @description LinkedIn's member id, when observed. */
                         member_id: string | null;
-                        /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. The link is signed and expires: show initials when it fails to load. */
+                        /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. A copy we store, so the link does not expire; show initials when null. */
                         profile_picture_url: string | null;
                         /** @description Full name. */
                         full_name: string | null;
@@ -45019,7 +45067,7 @@ export interface operations {
                         provider_id: string | null;
                         /** @description LinkedIn's member id, when observed. */
                         member_id: string | null;
-                        /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. The link is signed and expires: show initials when it fails to load. */
+                        /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. A copy we store, so the link does not expire; show initials when null. */
                         profile_picture_url: string | null;
                         /** @description Full name. */
                         full_name: string | null;
@@ -46175,7 +46223,7 @@ export interface operations {
                         provider_id: string | null;
                         /** @description LinkedIn's member id, when observed. */
                         member_id: string | null;
-                        /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. The link is signed and expires: show initials when it fails to load. */
+                        /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. A copy we store, so the link does not expire; show initials when null. */
                         profile_picture_url: string | null;
                         /** @description Full name. */
                         full_name: string | null;
@@ -46414,7 +46462,7 @@ export interface operations {
                         provider_id: string | null;
                         /** @description LinkedIn's member id, when observed. */
                         member_id: string | null;
-                        /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. The link is signed and expires: show initials when it fails to load. */
+                        /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. A copy we store, so the link does not expire; show initials when null. */
                         profile_picture_url: string | null;
                         /** @description Full name. */
                         full_name: string | null;
@@ -47986,9 +48034,16 @@ export interface operations {
                             };
                             settings: {
                                 accounts_per_contact: number;
-                                /** @enum {string} */
-                                assign: "auto" | "even" | "already_connected";
-                                new_enrollments_per_account_per_day: number;
+                                /**
+                                 * @description Which sending account takes a Contact. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
+                                 * @enum {string}
+                                 */
+                                assign: "auto" | "already_connected";
+                                /**
+                                 * @description This Motion's share of each sending account's daily allowance: normal, or prioritized for twice a normal Motion's share. A share nobody uses flows to the other Motions the same day.
+                                 * @enum {string}
+                                 */
+                                priority: "normal" | "prioritized";
                                 exclude: {
                                     other_motions: boolean;
                                     known_chats: boolean;
@@ -48150,14 +48205,19 @@ export interface operations {
                     };
                     /** @description Merged key by key on update. */
                     settings?: {
+                        /**
+                         * @description This Motion's share of each sending account's daily allowance: normal, or prioritized for twice a normal Motion's share. Default normal.
+                         * @enum {string}
+                         */
+                        priority?: "normal" | "prioritized";
                         /** @description How many sending accounts may contact one Contact (1 to 10). Default 1. */
                         accounts_per_contact?: number;
                         /**
-                         * @description How Contacts are assigned to sending accounts: auto, even or already_connected. Default auto.
+                         * @description Which sending account takes a Contact. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them; anyone else is skipped. Default auto. even is retired: accepted and ignored with a SETTING_REMOVED notice and a Deprecation: true header until 2027-01-28, never stored or returned; a 400 after that day.
                          * @enum {string}
                          */
                         assign?: "auto" | "even" | "already_connected";
-                        /** @description New Enrollments per sending account per day (1 to 1000). Default 15. */
+                        /** @description Retired: new people now start at each sending account's daily allowance. Accepted and ignored with a SETTING_REMOVED notice and a Deprecation: true header until 2027-01-28, never stored or returned; a 400 after that day. */
                         new_enrollments_per_account_per_day?: number;
                         exclude?: {
                             /** @description Skip Contacts already in another Motion. Default true. */
@@ -48239,9 +48299,16 @@ export interface operations {
                         };
                         settings: {
                             accounts_per_contact: number;
-                            /** @enum {string} */
-                            assign: "auto" | "even" | "already_connected";
-                            new_enrollments_per_account_per_day: number;
+                            /**
+                             * @description Which sending account takes a Contact. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
+                             * @enum {string}
+                             */
+                            assign: "auto" | "already_connected";
+                            /**
+                             * @description This Motion's share of each sending account's daily allowance: normal, or prioritized for twice a normal Motion's share. A share nobody uses flows to the other Motions the same day.
+                             * @enum {string}
+                             */
+                            priority: "normal" | "prioritized";
                             exclude: {
                                 other_motions: boolean;
                                 known_chats: boolean;
@@ -48294,7 +48361,7 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
                         warnings: {
-                            /** @description The warning id, W1 to W16. */
+                            /** @description The warning id, W1 to W17. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -48328,6 +48395,14 @@ export interface operations {
                         completed_at: string | null;
                         /** @description When it was archived. */
                         archived_at: string | null;
+                        /** @description Present on a write only, and only when it sent a retired setting: one SETTING_REMOVED entry per key, naming it and the last day it is accepted (2027-01-28). Nothing was stored for it; the response carries a Deprecation: true header. Branch on code, never on message. */
+                        notices?: {
+                            /** @enum {string} */
+                            code: "SETTING_REMOVED";
+                            /** @enum {string} */
+                            field: "settings.new_enrollments_per_account_per_day";
+                            message: string;
+                        }[];
                     };
                 };
             };
@@ -48468,9 +48543,16 @@ export interface operations {
                         };
                         settings: {
                             accounts_per_contact: number;
-                            /** @enum {string} */
-                            assign: "auto" | "even" | "already_connected";
-                            new_enrollments_per_account_per_day: number;
+                            /**
+                             * @description Which sending account takes a Contact. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
+                             * @enum {string}
+                             */
+                            assign: "auto" | "already_connected";
+                            /**
+                             * @description This Motion's share of each sending account's daily allowance: normal, or prioritized for twice a normal Motion's share. A share nobody uses flows to the other Motions the same day.
+                             * @enum {string}
+                             */
+                            priority: "normal" | "prioritized";
                             exclude: {
                                 other_motions: boolean;
                                 known_chats: boolean;
@@ -48523,7 +48605,7 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
                         warnings: {
-                            /** @description The warning id, W1 to W16. */
+                            /** @description The warning id, W1 to W17. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -48732,14 +48814,19 @@ export interface operations {
                     };
                     /** @description Merged key by key on update. */
                     settings?: {
+                        /**
+                         * @description This Motion's share of each sending account's daily allowance: normal, or prioritized for twice a normal Motion's share. Default normal.
+                         * @enum {string}
+                         */
+                        priority?: "normal" | "prioritized";
                         /** @description How many sending accounts may contact one Contact (1 to 10). Default 1. */
                         accounts_per_contact?: number;
                         /**
-                         * @description How Contacts are assigned to sending accounts: auto, even or already_connected. Default auto.
+                         * @description Which sending account takes a Contact. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them; anyone else is skipped. Default auto. even is retired: accepted and ignored with a SETTING_REMOVED notice and a Deprecation: true header until 2027-01-28, never stored or returned; a 400 after that day.
                          * @enum {string}
                          */
                         assign?: "auto" | "even" | "already_connected";
-                        /** @description New Enrollments per sending account per day (1 to 1000). Default 15. */
+                        /** @description Retired: new people now start at each sending account's daily allowance. Accepted and ignored with a SETTING_REMOVED notice and a Deprecation: true header until 2027-01-28, never stored or returned; a 400 after that day. */
                         new_enrollments_per_account_per_day?: number;
                         exclude?: {
                             /** @description Skip Contacts already in another Motion. Default true. */
@@ -48823,9 +48910,16 @@ export interface operations {
                         };
                         settings: {
                             accounts_per_contact: number;
-                            /** @enum {string} */
-                            assign: "auto" | "even" | "already_connected";
-                            new_enrollments_per_account_per_day: number;
+                            /**
+                             * @description Which sending account takes a Contact. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
+                             * @enum {string}
+                             */
+                            assign: "auto" | "already_connected";
+                            /**
+                             * @description This Motion's share of each sending account's daily allowance: normal, or prioritized for twice a normal Motion's share. A share nobody uses flows to the other Motions the same day.
+                             * @enum {string}
+                             */
+                            priority: "normal" | "prioritized";
                             exclude: {
                                 other_motions: boolean;
                                 known_chats: boolean;
@@ -48878,7 +48972,7 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
                         warnings: {
-                            /** @description The warning id, W1 to W16. */
+                            /** @description The warning id, W1 to W17. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -48914,6 +49008,14 @@ export interface operations {
                         archived_at: string | null;
                         /** @enum {string} */
                         sequence_change: "none" | "copy" | "structural";
+                        /** @description Present on a write only, and only when it sent a retired setting: one SETTING_REMOVED entry per key, naming it and the last day it is accepted (2027-01-28). Nothing was stored for it; the response carries a Deprecation: true header. Branch on code, never on message. */
+                        notices?: {
+                            /** @enum {string} */
+                            code: "SETTING_REMOVED";
+                            /** @enum {string} */
+                            field: "settings.new_enrollments_per_account_per_day";
+                            message: string;
+                        }[];
                     };
                 };
             };
@@ -49054,9 +49156,16 @@ export interface operations {
                         };
                         settings: {
                             accounts_per_contact: number;
-                            /** @enum {string} */
-                            assign: "auto" | "even" | "already_connected";
-                            new_enrollments_per_account_per_day: number;
+                            /**
+                             * @description Which sending account takes a Contact. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
+                             * @enum {string}
+                             */
+                            assign: "auto" | "already_connected";
+                            /**
+                             * @description This Motion's share of each sending account's daily allowance: normal, or prioritized for twice a normal Motion's share. A share nobody uses flows to the other Motions the same day.
+                             * @enum {string}
+                             */
+                            priority: "normal" | "prioritized";
                             exclude: {
                                 other_motions: boolean;
                                 known_chats: boolean;
@@ -49109,7 +49218,7 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
                         warnings: {
-                            /** @description The warning id, W1 to W16. */
+                            /** @description The warning id, W1 to W17. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -49274,9 +49383,16 @@ export interface operations {
                         };
                         settings: {
                             accounts_per_contact: number;
-                            /** @enum {string} */
-                            assign: "auto" | "even" | "already_connected";
-                            new_enrollments_per_account_per_day: number;
+                            /**
+                             * @description Which sending account takes a Contact. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
+                             * @enum {string}
+                             */
+                            assign: "auto" | "already_connected";
+                            /**
+                             * @description This Motion's share of each sending account's daily allowance: normal, or prioritized for twice a normal Motion's share. A share nobody uses flows to the other Motions the same day.
+                             * @enum {string}
+                             */
+                            priority: "normal" | "prioritized";
                             exclude: {
                                 other_motions: boolean;
                                 known_chats: boolean;
@@ -49329,7 +49445,7 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
                         warnings: {
-                            /** @description The warning id, W1 to W16. */
+                            /** @description The warning id, W1 to W17. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -49485,9 +49601,16 @@ export interface operations {
                         };
                         settings: {
                             accounts_per_contact: number;
-                            /** @enum {string} */
-                            assign: "auto" | "even" | "already_connected";
-                            new_enrollments_per_account_per_day: number;
+                            /**
+                             * @description Which sending account takes a Contact. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
+                             * @enum {string}
+                             */
+                            assign: "auto" | "already_connected";
+                            /**
+                             * @description This Motion's share of each sending account's daily allowance: normal, or prioritized for twice a normal Motion's share. A share nobody uses flows to the other Motions the same day.
+                             * @enum {string}
+                             */
+                            priority: "normal" | "prioritized";
                             exclude: {
                                 other_motions: boolean;
                                 known_chats: boolean;
@@ -49540,7 +49663,7 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
                         warnings: {
-                            /** @description The warning id, W1 to W16. */
+                            /** @description The warning id, W1 to W17. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -49705,9 +49828,16 @@ export interface operations {
                         };
                         settings: {
                             accounts_per_contact: number;
-                            /** @enum {string} */
-                            assign: "auto" | "even" | "already_connected";
-                            new_enrollments_per_account_per_day: number;
+                            /**
+                             * @description Which sending account takes a Contact. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
+                             * @enum {string}
+                             */
+                            assign: "auto" | "already_connected";
+                            /**
+                             * @description This Motion's share of each sending account's daily allowance: normal, or prioritized for twice a normal Motion's share. A share nobody uses flows to the other Motions the same day.
+                             * @enum {string}
+                             */
+                            priority: "normal" | "prioritized";
                             exclude: {
                                 other_motions: boolean;
                                 known_chats: boolean;
@@ -49760,7 +49890,7 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
                         warnings: {
-                            /** @description The warning id, W1 to W16. */
+                            /** @description The warning id, W1 to W17. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -49982,7 +50112,7 @@ export interface operations {
                         truncated: boolean;
                         samples: {
                             contact_id: string;
-                            /** @description The sending account this Contact would be assigned, from stored data; null when none can act or assignment needs LinkedIn. */
+                            /** @description A sending account to render this sample with, not a promise: the account is set when one takes the Contact. null when none can act or assignment needs LinkedIn. */
                             account_id: string | null;
                             /**
                              * @description Why the Contact would not be enrolled, from stored data: the Team's do-not-contact list holds it, an Exclusion list holds it, it is or was within 90 days in another Motion, or an account already chats with it. null: nothing excludes it.
@@ -50017,7 +50147,7 @@ export interface operations {
                         }[];
                         /** @description An estimate of how long the list takes, from each account's current budget ceilings (warm-up applied). Each Contact is enrolled on min(accounts_per_contact, accounts that can act) accounts; those Enrollments split evenly over the accounts. It ignores what other Motions spend. */
                         projection: {
-                            /** @description The Contacts of the source lists, counted from stored data (nothing is read from LinkedIn), each once. A Contact that would be skipped for several reasons counts under the first: do_not_contact, excluded, other_motion, known_chat, filtered. Present even when the Motion has no Sequence. */
+                            /** @description The Contacts of the source lists, counted from stored data (nothing is read from LinkedIn), each once. A Contact that would be skipped for several reasons counts under the first: do_not_contact, excluded, other_motion, known_chat, filtered, not_connected. Present even when the Motion has no Sequence. */
                             audience: {
                                 /** @description Contacts in the Motion's source lists, each counted once. */
                                 total: number;
@@ -50032,6 +50162,8 @@ export interface operations {
                                     known_chat: number;
                                     /** @description Fail a where filter on stored Contact data (fields, extra fields, tags). A filter only LinkedIn can answer, such as degree or premium, is checked when the Contact enrolls and does not count here. */
                                     filtered: number;
+                                    /** @description With settings.assign already_connected: no sending account is connected to them, so the Motion will skip them. 0 for any other assign, and while a sending account has not finished reading its Connections. */
+                                    not_connected: number;
                                 };
                                 /** @description total minus every skipped count: the Contacts the projection plans for. */
                                 to_enroll: number;
@@ -50044,26 +50176,41 @@ export interface operations {
                                 contacts: number;
                                 /** @description Schedule days to enroll that share; null when a ceiling of 0 admits none. */
                                 enroll_days: number | null;
-                                /** @description The limit that set this account's pace: daily_cap, or a budget row such as connection_requests_no_note. */
+                                /** @description The limit that set this account's pace: the pool whose share sets the start rate (invitations, views), pace for a Motion with no invitation or profile view (about 60 new people a day), or a budget row such as messages_first_degree. */
                                 binding: string;
+                                /** @description The LinkedIn actions a day this Motion is expected to make on this account at that pace, every budgeted step of the costliest route counted. An estimate; 0 when the account carries no Contact. */
+                                expected_actions_per_day: number;
                             }[];
                             /** @description Calendar days of waits and timeouts on the longest route, rounded up. null when the Motion has no Sequence. */
                             longest_path_days: number | null;
                             /** @description Schedule days until the last Contact finishes: the slowest account's enroll_days plus the longest route in schedule days, plus, with accounts_per_contact above 1, settings.account_gap (default 1d) in schedule days for each further account a Contact is enrolled on. null when nothing can run. */
                             finish_working_days: number | null;
-                            /** @description Whether every Contact finishes before schedule.end_at, counting schedule days from now (or schedule.start_at if later). null when the schedule has no end_at or the Motion has no Sequence. schedule.hours is not modelled: the estimate assumes each day's actions fit the daily window. */
+                            /** @description Whether every Contact finishes before schedule.end_at, counting schedule days from now (or schedule.start_at if later). null when the schedule has no end_at or the Motion has no Sequence. schedule.hours does not slow the estimate; warnings says where the hours cannot use the Motion's share. */
                             fits_before_end_at: boolean | null;
                             /** @description The slowest account and its limiter; null when no sending account can act. */
                             binding: {
                                 account_id: string;
                                 limiter: string;
                             } | null;
-                            /** @description One line that says it is an estimate at the account's steady-state ceiling, for example: 100 Contacts finish in 27 working days; binding row daily_cap (an estimate at each Account's steady-state ceiling). When fits_before_end_at is false it says the Motion ends first and how many Contacts can enroll by then. */
+                            /** @description hours_below_share: the Motion's schedule.hours cannot use its share (a session runs in at most 90% of the hours and 8 hours a day, one action per the pool's mean gap). no_sending_account: every route of the Sequence sends an InMail and no sending account has Sales Navigator or Recruiter, so no account can take anyone; it has only code and message. Empty when none. */
+                            warnings: {
+                                /** @enum {string} */
+                                code: "hours_below_share" | "no_sending_account";
+                                account_id?: string;
+                                /** @description The pool that sets the rate: invitations or views. */
+                                pool?: string;
+                                /** @description This Motion's share of that pool, a day. */
+                                share_per_day?: number;
+                                /** @description What its hours fit, a day. */
+                                fits_per_day?: number;
+                                message: string;
+                            }[];
+                            /** @description One line that says it is an estimate at the account's steady-state pace, for example: 100 Contacts finish in 27 working days; bound by invitations (an estimate at each Account's steady-state pace). When fits_before_end_at is false it says the Motion ends first and how many Contacts can enroll by then. */
                             summary: string;
                         };
                         /** @description Lint warnings, as on the Motion. */
                         warnings: {
-                            /** @description The warning id, W1 to W16. */
+                            /** @description The warning id, W1 to W17. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -50414,7 +50561,7 @@ export interface operations {
                             motion_id: string;
                             /** @description The Contact (con_...); null once the Contact is deleted. */
                             contact_id: string | null;
-                            /** @description The sending account (acc_...); null until one is assigned. */
+                            /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Motion takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
                             account_id: string | null;
                             /** @description The Sequence version this Enrollment runs on. */
                             sequence_version: number;
@@ -50428,7 +50575,7 @@ export interface operations {
                             /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
                             waiting: {
                                 /** @enum {string} */
-                                kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                                kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
                                 /** @description The Step it waits at; null before it starts. */
                                 step_id: string | null;
                                 /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -50564,7 +50711,7 @@ export interface operations {
                         motion_id: string;
                         /** @description The Contact (con_...); null once the Contact is deleted. */
                         contact_id: string | null;
-                        /** @description The sending account (acc_...); null until one is assigned. */
+                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Motion takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
                         account_id: string | null;
                         /** @description The Sequence version this Enrollment runs on. */
                         sequence_version: number;
@@ -50578,7 +50725,7 @@ export interface operations {
                         /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -50732,7 +50879,7 @@ export interface operations {
                         motion_id: string;
                         /** @description The Contact (con_...); null once the Contact is deleted. */
                         contact_id: string | null;
-                        /** @description The sending account (acc_...); null until one is assigned. */
+                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Motion takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
                         account_id: string | null;
                         /** @description The Sequence version this Enrollment runs on. */
                         sequence_version: number;
@@ -50746,7 +50893,7 @@ export interface operations {
                         /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -50888,7 +51035,7 @@ export interface operations {
                         motion_id: string;
                         /** @description The Contact (con_...); null once the Contact is deleted. */
                         contact_id: string | null;
-                        /** @description The sending account (acc_...); null until one is assigned. */
+                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Motion takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
                         account_id: string | null;
                         /** @description The Sequence version this Enrollment runs on. */
                         sequence_version: number;
@@ -50902,7 +51049,7 @@ export interface operations {
                         /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -51051,7 +51198,7 @@ export interface operations {
                         motion_id: string;
                         /** @description The Contact (con_...); null once the Contact is deleted. */
                         contact_id: string | null;
-                        /** @description The sending account (acc_...); null until one is assigned. */
+                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Motion takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
                         account_id: string | null;
                         /** @description The Sequence version this Enrollment runs on. */
                         sequence_version: number;
@@ -51065,7 +51212,7 @@ export interface operations {
                         /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -51223,7 +51370,7 @@ export interface operations {
                         motion_id: string;
                         /** @description The Contact (con_...); null once the Contact is deleted. */
                         contact_id: string | null;
-                        /** @description The sending account (acc_...); null until one is assigned. */
+                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Motion takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
                         account_id: string | null;
                         /** @description The Sequence version this Enrollment runs on. */
                         sequence_version: number;
@@ -51237,7 +51384,7 @@ export interface operations {
                         /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -51395,7 +51542,7 @@ export interface operations {
                         motion_id: string;
                         /** @description The Contact (con_...); null once the Contact is deleted. */
                         contact_id: string | null;
-                        /** @description The sending account (acc_...); null until one is assigned. */
+                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Motion takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
                         account_id: string | null;
                         /** @description The Sequence version this Enrollment runs on. */
                         sequence_version: number;
@@ -51409,7 +51556,7 @@ export interface operations {
                         /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -51576,7 +51723,7 @@ export interface operations {
                         motion_id: string;
                         /** @description The Contact (con_...); null once the Contact is deleted. */
                         contact_id: string | null;
-                        /** @description The sending account (acc_...); null until one is assigned. */
+                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Motion takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
                         account_id: string | null;
                         /** @description The Sequence version this Enrollment runs on. */
                         sequence_version: number;
@@ -51590,7 +51737,7 @@ export interface operations {
                         /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -54142,7 +54289,7 @@ export interface operations {
                         /** @description One row per budget row with at least one counted call in the window, in the Safety row order. */
                         types: {
                             /**
-                             * @description The budget row. Units differ per row: connection_requests_with_note, one invitation sent with a note; connection_requests_no_note, one invitation sent without a note; messages_first_degree, one message to a 1st-degree connection; inmail, one InMail sent; open_profile_inmail, one free message to an Open Profile; profile_views, one profile read; search, one search result line, not one query; comments, one comment posted; post_likes, one reaction to a post, a comment or a message; follows, one follow; content_poll, one content read: a page of posts, a feed, a company page or its followers; job_poll, one read of job postings; posts, one post published; endorsements, one skill endorsed; invite_responses, one received invitation accepted or declined; withdrawal_sweep, one sent invitation withdrawn; connections_sync, one background read of the connection list; inbox_sync, one background read of the inbox; profile_snapshot, one attempt of the daily Account snapshot.
+                             * @description The budget row. Units differ per row: connection_requests_with_note, one invitation sent with a note (also counted in Invitations); connection_requests_no_note, one invitation sent, with or without a note; messages_first_degree, one message to a 1st-degree connection; inmail, one InMail sent; open_profile_inmail, one free message to an Open Profile; profile_views, one profile read; search, one search result line, not one query; comments, one comment posted; post_likes, one reaction to a post, a comment or a message; follows, one follow; content_poll, one content read: a page of posts, a feed, a company page or its followers; job_poll, one read of job postings; posts, one post published; endorsements, one skill endorsed; invite_responses, one received invitation accepted or declined; withdrawal_sweep, one sent invitation withdrawn; connections_sync, one background read of the connection list; inbox_sync, one background read of the inbox; profile_snapshot, one attempt of the daily Account snapshot.
                              * @enum {string}
                              */
                             budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot";
@@ -54169,7 +54316,7 @@ export interface operations {
                             account_name: string | null;
                             types: {
                                 /**
-                                 * @description The budget row. Units differ per row: connection_requests_with_note, one invitation sent with a note; connection_requests_no_note, one invitation sent without a note; messages_first_degree, one message to a 1st-degree connection; inmail, one InMail sent; open_profile_inmail, one free message to an Open Profile; profile_views, one profile read; search, one search result line, not one query; comments, one comment posted; post_likes, one reaction to a post, a comment or a message; follows, one follow; content_poll, one content read: a page of posts, a feed, a company page or its followers; job_poll, one read of job postings; posts, one post published; endorsements, one skill endorsed; invite_responses, one received invitation accepted or declined; withdrawal_sweep, one sent invitation withdrawn; connections_sync, one background read of the connection list; inbox_sync, one background read of the inbox; profile_snapshot, one attempt of the daily Account snapshot.
+                                 * @description The budget row. Units differ per row: connection_requests_with_note, one invitation sent with a note (also counted in Invitations); connection_requests_no_note, one invitation sent, with or without a note; messages_first_degree, one message to a 1st-degree connection; inmail, one InMail sent; open_profile_inmail, one free message to an Open Profile; profile_views, one profile read; search, one search result line, not one query; comments, one comment posted; post_likes, one reaction to a post, a comment or a message; follows, one follow; content_poll, one content read: a page of posts, a feed, a company page or its followers; job_poll, one read of job postings; posts, one post published; endorsements, one skill endorsed; invite_responses, one received invitation accepted or declined; withdrawal_sweep, one sent invitation withdrawn; connections_sync, one background read of the connection list; inbox_sync, one background read of the inbox; profile_snapshot, one attempt of the daily Account snapshot.
                                  * @enum {string}
                                  */
                                 budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot";
@@ -54207,6 +54354,10 @@ export interface operations {
                                 ceiling: number | null;
                                 /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (its first four weeks after connect, after a quiet spell, or while it recovers from a restriction) the two differ, and in the first week after connect they differ by a factor of about seven. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
                                 effective_ceiling?: number | null;
+                                /** @description What the Account aims at per window on this row. Only the invitation total, InMail and profile views carry one (null on other rows): the row's configured `green` when set, otherwise `ceiling` times the profile's seeded ratio. */
+                                target?: number | null;
+                                /** @description `target` with the account's warm-up and health applied, rounded down. Null where `target` is null. */
+                                effective_target?: number | null;
                                 /** @description What a call through the matching ELEVATED interface is held to on this row: the `/v1/{account_id}/sales-navigator/...` and `/v1/{account_id}/recruiter/...` operations. Null when this row and limit profile have no such figure, which is every row on `basic` and `premium` and most rows everywhere. Everything else on this row (`ceiling`, `effective_ceiling`, `band` and `over_default`) is the STANDARD-interface figure, because one counter serves both interfaces and the standard side is the conservative one to band against. The consequence is worth reading: on a `sales_navigator` or `recruiter` account a row can report `band: "over"` while a call through the elevated interface still succeeds; the refusal the band predicts is the one a standard call gets. */
                                 interface_ceiling?: number | null;
                                 /** @description `effective_ceiling` minus `used`, never below 0: what this account can still do on this row in the current window. Null when the row has no ceiling (`total_actions`) or no level yet (`pending_invites` before it was read). */
@@ -54220,7 +54371,7 @@ export interface operations {
                                 band: "green" | "amber" | "hard" | "over";
                                 /** @description Whether something on this row is configured above Curviate's own default. The safety policy carries the detail: which field, the value, the default and how well calibrated that default is. */
                                 over_default: boolean;
-                                /** @description An active pause on this row because the platform refused a recent request on it, or `null`. A halt is not a ceiling: no limit you raise lifts it, and it clears itself when it expires. To lift one before it expires, send this row in `clear_halts` on `PATCH /v1/{account_id}/safety-policy`; that is recorded, and the pause returns if the platform refuses the account again. */
+                                /** @description An active pause on this row because the platform refused a recent request on it, or `null`. Motion work on other rows keeps running. A Motion also waits longer than this pause after LinkedIn refuses invitations or views for going too fast: 6 hours, then 24, then 72, at most 7 days on each repeat, resetting after 7 clean days; `health` on the account shows it. A halt is not a ceiling: no limit you raise lifts it, and it clears itself when it expires. To lift one before it expires, send this row in `clear_halts` on `PATCH /v1/{account_id}/safety-policy`; that is recorded, and the pause returns if the platform refuses the account again. */
                                 halt: {
                                     /** @description What the platform did: `rate_limited`, `platform_fault`, or `resend_cooldown` (the same invitation was sent too recently). */
                                     reason?: string;

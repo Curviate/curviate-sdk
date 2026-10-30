@@ -101,6 +101,16 @@ export class MotionsResource {
    * and `account_gap` (`1d` to `30d`), served only in that mode;
    * `accounts_per_contact` is locked once the Motion has started.
    *
+   * `settings.priority` (`normal`, the default, or `prioritized`) is the
+   * Motion's share of each sending account's daily allowance: a prioritized
+   * Motion gets twice a normal one's share, and a share nobody uses flows to
+   * the others. Curviate paces all Motions on an account against one budget,
+   * so there is no per-Motion start cap. `settings.new_enrollments_per_account_per_day`
+   * and `settings.assign: "even"` are retired: accepted and ignored until
+   * 2027-01-28 with a `SETTING_REMOVED` entry in `notices[]` and
+   * `Deprecation: true`, never returned, then a `400`. A pending Enrollment
+   * waits unassigned (`account_id: null`) until an account with room takes it.
+   *
    * @example
    * const motion = await curviate.motions.create({
    *   name: "Q4 webinar follow-up",
@@ -239,7 +249,11 @@ export class MotionsResource {
    * `projection.audience` is `{ total, skipped, to_enroll }`, `skipped`
    * counted per reason (`do_not_contact`, `excluded`, `other_motion`,
    * `known_chat`, `filtered`; a Contact counts under the first that applies);
-   * `projection.contacts` equals `to_enroll`. In
+   * `projection.contacts` equals `to_enroll`. `projection.accounts[]` names the
+   * pool that binds each account's pace (`binding`), its
+   * `expected_actions_per_day` (an upper estimate) and `projection.warnings[]`
+   * (`hours_below_share`, `no_sending_account`: no account of the Motion can
+   * send its InMail step). There is no `daily_cap`. In
    * Several mode `accounts[].contacts` counts Enrollments, not people, and
    * `projection.fits_before_end_at` is counted per account zone.
    * `GET /v1/motions/{id}/preview`

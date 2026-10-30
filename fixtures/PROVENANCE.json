@@ -1,7 +1,7 @@
 {
   "source_base_url": "https://api.staging.curviate.com",
-  "server_git_sha": "21b253175db1bb80cc75126fe3f31e622f0ad930",
-  "fetched_at": "2026-10-30T11:13:05.039Z",
+  "server_git_sha": "1635e59319fb1cc43aedec76f9ac1afd3832273b",
+  "fetched_at": "2026-10-30T21:30:43.000Z",
   "paths": 222,
   "servers_canonicalized": true,
   "note": "Written by scripts/refresh-fixture.mjs (pnpm gen:fixture). Do not hand-edit; refresh instead."
