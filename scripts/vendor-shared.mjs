@@ -25,6 +25,7 @@ const FILES = [
   "field-paths.ts",
   "sequence/validate.ts",
   "sequence/limits.ts",
+  "sequence/message-actions.ts",
   "sequence/paths.ts",
   "sequence/references.ts",
   "sequence/rules.ts",

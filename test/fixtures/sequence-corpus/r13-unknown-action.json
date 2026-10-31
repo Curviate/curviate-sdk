@@ -17,9 +17,9 @@
   "errors": [
     {
       "path": "a.do",
-      "rule": "unknown action; use profile.view, profile.follow, profile.unfollow, invite.send, invite.withdraw, message.send, inmail.send, post.react, post.comment, skill.endorse",
+      "rule": "unknown action; use profile.view, profile.follow, profile.unfollow, invite.send, invite.withdraw, message.send, inmail.send, voice.send, post.react, post.comment, skill.endorse",
       "code": "R13",
-      "message": "unknown action; use profile.view, profile.follow, profile.unfollow, invite.send, invite.withdraw, message.send, inmail.send, post.react, post.comment, skill.endorse",
+      "message": "unknown action; use profile.view, profile.follow, profile.unfollow, invite.send, invite.withdraw, message.send, inmail.send, voice.send, post.react, post.comment, skill.endorse",
       "pointer": "/steps/0/do",
       "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",

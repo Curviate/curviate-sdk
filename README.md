@@ -365,6 +365,38 @@ A voice note stays out of groups. `shared_content` with an attachment, without `
 
 ---
 
+## Voice notes
+
+A Voice note is a Message step that sends audio instead of text, or one audio attachment sent by hand. Upload the file once, then reference its id:
+
+```ts
+import { readFile } from "node:fs/promises";
+import { Sequence, step } from "@curviate/sdk";
+
+// 1 to 120 seconds, up to 20 MiB, 100 uploads per Team per 24 hours (RATE_LIMIT_TENANT, Retry-After).
+// The file is converted once and the original is discarded. A retry stores a second clip.
+const clip = await curviate.motions.voiceClips.upload(await readFile("intro.mp3"), { filename: "intro.mp3" });
+const { duration_ms } = await curviate.motions.voiceClips.get(clip.id); // no download link in the response
+
+const seq = Sequence.create({ on_reply: "end" }).add(
+  step.do("voice", "voice.send", {
+    with: { clip_id: clip.id, fallback: "Hi, thanks for connecting." }, // fallback: required, no variables
+    next: "end",
+  }),
+);
+// A/B: variants: [{ id: "a", clip_id }, { id: "b", clip_id }] and a shared with.fallback; no text in the step.
+
+// By hand: one audio attachment alone, to one person, no text, arrives as a voice note.
+await acc.messaging.sendMessage("c_123", {
+  attachments: [{ filename: "hello.m4a", content_type: "audio/mp4", content: base64 }],
+});
+// Up to 5 MiB per file, 9 MiB per request (base64). send_mode: "file" on the attachment sends it as a download instead (and may carry text).
+```
+
+`VOICE_CLIP_INVALID` (422) names the reason: the file is empty, is not audio, cannot be decoded, is under 1 second or over 120 seconds. A clip is never shortened. Over 20 MiB, or a size the platform refuses on a direct send, is `PAYLOAD_TOO_LARGE` (413); the upload's body must carry its `Content-Length`, so pass the bytes, not a stream (a chunked upload is `411`). If the audio cannot go, the step sends its `fallback` text. There is no voice in a group chat, InMail or a company chat (audio there sends as a file); a direct message states no duration limit. A clip no Sequence uses is deleted 30 days after its upload.
+
+---
+
 ## Typed error handling
 
 Every API error is a `CurviateError`. Use `isCurviateError` to narrow in `catch`, then switch on `err.code` for exhaustive handling:

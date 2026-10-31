@@ -142,6 +142,9 @@ export type {
 export type { Tag, TagListParams, TagListPage, TagUpdateBody } from "./resources/tags.js";
 
 export type {
+  VoiceClip,
+  VoiceClipContentType,
+  VoiceClipUploadOptions,
   Motion,
   MotionCreateBody,
   MotionUpdateBody,
