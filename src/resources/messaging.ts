@@ -145,6 +145,15 @@ export class MessagingResource {
    * touched is not detected. A person on the do-not-contact list throws
    * `DO_NOT_CONTACT` (409). A send marks the chat read, and a disconnected
    * Account throws `REAUTH_REQUIRED` (409).
+   * @example
+   * const acc = curviate.account("acc_YOUR_ACCOUNT_ID");
+   * // Two attendees start a group chat, named by subject.
+   * const result = await acc.messaging.startChat({
+   *   attendees_ids: ["YOUR_PROFILE_ID", "ANOTHER_PROFILE_ID"],
+   *   subject: "Q4 intro",
+   *   text: "Hi both, you two should meet.",
+   * });
+   * console.log(result.chat_id);
    */
   startChat(body: StartChatBody): Promise<StartChatResult> {
     return this.ctx.request<StartChatResult>({
@@ -266,12 +275,6 @@ export class MessagingResource {
    *   text: "Thanks for reaching out!",
    * });
    * console.log(result.sent_as); // { kind: "company", company_id: "112013061", name: "Acme Inc" }
-   * @example
-   * // Share a job posting in a chat (text is required with shared_content).
-   * await acc.messaging.sendMessage("c_123", {
-   *   text: "Thought of you for this one.",
-   *   shared_content: { type: "job_posting", id: "4012345678" },
-   * });
    */
   sendMessage(chatId: string, body: SendMessageBody): Promise<SendMessageResult> {
     return this.ctx.request<SendMessageResult>({
