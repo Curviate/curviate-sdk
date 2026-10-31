@@ -348,6 +348,23 @@ sendFirstMessage().catch(console.error);
 
 ---
 
+## Group chats and shared content
+
+```ts
+// Two or more attendees start a group chat, named by subject. A repeated id counts once.
+await acc.messaging.startChat({ attendees_ids: ["ACo_A", "ACo_B"], subject: "Q4 intro", text: "Hi both." });
+
+// Show a post or job posting natively; text is required, no attachments.
+await acc.messaging.sendMessage("c_123", {
+  text: "Thought of you for this one.",
+  shared_content: { type: "job_posting", id: "4012345678" },
+});
+```
+
+A voice note stays out of groups. `shared_content` with an attachment, without `text`, or on a `COMPANY_` chat throws `INVALID_REQUEST` (400); Sales Navigator and Recruiter do not take it. A post `id` is the one `posts.get` returns; a job posting takes its numeric job id. Whether a post id renders in the message is unproven until a live send.
+
+---
+
 ## Typed error handling
 
 Every API error is a `CurviateError`. Use `isCurviateError` to narrow in `catch`, then switch on `err.code` for exhaustive handling:
