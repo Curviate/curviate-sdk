@@ -377,6 +377,15 @@ export const ERROR_CODES = [
   "SEQUENCE_INVALID",
   "SEQUENCE_CONFLICT",
 
+  // Voice clips (`motions.voiceClips.upload`). `VOICE_CLIP_INVALID` (422): the
+  // file is empty, is not audio or cannot be decoded, is under 1 second or is
+  // over 120 seconds; the message names the reason and the limit. A clip is
+  // never shortened and nothing is stored. user_fixable, never retryable as
+  // sent. The other refusals reuse existing codes: `PAYLOAD_TOO_LARGE` (413,
+  // over 20 MiB), `RATE_LIMIT_TENANT` (429, 100 uploads per Team per 24 hours,
+  // `Retry-After` is the wait), `PLATFORM_RATE_LIMIT` (429, `Retry-After: 5`).
+  "VOICE_CLIP_INVALID",
+
   // Motions and Enrollments (`motions`, `enrollments`).
   //
   // - `MOTION_NOT_STARTABLE` (422): `start` or `resume` found gaps; `errors`

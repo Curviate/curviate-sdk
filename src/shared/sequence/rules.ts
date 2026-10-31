@@ -46,6 +46,7 @@ const HINTS: Record<string, (token: string) => string> = {
     W13: (t) => `Use ${t} instead.`,
     W14: () => "Use the value in a message or an if step, or remove it from save if no webhook template sends it.",
     W16: (t) => `Use ${t} to read the saved value.`,
+    W17: () => "Set settings.assign to auto, the default: it prefers an Account already connected and invites everyone else. Keep already_connected only for a Motion that writes to existing Connections.",
 };
 const TITLES: Record<string, string> = {
     R1: "Top-level keys and $schema",
@@ -92,6 +93,7 @@ const TITLES: Record<string, string> = {
     W13: "Deprecated form accepted for now",
     W14: "Saved value never used",
     W16: "Saved value read as a Contact field",
+    W17: "Invitation in a Connected only Motion",
 };
 export const SEQUENCE_RULE_CODES: readonly string[] = Object.keys(HINTS);
 export function sequenceRuleDocs(): {
@@ -160,6 +162,7 @@ const PROBLEMS: Record<string, {
     W13: { sentence: "This form is deprecated.", short: "Deprecated form" },
     W14: { sentence: "A saved value is never used.", short: "Unused value" },
     W16: { sentence: "This reads a Contact field, not the saved value.", short: "Contact field, not the value" },
+    W17: { sentence: "Connected only skips anyone not already connected, so the invitation in this Sequence never runs for them. Choose Best fit in Accounts to invite them.", short: "Invitation never runs" },
 };
 export const SEQUENCE_PROBLEM_CODES: readonly string[] = Object.keys(PROBLEMS);
 const fieldWords = (k: string) => {

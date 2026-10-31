@@ -72,12 +72,17 @@ export interface ActionParams {
   "skill.endorse": Record<string, never>;
   "invite.send": { note?: string | null; note_fallback?: string; withdraw_after?: string };
   "message.send": { text?: string; fallback?: string };
+  "voice.send": { clip_id?: string; fallback?: string };
   "inmail.send": { subject?: string; text?: string; fallback?: { subject: string; text: string } };
   "post.react": { post?: "latest"; newer_than?: string; reaction?: Reaction };
   "post.comment": { post?: "latest"; newer_than?: string; text?: string; fallback?: string };
 }
 /** One A/B variant of a messaging step. */
-export type Variant<A extends Action = Action> = A extends "inmail.send" ? { id: string; subject: string; text: string } : { id: string; text: string };
+export type Variant<A extends Action = Action> = A extends "inmail.send"
+  ? { id: string; subject: string; text: string }
+  : A extends "voice.send"
+    ? { id: string; clip_id: string }
+    : { id: string; text: string };
 /**
  * A/B: exactly 2. 3 to 5 still compile: the API accepts them with warning W13
  * until 2027-01-19 (never over-report).

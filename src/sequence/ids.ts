@@ -16,6 +16,7 @@ const ID_BASE: Record<StepIdKind, string> = {
   "invite.withdraw": "withdraw",
   "message.send": "message",
   "inmail.send": "inmail",
+  "voice.send": "voice",
   "post.react": "like",
   "post.comment": "comment",
   "skill.endorse": "endorse",

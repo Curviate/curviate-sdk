@@ -5,7 +5,7 @@
 // table (namespace -> exact method set), enumerates the real prototype methods
 // on a constructed client, and asserts set-equality per namespace. A phantom
 // (extra) public method fails by name; a missing method fails by name; the
-// total must be 270 methods across 43 namespaces. A separate compile-time block
+// total must be 272 methods across 44 namespaces. A separate compile-time block
 // proves every removed method is gone at the type level.
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
@@ -76,6 +76,7 @@ const ROOT_SURFACE: Record<string, readonly string[]> = {
     "create", "list", "get", "update", "delete", "start", "pause", "resume", "archive",
     "preview", "getSequenceVersion", "addContacts", "removeContacts",
   ],
+  "motions.voiceClips": ["upload", "get"],
   enrollments: ["list", "get", "stop", "pause", "resume", "events", "reassign", "bulk", "retry", "signal"],
   tier: ["get"],
   network: ["syncStatus", "resync"],
@@ -258,6 +259,7 @@ const rootInstances: Record<string, object> = {
   contactLists: client.contactLists,
   tags: client.tags,
   motions: client.motions,
+  "motions.voiceClips": client.motions.voiceClips,
   enrollments: client.enrollments,
   tier: client.tier,
   network: client.network,
@@ -330,17 +332,17 @@ describe("per-namespace method bijection", () => {
 });
 
 describe("total mapped surface", () => {
-  it("the intended table sums to 270 methods across 43 namespaces", () => {
+  it("the intended table sums to 272 methods across 44 namespaces", () => {
     const namespaces = [
       ...Object.values(ROOT_SURFACE),
       ...Object.values(ACCOUNT_SURFACE),
     ];
-    expect(namespaces.length).toBe(43);
+    expect(namespaces.length).toBe(44);
     const total = namespaces.reduce((n, methods) => n + methods.length, 0);
-    expect(total).toBe(270);
+    expect(total).toBe(272);
   });
 
-  it("the real runtime surface also sums to exactly 270", () => {
+  it("the real runtime surface also sums to exactly 272", () => {
     const roots = Object.values(rootInstances).reduce(
       (n, inst) => n + ownMethods(inst).size,
       0,
@@ -349,7 +351,7 @@ describe("total mapped surface", () => {
       (n, inst) => n + ownMethods(inst).size,
       0,
     );
-    expect(roots + accounts).toBe(270);
+    expect(roots + accounts).toBe(272);
   });
 });
 

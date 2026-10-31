@@ -488,6 +488,90 @@
               },
               "do": {
                 "type": "string",
+                "const": "voice.send"
+              },
+              "with": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "fallback"
+                ],
+                "properties": {
+                  "clip_id": {
+                    "type": "string",
+                    "pattern": "^vc_[0-9A-HJKMNP-TV-Z]{26}$",
+                    "description": "A Voice clip of this Team: the id from POST /v1/motions/voice-clips."
+                  },
+                  "fallback": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Required. Variable-free text sent instead when the audio cannot go: the clip cannot be read, or the platform states it was not sent and retries are spent."
+                  }
+                }
+              },
+              "variants": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 5,
+                "description": "A/B variants: exactly 2, split evenly and sticky per Enrollment. Exclusive with the clip_id in with. More than 2 (up to 5) is deprecated: accepted with warning W13 until 2027-01-19.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "id",
+                    "clip_id"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^(?!end$)[a-z][a-z0-9_]{0,39}$",
+                      "description": "Step id, unique in the document. \"end\" is reserved."
+                    },
+                    "clip_id": {
+                      "type": "string",
+                      "pattern": "^vc_[0-9A-HJKMNP-TV-Z]{26}$",
+                      "description": "A Voice clip of this Team: the id from POST /v1/motions/voice-clips."
+                    }
+                  }
+                }
+              },
+              "event": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_.]{0,63}$",
+                "description": "Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent."
+              },
+              "next": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "A step id, or \"end\"."
+              },
+              "else": {
+                "type": "string",
+                "pattern": "^(end|[a-z][a-z0-9_]{0,39})$",
+                "description": "Taken when the action cannot run or fails. Absent: same as success."
+              },
+              "note": {
+                "type": "string",
+                "maxLength": 500,
+                "description": "Annotation shown in the builder graph. Never sent."
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "do"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^(?!end$)[a-z][a-z0-9_]{0,39}$",
+                "description": "Step id, unique in the document. \"end\" is reserved."
+              },
+              "do": {
+                "type": "string",
                 "const": "post.react"
               },
               "with": {

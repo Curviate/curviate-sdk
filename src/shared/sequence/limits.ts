@@ -1,4 +1,5 @@
 // Vendored from the API by scripts/vendor-shared.mjs. Do not edit: change the API and re-run.
+import { MESSAGE_SEND_ACTIONS } from "./message-actions.js";
 export const SEQUENCE_SCHEMA_URL = "https://docs.curviate.com/schemas/sequence/v1.json";
 export const MAX_STEPS = 100;
 export const LINT_WARN_MS = 10;
@@ -39,6 +40,7 @@ export const ACTIONS = [
     "invite.withdraw",
     "message.send",
     "inmail.send",
+    "voice.send",
     "post.react",
     "post.comment",
     "skill.endorse",
@@ -52,11 +54,14 @@ export const ACTION_PARAMS: Record<Action, readonly string[]> = {
     "invite.withdraw": [],
     "message.send": ["text", "fallback"],
     "inmail.send": ["subject", "text", "fallback"],
+    "voice.send": ["clip_id", "fallback"],
     "post.react": ["post", "newer_than", "reaction"],
     "post.comment": ["post", "newer_than", "text", "fallback"],
     "skill.endorse": [],
 };
-export const MESSAGING_ACTIONS: readonly Action[] = ["invite.send", "message.send", "inmail.send", "post.comment"];
+export const VOICE_CLIP_ID_RE = /^vc_[0-9A-HJKMNP-TV-Z]{26}$/;
+export const VOICE_CLIP_RULE = "must be the id of a Voice clip of this Team (POST /v1/motions/voice-clips)";
+export const MESSAGING_ACTIONS: readonly Action[] = ["invite.send", ...MESSAGE_SEND_ACTIONS, "post.comment"];
 export const REACTIONS = ["like", "celebrate", "support", "love", "insightful", "funny"] as const;
 export const EVENTS = ["invite.accepted", "message.replied", "message.read"] as const;
 export const STANDARD_FIELDS = [

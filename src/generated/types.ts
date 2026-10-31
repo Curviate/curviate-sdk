@@ -3930,6 +3930,46 @@ export interface paths {
         patch: operations["patchV1DoNotContactId"];
         trace?: never;
     };
+    "/v1/motions/voice-clips": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload a voice clip
+         * @description Uploads one audio file (MP3, WAV, M4A, WebM or Ogg) as the raw request body and returns a clip id for a voice note step. Content-Length is required; the filename query names the file. The audio is converted once and the original is discarded. 1 to 120 seconds, up to 20 MiB, 100 uploads per team per 24 hours. A retry stores a second clip. A clip no Sequence uses is deleted 30 days after its upload. Needs Automate.
+         */
+        post: operations["postV1MotionsVoiceClips"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/motions/voice-clips/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve a voice clip
+         * @description Returns the clip's id, duration, size, file name and upload time. There is no download link.
+         */
+        get: operations["getV1MotionsVoiceClipsId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/motions": {
         parameters: {
             query?: never;
@@ -5072,6 +5112,32 @@ export interface components {
                     id: string;
                     subject: string;
                     text: string;
+                }[];
+                /** @description Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent. */
+                event?: string;
+                /** @description A step id, or "end". */
+                next?: string;
+                /** @description Taken when the action cannot run or fails. Absent: same as success. */
+                else?: string;
+                /** @description Annotation shown in the builder graph. Never sent. */
+                note?: string;
+            } | {
+                /** @description Step id, unique in the document. "end" is reserved. */
+                id: string;
+                /** @constant */
+                do: "voice.send";
+                with?: {
+                    /** @description A Voice clip of this Team: the id from POST /v1/motions/voice-clips. */
+                    clip_id?: string;
+                    /** @description Required. Variable-free text sent instead when the audio cannot go: the clip cannot be read, or the platform states it was not sent and retries are spent. */
+                    fallback: string;
+                };
+                /** @description A/B variants: exactly 2, split evenly and sticky per Enrollment. Exclusive with the clip_id in with. More than 2 (up to 5) is deprecated: accepted with warning W13 until 2027-01-19. */
+                variants?: {
+                    /** @description Step id, unique in the document. "end" is reserved. */
+                    id: string;
+                    /** @description A Voice clip of this Team: the id from POST /v1/motions/voice-clips. */
+                    clip_id: string;
                 }[];
                 /** @description Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent. */
                 event?: string;
@@ -20057,6 +20123,8 @@ export interface operations {
                                 step_id: string | null;
                                 /** @description The variant its last message or invitation Step sent. Null without variants. */
                                 variant_id: string | null;
+                                /** @description The action of its last executed message or invitation Step, such as voice.send. Null before any. */
+                                action: string | null;
                             } | null;
                         }[];
                         /** @description Pass it back as cursor, with the same filters, for the next page. Null on the last page. */
@@ -20248,6 +20316,8 @@ export interface operations {
                             step_id: string | null;
                             /** @description The variant its last message or invitation Step sent. Null without variants. */
                             variant_id: string | null;
+                            /** @description The action of its last executed message or invitation Step, such as voice.send. Null before any. */
+                            action: string | null;
                         } | null;
                     };
                 };
@@ -35961,7 +36031,7 @@ export interface operations {
                                 delta?: number | null;
                             };
                             messages?: {
-                                /** @description message.send steps executed in the window (messages, not people). InMail is counted apart, in inmails. */
+                                /** @description message.send and voice.send steps executed in the window (messages, not people). InMail is counted apart, in inmails. */
                                 sent?: number;
                                 /** @description Enrollments whose first message (not InMail) falls in the window, with no reply before it. */
                                 messaged?: number;
@@ -36175,7 +36245,7 @@ export interface operations {
                                 delta?: number | null;
                             };
                             messages?: {
-                                /** @description message.send steps executed in the window (messages, not people). InMail is counted apart, in inmails. */
+                                /** @description message.send and voice.send steps executed in the window (messages, not people). InMail is counted apart, in inmails. */
                                 sent?: number;
                                 /** @description Enrollments whose first message (not InMail) falls in the window, with no reply before it. */
                                 messaged?: number;
@@ -48044,6 +48114,223 @@ export interface operations {
             };
         };
     };
+    postV1MotionsVoiceClips: {
+        parameters: {
+            query: {
+                filename: string;
+            };
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "audio/mpeg": string;
+                "audio/wav": string;
+                "audio/x-wav": string;
+                "audio/mp4": string;
+                "audio/x-m4a": string;
+                "audio/webm": string;
+                "audio/ogg": string;
+                "video/mp4": string;
+                "video/webm": string;
+            };
+        };
+        responses: {
+            /** @description The stored clip. The audio is converted once to a voice note format; the original is not kept. */
+            201: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "voice_clip";
+                        /** @description Voice clip id (vc_...). Use it as clip_id in a voice note step. */
+                        id: string;
+                        /** @description Exact length of the stored clip, in milliseconds. */
+                        duration_ms: number;
+                        /** @description Size of the stored clip, in bytes. */
+                        bytes: number;
+                        /** @description The file name you sent. Never a path. */
+                        filename: string;
+                        /** @description When it was uploaded. */
+                        created_at: string;
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: a filename that is missing, longer than 255 characters or a path, or a body that did not carry exactly its Content-Length (a truncated upload; nothing is kept). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description TIER_REQUIRED: the team's Tier does not include Motions (Automate). Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INVALID_REQUEST: Content-Length is required; a chunked upload is not accepted. */
+            411: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description PAYLOAD_TOO_LARGE: the body is over 20 MiB. It is refused before it is read. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description VOICE_CLIP_INVALID: the file is empty, is not audio or cannot be decoded, is under 1 second, or is over 120 seconds (a clip is never shortened). The message names the reason and the limit. Nothing is stored. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RATE_LIMIT_TENANT: the team uploaded 100 clips in the last 24 hours (Retry-After is the wait until a slot frees). PLATFORM_RATE_LIMIT: too many files are being converted right now (Retry-After: 5). Retry after the wait. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1MotionsVoiceClipsId: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Voice clip id (vc_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The clip. There is no download link in this response. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "voice_clip";
+                        /** @description Voice clip id (vc_...). Use it as clip_id in a voice note step. */
+                        id: string;
+                        /** @description Exact length of the stored clip, in milliseconds. */
+                        duration_ms: number;
+                        /** @description Size of the stored clip, in bytes. */
+                        bytes: number;
+                        /** @description The file name you sent. Never a path. */
+                        filename: string;
+                        /** @description When it was uploaded. */
+                        created_at: string;
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not used below Automate: a team that lost Motions can still read its clips. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such clip in this team. Another team's clip reads the same. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     getV1Motions: {
         parameters: {
             query?: {
@@ -50218,7 +50505,7 @@ export interface operations {
                                  */
                                 result: "pass" | "fail" | "unknown";
                             }[];
-                            /** @description Every step that sends text, rendered for this Contact. */
+                            /** @description Every step that sends text, rendered for this Contact. A voice.send step renders nothing: each variant names its clip and duration, and the step carries its fallback. */
                             steps: {
                                 step_id: string;
                                 variants: {
@@ -50231,9 +50518,15 @@ export interface operations {
                                     omitted: boolean;
                                     /** @description true when a variable had no value or the text was over the account's length limit. */
                                     used_fallback: boolean;
+                                    /** @description voice.send only: this variant's Voice clip. */
+                                    clip_id?: string | null;
+                                    /** @description voice.send only: the clip's length in milliseconds; null when no such clip exists. */
+                                    clip_duration_ms?: number | null;
                                 }[];
                                 /** @description A reason the step would be skipped that stored data settles (inmail_unavailable, missing_variable, text_too_long), else unknown. */
                                 would_skip: string;
+                                /** @description voice.send only: the text sent when the audio cannot go; null when the response already carries 1 MiB of text. */
+                                fallback?: string | null;
                             }[];
                         }[];
                         /** @description An estimate of how long the list takes, from each account's current budget ceilings (warm-up applied). Each Contact is enrolled on min(accounts_per_contact, accounts that can act) accounts; those Enrollments split evenly over the accounts. It ignores what other Motions spend. */
@@ -50629,7 +50922,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Enrollments, newest first. Filters combine with AND. The counted unit is the Enrollment, one Contact on one account in one Motion: each Contact counts once per Account. done_step with outcome lists who did what at a Step: executed, skipped, failed (the Step's own record; a condition or wait counts as executed); accepted, not_accepted (on invite.send: its invitation was accepted, or withdrawn or never accepted before the wait for it timed out; on an until invite.accepted: its then or else exit); replied, no_reply (on message.send or inmail.send: a reply came after it, or none and the Enrollment left the following until message.replied by else or finished; on an until message.replied: its then or else exit); seen (on message.send or inmail.send: a read receipt arrived for it or the person replied after it, the same rule as the analytics seen rate). An outcome the Step's kind cannot have is a 400. */
+            /** @description Enrollments, newest first. Filters combine with AND. The counted unit is the Enrollment, one Contact on one account in one Motion: each Contact counts once per Account. done_step with outcome lists who did what at a Step: executed, skipped, failed (the Step's own record; a condition or wait counts as executed); accepted, not_accepted (on invite.send: its invitation was accepted, or withdrawn or never accepted before the wait for it timed out; on an until invite.accepted: its then or else exit); replied, no_reply (on message.send, voice.send or inmail.send: a reply came after it, or none and the Enrollment left the following until message.replied by else or finished; on an until message.replied: its then or else exit); seen (on message.send, voice.send or inmail.send: a read receipt arrived for it or the person replied after it, the same rule as the analytics seen rate). An outcome the Step's kind cannot have is a 400. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -52259,7 +52552,7 @@ export interface operations {
                                 delta?: number | null;
                             };
                             messages: {
-                                /** @description message.send steps executed in the window (messages, not people). InMail is counted apart, in inmails. */
+                                /** @description message.send and voice.send steps executed in the window (messages, not people). InMail is counted apart, in inmails. */
                                 sent: number;
                                 /** @description Enrollments whose first message (not InMail) falls in the window, with no reply before it. */
                                 messaged: number;
@@ -52472,7 +52765,7 @@ export interface operations {
                                 delta?: number | null;
                             };
                             messages?: {
-                                /** @description message.send steps executed in the window (messages, not people). InMail is counted apart, in inmails. */
+                                /** @description message.send and voice.send steps executed in the window (messages, not people). InMail is counted apart, in inmails. */
                                 sent: number;
                                 /** @description Enrollments whose first message (not InMail) falls in the window, with no reply before it. */
                                 messaged: number;
@@ -52643,7 +52936,7 @@ export interface operations {
                                 delta?: number | null;
                             };
                             messages: {
-                                /** @description message.send steps executed in the window (messages, not people). InMail is counted apart, in inmails. */
+                                /** @description message.send and voice.send steps executed in the window (messages, not people). InMail is counted apart, in inmails. */
                                 sent: number;
                                 /** @description Enrollments whose first message (not InMail) falls in the window, with no reply before it. */
                                 messaged: number;
@@ -52810,7 +53103,7 @@ export interface operations {
                                 delta?: number | null;
                             };
                             messages: {
-                                /** @description message.send steps executed in the window (messages, not people). InMail is counted apart, in inmails. */
+                                /** @description message.send and voice.send steps executed in the window (messages, not people). InMail is counted apart, in inmails. */
                                 sent: number;
                                 /** @description Enrollments whose first message (not InMail) falls in the window, with no reply before it. */
                                 messaged: number;
@@ -53157,7 +53450,7 @@ export interface operations {
                                 delta?: number | null;
                             };
                             messages: {
-                                /** @description message.send steps executed in the window (messages, not people). InMail is counted apart, in inmails. */
+                                /** @description message.send and voice.send steps executed in the window (messages, not people). InMail is counted apart, in inmails. */
                                 sent: number;
                                 /** @description Enrollments whose first message (not InMail) falls in the window, with no reply before it. */
                                 messaged: number;
@@ -53359,7 +53652,7 @@ export interface operations {
                                 /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
                                 delta?: number | null;
                             } | null;
-                            /** @description message.send and inmail.send only, else null. Last touch: a reply counts for the message step it followed, before the next message. Over executions in the window with no reply before them, so far. */
+                            /** @description message.send, voice.send and inmail.send only, else null. Last touch: a reply counts for the message step it followed, before the next message. Over executions in the window with no reply before them, so far. */
                             reply: {
                                 /** @description Numerator: the replied part of messaged, so far. */
                                 replied: number;
@@ -53387,7 +53680,7 @@ export interface operations {
                                 /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
                                 delta?: number | null;
                             } | null;
-                            /** @description message.send and inmail.send only, else null. Seen rate over this message step's executions in the window, so far: seen when a read receipt arrived for the message or the person replied after it (a reply proves it was read; not last touch). The rate is a floor: people can turn read receipts off. A receipt says the message was seen, never when; the same rule as GET /v1/enrollments outcome=seen. */
+                            /** @description message.send, voice.send and inmail.send only, else null. Seen rate over this message step's executions in the window, so far: seen when a read receipt arrived for the message or the person replied after it (a reply proves it was read; not last touch). The rate is a floor: people can turn read receipts off. A receipt says the message was seen, never when; the same rule as GET /v1/enrollments outcome=seen. */
                             seen: {
                                 /** @description Numerator: the seen part of sent, so far. */
                                 seen: number;
@@ -53466,7 +53759,7 @@ export interface operations {
                                     /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
                                     delta?: number | null;
                                 } | null;
-                                /** @description message.send and inmail.send only, else null. Last touch: a reply counts for the message step it followed, before the next message. Over executions in the window with no reply before them, so far. */
+                                /** @description message.send, voice.send and inmail.send only, else null. Last touch: a reply counts for the message step it followed, before the next message. Over executions in the window with no reply before them, so far. */
                                 reply: {
                                     /** @description Numerator: the replied part of messaged, so far. */
                                     replied: number;
@@ -53494,7 +53787,7 @@ export interface operations {
                                     /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
                                     delta?: number | null;
                                 } | null;
-                                /** @description message.send and inmail.send only, else null. Seen rate over this message step's executions in the window, so far: seen when a read receipt arrived for the message or the person replied after it (a reply proves it was read; not last touch). The rate is a floor: people can turn read receipts off. A receipt says the message was seen, never when; the same rule as GET /v1/enrollments outcome=seen. */
+                                /** @description message.send, voice.send and inmail.send only, else null. Seen rate over this message step's executions in the window, so far: seen when a read receipt arrived for the message or the person replied after it (a reply proves it was read; not last touch). The rate is a floor: people can turn read receipts off. A receipt says the message was seen, never when; the same rule as GET /v1/enrollments outcome=seen. */
                                 seen: {
                                     /** @description Numerator: the seen part of sent, so far. */
                                     seen: number;
@@ -53599,7 +53892,7 @@ export interface operations {
                                     delta?: number | null;
                                 };
                                 messages: {
-                                    /** @description message.send steps executed in the window (messages, not people). InMail is counted apart, in inmails. */
+                                    /** @description message.send and voice.send steps executed in the window (messages, not people). InMail is counted apart, in inmails. */
                                     sent: number;
                                     /** @description Enrollments whose first message (not InMail) falls in the window, with no reply before it. */
                                     messaged: number;
@@ -53752,7 +54045,7 @@ export interface operations {
                                     /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
                                     delta?: number | null;
                                 } | null;
-                                /** @description message.send and inmail.send only, else null. Last touch: a reply counts for the message step it followed, before the next message. Over executions in the window with no reply before them, so far. */
+                                /** @description message.send, voice.send and inmail.send only, else null. Last touch: a reply counts for the message step it followed, before the next message. Over executions in the window with no reply before them, so far. */
                                 reply: {
                                     /** @description Numerator: the replied part of messaged, so far. */
                                     replied: number;
@@ -53780,7 +54073,7 @@ export interface operations {
                                     /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
                                     delta?: number | null;
                                 } | null;
-                                /** @description message.send and inmail.send only, else null. Seen rate over this message step's executions in the window, so far: seen when a read receipt arrived for the message or the person replied after it (a reply proves it was read; not last touch). The rate is a floor: people can turn read receipts off. A receipt says the message was seen, never when; the same rule as GET /v1/enrollments outcome=seen. */
+                                /** @description message.send, voice.send and inmail.send only, else null. Seen rate over this message step's executions in the window, so far: seen when a read receipt arrived for the message or the person replied after it (a reply proves it was read; not last touch). The rate is a floor: people can turn read receipts off. A receipt says the message was seen, never when; the same rule as GET /v1/enrollments outcome=seen. */
                                 seen: {
                                     /** @description Numerator: the seen part of sent, so far. */
                                     seen: number;
@@ -53859,7 +54152,7 @@ export interface operations {
                                         /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
                                         delta?: number | null;
                                     } | null;
-                                    /** @description message.send and inmail.send only, else null. Last touch: a reply counts for the message step it followed, before the next message. Over executions in the window with no reply before them, so far. */
+                                    /** @description message.send, voice.send and inmail.send only, else null. Last touch: a reply counts for the message step it followed, before the next message. Over executions in the window with no reply before them, so far. */
                                     reply: {
                                         /** @description Numerator: the replied part of messaged, so far. */
                                         replied: number;
@@ -53887,7 +54180,7 @@ export interface operations {
                                         /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
                                         delta?: number | null;
                                     } | null;
-                                    /** @description message.send and inmail.send only, else null. Seen rate over this message step's executions in the window, so far: seen when a read receipt arrived for the message or the person replied after it (a reply proves it was read; not last touch). The rate is a floor: people can turn read receipts off. A receipt says the message was seen, never when; the same rule as GET /v1/enrollments outcome=seen. */
+                                    /** @description message.send, voice.send and inmail.send only, else null. Seen rate over this message step's executions in the window, so far: seen when a read receipt arrived for the message or the person replied after it (a reply proves it was read; not last touch). The rate is a floor: people can turn read receipts off. A receipt says the message was seen, never when; the same rule as GET /v1/enrollments outcome=seen. */
                                     seen: {
                                         /** @description Numerator: the seen part of sent, so far. */
                                         seen: number;
@@ -54000,7 +54293,7 @@ export interface operations {
                                 delta?: number | null;
                             };
                             messages: {
-                                /** @description message.send steps executed in the window (messages, not people). InMail is counted apart, in inmails. */
+                                /** @description message.send and voice.send steps executed in the window (messages, not people). InMail is counted apart, in inmails. */
                                 sent: number;
                                 /** @description Enrollments whose first message (not InMail) falls in the window, with no reply before it. */
                                 messaged: number;
@@ -54167,7 +54460,7 @@ export interface operations {
                                 delta?: number | null;
                             };
                             messages: {
-                                /** @description message.send steps executed in the window (messages, not people). InMail is counted apart, in inmails. */
+                                /** @description message.send and voice.send steps executed in the window (messages, not people). InMail is counted apart, in inmails. */
                                 sent: number;
                                 /** @description Enrollments whose first message (not InMail) falls in the window, with no reply before it. */
                                 messaged: number;

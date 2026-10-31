@@ -40,6 +40,21 @@ function graphOf(doc: unknown): {
     const first = ids.find((i): i is string => i !== null) ?? null;
     return { nodes, first, onReply: doc_.on_reply === undefined ? null : str(doc_.on_reply) };
 }
+export function everyRouteDoes(doc: unknown, action: string): boolean {
+    const { nodes, first } = graphOf(doc);
+    const memo = new Map<string, boolean>();
+    const must = (id: string): boolean => {
+        const known = memo.get(id);
+        if (known !== undefined)
+            return known;
+        memo.set(id, false);
+        const node = nodes.get(id);
+        const out = node !== undefined && (node.step["do"] === action || (node.exits.length > 0 && node.exits.every((x) => must(x.to))));
+        memo.set(id, out);
+        return out;
+    };
+    return first !== null && must(first);
+}
 export interface RouteList {
     paths: string[][];
     truncated: boolean;

@@ -9,6 +9,14 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## Unreleased
 
+### Voice notes (regenerated from staging 9d7832f8f)
+
+- **`motions.voiceClips.upload(data, { filename, contentType? })`** (`POST /v1/motions/voice-clips`) and **`motions.voiceClips.get(id)`**: upload one audio file (MP3, WAV, M4A, WebM or Ogg) as the raw body, with `Content-Length`; resolves with the clip `{ object: "voice_clip", id, duration_ms, bytes, filename, created_at }`. The type is taken from a `Blob` or the extension when not given. 1 to 120 seconds, up to 20 MiB, 100 uploads per Team per 24 hours (`RATE_LIMIT_TENANT` with `Retry-After`); converted once, the original is discarded; an unused clip is deleted 30 days after its upload. Needs Automate for the upload; the read passes below it.
+- **`VOICE_CLIP_INVALID`** (422) in `ERROR_CODES`: the file is empty, not audio, undecodable, under 1 second or over 120 seconds. It decoded to `INTERNAL` before. Over 20 MiB is `PAYLOAD_TOO_LARGE`.
+- **`voice.send`** Sequence step: `step.do("id", "voice.send", { with: { clip_id, fallback } })` or `variants: [{ id, clip_id }, { id, clip_id }]` with a shared `with.fallback`; `validateSequence` and the builder carry the API's rules (R13 for a malformed `clip_id`, R19 for a missing `fallback`, no text beside a clip). `newStepId` names it `voice`. The vendored validator is re-synced with the API.
+- **Direct messages:** one audio attachment alone, to one person, is a voice note (`attachments[].send_mode`: `native` | `file`; `file` sends a download and may carry text). Descriptions only; no direct duration limit.
+- **Motion analytics and Unibox:** `motion_context.action` (such as `voice.send`) on a chat's Motion; `messages` figures count a voice note.
+
 ### Group chats, voice notes, shared content (regenerated from staging 86e22d93b)
 
 - **`group`** on `unibox.list` items and `unibox.get`: `{ title, members[], members_known, preview_sender } | null`. `null` on a one-to-one chat. A member is `{ name, first_name, picture_url, profile_url, headline, do_not_contact }`; the account's own person is never among them. `members` is empty while `members_known` is `false`. `counterpart` is unchanged: still `null` for a group chat.

@@ -2,7 +2,8 @@
 import { durationMinutes } from "./paths.js";
 import { normalizePath } from "../field-paths.js";
 import { awaitedEventName } from "./references.js";
-import { ACCOUNT_FIELDS, ACTION_PARAMS, ACTIONS, BOOLEAN_PREDICATES, DURATION_BOUNDS, DEPRECATED_ACCEPTED_UNTIL, DURATION_PATTERN, END, EVENT_NAME_PATTERN, EVENTS, EXTRA_KEY_PATTERN, FIELD_OPERATORS, ID_PATTERN, MAX_PREDICATE_DEPTH, MAX_QUOTED_TOKEN_CHARS, MAX_SAVE_ENTRIES, MAX_SEQUENCE_BYTES, MAX_STEP_NOTE_CHARS, MAX_STEPS, MAX_VARIABLE_REFS_PER_TEXT, MAX_TAG_CHARS, MAX_VARIANTS, MAX_VARIANTS_DEPRECATED, MESSAGING_ACTIONS, MY_FIELDS, MIN_VARIANTS, NAME_FIELDS, NUMBER_OPERATORS, REACTIONS, SAVE_NAME_PATTERN, SEQUENCE_SCHEMA_URL, STANDARD_FIELDS, STEP_KEYS, STEP_KINDS, TAG_PATTERN, TEXT_LIMITS, type Action, type StepKind, fallbackKeyword, isObject, longVariable, } from "./limits.js";
+import { ACCOUNT_FIELDS, ACTION_PARAMS, ACTIONS, VOICE_CLIP_ID_RE, VOICE_CLIP_RULE, BOOLEAN_PREDICATES, DURATION_BOUNDS, DEPRECATED_ACCEPTED_UNTIL, DURATION_PATTERN, END, EVENT_NAME_PATTERN, EVENTS, EXTRA_KEY_PATTERN, FIELD_OPERATORS, ID_PATTERN, MAX_PREDICATE_DEPTH, MAX_QUOTED_TOKEN_CHARS, MAX_SAVE_ENTRIES, MAX_SEQUENCE_BYTES, MAX_STEP_NOTE_CHARS, MAX_STEPS, MAX_VARIABLE_REFS_PER_TEXT, MAX_TAG_CHARS, MAX_VARIANTS, MAX_VARIANTS_DEPRECATED, MESSAGING_ACTIONS, MY_FIELDS, MIN_VARIANTS, NAME_FIELDS, NUMBER_OPERATORS, REACTIONS, SAVE_NAME_PATTERN, SEQUENCE_SCHEMA_URL, STANDARD_FIELDS, STEP_KEYS, STEP_KINDS, TAG_PATTERN, TEXT_LIMITS, type Action, type StepKind, fallbackKeyword, isObject, longVariable, } from "./limits.js";
+import { isMessageSend } from "./message-actions.js";
 import { ruleHelp } from "./rules.js";
 export interface PathRule {
     path: string;
@@ -29,6 +30,7 @@ export interface SequenceValidationResult {
 export type SendingAccountProfile = "basic" | "premium" | "sales_navigator" | "recruiter";
 export interface MotionWarningContext {
     accountProfiles: readonly SendingAccountProfile[];
+    assign?: string | undefined;
 }
 export type SampleShapes = Readonly<Record<string, readonly {
     path: string;
@@ -84,6 +86,10 @@ export function motionWarnings(doc: unknown, ctx: MotionWarningContext & {
     const steps = Array.isArray(doc["steps"]) ? doc["steps"] : [];
     const has = (p: SendingAccountProfile) => ctx.accountProfiles.includes(p);
     const recruiterOnly = ctx.accountProfiles.length > 0 && ctx.accountProfiles.every((p) => p === "recruiter");
+    const invite = ctx.assign === "already_connected" ? steps.findIndex((s: unknown) => isObject(s) && s["do"] === "invite.send" && typeof s["id"] === "string") : -1;
+    if (invite >= 0) {
+        warn("W17", `${(steps[invite] as Record<string, unknown>)["id"] as string}.do`, jsonPointer("steps", invite, "do"), "settings.assign is already_connected, so anyone not already connected to a sending Account is skipped and this invitation never runs for them; use assign: auto");
+    }
     steps.forEach((step: unknown, i: number) => {
         if (!isObject(step) || typeof step["id"] !== "string")
             return;
@@ -348,6 +354,11 @@ function isKnownVariable(inner: string): boolean {
     if (long.startsWith("account."))
         return (ACCOUNT_FIELDS as readonly string[]).includes(long.slice(8));
     return false;
+}
+function checkClipId(ctx: Ctx, order: number, path: string, pointer: string, parent: string, value: unknown): null {
+    if (typeof value !== "string" || !VOICE_CLIP_ID_RE.test(value))
+        issue(ctx, { order, code: "R13", path, pointer: value === undefined ? parent : pointer, rule: VOICE_CLIP_RULE });
+    return null;
 }
 function checkFallbackText(ctx: Ctx, order: number, path: string, pointer: string, parent: string, value: unknown, limit: number, keyword?: string): void {
     if (keyword !== undefined && value === keyword)
@@ -723,13 +734,15 @@ function checkDo(ctx: Ctx, order: number, p: string, ptr: string, raw: Record<st
     }
     if (!messaging)
         return;
-    const textKeys = a === "inmail.send" ? ["subject", "text"] : ["text"];
+    const voice = a === "voice.send";
+    const textKeys = a === "inmail.send" ? ["subject", "text"] : voice ? ["clip_id"] : ["text"];
+    const checkField = (path: string, pointer: string, parent: string, value: unknown, limit: number): string | null => voice ? checkClipId(ctx, order, path, pointer, parent, value) : checkText(ctx, order, path, pointer, parent, value, limit);
     const withTextKeys = a === "invite.send" ? ["note"] : textKeys;
     const variants = hasVariants ? raw["variants"] : undefined;
     if (hasVariants && withTextKeys.some((k) => has(w, k) && w[k] !== null)) {
         issue(ctx, { order, code: "R23", path: `${p}.variants`, pointer: vptr, rule: `use either variants or with.${withTextKeys.join(" and with.")}, not both` });
     }
-    const limitOf = (field: string): number => a === "message.send"
+    const limitOf = (field: string): number => a === "message.send" || voice
         ? TEXT_LIMITS.message
         : a === "post.comment"
             ? TEXT_LIMITS.comment
@@ -786,7 +799,7 @@ function checkDo(ctx: Ctx, order: number, p: string, ptr: string, raw: Record<st
                 }
             }
             for (const field of textKeys) {
-                const value = checkText(ctx, order, `${vp}.${field}`, `${vptrJ}/${field}`, vptrJ, v[field], limitOf(field));
+                const value = checkField(`${vp}.${field}`, `${vptrJ}/${field}`, vptrJ, v[field], limitOf(field));
                 if (value !== null)
                     texts.push({ path: `${vp}.${field}`, pointer: `${vptrJ}/${field}`, field, value });
             }
@@ -806,7 +819,7 @@ function checkDo(ctx: Ctx, order: number, p: string, ptr: string, raw: Record<st
                 issue(ctx, { order, code: "R13", path: `${p}.with.${field}`, pointer: withParent, rule: "required, or use variants" });
             }
             else {
-                const value = checkText(ctx, order, `${p}.with.${field}`, fp, withParent, w[field], limitOf(field));
+                const value = checkField(`${p}.with.${field}`, fp, withParent, w[field], limitOf(field));
                 if (value !== null)
                     texts.push({ path: `${p}.with.${field}`, pointer: fp, field, value });
             }
@@ -871,6 +884,8 @@ function checkDo(ctx: Ctx, order: number, p: string, ptr: string, raw: Record<st
             checkFallbackText(ctx, order, fp, `${wp}/fallback`, withParent, w["fallback"], limitOf("text"), fallbackKeyword(a) ?? undefined);
         else if (comment)
             issue(ctx, { order, code: "R19", path: fp, pointer: withParent, rule: 'required on a comment: text, or "skip"' });
+        else if (voice)
+            issue(ctx, { order, code: "R19", path: fp, pointer: withParent, rule: "required on a voice note: variable-free text sent when the audio cannot go" });
         else if (usesVariable)
             issue(ctx, { order, code: "R19", path: fp, pointer: withParent, rule: "required because the text uses a variable" });
     }
@@ -1106,7 +1121,7 @@ function graph(ctx: Ctx, infos: StepInfo[], ids: Map<string, number>, onReply: s
                 afterInvite[i] = true;
             if (withoutInvite[from] && !invited)
                 withoutInvite[i] = true;
-            const messaged = (action(from) === "message.send" || action(from) === "inmail.send") && edge.field === "next";
+            const messaged = isMessageSend(action(from)) && edge.field === "next";
             if (withoutMessage[from] && !messaged)
                 withoutMessage[i] = true;
         }

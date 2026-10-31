@@ -1,0 +1,51 @@
+{
+  "about": "an invite.send with assign already_connected: everyone unconnected is skipped (W17)",
+  "rules": [
+    "W17"
+  ],
+  "only": "server",
+  "context": {
+    "assign": "already_connected"
+  },
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "check",
+        "if": {
+          "contact.connected": true
+        },
+        "then": "hello",
+        "else": "invite"
+      },
+      {
+        "id": "hello",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{first_name}}, glad we are connected.",
+          "fallback": "Hi, glad we are connected."
+        },
+        "next": "end"
+      },
+      {
+        "id": "invite",
+        "do": "invite.send",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "path": "invite.do",
+      "rule": "settings.assign is already_connected, so anyone not already connected to a sending Account is skipped and this invitation never runs for them; use assign: auto",
+      "code": "W17",
+      "message": "settings.assign is already_connected, so anyone not already connected to a sending Account is skipped and this invitation never runs for them; use assign: auto",
+      "pointer": "/steps/2/do",
+      "hint": "Set settings.assign to auto, the default: it prefers an Account already connected and invites everyone else. Keep already_connected only for a Motion that writes to existing Connections.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w17",
+      "severity": "warning"
+    }
+  ]
+}
