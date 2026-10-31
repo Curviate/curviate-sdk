@@ -9,12 +9,14 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## Unreleased
 
-### Group chats and shared content (regenerated from staging 86e22d9)
+### Group chats, voice notes, shared content (regenerated from staging 86e22d93b)
 
-- **Group chats:** `messaging.startChat` with two or more `attendees_ids` starts a group chat, named by `subject`. A repeated id counts once, so `[a, a]` is a direct chat with `a`. A voice note stays out of groups: audio there sends as a file, and `send_mode: "native"` throws `INVALID_REQUEST` (400).
-- **`shared_content`** `{ type: "post" | "job_posting", id }` on `messaging.startChat` and `messaging.sendMessage`: a post or job posting shown natively in the message. `text` is required with it; any attachment, or a `COMPANY_` chat, throws `INVALID_REQUEST` (400). Sales Navigator and Recruiter do not take it. A post `id` is the one `posts.get` or a list returns (a bare activity id, a URN or a share URL also work); a job posting takes its numeric job id. Whether a post id renders in the message is unproven until a live send.
-- **Unibox chats carry `group`** (`title`, `members[]`, `members_known`, `preview_sender`; `null` for a one-to-one chat).
-- **Also in this regen** (types only; other tickets' ripple): `send_mode` on attachments and an optional `text` on `startChat` for a voice note; `variant_id`, `started_from` and `started_to` filters and `accept_time` on Motion analytics; Motion pacing defaults read from the Team's Active hours.
+- **`group`** on `unibox.list` items and `unibox.get`: `{ title, members[], members_known, preview_sender } | null`. `null` on a one-to-one chat. A member is `{ name, first_name, picture_url, profile_url, headline, do_not_contact }`; the account's own person is never among them. `members` is empty while `members_known` is `false`. `counterpart` is unchanged: still `null` for a group chat.
+- **`messaging.startChat`:** two or more `attendees_ids` start a group chat, named by `subject`; `text` is optional only for a voice note. A repeated id counts once, so `[a, a]` is a direct chat with `a`, not a group. A voice note stays out of groups: audio there sends as a file, and `send_mode: "native"` throws `INVALID_REQUEST` (400).
+- **Voice notes:** one audio attachment alone (1:1) is sent as a voice note; `attachments[].send_mode` (`native` | `file`) on `startChat`, `sendMessage` and the company-chat reply. Curviate converts the audio and does not store it.
+- **`shared_content`** `{ type: "post" | "job_posting", id }` on `startChat` and `sendMessage`: a post or job shown natively, sent with text, not with attachments. `text` is required; any attachment, or a `COMPANY_` chat, throws `INVALID_REQUEST` (400). Sales Navigator and Recruiter do not take it. A post `id` is the one `posts.get` or a list returns (a bare activity id, a URN or a share URL also work); a job posting takes its numeric job id. Whether a post id renders in the message is unproven until a live send.
+- **Motion hours:** `days` and `hours` default, at creation, to the Team's Active hours, then are stored on the Motion (descriptions only).
+- **Analytics:** `analytics.motions.get` takes `variant_id`, `started_from`, `started_to`; the window gains `cohort_after`; `accept_time { median_seconds, accepted }` joins the figures.
 
 ### Account orchestration (regenerated from staging 1635e59)
 

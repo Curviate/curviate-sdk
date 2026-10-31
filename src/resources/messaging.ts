@@ -116,6 +116,10 @@ export class MessagingResource {
 
   /**
    * Start a new chat with one or more members. `POST /v1/{account_id}/chats`
+   * One attendee starts a direct chat; two or more start a group chat, named
+   * by `subject`. `text` may be omitted only for a voice note (one audio
+   * attachment alone, to one member). `shared_content` shows a post or job
+   * natively beside the text.
    * `attachments[]`, when supplied, carry base64-encoded file bytes, always
    * sent as JSON, never multipart.
    *
@@ -236,7 +240,10 @@ export class MessagingResource {
    * Send a message in a chat. `POST /v1/{account_id}/chats/{chat_id}/messages`
    * `attachments[]`, when supplied, carry base64-encoded file bytes, always
    * sent as JSON, never multipart. At least one of `text`/`attachments` is
-   * required (enforced server-side).
+   * required (enforced server-side). One audio attachment alone in a 1:1 chat
+   * arrives as a voice note (`send_mode: "native"`, the default for audio;
+   * `"file"` sends a download); `shared_content` shows a post or job
+   * natively beside the text.
    *
    * `shared_content: { type: "post" | "job_posting", id }` shows a LinkedIn
    * post or job posting natively in the message. `text` is required with it.

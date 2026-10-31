@@ -115,6 +115,16 @@ export class UniboxResource {
    * (`origin`: `unibox`, `api` or `linkedin`) when the chat was made unread
    * without a newer message from the other person, else `null`.
    *
+   * A group chat has `is_group: true`, `counterpart: null` and a `group`
+   * object: `title` (null when it has none: name it from its members),
+   * `members[]` (the others, never the account's own person; each with
+   * `name`, `first_name`, `picture_url`, `profile_url`, `headline` and
+   * `do_not_contact`, which is `null` when nothing names them yet),
+   * `members_known` (`false` until a read has listed the members, then
+   * `members` is empty) and `preview_sender` (who wrote `preview`, when
+   * someone other than the account did). `group` is `null` on a one-to-one
+   * chat.
+   *
    * @example
    * for await (const chat of curviate.unibox.list({ unread: true })) console.log(chat.chat_id);
    * const { total } = await curviate.unibox.list({ person: "con_123", motion_ids: ["none"], include_total: true });
@@ -128,7 +138,8 @@ export class UniboxResource {
   }
 
   /**
-   * One chat as the Unibox lists it.
+   * One chat as the Unibox lists it, with the same `group` object for a
+   * group chat (see `list`).
    * `GET /v1/unibox/chats/{account_id}/{chat_id}`
    *
    * @example
