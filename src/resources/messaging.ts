@@ -8,6 +8,10 @@
  * carrying base64-encoded `content`, the served surface has NO multipart
  * ops; every write here is `application/json`.
  *
+ * `startChat` with two or more `attendees_ids` starts a group chat, named by
+ * `subject`. `startChat` and `sendMessage` take `shared_content`, a post or a
+ * job posting shown natively beside the text. See each method.
+ *
  * `getMessage` / `editMessage` / `deleteMessage` / `addReaction` /
  * `getAttachment` are re-homed under `/chats/{chat_id}/messages/{message_id}`;
  * every one of them now takes `chatId` as well as `messageId`.
@@ -115,6 +119,20 @@ export class MessagingResource {
    * `attachments[]`, when supplied, carry base64-encoded file bytes, always
    * sent as JSON, never multipart.
    *
+   * One attendee starts a direct chat. Two or more start a group chat, named
+   * by `subject` (omit it and the group has no name of its own). A repeated
+   * id counts once, so `[a, a]` is a direct chat with `a`, not a group. A
+   * voice note stays out of groups: audio to a group sends as a file, and
+   * `send_mode: "native"` there throws `INVALID_REQUEST` (400).
+   *
+   * `shared_content: { type: "post" | "job_posting", id }` shows a LinkedIn
+   * post or job posting natively in the message. `text` is required with it.
+   * It throws `INVALID_REQUEST` (400) with any attachment or without `text`,
+   * and Sales Navigator and Recruiter chats do not take it. `id` for a post
+   * is the one `posts.get` or a list returns (a bare activity id, a URN or a
+   * share URL also work); for a job posting, the numeric job id. Whether a
+   * post id renders in the message is unproven until a live send.
+   *
    * Company pages are reply-only and cannot start a conversation this way.
    * Reply to an existing one instead, with `sendMessage()` using a
    * `COMPANY_` chat id from `inboxes.listChats()`.
@@ -211,6 +229,15 @@ export class MessagingResource {
    * sent as JSON, never multipart. At least one of `text`/`attachments` is
    * required (enforced server-side).
    *
+   * `shared_content: { type: "post" | "job_posting", id }` shows a LinkedIn
+   * post or job posting natively in the message. `text` is required with it.
+   * It throws `INVALID_REQUEST` (400) with any attachment, without `text`, or
+   * on a `COMPANY_` chat, and a reply into a Sales Navigator or Recruiter
+   * chat does not take it. `id` for a post is the one `posts.get` or a list
+   * returns (a bare activity id, a URN or a share URL also work); for a job
+   * posting, the numeric job id. Whether a post id renders in the message is
+   * unproven until a live send.
+   *
    * Sending on behalf of a company page: this same method is the reply
    * surface for a company page, there is no separate send-as-page method.
    * Pass a `COMPANY_` chat id (from `inboxes.listChats()`, e.g.
@@ -239,6 +266,12 @@ export class MessagingResource {
    *   text: "Thanks for reaching out!",
    * });
    * console.log(result.sent_as); // { kind: "company", company_id: "112013061", name: "Acme Inc" }
+   * @example
+   * // Share a job posting in a chat (text is required with shared_content).
+   * await acc.messaging.sendMessage("c_123", {
+   *   text: "Thought of you for this one.",
+   *   shared_content: { type: "job_posting", id: "4012345678" },
+   * });
    */
   sendMessage(chatId: string, body: SendMessageBody): Promise<SendMessageResult> {
     return this.ctx.request<SendMessageResult>({

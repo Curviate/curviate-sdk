@@ -9,6 +9,13 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## Unreleased
 
+### Group chats and shared content (regenerated from staging 86e22d9)
+
+- **Group chats:** `messaging.startChat` with two or more `attendees_ids` starts a group chat, named by `subject`. A repeated id counts once, so `[a, a]` is a direct chat with `a`. A voice note stays out of groups: audio there sends as a file, and `send_mode: "native"` throws `INVALID_REQUEST` (400).
+- **`shared_content`** `{ type: "post" | "job_posting", id }` on `messaging.startChat` and `messaging.sendMessage`: a post or job posting shown natively in the message. `text` is required with it; any attachment, or a `COMPANY_` chat, throws `INVALID_REQUEST` (400). Sales Navigator and Recruiter do not take it. A post `id` is the one `posts.get` or a list returns (a bare activity id, a URN or a share URL also work); a job posting takes its numeric job id. Whether a post id renders in the message is unproven until a live send.
+- **Unibox chats carry `group`** (`title`, `members[]`, `members_known`, `preview_sender`; `null` for a one-to-one chat).
+- **Also in this regen** (types only; other tickets' ripple): `send_mode` on attachments and an optional `text` on `startChat` for a voice note; `variant_id`, `started_from` and `started_to` filters and `accept_time` on Motion analytics; Motion pacing defaults read from the Team's Active hours.
+
 ### Account orchestration (regenerated from staging 1635e59)
 
 - **Motion `settings.priority`** (`normal` | `prioritized`, default `normal`): the Motion's weighted share (1 : 2) of each sending account's daily allowance on `motions.create` / `motions.update`.

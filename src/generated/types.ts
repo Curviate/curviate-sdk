@@ -749,7 +749,7 @@ export interface paths {
         put?: never;
         /**
          * Start a chat
-         * @description Starts a chat with members. This call keeps nothing and logs nothing. Once sent it is a message in the account's inbox, so reading that conversation back through Curviate stores its body in your tenant's inbox records, with no expiry. A COMPANY_ id cannot start one. Marks the chat read.
+         * @description Starts a chat with members: one attendee starts a direct chat, two or more start a group chat, named by `subject`. An audio attachment alone, to one member, arrives as a voice note. shared_content shows a post or job natively, with the text. This call keeps nothing and logs nothing. Once sent it is a message in the account's inbox, so reading that conversation back through Curviate stores its body in your tenant's inbox records, with no expiry. A COMPANY_ id cannot start one. Marks the chat read.
          */
         post: operations["postV1AccountIdChats"];
         delete?: never;
@@ -797,7 +797,7 @@ export interface paths {
         put?: never;
         /**
          * Send a message
-         * @description Sends text, attachments or both. This call keeps nothing and logs nothing. Once sent it is a message in the account's inbox, so reading that conversation back through Curviate stores its body in your tenant's inbox records, with no expiry. COMPANY_ chat ids send as the page. Marks the chat read.
+         * @description Sends text, attachments or both. An audio attachment alone, in a 1:1 chat, arrives as a voice note: Curviate converts it and does not store it. Set send_mode to file to send audio as a download. shared_content shows a post or job natively, with the text. This call keeps nothing and logs nothing. Once sent it is a message in the account's inbox, so reading that conversation back through Curviate stores its body in your tenant's inbox records, with no expiry. COMPANY_ chat ids send as the page. Marks the chat read.
          */
         post: operations["postV1AccountIdChatsChatIdMessages"];
         delete?: never;
@@ -10034,18 +10034,23 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description Message text (1-8000 chars). Optional when at least one attachment is supplied. */
+                    /** @description Message text (1-8000 chars). Optional when at least one attachment is supplied. Not with a voice note. */
                     text?: string;
                     /** @description Optional message ID to quote or reply to. */
                     quote_id?: string;
-                    /** @description Optional file attachments, base64-encoded: at most 5 MiB per file and 9 MiB for the whole request body (base64 adds about a third). */
+                    /** @description Optional attachments, base64-encoded: at most 5 MiB per file and 9 MiB for the whole request body (base64 adds about a third). One audio attachment alone is a voice note. */
                     attachments?: {
                         /** @description Base64-encoded file bytes. */
                         content: string;
-                        /** @description Attachment MIME type (e.g. image/png, application/pdf). */
+                        /** @description Attachment MIME type (e.g. image/png, application/pdf, audio/mpeg). */
                         content_type: string;
                         /** @description File name for the attachment. */
                         filename: string;
+                        /**
+                         * @description native sends a voice note: the attachment must be audio and the only content of the message, with no text. file sends a download and may carry text. Default: native for an audio content_type, file for everything else.
+                         * @enum {string}
+                         */
+                        send_mode?: "native" | "file";
                     }[];
                 };
             };
@@ -13299,20 +13304,25 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description LinkedIn member provider IDs for the chat recipients (>= 1, e.g. ACo...). */
+                    /** @description LinkedIn member provider IDs for the chat recipients (e.g. ACo...). One starts a direct chat, two or more start a group chat. */
                     attendees_ids: string[];
-                    /** @description Opening message text (1-8000 chars). */
-                    text: string;
-                    /** @description Optional conversation name / subject line (<= 200 chars). */
+                    /** @description Opening message text (1-8000 chars). Omit it only for a voice note, one audio attachment alone. */
+                    text?: string;
+                    /** @description Optional conversation name / subject line (<= 200 chars). The group's name when there are two or more attendees. */
                     subject?: string;
-                    /** @description Optional file attachments, base64-encoded: at most 5 MiB per file and 9 MiB for the whole request body (base64 adds about a third). */
+                    /** @description Optional attachments, base64-encoded: at most 5 MiB per file and 9 MiB for the whole request body (base64 adds about a third). One audio attachment alone is a voice note. */
                     attachments?: {
                         /** @description Base64-encoded file bytes. */
                         content: string;
-                        /** @description Attachment MIME type (e.g. image/png, application/pdf). */
+                        /** @description Attachment MIME type (e.g. image/png, application/pdf, audio/mpeg). */
                         content_type: string;
                         /** @description File name for the attachment. */
                         filename: string;
+                        /**
+                         * @description native sends a voice note: the attachment must be audio and the only content of the message, with no text. file sends a download and may carry text. Default: native for an audio content_type, file for everything else.
+                         * @enum {string}
+                         */
+                        send_mode?: "native" | "file";
                     }[];
                     /**
                      * @description Mandatory when starting a conversation with a company. One of: service_request, request_demo, support, careers, other.
@@ -13325,6 +13335,16 @@ export interface operations {
                     invitation_id?: string;
                     /** @description When true, starts the conversation as an InMail instead of a standard message. */
                     inmail?: boolean;
+                    /** @description A LinkedIn post or job posting shown natively in the message, sent with text. Not with attachments. Classic messages only. */
+                    shared_content?: {
+                        /**
+                         * @description post or job_posting.
+                         * @enum {string}
+                         */
+                        type: "post" | "job_posting";
+                        /** @description A post: its id from get_post or a list response (a bare activity id, a URN or a share URL also work). A job_posting: its numeric job id. */
+                        id: string;
+                    };
                 };
             };
         };
@@ -13350,7 +13370,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid request: missing attendees_ids or text, an unknown option, or a rejected api/specifics field. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description Invalid request: missing or empty attendees_ids, missing text, an unknown option, a rejected api/specifics field, a voice note that is not one readable audio attachment alone to one person, or shared_content without text, with an attachment, or with a malformed id. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -13386,7 +13406,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Payload too large. Three triggers, smallest first: the platform's own ceiling on total request size, which rejects bodies from roughly 1 MB and is the one most callers hit; then the caps enforced here, 5 MiB per attachment and 9 MiB for the whole request body. Base64 inflates a file by about 33 percent, so a 5 MiB file costs about 6.7 MiB of the body budget. Send fewer or smaller attachments; retrying the same request unchanged will not help. */
+            /** @description Payload too large. Three triggers, smallest first: the platform's own ceiling on total request size, which rejects bodies from roughly 1 MB and is the one most callers hit; then the caps enforced here, 5 MiB per attachment and 9 MiB for the whole request body. Base64 inflates a file by about 33 percent, so a 5 MiB file costs about 6.7 MiB of the body budget. Send fewer or smaller attachments; retrying the same request unchanged will not help. A voice note converts to about 4 KB per second before this check, so a shorter recording fits. */
             413: {
                 headers: {
                     [name: string]: unknown;
@@ -14147,19 +14167,34 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description Message text (1-8000 chars). Optional when at least one attachment is supplied. */
+                    /** @description Message text (1-8000 chars). Optional when at least one attachment is supplied. Not with a voice note. */
                     text?: string;
                     /** @description Optional message ID to quote or reply to. */
                     quote_id?: string;
-                    /** @description Optional file attachments, base64-encoded: at most 5 MiB per file and 9 MiB for the whole request body (base64 adds about a third). */
+                    /** @description Optional attachments, base64-encoded: at most 5 MiB per file and 9 MiB for the whole request body (base64 adds about a third). One audio attachment alone is a voice note. */
                     attachments?: {
                         /** @description Base64-encoded file bytes. */
                         content: string;
-                        /** @description Attachment MIME type (e.g. image/png, application/pdf). */
+                        /** @description Attachment MIME type (e.g. image/png, application/pdf, audio/mpeg). */
                         content_type: string;
                         /** @description File name for the attachment. */
                         filename: string;
+                        /**
+                         * @description native sends a voice note: the attachment must be audio and the only content of the message, with no text. file sends a download and may carry text. Default: native for an audio content_type, file for everything else.
+                         * @enum {string}
+                         */
+                        send_mode?: "native" | "file";
                     }[];
+                    /** @description A LinkedIn post or job posting shown natively in the message, sent with text. Not with attachments. Classic messages only. */
+                    shared_content?: {
+                        /**
+                         * @description post or job_posting.
+                         * @enum {string}
+                         */
+                        type: "post" | "job_posting";
+                        /** @description A post: its id from get_post or a list response (a bare activity id, a URN or a share URL also work). A job_posting: its numeric job id. */
+                        id: string;
+                    };
                 };
             };
         };
@@ -14195,7 +14230,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid request: at least one of text or attachments must be supplied. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description Invalid request: at least one of text or attachments must be supplied, a voice note that is not one readable audio attachment alone in a 1:1 chat, or shared_content without text, with an attachment, or with a malformed id. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -14231,7 +14266,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Payload too large. Three triggers, smallest first: the platform's own ceiling on total request size, which rejects bodies from roughly 1 MB and is the one most callers hit; then the caps enforced here, 5 MiB per attachment and 9 MiB for the whole request body. Base64 inflates a file by about 33 percent, so a 5 MiB file costs about 6.7 MiB of the body budget. Send fewer or smaller attachments; retrying the same request unchanged will not help. */
+            /** @description Payload too large. Three triggers, smallest first: the platform's own ceiling on total request size, which rejects bodies from roughly 1 MB and is the one most callers hit; then the caps enforced here, 5 MiB per attachment and 9 MiB for the whole request body. Base64 inflates a file by about 33 percent, so a 5 MiB file costs about 6.7 MiB of the body budget. Send fewer or smaller attachments; retrying the same request unchanged will not help. A voice note converts to about 4 KB per second before this check, so a shorter recording fits. */
             413: {
                 headers: {
                     [name: string]: unknown;
@@ -19949,6 +19984,30 @@ export interface operations {
                                 /** @description Their profile. */
                                 profile_url?: string | null;
                             } | null;
+                            /** @description A group chat as this account sees it. Null for a one-to-one chat. The account's own person is never among the members. */
+                            group: {
+                                /** @description The group's own title. Null when it has none: name it from its members. */
+                                title: string | null;
+                                /** @description The other members, as far as LinkedIn has listed them: the count is what the list holds. Empty while members_known is false. */
+                                members: {
+                                    /** @description Their name. Null while LinkedIn has not named them. */
+                                    name: string | null;
+                                    /** @description Their first name. */
+                                    first_name: string | null;
+                                    /** @description Their profile picture. */
+                                    picture_url: string | null;
+                                    /** @description Their profile. */
+                                    profile_url: string | null;
+                                    /** @description Their headline. */
+                                    headline: string | null;
+                                    /** @description true when they are on your Team's do-not-contact list. Null when nothing names them yet, so nothing was checked. A reply into the group is still allowed, and reaches everyone in it. */
+                                    do_not_contact: boolean | null;
+                                }[];
+                                /** @description false until a read has listed the group's members. Its next sync lists them. */
+                                members_known: boolean;
+                                /** @description Who wrote preview, when someone other than this account did and Curviate knows who. */
+                                preview_sender: string | null;
+                            } | null;
                             /** @description The Contact this person is, when you hold one (matched on their LinkedIn ids). */
                             contact_id: string | null;
                             /** @description That Contact's Tags; empty without a Contact. */
@@ -20115,6 +20174,30 @@ export interface operations {
                             picture_url?: string | null;
                             /** @description Their profile. */
                             profile_url?: string | null;
+                        } | null;
+                        /** @description A group chat as this account sees it. Null for a one-to-one chat. The account's own person is never among the members. */
+                        group: {
+                            /** @description The group's own title. Null when it has none: name it from its members. */
+                            title: string | null;
+                            /** @description The other members, as far as LinkedIn has listed them: the count is what the list holds. Empty while members_known is false. */
+                            members: {
+                                /** @description Their name. Null while LinkedIn has not named them. */
+                                name: string | null;
+                                /** @description Their first name. */
+                                first_name: string | null;
+                                /** @description Their profile picture. */
+                                picture_url: string | null;
+                                /** @description Their profile. */
+                                profile_url: string | null;
+                                /** @description Their headline. */
+                                headline: string | null;
+                                /** @description true when they are on your Team's do-not-contact list. Null when nothing names them yet, so nothing was checked. A reply into the group is still allowed, and reaches everyone in it. */
+                                do_not_contact: boolean | null;
+                            }[];
+                            /** @description false until a read has listed the group's members. Its next sync lists them. */
+                            members_known: boolean;
+                            /** @description Who wrote preview, when someone other than this account did and Curviate knows who. */
+                            preview_sender: string | null;
                         } | null;
                         /** @description The Contact this person is, when you hold one (matched on their LinkedIn ids). */
                         contact_id: string | null;
@@ -48021,6 +48104,7 @@ export interface operations {
                             exclusion_list_ids: string[];
                             /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                             account_ids: string[];
+                            /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Motion; changing the Team's hours later does not move it. */
                             schedule: {
                                 days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
                                 hours: {
@@ -48189,13 +48273,13 @@ export interface operations {
                     schedule?: {
                         /** @description Retired: days and hours are read in each sending account's own time zone. Accepted with warning W13 until 2027-01-25, never stored or returned. */
                         timezone?: string | null;
-                        /** @description Days actions may run on. Default mon to fri. */
+                        /** @description Days actions may run on. Default: the days of the Team's Active hours (mon to fri unless the Team set others), taken when the Motion is created and stored on it. */
                         days?: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
                         /** @description Daily window, read in each sending account's own time zone; start before end. The first action after the hours open starts a few minutes later. Replaced whole on update. */
                         hours?: {
-                            /** @description Default 09:00. */
+                            /** @description Default: the start of the Team's Active hours (07:00 unless the Team set another), taken at creation. */
                             start: string;
-                            /** @description Default 18:00. */
+                            /** @description Default: the end of the Team's Active hours (22:00 unless the Team set another), taken at creation. */
                             end: string;
                         };
                         /** @description ISO 8601 with offset. A start before this leaves the Motion scheduled. Default null. */
@@ -48286,6 +48370,7 @@ export interface operations {
                         exclusion_list_ids: string[];
                         /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                         account_ids: string[];
+                        /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Motion; changing the Team's hours later does not move it. */
                         schedule: {
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
                             hours: {
@@ -48530,6 +48615,7 @@ export interface operations {
                         exclusion_list_ids: string[];
                         /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                         account_ids: string[];
+                        /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Motion; changing the Team's hours later does not move it. */
                         schedule: {
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
                             hours: {
@@ -48798,13 +48884,13 @@ export interface operations {
                     schedule?: {
                         /** @description Retired: days and hours are read in each sending account's own time zone. Accepted with warning W13 until 2027-01-25, never stored or returned. */
                         timezone?: string | null;
-                        /** @description Days actions may run on. Default mon to fri. */
+                        /** @description Days actions may run on. Default: the days of the Team's Active hours (mon to fri unless the Team set others), taken when the Motion is created and stored on it. */
                         days?: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
                         /** @description Daily window, read in each sending account's own time zone; start before end. The first action after the hours open starts a few minutes later. Replaced whole on update. */
                         hours?: {
-                            /** @description Default 09:00. */
+                            /** @description Default: the start of the Team's Active hours (07:00 unless the Team set another), taken at creation. */
                             start: string;
-                            /** @description Default 18:00. */
+                            /** @description Default: the end of the Team's Active hours (22:00 unless the Team set another), taken at creation. */
                             end: string;
                         };
                         /** @description ISO 8601 with offset. A start before this leaves the Motion scheduled. Default null. */
@@ -48897,6 +48983,7 @@ export interface operations {
                         exclusion_list_ids: string[];
                         /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                         account_ids: string[];
+                        /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Motion; changing the Team's hours later does not move it. */
                         schedule: {
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
                             hours: {
@@ -49143,6 +49230,7 @@ export interface operations {
                         exclusion_list_ids: string[];
                         /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                         account_ids: string[];
+                        /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Motion; changing the Team's hours later does not move it. */
                         schedule: {
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
                             hours: {
@@ -49370,6 +49458,7 @@ export interface operations {
                         exclusion_list_ids: string[];
                         /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                         account_ids: string[];
+                        /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Motion; changing the Team's hours later does not move it. */
                         schedule: {
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
                             hours: {
@@ -49588,6 +49677,7 @@ export interface operations {
                         exclusion_list_ids: string[];
                         /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                         account_ids: string[];
+                        /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Motion; changing the Team's hours later does not move it. */
                         schedule: {
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
                             hours: {
@@ -49815,6 +49905,7 @@ export interface operations {
                         exclusion_list_ids: string[];
                         /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                         account_ids: string[];
+                        /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Motion; changing the Team's hours later does not move it. */
                         schedule: {
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
                             hours: {
@@ -52908,6 +52999,12 @@ export interface operations {
                 account_id?: string;
                 /** @description Only Enrollments pinned to this Sequence version count; step rows follow its document order. Default: every version. */
                 version?: number;
+                /** @description Only Enrollments given this variant, at the step that has it. Every figure then counts only those Enrollments, the steps before that step included. See window.cohort_after. */
+                variant_id?: string;
+                /** @description First day an Enrollment started on, YYYY-MM-DD, read in timezone. Every figure then counts only those Enrollments, whenever their activity happened. Queued Enrollments have not started and never count. See window.cohort_after. */
+                started_from?: string;
+                /** @description Last day an Enrollment started on, YYYY-MM-DD, inclusive, read in timezone. Every figure then counts only those Enrollments, whenever their activity happened. Queued Enrollments have not started and never count. See window.cohort_after. */
+                started_to?: string;
                 /** @description motion, unibox (the Unibox), api (any API key or MCP grant), direct (unibox and api). Default: all. Repeat the key, comma-separate or mix; empties ignored. */
                 origin?: string;
                 /** @description Sections: performance, daily, steps, variants, paths, accounts, flags. Omitted: the summary. Repeat the key, comma-separate or mix; empties ignored. */
@@ -52964,6 +53061,12 @@ export interface operations {
                             motion_ids: string[];
                             /** @description The origins counted (direct is unibox and api); null for every origin. */
                             origin: ("motion" | "unibox" | "api")[] | null;
+                            /** @description The variant_id filter; null when not used. */
+                            variant_id: string | null;
+                            /** @description The started_from filter; null when not used. */
+                            started_from: string | null;
+                            /** @description The started_to filter; null when not used. */
+                            started_to: string | null;
                         };
                         /** @description The window as applied. */
                         window: {
@@ -52984,6 +53087,8 @@ export interface operations {
                             counts_only_through: string | null;
                             /** @description YYYY-MM-DD, the same day as counts_only_through: paths covers the days after it only, so past it paths does not add up to totals. null when paths covers the whole window. */
                             paths_through: string | null;
+                            /** @description YYYY-MM-DD, set when variant_id or started_from or started_to is used and the window reaches daily counts: only Enrollments started after this day count, because older ones have no per-Enrollment detail left. null otherwise. Such a read takes nothing from daily counts, so counts_only_through and paths_through are null. */
+                            cohort_after: string | null;
                         };
                         /** @description UTC instant of the read; outcomes so far and maturing are measured at it. */
                         generated_at: string;
@@ -53150,6 +53255,13 @@ export interface operations {
                                     [key: string]: number;
                                 };
                             };
+                        };
+                        /** @description How long acceptance took. */
+                        accept_time?: {
+                            /** @description Median seconds from an invitation's send to when its acceptance was detected, about 2 hours after it happens at most. null with no acceptance. */
+                            median_seconds: number | null;
+                            /** @description Acceptances the median is over: of the invitations sent in the window, read in full detail only (past counts_only_through nothing counts here). */
+                            accepted: number;
                         };
                         /** @description One entry per bucket of the window (window.bucket: a day, a week from Monday or a month from the 1st), oldest first, zeros included. Activity: each event in the bucket of its own day, from any send; cohort holds the outcomes so far of the bucket's own sends. No rates. */
                         daily?: {
@@ -53811,6 +53923,13 @@ export interface operations {
                                 /** @description The exact CLI call that reads this item next. Only when a grammar parameter is given. */
                                 next?: string;
                             }[];
+                            /** @description How long acceptance took. */
+                            accept_time: {
+                                /** @description Median seconds from an invitation's send to when its acceptance was detected, about 2 hours after it happens at most. null with no acceptance. */
+                                median_seconds: number | null;
+                                /** @description Acceptances the median is over: of the invitations sent in the window, read in full detail only (past counts_only_through nothing counts here). */
+                                accepted: number;
+                            };
                         }[];
                         /** @description Per account with records in the window or any Enrollment. Enrollment and window figures of totals equal the sum over these plus records with no account. */
                         accounts?: {

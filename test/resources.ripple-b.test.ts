@@ -50,6 +50,22 @@ describe("request shapes", () => {
     await client.network.resync();
     expect(body).toEqual({});
   });
+
+  it("startChat sends a group (attendees, subject) and shared_content; sendMessage sends shared_content", async () => {
+    const seen: Record<string, unknown> = {};
+    server.use(
+      http.post(`${BASE}/v1/acc_1/chats`, async ({ request }) => { seen["start"] = await request.json(); return HttpResponse.json({ chat_id: "c_1", message_id: "m_1" }, { status: 201 }); }),
+      http.post(`${BASE}/v1/acc_1/chats/c_1/messages`, async ({ request }) => { seen["send"] = await request.json(); return HttpResponse.json({ message_id: "m_2", chat_id: "c_1" }, { status: 201 }); }),
+    );
+    const acc = client.account("acc_1");
+    const job = { type: "job_posting", id: "4012345678" } as const;
+    await acc.messaging.startChat({ attendees_ids: ["ACo_A", "ACo_B"], subject: "Q4 intro", text: "Hi both.", shared_content: job });
+    await acc.messaging.sendMessage("c_1", { text: "See this.", shared_content: { type: "post", id: "7380123456789012345" } });
+    expect(seen).toEqual({
+      start: { attendees_ids: ["ACo_A", "ACo_B"], subject: "Q4 intro", text: "Hi both.", shared_content: job },
+      send: { text: "See this.", shared_content: { type: "post", id: "7380123456789012345" } },
+    });
+  });
 });
 
 describe("served error details", () => {
