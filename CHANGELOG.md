@@ -9,6 +9,15 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## Unreleased
 
+### Group chats, voice notes, shared content (regenerated from staging 86e22d93b)
+
+- **`group`** on `unibox.list` items and `unibox.get`: `{ title, members[], members_known, preview_sender } | null`. `null` on a one-to-one chat. A member is `{ name, first_name, picture_url, profile_url, headline, do_not_contact }`; the account's own person is never among them. `members` is empty while `members_known` is `false`. `counterpart` is unchanged: still `null` for a group chat.
+- **`messaging.startChat`:** two or more `attendees_ids` start a group chat, named by `subject`; `text` is optional only for a voice note.
+- **Voice notes:** one audio attachment alone (1:1) is sent as a voice note; `attachments[].send_mode` (`native` | `file`) on `startChat`, `sendMessage` and the company-chat reply. Curviate converts the audio and does not store it.
+- **`shared_content`** `{ type: "post" | "job_posting", id }` on `startChat` and `sendMessage`: a post or job shown natively, sent with text, not with attachments.
+- **Motion hours:** `days` and `hours` default, at creation, to the Team's Active hours, then are stored on the Motion (descriptions only).
+- **Analytics:** `analytics.motions.get` takes `variant_id`, `started_from`, `started_to`; the window gains `cohort_after`; `accept_time { median_seconds, accepted }` joins the figures.
+
 ### Account orchestration (regenerated from staging 1635e59)
 
 - **Motion `settings.priority`** (`normal` | `prioritized`, default `normal`): the Motion's weighted share (1 : 2) of each sending account's daily allowance on `motions.create` / `motions.update`.
