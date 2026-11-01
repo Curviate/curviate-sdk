@@ -9,6 +9,12 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## Unreleased
 
+### Direct messaging at any hour (regenerated from staging de00c9e8f)
+
+- **Same shape, new meaning:** Active hours no longer refuse a direct message: a send, new chat (voice notes, attachments, InMail and the Sales Navigator and Recruiter starts included), edit, delete, reaction, or read and unread mark, by a person in the Unibox or through the API, CLI, SDK or MCP, goes at any hour on any day. A `BUDGET_EXHAUSTED` with `safetyReason: "activity_window"` no longer names a direct message; the wait after a location change still does. Motions and other live writes (invitations, posts, comments, follows) keep the hours. Limits, warm-up, halts and do-not-contact are not time rules and apply as before.
+- **Descriptions only:** the `activity_window` and `active_hours` fields, the `reason` of an error, and the doc comments on `accounts.get`, `accounts.getSafetyPolicy`, `accounts.updateSafetyPolicy` and `SafetyReason` say so. No type or runtime change.
+- **Reads:** a deleted message reads `is_deleted: true`, with no text or attachments, as soon as Curviate learns of the delete (at once for one made through Curviate). Already the shape; nothing to change.
+
 ### Voice notes (regenerated from staging 9d7832f8f)
 
 - **`motions.voiceClips.upload(data, { filename, contentType? })`** (`POST /v1/motions/voice-clips`) and **`motions.voiceClips.get(id)`**: upload one audio file (MP3, WAV, M4A, WebM or Ogg) as the raw body, with `Content-Length`; resolves with the clip `{ object: "voice_clip", id, duration_ms, bytes, filename, created_at }`. The type is taken from a `Blob` or the extension when not given. 1 to 120 seconds, up to 20 MiB, 100 uploads per Team per 24 hours (`RATE_LIMIT_TENANT` with `Retry-After`); converted once, the original is discarded; an unused clip is deleted 30 days after its upload. Needs Automate for the upload; the read passes below it.

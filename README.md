@@ -424,7 +424,9 @@ try {
       // names on PATCH /v1/{account_id}/safety-policy. The ceiling comes from the
       // account's safety policy or the Team default (GET/PATCH /v1/safety-policy).
       // Limits are always enforced. err.safetyReason "activity_window": a live
-      // write outside the account's active hours (the hint names active_hours).
+      // write outside the account's active hours (the hint names active_hours);
+      // never a direct message (send, new chat, edit, delete, reaction, read
+      // mark), which goes at any hour.
       // resetAt is null in the three cases no clock frees: the pending_invites
       // backlog, an InMail credit pool LinkedIn regrants on its own schedule,
       // and an account whose time zone is not known yet.
