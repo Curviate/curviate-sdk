@@ -1,0 +1,33 @@
+{
+  "about": "r19 note without note fallback",
+  "rules": [
+    "R19"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "inv",
+        "do": "invite.send",
+        "with": {
+          "note": "Hi {{contact.first_name}}"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "inv.with.note_fallback",
+      "rule": "required because the note uses a variable: text, or \"drop\"",
+      "code": "R19",
+      "message": "required because the note uses a variable: text, or \"drop\"",
+      "pointer": "/steps/0/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

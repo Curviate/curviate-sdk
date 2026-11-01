@@ -1,0 +1,51 @@
+{
+  "about": "valid every event",
+  "rules": [],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "a",
+        "until": "invite.accepted",
+        "timeout": "1d",
+        "then": "b",
+        "else": "b"
+      },
+      {
+        "id": "b",
+        "until": "message.replied",
+        "timeout": "1d",
+        "then": "c",
+        "else": "c"
+      },
+      {
+        "id": "c",
+        "until": "message.read",
+        "timeout": "1d",
+        "then": "d",
+        "else": "d"
+      },
+      {
+        "id": "d",
+        "until": "event.answer_ready",
+        "timeout": "1d",
+        "then": "end",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "path": "a.until",
+      "rule": "until invite.accepted on a path with no invite.send before it",
+      "code": "W6",
+      "message": "until invite.accepted on a path with no invite.send before it",
+      "pointer": "/steps/0/until",
+      "hint": "Send an invitation on this path before waiting for its acceptance.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w6",
+      "severity": "warning"
+    }
+  ]
+}

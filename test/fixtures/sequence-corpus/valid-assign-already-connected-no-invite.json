@@ -1,0 +1,25 @@
+{
+  "about": "assign already_connected on a warm-only Sequence: no W17",
+  "rules": [],
+  "only": "server",
+  "context": {
+    "assign": "already_connected"
+  },
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "hello",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{first_name}}, glad we are connected.",
+          "fallback": "Hi, glad we are connected."
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": []
+}

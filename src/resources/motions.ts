@@ -1,6 +1,6 @@
 /**
- * Motions and Enrollments (root-scoped): `curviate.motions` (13 methods) and
- * `curviate.enrollments` (10 methods).
+ * Motions and Enrollments (root-scoped): `curviate.motions` (13 methods, plus
+ * `voiceClips` with 2) and `curviate.enrollments` (10 methods).
  *
  * A Motion runs one Sequence (see `Sequence`) for the Contacts of its Contact
  * lists, on its sending accounts, inside its schedule. It is created as a
@@ -41,6 +41,23 @@ export type MotionRemoveContactsBody = NonNullable<paths["/v1/motions/{id}/conta
 export type MotionContactsResult = paths["/v1/motions/{id}/contacts"]["post"]["responses"]["200"]["content"]["application/json"];
 export type MotionRemoveContactsResult = paths["/v1/motions/{id}/contacts/remove"]["post"]["responses"]["200"]["content"]["application/json"];
 
+/** The audio types the upload route lists for its raw body. The API does not read the type: the decoder decides. */
+export type VoiceClipContentType = keyof NonNullable<paths["/v1/motions/voice-clips"]["post"]["requestBody"]>["content"];
+/** A stored Voice clip: `id` (`vc_...`) is the `clip_id` of a `voice.send` step. */
+export type VoiceClip = paths["/v1/motions/voice-clips"]["post"]["responses"]["201"]["content"]["application/json"];
+
+/** Options for {@link VoiceClipsResource.upload}. */
+export interface VoiceClipUploadOptions {
+  /** The file's name, kept with the clip. 1 to 255 characters, no `/` or `\`. */
+  filename: string;
+  /** The file's type. Optional: a `Blob`'s own type, else taken from the filename's extension. */
+  contentType?: VoiceClipContentType;
+}
+
+const AUDIO_BY_EXTENSION: Record<string, VoiceClipContentType> = {
+  mp3: "audio/mpeg", wav: "audio/wav", m4a: "audio/mp4", mp4: "audio/mp4", webm: "audio/webm", ogg: "audio/ogg", oga: "audio/ogg",
+};
+
 export type Enrollment = paths["/v1/enrollments/{id}/stop"]["post"]["responses"]["200"]["content"]["application/json"];
 export type EnrollmentDetail = paths["/v1/enrollments/{id}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type EnrollmentListParams = NonNullable<paths["/v1/enrollments"]["get"]["parameters"]["query"]>;
@@ -78,8 +95,64 @@ function withDocument<B extends { sequence?: unknown }>(body: B): B {
 
 // ─── Resource classes ─────────────────────────────────────────────────────────
 
-export class MotionsResource {
+/** `curviate.motions.voiceClips`: the audio a `voice.send` step plays. */
+export class VoiceClipsResource {
   constructor(private readonly ctx: RequestContext) {}
+
+  /**
+   * Upload one audio file (MP3, WAV, M4A, WebM or Ogg) as the raw request body
+   * and resolve with the stored clip; its `id` is the `clip_id` of a
+   * `voice.send` step. The file is converted once to a voice note format and
+   * the original is not kept. `Content-Length` is sent (a chunked upload is
+   * refused with `411`), so pass the bytes, not a stream.
+   * `POST /v1/motions/voice-clips?filename=...`
+   *
+   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   *
+   * Limits: 1 to 120 seconds (a clip is never shortened: otherwise
+   * `VOICE_CLIP_INVALID`, 422, naming the reason), up to 20 MiB
+   * (`PAYLOAD_TOO_LARGE`, 413), 100 uploads per Team per 24 hours
+   * (`RATE_LIMIT_TENANT`, 429, `Retry-After` is the wait). A retry stores a
+   * second clip. A clip no Sequence version uses is deleted 30 days after its
+   * upload.
+   *
+   * @example
+   * const bytes = await readFile("intro.mp3");
+   * const clip = await curviate.motions.voiceClips.upload(bytes, { filename: "intro.mp3" });
+   * // step.do("voice", "voice.send", { with: { clip_id: clip.id, fallback: "Hi, thanks for connecting." } })
+   */
+  upload(data: Blob | ArrayBuffer | Uint8Array, options: VoiceClipUploadOptions): Promise<VoiceClip> {
+    const ext = options.filename.split(".").pop()?.toLowerCase() ?? "";
+    const contentType = options.contentType ?? ((data instanceof Blob && data.type) || AUDIO_BY_EXTENSION[ext] || "application/octet-stream");
+    return this.ctx.request<VoiceClip>({
+      method: "POST",
+      path: "/v1/motions/voice-clips",
+      query: { filename: options.filename },
+      rawBody: { data, contentType },
+    });
+  }
+
+  /**
+   * One clip: `id`, `duration_ms`, `bytes`, `filename`, `created_at`. No
+   * download link. Another Team's id is `RESOURCE_NOT_FOUND`, the same as an
+   * unknown one. Reads pass below Automate, as every Motion read.
+   * `GET /v1/motions/voice-clips/{id}`
+   *
+   * @example
+   * const clip = await curviate.motions.voiceClips.get("vc_01J8Z3K9P0Q1R2S3T4V5W6X7Y8");
+   */
+  get(clipId: string): Promise<VoiceClip> {
+    return this.ctx.request<VoiceClip>({ method: "GET", path: apiPath`/v1/motions/voice-clips/${clipId}` });
+  }
+}
+
+export class MotionsResource {
+  /** Voice clips for `voice.send` steps. */
+  readonly voiceClips: VoiceClipsResource;
+
+  constructor(private readonly ctx: RequestContext) {
+    this.voiceClips = new VoiceClipsResource(ctx);
+  }
 
   /**
    * Create a Motion, always as a `draft`. `sequence` takes a `Sequence`
@@ -90,6 +163,26 @@ export class MotionsResource {
    * `POST /v1/motions`
    *
    * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   *
+   * Days and hours in `schedule` are read in each sending account's own time
+   * zone. `schedule.timezone` and `settings.stop_on_engagement` are retired:
+   * accepted with warning W13 until 2027-01-25, never stored or returned
+   * (`stop_on_engagement: true` with an acting reply route is a 400).
+   * `settings.acceptance_floor` defaults to `null` (off). With
+   * `settings.accounts_per_contact` above 1 (Several mode) the settings gain
+   * `on_reply_elsewhere` (`stop` or `continue`), `withdraw_on_reply_elsewhere`
+   * and `account_gap` (`1d` to `30d`), served only in that mode;
+   * `accounts_per_contact` is locked once the Motion has started.
+   *
+   * `settings.priority` (`normal`, the default, or `prioritized`) is the
+   * Motion's share of each sending account's daily allowance: a prioritized
+   * Motion gets twice a normal one's share, and a share nobody uses flows to
+   * the others. Curviate paces all Motions on an account against one budget,
+   * so there is no per-Motion start cap. `settings.new_enrollments_per_account_per_day`
+   * and `settings.assign: "even"` are retired: accepted and ignored until
+   * 2027-01-28 with a `SETTING_REMOVED` entry in `notices[]` and
+   * `Deprecation: true`, never returned, then a `400`. A pending Enrollment
+   * waits unassigned (`account_id: null`) until an account with room takes it.
    *
    * @example
    * const motion = await curviate.motions.create({
@@ -104,14 +197,17 @@ export class MotionsResource {
   }
 
   /**
-   * List Motions, most recently updated first. `status` (any of them; default
-   * all but `archived`), `account_id`, `q` (name substring). Items carry no
+   * List Motions. `status` (any of them; default all but `archived`),
+   * `account_id` (one or several accounts as a comma list, up to 50: Motions
+   * sending from any of them), `q` (name substring), `sort`: `updated`
+   * (default, latest edit first) or `activity` (latest step record first,
+   * else `updated_at`). Items carry `last_activity_at` (or `null`) but no
    * `sequence`: read it with `get`. Pages with an opaque `cursor` until it is
-   * `null`.
+   * `null`; a cursor belongs to its sort.
    * `GET /v1/motions`
    *
    * @example
-   * const { items } = await curviate.motions.list({ status: ["active", "paused"] });
+   * const { items } = await curviate.motions.list({ status: ["active", "paused"], account_id: "acc_1,acc_2", sort: "activity" });
    */
   list(params?: MotionListParams): Promise<MotionListPage> {
     return this.ctx.request<MotionListPage>({ method: "GET", path: "/v1/motions", query: commaLists(params, "status") });
@@ -222,6 +318,17 @@ export class MotionsResource {
    * Sequence, rendered messages for `sample` Contacts (1 to 20, default 5) or
    * the `contact_ids` you name (up to 20, not with `sample`), and the budget
    * projection. A read: never reaches LinkedIn, spends nothing.
+   *
+   * `projection.audience` is `{ total, skipped, to_enroll }`, `skipped`
+   * counted per reason (`do_not_contact`, `excluded`, `other_motion`,
+   * `known_chat`, `filtered`; a Contact counts under the first that applies);
+   * `projection.contacts` equals `to_enroll`. `projection.accounts[]` names the
+   * pool that binds each account's pace (`binding`), its
+   * `expected_actions_per_day` (an upper estimate) and `projection.warnings[]`
+   * (`hours_below_share`, `no_sending_account`: no account of the Motion can
+   * send its InMail step). There is no `daily_cap`. In
+   * Several mode `accounts[].contacts` counts Enrollments, not people, and
+   * `projection.fits_before_end_at` is counted per account zone.
    * `GET /v1/motions/{id}/preview`
    *
    * @example
@@ -290,15 +397,20 @@ export class EnrollmentsResource {
 
   /**
    * List Enrollments, newest first. Filters: `motion_id`, `contact_id`,
-   * `account_id`, `status` (any of them), `step_id` (at that Step now),
-   * `version`; by Step outcome: `done_step` with `outcome` (how that Step
+   * `account_id` (one or several as a comma list, up to 50), `status` (any of
+   * them), `step_id` (at any of these Steps now, up to 10), `version`; by Step outcome: `done_step` with `outcome` (how that Step
    * ended), `reason` (catalogue codes, any of them), `variant_id`,
    * `relationship_at_enrollment` (any of them). Pages with an opaque `cursor`
    * until it is `null`.
    * `GET /v1/enrollments`
    *
+   * A finished Enrollment's `finish_reason` may be `engaged_elsewhere`: the
+   * Contact replied to, or was messaged from, another account of the Motion
+   * (Several mode).
+   *
    * @example
    * const { items } = await curviate.enrollments.list({ motion_id: "mot_123", done_step: "opener", outcome: "failed" });
+   * const atEither = await curviate.enrollments.list({ motion_id: "mot_123", step_id: ["opener", "bump"] });
    */
   list(params?: EnrollmentListParams): Promise<EnrollmentListPage> {
     return this.ctx.request<EnrollmentListPage>({
@@ -310,7 +422,12 @@ export class EnrollmentsResource {
 
   /**
    * One Enrollment with its `history` of Steps (metadata only, no rendered
-   * text).
+   * text). `history` reaches back 12 months, plus the entries `retry` reads
+   * at any age; `history_truncated: true` says older entries are not listed.
+   * The Enrollment's state has no such limit. `values` are what the
+   * Sequence's `save` maps took from an incoming event (name to value; read
+   * them as `{{enrollment.<name>}}` and `if enrollment.<name>`); they are
+   * empty once it finishes, and after a resume.
    * `GET /v1/enrollments/{id}`
    *
    * @example
@@ -321,8 +438,8 @@ export class EnrollmentsResource {
   }
 
   /**
-   * Stop a `pending`, `active` or `paused` Enrollment (`finished`,
-   * `stopped`); else `ENROLLMENT_NOT_ACTIVE`.
+   * Stop a `queued`, `active` or `paused` Enrollment (it ends `finished`,
+   * `finish_reason: "stopped"`); else `ENROLLMENT_NOT_ACTIVE`.
    * `POST /v1/enrollments/{id}/stop`
    *
    * @example
@@ -333,7 +450,7 @@ export class EnrollmentsResource {
   }
 
   /**
-   * Hold one `pending`, `active` or `paused` Enrollment until you `resume` it
+   * Hold one `queued`, `active` or `paused` Enrollment until you `resume` it
    * (`waiting.kind: "paused_by_user"`); its waits freeze. A Step being sent
    * right now is `STEP_IN_FLIGHT`: retry in a minute. Works on every plan.
    * `POST /v1/enrollments/{id}/pause`

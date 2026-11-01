@@ -1,0 +1,40 @@
+{
+  "about": "r23 variants on non messaging step",
+  "rules": [
+    "R23"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "v",
+        "do": "profile.view",
+        "variants": [
+          {
+            "id": "a",
+            "text": "x"
+          },
+          {
+            "id": "b",
+            "text": "y"
+          }
+        ],
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "v.variants",
+      "rule": "variants are allowed on messaging steps only",
+      "code": "R23",
+      "message": "variants are allowed on messaging steps only",
+      "pointer": "/steps/0/variants",
+      "hint": "Give the step exactly 2 variants (A/B) with ids unique in the document, or one text in with.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r23",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

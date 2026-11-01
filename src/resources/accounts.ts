@@ -1,5 +1,5 @@
 /**
- * Accounts resource: connected-account and seat management (9 methods, root-scoped).
+ * Accounts resource: connected-account and seat management (13 methods, root-scoped).
  *
  * Pattern followed by all resource namespaces:
  *   - take a {@link RequestContext} in the constructor,
@@ -19,6 +19,7 @@
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
 import { apiPath } from "../internal/path.js";
+import { commaLists, type WithLists } from "../internal/query.js";
 
 /** `GET /v1/accounts` 200 body, a page of connected accounts plus a cursor. */
 export type AccountListPage =
@@ -69,19 +70,62 @@ export type SeatCancelResult =
 export type SeatCancelRevertResult =
   paths["/v1/billing/seats/{seat_id}/cancel/revert"]["post"]["responses"]["200"]["content"]["application/json"];
 
+/** `GET /v1/accounts/{account_id}/metrics` query: `from`, `to`, `timezone`. */
+export type AccountMetricsParams = NonNullable<
+  paths["/v1/accounts/{account_id}/metrics"]["get"]["parameters"]["query"]
+>;
+
+/** `GET /v1/accounts/{account_id}/metrics` 200 body: one snapshot per day, oldest first. */
+export type AccountMetricList =
+  paths["/v1/accounts/{account_id}/metrics"]["get"]["responses"]["200"]["content"]["application/json"];
+
+/** `GET /v1/{account_id}/safety-policy` 200 body: every configurable field per budget row, plus the derived `warm_up` and `activity_window`. */
+export type SafetyPolicy =
+  paths["/v1/{account_id}/safety-policy"]["get"]["responses"]["200"]["content"]["application/json"];
+
+/** `PATCH /v1/{account_id}/safety-policy` request body: only the fields you are changing. */
+export type SafetyPolicyUpdateBody =
+  paths["/v1/{account_id}/safety-policy"]["patch"]["requestBody"]["content"]["application/json"];
+
+/** `PATCH /v1/{account_id}/safety-policy` 200 body: the policy after the write. */
+export type SafetyPolicyUpdateResult =
+  paths["/v1/{account_id}/safety-policy"]["patch"]["responses"]["200"]["content"]["application/json"];
+
+/** `GET /v1/accounts/{account_id}/overview` query. `motion_id`, `origin`, `include`, `fields` and `sort` take a comma list or an array. */
+export type AccountOverviewParams = WithLists<
+  NonNullable<paths["/v1/accounts/{account_id}/overview"]["get"]["parameters"]["query"]>,
+  "motion_id" | "origin" | "include" | "fields" | "sort"
+>;
+
+/** `GET /v1/accounts/{account_id}/overview` 200 body. */
+export type AccountOverview =
+  paths["/v1/accounts/{account_id}/overview"]["get"]["responses"]["200"]["content"]["application/json"];
+
 export class AccountsResource {
   constructor(private readonly ctx: RequestContext) {}
 
   /**
-   * List the tenant's connected LinkedIn accounts, cursor-paginated.
+   * List the tenant's connected LinkedIn accounts, cursor-paginated. An
+   * account disconnected when its free trial ended stays listed (`status_reason:
+   * "trial_ended"`); one you disconnected does not.
    *
-   * Each item also carries a small set of cached account-detail fields
-   * (`username`, `premium_id`, `public_identifier`, `substrate_created_at`,
-   * `signatures`, `groups`) populated by an async background enrichment,
-   * `null`/`[]` until the account's first enrichment pass completes.
+   * Each item carries enough to render an account row without a second call:
+   * its profile (`full_name`, `headline`, `photo_url`, `profile_url`,
+   * `public_identifier`, `location`; `photo_url` is a copy we store and refresh
+   * daily, so it does not expire), `status` and
+   * `status_reason` (why it is disconnected or needs a reconnect: `trial_ended`
+   * or `proxy`), `warm_up` (the active ramp), `inmail_balance` (the credits
+   * LinkedIn last reported and when, `null` until observed), `motions_count`
+   * with the first 20 Motions in `motion_refs`, and `quotas`: three of the
+   * account's safety rows (`connection_requests_no_note`,
+   * `messages_first_degree`, `inmail`) with `remaining`, absent on an account
+   * you can see but not operate. `connection_requests_no_note` now counts
+   * every invitation, noted or not: read it as "Invitations". `get` carries every row. Reading the list
+   * never calls LinkedIn.
    *
-   * Each item carries `external_id` (your own id for the account's end user,
-   * set on `auth.intent` or `update`) and `metadata`, both `null` when unset.
+   * Each item also carries `external_id` (your own id for the account's end
+   * user, set on `auth.intent` or `update`) and `metadata`, both `null` when
+   * unset.
    *
    * @param params - optional `limit` (1-250), `cursor` (from a prior page), and
    *   `external_id` (exact match: only that end user's accounts).
@@ -133,25 +177,64 @@ export class AccountsResource {
    * `quotas[]` REPLACED its earlier `quota_name` / `remaining` / `total` /
    * `reset_time` / `recommended_throttle_hint` shape. Each row now reports
    * `budget_row`, `kind`, `used`, `ceiling`, `effective_ceiling`, `band`,
-   * `posture`, `over_default`, `halt` and the window fields. **Compare `used`
-   * against `effective_ceiling`, not `ceiling`**: the effective one is the
-   * ceiling with the account's warm-up ramp applied, and on a new account the
-   * two differ by roughly a factor of seven. `posture` says what happens at the
-   * ceiling and defaults to `warn`, so nothing here refuses until it is
-   * configured to. Two rows are not counters and say so in `kind`:
+   * `over_default`, `halt` and the window fields. **Compare `used` against
+   * `effective_ceiling`, not `ceiling`**: the effective one is the ceiling
+   * with the account's warm-up ramp applied, and on a new account the two
+   * differ by roughly a factor of seven. Limits are always enforced: at the
+   * effective ceiling the action is refused with `BUDGET_EXHAUSTED`; to send
+   * more, raise the limit. Two rows are not counters and say so in `kind`:
    * `total_actions` (`tally`) and `pending_invites` (`gauge`, whose `used` is
    * `null` until something has observed it).
    *
+   * **Same name, new meaning:** `connection_requests_no_note` counts all
+   * invitations, so its `used` is the invitation total (a noted one also
+   * counts on `connection_requests_with_note` where that row has a ceiling:
+   * Free profiles, 3 a month). The strict rows (invitations, `inmail`,
+   * `profile_views`) also carry `target` (what the account aims at per
+   * window, below the ceiling; `green` is now this target) and
+   * `effective_target` (target times warm-up times health), both `null` on
+   * other rows and read-only. Aim at the target, not the ceiling.
+   *
+   * `health` is Curviate's inference of how LinkedIn sees the account:
+   * `{ state, factor, reasons, until }`, `state` one of `healthy`, `watch`,
+   * `slowed` or `stopped`. It multiplies with warm-up. `health` is absent on
+   * an account you can see but not operate.
+   *
+   * Curviate sees only what it sends. Invitations or messages sent by hand on
+   * LinkedIn, or through another automation tool on the same account, are
+   * invisible to it and to every limit here; LinkedIn's refusal is the only
+   * way they show up. Do not run another automation tool on a connected
+   * account.
+   *
    * The per-minute REQUEST ceiling is a different thing and is deliberately
    * NOT in this array: it protects Curviate's own servers rather than the
-   * LinkedIn account, and it is always enforced with `429` whatever the
-   * posture.
+   * LinkedIn account, and it is answered with `429 RATE_LIMIT_ACCOUNT`.
    *
-   * `activity_window` applies to every account, with or without a zone set.
-   * `timezone` and `timezone_unset` report what YOU set; read
-   * `activity_window.effective_timezone` for the zone the window is actually
-   * read in and `activity_window.source` (`account`, `browser`, `location` or
-   * `default`) for where it came from.
+   * `activity_window` says which time zone the account's active hours are
+   * read in. Nobody sets it: it follows where the account connects from.
+   * `effective_timezone` is that IANA zone, or `null` while it is unknown;
+   * `source` says where it came from (`country`, `region`, `detected` or
+   * `none`); `zone_state` is `known`, `pinned` (a check agreed on one zone,
+   * kept until the next location change) or `unknown`, when the account acts
+   * only in the hours every zone in `fallback_timezones` shares (an empty list
+   * means the window is closed). A live write outside the window is refused
+   * with `BUDGET_EXHAUSTED` (`safetyReason: "activity_window"`), except direct
+   * messaging (a send, new chat, InMail, edit, delete, reaction or read mark,
+   * by a person or an agent), which goes at any hour on any day; Motions
+   * always wait. Limits, warm-up, halts and do-not-contact still apply to a
+   * direct message. Reads are never affected.
+   *
+   * `warm_up` is the account's ramp: `enabled` (the switch, default `true`;
+   * set it with `PATCH /v1/{account_id}/safety-policy` and
+   * `warm_up: { enabled }`), `dormant` (no action for more than 30 days),
+   * `state` and the `triggers` that apply now (`connect`, `dormant`,
+   * `post_restriction`). Off skips the connect and quiet ramps; recovery after
+   * a LinkedIn restriction still applies.
+   *
+   * `connection_location` carries `checked_at` (the last location check, or
+   * `null`), `detected_country` (where your own proxy was found to connect
+   * from, or `null`) and `flags` (`country_mismatch`, `zone_moved`). It never
+   * carries an IP.
    *
    * `account_states[]` lists platform conditions the account is in right now,
    * additive to `status` and independent of it: `recruiter_session_evicted`,
@@ -193,11 +276,20 @@ export class AccountsResource {
    * proxy can only take a `country` together with `proxy: null`. The
    * `proxy.password`, if given, is never returned.
    *
+   * `save_connections_as_contacts` (Automate; on by default) saves the
+   * account's Connections as Contacts: each person becomes one Contact in your
+   * team, an existing Contact is only filled in, do-not-contact people are
+   * skipped. `true` also saves the Connections already synced; `false` keeps
+   * the Contacts saved so far. Without Automate it throws `TIER_REQUIRED`, and
+   * `get` omits the field. `save_connections_paused_reason` reads
+   * `"contact_limit_reached"` while your team holds its 100,000 Contacts.
+   *
    * Returns the account (as `get` returns it, without `quotas` and
    * `event_log`). After a location change its `connection_location` is re-read,
    * so it shows where the account really connects from now. A change that did
    * not land where asked throws `CONNECTION_LOCATION_UNAVAILABLE`, whose
-   * `connectionLocation` carries the actual location.
+   * `connectionLocation` carries the actual location. The account's time zone
+   * follows its connection location: there is no zone to set.
    *
    * @example
    * await curviate.accounts.update("acc_123", { external_id: "usr_42", metadata: { plan: "pro" } });
@@ -205,6 +297,9 @@ export class AccountsResource {
    * @example
    * const account = await curviate.accounts.update("acc_123", { country: "DE" });
    * console.log(account.connection_location?.country); // "DE"
+   *
+   * @example
+   * await curviate.accounts.update("acc_123", { save_connections_as_contacts: false });
    */
   update(accountId: string, body: AccountUpdateBody): Promise<AccountUpdateResult> {
     return this.ctx.request<AccountUpdateResult>({
@@ -300,6 +395,106 @@ export class AccountsResource {
     return this.ctx.request<SeatCancelRevertResult>({
       method: "POST",
       path: apiPath`/v1/billing/seats/${seatId}/cancel/revert`,
+    });
+  }
+
+  /**
+   * The account's own numbers, one snapshot per day, oldest first: 1st-degree
+   * `connections`, `followers`, `profile_viewers_90d`,
+   * `search_appearances_week`, `post_impressions_7d`, and `ssi` (Sales
+   * Navigator accounts only, else `null`). Read once a day inside the
+   * account's activity window and stored: this makes no LinkedIn call. `from`
+   * and `to` are the account's local days (default the last 90 days; at most
+   * 366 days across); a day with no snapshot has no item. One response holds
+   * the whole range (`cursor` is always `null`).
+   * `GET /v1/accounts/{account_id}/metrics`
+   *
+   * @example
+   * const { items } = await curviate.accounts.metrics("acc_123", { from: "2026-08-01", to: "2026-10-28" });
+   */
+  metrics(accountId: string, params?: AccountMetricsParams): Promise<AccountMetricList> {
+    return this.ctx.request<AccountMetricList>({
+      method: "GET",
+      path: apiPath`/v1/accounts/${accountId}/metrics`,
+      ...(params !== undefined ? { query: params } : {}),
+    });
+  }
+
+  /**
+   * One account at a glance, with no LinkedIn call: `profile`, its daily
+   * `metrics` snapshot (`null` before the first one, or when you may not
+   * operate the account), `limits` (its three outreach rows now),
+   * `activity` (its latest 10 actions and their outcomes, metadata only), and
+   * its results in the window (`performance`, `daily`, its `motions`) as the
+   * team overview reads them scoped to it. `profile`, `metrics`, `limits` and
+   * `activity` do not follow the window. The window, `motion_id`, `origin`,
+   * `include`, `fields`, `sort`, `limit` and `compare` work as on
+   * `analytics.motions.list`; with none of `include` and `fields` the body is
+   * trimmed to a summary. `flags` includes `account_attention` and
+   * `limit_reached` for this account.
+   * `GET /v1/accounts/{account_id}/overview`
+   *
+   * @example
+   * const { performance, flags } = await curviate.accounts.overview("acc_123", { range: "30d" });
+   */
+  overview(accountId: string, params?: AccountOverviewParams): Promise<AccountOverview> {
+    return this.ctx.request<AccountOverview>({
+      method: "GET",
+      path: apiPath`/v1/accounts/${accountId}/overview`,
+      query: commaLists(params, "motion_id", "origin", "include", "fields", "sort"),
+    });
+  }
+
+  /**
+   * Read an account's safety policy: every configurable field for every
+   * budget row, and where each value was inherited from. Also carries the
+   * derived `warm_up` (`enabled`, `dormant`, `state`, `factor`, `triggers`)
+   * and `activity_window` (the zone the hours are read in, from where the
+   * account connects) and `auto_withdraw` (default `true`: Curviate withdraws
+   * its own invitations older than 14 days once more than 400 are pending;
+   * hand-sent ones are never touched). Rows carry `target` and
+   * `effective_target` (read-only). Limits are always enforced.
+   * `GET /v1/{account_id}/safety-policy`
+   *
+   * @example
+   * const { warm_up } = await curviate.accounts.getSafetyPolicy("acc_123");
+   */
+  getSafetyPolicy(accountId: string): Promise<SafetyPolicy> {
+    return this.ctx.request<SafetyPolicy>({
+      method: "GET",
+      path: apiPath`/v1/${accountId}/safety-policy`,
+    });
+  }
+
+  /**
+   * Update an account's safety policy. Send only the fields you are changing;
+   * `null` clears an override back to the Team or Curviate default. Limits are
+   * always enforced: to send more, raise the limit. Returns the policy as
+   * `getSafetyPolicy` reads it.
+   *
+   * `auto_withdraw` (boolean) switches the automatic withdrawal of old
+   * Curviate-sent invitations; a change is ledgered. A row's `green` is its
+   * target. `warm_up: { enabled }` turns the account's warm-up ramp on or off (default
+   * on; off skips the connect and quiet ramps, recovery after a LinkedIn
+   * restriction still applies). `active_hours` sets the account's own days and
+   * local hours for Motions and other live writes (direct messaging ignores
+   * them); a row's own `activity_window_start` / `activity_window_end` win over
+   * it. Read-only fields (`activity_window`, a row's
+   * `effective_ceiling`, `over_default`, `warm_up_state` ...) are accepted and
+   * ignored, so a read document can be sent back unchanged. A time zone is not
+   * a setting: `timezone` and a row's `activity_window_timezone` other than
+   * `null` are `400 INVALID_REQUEST`; change the account's `country` or own
+   * `proxy` instead.
+   * `PATCH /v1/{account_id}/safety-policy`
+   *
+   * @example
+   * await curviate.accounts.updateSafetyPolicy("acc_123", { warm_up: { enabled: false } });
+   */
+  updateSafetyPolicy(accountId: string, body: SafetyPolicyUpdateBody): Promise<SafetyPolicyUpdateResult> {
+    return this.ctx.request<SafetyPolicyUpdateResult>({
+      method: "PATCH",
+      path: apiPath`/v1/${accountId}/safety-policy`,
+      body,
     });
   }
 }

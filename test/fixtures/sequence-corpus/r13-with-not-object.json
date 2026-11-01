@@ -1,0 +1,41 @@
+{
+  "about": "r13 with not object",
+  "rules": [
+    "R13"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "with": "Hi",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "m.with",
+      "rule": "must be an object",
+      "code": "R13",
+      "message": "must be an object",
+      "pointer": "/steps/0/with",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",
+      "severity": "error"
+    },
+    {
+      "path": "m.with.text",
+      "rule": "required, or use variants",
+      "code": "R13",
+      "message": "required, or use variants",
+      "pointer": "/steps/0",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

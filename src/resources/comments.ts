@@ -100,6 +100,9 @@ export class CommentsResource {
    * Publish a comment on a post. `POST /v1/{account_id}/posts/{post_id}/comments`
    * Was `posts.comment`. Attachments (at most one) travel as a base64
    * object, never `FormData`.
+   *
+   * A person on the Team's do-not-contact list throws `DO_NOT_CONTACT` (409);
+   * nothing is sent.
    */
   create(postId: string, body: CreateCommentBody): Promise<CreateCommentResult> {
     return this.ctx.request<CreateCommentResult>({
@@ -136,6 +139,9 @@ export class CommentsResource {
    * Reply to a comment. Shares its path with `edit`; POST creates a reply
    * under the target comment, PATCH edits the target comment's own text.
    * `POST /v1/{account_id}/posts/{post_id}/comments/{comment_id}`
+   *
+   * A person on the Team's do-not-contact list throws `DO_NOT_CONTACT` (409);
+   * nothing is sent.
    */
   reply(postId: string, commentId: string, body: ReplyToCommentBody): Promise<ReplyToCommentResult> {
     return this.ctx.request<ReplyToCommentResult>({
@@ -171,6 +177,9 @@ export class CommentsResource {
 
   /**
    * React to a comment. `POST /v1/{account_id}/posts/{post_id}/comments/{comment_id}/reactions`
+   *
+   * A person on the Team's do-not-contact list throws `DO_NOT_CONTACT` (409);
+   * nothing is sent.
    */
   addReaction(postId: string, commentId: string, body: AddCommentReactionBody): Promise<AddCommentReactionResult> {
     return this.ctx.request<AddCommentReactionResult>({

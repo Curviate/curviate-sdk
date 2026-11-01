@@ -1,0 +1,26 @@
+{
+  "about": "valid read receipt mixed accounts",
+  "rules": [],
+  "only": "server",
+  "context": {
+    "account_profiles": [
+      "recruiter",
+      "premium"
+    ]
+  },
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "r",
+        "until": "message.read",
+        "timeout": "2d",
+        "then": "end",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": []
+}

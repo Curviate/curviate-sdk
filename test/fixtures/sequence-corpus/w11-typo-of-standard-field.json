@@ -1,0 +1,34 @@
+{
+  "about": "a short custom field one edit from a standard field",
+  "rules": [
+    "W11"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{fist_name}}",
+          "fallback": "Hi"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "path": "m.with.text",
+      "rule": "{{fist_name}} is read as a custom field; did you mean first_name?",
+      "code": "W11",
+      "message": "{{fist_name}} is read as a custom field; did you mean first_name?",
+      "pointer": "/steps/0/with/text",
+      "hint": "Did you mean first_name?",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w11",
+      "severity": "warning"
+    }
+  ]
+}

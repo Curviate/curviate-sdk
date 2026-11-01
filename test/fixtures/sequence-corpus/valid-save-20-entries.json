@@ -1,0 +1,72 @@
+{
+  "about": "save and save_to_contact at 20 entries each pass (EV-01)",
+  "rules": [],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "booked",
+        "until": "event.meeting_booked",
+        "timeout": "14d",
+        "save": {
+          "v0": "lead.f0",
+          "v1": "lead.f1",
+          "v2": "lead.f2",
+          "v3": "lead.f3",
+          "v4": "lead.f4",
+          "v5": "lead.f5",
+          "v6": "lead.f6",
+          "v7": "lead.f7",
+          "v8": "lead.f8",
+          "v9": "lead.f9",
+          "v10": "lead.f10",
+          "v11": "lead.f11",
+          "v12": "lead.f12",
+          "v13": "lead.f13",
+          "v14": "lead.f14",
+          "v15": "lead.f15",
+          "v16": "lead.f16",
+          "v17": "lead.f17",
+          "v18": "lead.f18",
+          "v19": "lead.f19"
+        },
+        "save_to_contact": {
+          "k0": "deal.k0",
+          "k1": "deal.k1",
+          "k2": "deal.k2",
+          "k3": "deal.k3",
+          "k4": "deal.k4",
+          "k5": "deal.k5",
+          "k6": "deal.k6",
+          "k7": "deal.k7",
+          "k8": "deal.k8",
+          "k9": "deal.k9",
+          "k10": "deal.k10",
+          "k11": "deal.k11",
+          "k12": "deal.k12",
+          "k13": "deal.k13",
+          "k14": "deal.k14",
+          "k15": "deal.k15",
+          "k16": "deal.k16",
+          "k17": "deal.k17",
+          "k18": "deal.k18",
+          "k19": "deal.k19"
+        },
+        "then": "msg",
+        "else": "end"
+      },
+      {
+        "id": "msg",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{enrollment.v0}} {{enrollment.v1}} {{enrollment.v2}} {{enrollment.v3}} {{enrollment.v4}} {{enrollment.v5}} {{enrollment.v6}} {{enrollment.v7}} {{enrollment.v8}} {{enrollment.v9}} {{enrollment.v10}} {{enrollment.v11}} {{enrollment.v12}} {{enrollment.v13}} {{enrollment.v14}} {{enrollment.v15}} {{enrollment.v16}} {{enrollment.v17}} {{enrollment.v18}} {{enrollment.v19}}",
+          "fallback": "Thanks for booking."
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": []
+}

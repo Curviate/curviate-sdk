@@ -1,0 +1,32 @@
+{
+  "about": "until signal.<name>: the old spelling of event.<name>, P2 window",
+  "rules": [
+    "W13"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "u",
+        "until": "signal.answer_ready",
+        "timeout": "1d",
+        "then": "end",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "path": "u.until",
+      "rule": "until signal.answer_ready is now until event.answer_ready; accepted until 2027-01-19",
+      "code": "W13",
+      "message": "until signal.answer_ready is now until event.answer_ready; accepted until 2027-01-19",
+      "pointer": "/steps/0/until",
+      "hint": "Use event.answer_ready instead.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w13",
+      "severity": "warning"
+    }
+  ]
+}

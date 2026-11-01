@@ -1,0 +1,96 @@
+{
+  "about": "an enrollment key no save writes, did-you-mean candidates; a save_to_contact key; enrollment.id reserved (R27)",
+  "rules": [
+    "R27"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "booked",
+        "until": "event.meeting_booked",
+        "timeout": "14d",
+        "save": {
+          "score": "lead.score"
+        },
+        "save_to_contact": {
+          "crm_stage": "deal.stage"
+        },
+        "then": "msg",
+        "else": "end"
+      },
+      {
+        "id": "msg",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{enrollment.scor}} {{enrollment.crm_stage}} {{enrollment.id}} {{enrollment.score}}",
+          "fallback": "Hi"
+        },
+        "next": "gate"
+      },
+      {
+        "id": "gate",
+        "if": {
+          "enrollment.tier": {
+            "eq": "gold"
+          }
+        },
+        "then": "end",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "msg.with.text",
+      "rule": "{{enrollment.scor}}: no save of this Sequence writes scor",
+      "code": "R27",
+      "message": "{{enrollment.scor}}: no save of this Sequence writes scor",
+      "pointer": "/steps/1/with/text",
+      "hint": "Use {{enrollment.score}}.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r27",
+      "severity": "error",
+      "candidates": [
+        "{{enrollment.score}}"
+      ]
+    },
+    {
+      "path": "msg.with.text",
+      "rule": "{{enrollment.crm_stage}}: no save of this Sequence writes crm_stage",
+      "code": "R27",
+      "message": "{{enrollment.crm_stage}}: no save of this Sequence writes crm_stage",
+      "pointer": "/steps/1/with/text",
+      "hint": "Use {{contact.extra.crm_stage}}.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r27",
+      "severity": "error",
+      "candidates": [
+        "{{contact.extra.crm_stage}}"
+      ]
+    },
+    {
+      "path": "msg.with.text",
+      "rule": "{{enrollment.id}}: enrollment.id is reserved",
+      "code": "R27",
+      "message": "{{enrollment.id}}: enrollment.id is reserved",
+      "pointer": "/steps/1/with/text",
+      "hint": "Use {{enrollment_id}}.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r27",
+      "severity": "error",
+      "candidates": [
+        "{{enrollment_id}}"
+      ]
+    },
+    {
+      "path": "gate.if",
+      "rule": "enrollment.tier: no save of this Sequence writes tier",
+      "code": "R27",
+      "message": "enrollment.tier: no save of this Sequence writes tier",
+      "pointer": "/steps/2/if",
+      "hint": "Save the value with save on an until event.<name> step first; a save_to_contact key reads as {{contact.extra.<key>}}.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r27",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}
