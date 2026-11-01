@@ -218,8 +218,11 @@ export class AccountsResource {
    * kept until the next location change) or `unknown`, when the account acts
    * only in the hours every zone in `fallback_timezones` shares (an empty list
    * means the window is closed). A live write outside the window is refused
-   * with `BUDGET_EXHAUSTED` (`safetyReason: "activity_window"`); reads are
-   * never affected.
+   * with `BUDGET_EXHAUSTED` (`safetyReason: "activity_window"`), except direct
+   * messaging (a send, new chat, InMail, edit, delete, reaction or read mark,
+   * by a person or an agent), which goes at any hour on any day; Motions
+   * always wait. Limits, warm-up, halts and do-not-contact still apply to a
+   * direct message. Reads are never affected.
    *
    * `warm_up` is the account's ramp: `enabled` (the switch, default `true`;
    * set it with `PATCH /v1/{account_id}/safety-policy` and
@@ -474,8 +477,9 @@ export class AccountsResource {
    * target. `warm_up: { enabled }` turns the account's warm-up ramp on or off (default
    * on; off skips the connect and quiet ramps, recovery after a LinkedIn
    * restriction still applies). `active_hours` sets the account's own days and
-   * local hours; a row's own `activity_window_start` / `activity_window_end`
-   * win over it. Read-only fields (`activity_window`, a row's
+   * local hours for Motions and other live writes (direct messaging ignores
+   * them); a row's own `activity_window_start` / `activity_window_end` win over
+   * it. Read-only fields (`activity_window`, a row's
    * `effective_ceiling`, `over_default`, `warm_up_state` ...) are accepted and
    * ignored, so a read document can be sent back unchanged. A time zone is not
    * a setting: `timezone` and a row's `activity_window_timezone` other than

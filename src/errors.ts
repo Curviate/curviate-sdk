@@ -127,7 +127,8 @@ export const ERROR_CODES = [
   // the budget row named by `budgetRow` is at its ceiling, set by the account's
   // safety policy or else the Team default (`GET`/`PATCH /v1/safety-policy`),
   // or the account is outside its activity window (a live write only; reads
-  // are never refused for the hour). Limits are always
+  // are never refused for the hour, and a direct message, meaning a send, new
+  // chat, edit, delete, reaction or read mark, never is). Limits are always
   // enforced: to send more, raise the limit. Deliberately absent from
   // RETRYABLE_CODES: a monthly row's reset can be weeks out, so backing off
   // is the wrong recovery.
@@ -535,7 +536,9 @@ export interface RetryHint {
  * `ceiling`: the row's configured limit is spent; wait until
  * {@link CurviateError.resetAt} or raise the limit.
  * `activity_window`: the account is outside the hours it works in; `resetAt`
- * is when the window next opens.
+ * is when the window next opens. Never for a direct message (a send, new chat,
+ * edit, delete, reaction or read mark), which goes at any hour; the wait after
+ * a location change still holds one.
  *
  * The two need different fixes, which is why this is a field rather than
  * something to read out of the message.
@@ -627,7 +630,8 @@ export interface CurviateErrorInit {
    *   before {@link CurviateErrorInit.retryAfterSeconds} elapses, because retrying
    *   into a LinkedIn rate limit is what escalates it into a restriction.
    * - `BUDGET_EXHAUSTED`: the row hit the CEILING you configured, or the
-   *   account is outside its activity window. Nothing reached LinkedIn and
+   *   account is outside its activity window (never for a direct message).
+   *   Nothing reached LinkedIn and
    *   nothing was spent. Wait until {@link CurviateErrorInit.resetAt} or
    *   change {@link CurviateErrorInit.safetyHint}'s parameter.
    *

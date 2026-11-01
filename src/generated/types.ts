@@ -4743,7 +4743,7 @@ export interface components {
                 message: string;
             };
             /**
-             * @description Present on CONTACT_NOT_ENROLLABLE: why the Contact was not enrolled (already_enrolled, do_not_contact, in_exclusion_list, in_other_motion or filtered_out). Present on BUDGET_EXHAUSTED: which rule refused. ceiling means the row's configured limit is spent, and you wait until reset_at or raise it. activity_window means the account is outside the hours it works in, and reset_at is when the window next opens. The two need different fixes, so branch on this rather than on the message; hint.parameter already names the right setting for each.
+             * @description Present on CONTACT_NOT_ENROLLABLE: why the Contact was not enrolled (already_enrolled, do_not_contact, in_exclusion_list, in_other_motion or filtered_out). Present on BUDGET_EXHAUSTED: which rule refused. ceiling means the row's configured limit is spent, and you wait until reset_at or raise it. activity_window means the account is outside the hours it works in (never for a direct message: a send, new chat, edit, delete, reaction or read mark), and reset_at is when the window next opens. The two need different fixes, so branch on this rather than on the message; hint.parameter already names the right setting for each.
              * @enum {string}
              */
             reason?: "ceiling" | "activity_window" | "already_enrolled" | "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "filtered_out";
@@ -40009,7 +40009,7 @@ export interface operations {
                         };
                         /** @description Whether Curviate withdraws this account's old Motion-sent invitations on its own (default true). Past 400 pending invitations, those over 14 days old go oldest first, at most the larger of 25 and the day's invitation allowance a day, one at a time inside the account's working hours, each after a check that it is still pending. Invitations sent by hand or through the API are never withdrawn, and a withdrawn person is never invited again by a Motion. It runs while invitations are stopped at 650 pending. Set it with PATCH /v1/{account_id}/safety-policy and `auto_withdraw`; a change is recorded in the account's ledger. */
                         auto_withdraw?: boolean;
-                        /** @description The zone the activity window is read in, derived from where the account connects. Outside the window, a live write to LinkedIn is refused; reads and anything served from Curviate's own store are never affected, at any hour. Read-only: a write accepts it back and ignores it, so a read policy can be sent back unchanged. */
+                        /** @description The zone the activity window is read in, derived from where the account connects. Outside the window, a live write to LinkedIn is refused, except direct messaging (a send, new chat, InMail, edit, delete, reaction or read mark), which goes at any hour; reads and anything served from Curviate's own store are never affected, at any hour. Read-only: a write accepts it back and ignores it, so a read policy can be sent back unchanged. */
                         activity_window?: {
                             /** @description The IANA zone the activity window is read in, from where the account connects (its Curviate proxy's country, or your own proxy's detected location). Nobody sets it. Null while the zone is unknown: see fallback_timezones. */
                             effective_timezone?: string | null;
@@ -40489,7 +40489,7 @@ export interface operations {
                          * @enum {string|null}
                          */
                         posture?: "warn" | "enforce" | null;
-                        /** @description Local time the activity window opens, HH:MM. Outside the window, live write operations are refused. */
+                        /** @description Local time the activity window opens, HH:MM. Outside the window, live write operations are refused, except direct messaging. */
                         activity_window_start?: string | null;
                         /** @description Local time the activity window closes, HH:MM. Must differ from activity_window_start (in force after the write); equal edges are a 400. */
                         activity_window_end?: string | null;
@@ -40546,7 +40546,7 @@ export interface operations {
                             over_default?: unknown;
                         } | null;
                     };
-                    /** @description This account's own active hours: the days and local hours live writes happen in. Null falls back to the Team default. A row's own activity_window_start/end win over it, keeping these days. The read reports the hours in force and their source; sent back, it changes nothing. */
+                    /** @description This account's own active hours: the days and local hours live writes happen in; direct messaging goes at any hour. Null falls back to the Team default. A row's own activity_window_start/end win over it, keeping these days. The read reports the hours in force and their source; sent back, it changes nothing. */
                     active_hours?: {
                         /** @description At least one day. */
                         days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
@@ -40636,7 +40636,7 @@ export interface operations {
                         };
                         /** @description Whether Curviate withdraws this account's old Motion-sent invitations on its own (default true). Past 400 pending invitations, those over 14 days old go oldest first, at most the larger of 25 and the day's invitation allowance a day, one at a time inside the account's working hours, each after a check that it is still pending. Invitations sent by hand or through the API are never withdrawn, and a withdrawn person is never invited again by a Motion. It runs while invitations are stopped at 650 pending. Set it with PATCH /v1/{account_id}/safety-policy and `auto_withdraw`; a change is recorded in the account's ledger. */
                         auto_withdraw?: boolean;
-                        /** @description The zone the activity window is read in, derived from where the account connects. Outside the window, a live write to LinkedIn is refused; reads and anything served from Curviate's own store are never affected, at any hour. Read-only: a write accepts it back and ignores it, so a read policy can be sent back unchanged. */
+                        /** @description The zone the activity window is read in, derived from where the account connects. Outside the window, a live write to LinkedIn is refused, except direct messaging (a send, new chat, InMail, edit, delete, reaction or read mark), which goes at any hour; reads and anything served from Curviate's own store are never affected, at any hour. Read-only: a write accepts it back and ignores it, so a read policy can be sent back unchanged. */
                         activity_window?: {
                             /** @description The IANA zone the activity window is read in, from where the account connects (its Curviate proxy's country, or your own proxy's detected location). Nobody sets it. Null while the zone is unknown: see fallback_timezones. */
                             effective_timezone?: string | null;
@@ -41631,7 +41631,7 @@ export interface operations {
                             window_span?: number | null;
                             /** @description IANA zone name the counting window is aligned to, e.g. `Europe/Berlin` or `UTC`. Must be a real zone; anything else is a 400. Null counts in UTC. */
                             window_timezone?: string | null;
-                            /** @description Local time the activity window opens, HH:MM. Outside the window, live write operations are refused. */
+                            /** @description Local time the activity window opens, HH:MM. Outside the window, live write operations are refused, except direct messaging. */
                             activity_window_start?: string | null;
                             /** @description Local time the activity window closes, HH:MM. Must differ from activity_window_start (in force after the write); equal edges are a 400. */
                             activity_window_end?: string | null;
@@ -41674,7 +41674,7 @@ export interface operations {
                             over_default?: unknown;
                         } | null;
                     };
-                    /** @description The Team default active hours: the days and local hours live writes happen in. Null falls back to Curviate's default, 07:00-22:00 Monday to Friday. The read reports the hours in force and their source; sent back, it changes nothing. */
+                    /** @description The Team default active hours: the days and local hours live writes happen in; direct messaging goes at any hour. Null falls back to Curviate's default, 07:00-22:00 Monday to Friday. The read reports the hours in force and their source; sent back, it changes nothing. */
                     active_hours?: {
                         /** @description At least one day. */
                         days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
