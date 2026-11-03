@@ -8,6 +8,17 @@
  * full-inbox sync is set per account by the person who connected it
  * (`accounts.update`). Read a chat's messages and act on it (send, react,
  * mark read) with `curviate.account(id).messaging`.
+ *
+ * A disconnected Account stays in the Unibox, read-only: it appears in
+ * `unibox.accounts.list()` and its chats in `unibox.list()` (each item's
+ * `account_status` says `disconnected`). Reading its messages answers from
+ * Curviate's stored copy; a write on it (send, start a chat, InMail, mark
+ * read, react, edit, delete) throws `REAUTH_REQUIRED` (409) until you
+ * reconnect it. An archived Account is not listed.
+ *
+ * A send from the API (this SDK included) or the Unibox marks the chat read:
+ * `unread` turns `false`, `marked_unread` clears, and a `chat.updated`
+ * webhook reports it. A send from a Motion leaves the read state as it is.
  */
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
@@ -38,8 +49,19 @@ export class UniboxAccountsResource {
 
   /**
    * For every account you can operate: whether its whole inbox is copied into
-   * the Unibox, and how far the chat-list sync is.
+   * the Unibox, and how far the chat-list sync is. A disconnected account is
+   * listed too (`account_status: "disconnected"`), read-only.
    * `GET /v1/unibox/accounts`
+   *
+   * Read `sync` before trusting an empty Unibox: `off` and `pending` mean
+   * nothing was listed yet. `sync.next_run_at` is when the next read of the
+   * account happens: once the first listing is `complete`, the next poll
+   * (every 5 to 10 minutes while the Unibox is open in the dashboard,
+   * otherwise 30 to 60, slower at weekends, inside the account's active hours
+   * only); while `paused`, when the pause ends; `null` when none can be
+   * scheduled or full-inbox sync is off. An account without full-inbox sync
+   * that still has Motion chats is polled for them, yet reads `off` with
+   * `next_run_at: null`.
    *
    * @example
    * const { items } = await curviate.unibox.accounts.list();
@@ -76,12 +98,36 @@ export class UniboxResource {
   /**
    * List the chats of every account you can operate in one inbox, newest
    * activity first. Filters: `account_ids`, `motion_ids`, `tags` (several
-   * each), `unread`, `last_message_from`, `type`, `q` (3+ characters).
-   * `await` it for one page; `for await` it for every chat across pages.
+   * each), `person`, `unread`, `last_message_from`, `type`, `q` (3+
+   * characters). `await` it for one page; `for await` it for every chat
+   * across pages.
    * `GET /v1/unibox/chats`
+   *
+   * `person` is one Contact id (`con_...`) or LinkedIn id (`ACo...`), not a
+   * list; an unknown id matches nothing. `motion_ids` also takes `"none"`:
+   * the chats no Motion links, alone or beside Motion ids. `include_total:
+   * true` adds `total` to the page, the chats that match the filters (not
+   * the page); without it the body has no `total`.
+   *
+   * A chat of a disconnected account is listed (`account_status:
+   * "disconnected"`), read-only. `unread` is LinkedIn's state for the
+   * account, the same for every viewer. `marked_unread` is `{origin, at}`
+   * (`origin`: `unibox`, `api` or `linkedin`) when the chat was made unread
+   * without a newer message from the other person, else `null`.
+   *
+   * A group chat has `is_group: true`, `counterpart: null` and a `group`
+   * object: `title` (null when it has none: name it from its members),
+   * `members[]` (the others, never the account's own person; each with
+   * `name`, `first_name`, `picture_url`, `profile_url`, `headline` and
+   * `do_not_contact`, which is `null` when nothing names them yet),
+   * `members_known` (`false` until a read has listed the members, then
+   * `members` is empty) and `preview_sender` (who wrote `preview`, when
+   * someone other than the account did). `group` is `null` on a one-to-one
+   * chat.
    *
    * @example
    * for await (const chat of curviate.unibox.list({ unread: true })) console.log(chat.chat_id);
+   * const { total } = await curviate.unibox.list({ person: "con_123", motion_ids: ["none"], include_total: true });
    */
   list(params?: UniboxChatListParams): Pageable<UniboxChatListPage> {
     return pageable(
@@ -92,7 +138,8 @@ export class UniboxResource {
   }
 
   /**
-   * One chat as the Unibox lists it.
+   * One chat as the Unibox lists it, with the same `group` object for a
+   * group chat (see `list`).
    * `GET /v1/unibox/chats/{account_id}/{chat_id}`
    *
    * @example
@@ -117,8 +164,17 @@ export class UniboxResource {
   /**
    * Queue a re-read of the newest chats (up to 100) of each account with
    * full-inbox sync on, or of `account_ids`. Runs within minutes. Once per
-   * account per 5 minutes; a repeat answers `cooldown` with `next_allowed_at`.
+   * account per 2 minutes; a repeat answers `cooldown` with `next_allowed_at`.
    * `POST /v1/unibox/refresh`
+   *
+   * It covers every account the poll covers: full-inbox sync on, or Motion
+   * chats or Motion outreach without it (only those chats are kept). An
+   * account's `status` is `queued`, `cooldown`, `paused` (it runs when the
+   * pause ends) or `not_synced`, which means none of those apply (or the
+   * first full listing is still running), so there is nothing to refresh.
+   * `next_allowed_at` is when the next manual refresh is allowed (while
+   * `paused`, when the pause ends, `null` if unknown). A disconnected account
+   * named here is ignored and claims no cooldown.
    *
    * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
    *

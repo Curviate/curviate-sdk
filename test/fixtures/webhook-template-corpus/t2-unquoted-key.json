@@ -1,0 +1,23 @@
+{
+  "about": "Not JSON: a bare key. The message names the position, never the text.",
+  "rules": [
+    "T2"
+  ],
+  "source": "user",
+  "template": "{email: \"{{contact.email}}\"}",
+  "errors": [
+    {
+      "path": "body_template",
+      "rule": "not valid JSON: expected a double-quoted key, found a character that starts no JSON value",
+      "code": "T2",
+      "message": "not valid JSON: expected a double-quoted key, found a character that starts no JSON value",
+      "pointer": "/body_template",
+      "line": 1,
+      "col": 2,
+      "hint": "Write the template as JSON: double-quoted keys and strings, commas between members, nothing after the last value.",
+      "docs_url": "https://docs.curviate.com/reference/webhooks/body-templates#t2",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,36 @@
+{
+  "about": "r23 one variant",
+  "rules": [
+    "R23"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "variants": [
+          {
+            "id": "v1",
+            "text": "Hi"
+          }
+        ],
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "m.variants",
+      "rule": "needs exactly 2 variants (A/B); found 1",
+      "code": "R23",
+      "message": "needs exactly 2 variants (A/B); found 1",
+      "pointer": "/steps/0/variants",
+      "hint": "Give the step exactly 2 variants (A/B) with ids unique in the document, or one text in with.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r23",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

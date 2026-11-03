@@ -1,0 +1,31 @@
+{
+  "about": "r14 missing timeout",
+  "rules": [
+    "R14"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "u",
+        "until": "message.replied",
+        "then": "end",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "u.timeout",
+      "rule": "required on an until step",
+      "code": "R14",
+      "message": "required on an until step",
+      "pointer": "/steps/0",
+      "hint": "Wait for invite.accepted, message.replied, message.read or event.<name>, and give a timeout.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r14",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

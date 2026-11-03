@@ -1,0 +1,33 @@
+{
+  "about": "r19 comment without fallback",
+  "rules": [
+    "R19"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "c",
+        "do": "post.comment",
+        "with": {
+          "text": "{{contact.extra.comment}}"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "c.with.fallback",
+      "rule": "required on a comment: text, or \"skip\"",
+      "code": "R19",
+      "message": "required on a comment: text, or \"skip\"",
+      "pointer": "/steps/0/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

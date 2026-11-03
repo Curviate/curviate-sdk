@@ -143,6 +143,9 @@ export class UsersResource {
    * Follow a user (bodyless). `POST /v1/{account_id}/users/{user_id}/follow`
    * If the target's profile is private, sends a connect request instead and
    * returns `connect_request_sent`.
+   *
+   * A person on the Team's do-not-contact list throws `DO_NOT_CONTACT` (409);
+   * nothing is sent.
    */
   follow(userId: string): Promise<UserFollowResult> {
     return this.ctx.request<UserFollowResult>({
@@ -181,6 +184,9 @@ export class UsersResource {
    * `POST /v1/{account_id}/users/{user_id}/endorse-skill`
    * Body key is `endorsement_id` (was `skill_endorsement_id` on `profiles.endorse`).
    * Obtain it from `GET /v1/{account_id}/users/{user_id}?linkedin_sections=linkedin_skills`.
+   *
+   * A person on the Team's do-not-contact list throws `DO_NOT_CONTACT` (409);
+   * nothing is sent.
    */
   endorseSkill(userId: string, body: EndorseSkillBody): Promise<EndorseSkillResult> {
     return this.ctx.request<EndorseSkillResult>({

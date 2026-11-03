@@ -45,7 +45,12 @@ export type CancelInviteResult =
 export class InvitesResource {
   constructor(protected readonly ctx: RequestContext) {}
 
-  /** Send a connect-request. `POST /v1/{account_id}/invites` */
+  /**
+   * Send a connect-request. `POST /v1/{account_id}/invites`
+   *
+   * A person on the Team's do-not-contact list throws `DO_NOT_CONTACT` (409);
+   * nothing is sent.
+   */
   send(body: SendInviteBody): Promise<SendInviteResult> {
     return this.ctx.request<SendInviteResult>({
       method: "POST",

@@ -175,7 +175,12 @@ export class PostsResource {
     });
   }
 
-  /** React to a post. `POST /v1/{account_id}/posts/{post_id}/reactions` */
+  /**
+   * React to a post. `POST /v1/{account_id}/posts/{post_id}/reactions`
+   *
+   * A person on the Team's do-not-contact list throws `DO_NOT_CONTACT` (409);
+   * nothing is sent.
+   */
   react(postId: string, body: PostReactBody): Promise<PostReactResult> {
     return this.ctx.request<PostReactResult>({
       method: "POST",

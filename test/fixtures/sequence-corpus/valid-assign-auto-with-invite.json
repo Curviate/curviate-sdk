@@ -1,0 +1,38 @@
+{
+  "about": "the same Sequence with assign auto: no W17",
+  "rules": [],
+  "only": "server",
+  "context": {
+    "assign": "auto"
+  },
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "check",
+        "if": {
+          "contact.connected": true
+        },
+        "then": "hello",
+        "else": "invite"
+      },
+      {
+        "id": "hello",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{first_name}}, glad we are connected.",
+          "fallback": "Hi, glad we are connected."
+        },
+        "next": "end"
+      },
+      {
+        "id": "invite",
+        "do": "invite.send",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": []
+}

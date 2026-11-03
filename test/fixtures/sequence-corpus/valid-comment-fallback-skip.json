@@ -1,0 +1,21 @@
+{
+  "about": "valid comment fallback skip",
+  "rules": [],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "c",
+        "do": "post.comment",
+        "with": {
+          "text": "{{contact.extra.comment}}",
+          "fallback": "skip"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": []
+}

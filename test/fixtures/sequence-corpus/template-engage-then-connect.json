@@ -1,0 +1,109 @@
+{
+  "about": "template engage then connect",
+  "rules": [],
+  "schema_valid": true,
+  "document": {
+    "name": "Engage then connect",
+    "description": "React and comment on a recent post, then invite and two messages.",
+    "sequence": {
+      "on_reply": "replied",
+      "steps": [
+        {
+          "id": "react",
+          "do": "post.react",
+          "with": {
+            "newer_than": "60d"
+          },
+          "else": "w_invite"
+        },
+        {
+          "id": "w_comment",
+          "wait": "10m"
+        },
+        {
+          "id": "comment",
+          "do": "post.comment",
+          "with": {
+            "newer_than": "60d",
+            "text": "{{comment}}",
+            "fallback": "skip"
+          },
+          "note": "Your AI writes one comment per Contact; no product mention."
+        },
+        {
+          "id": "w_invite",
+          "wait": "30m"
+        },
+        {
+          "id": "invite",
+          "do": "invite.send",
+          "with": {
+            "withdraw_after": "21d"
+          }
+        },
+        {
+          "id": "accepted",
+          "until": "invite.accepted",
+          "timeout": "21d",
+          "then": "w_opener",
+          "else": "end"
+        },
+        {
+          "id": "w_opener",
+          "wait": "1d"
+        },
+        {
+          "id": "opener",
+          "do": "message.send",
+          "with": {
+            "text": "Hi {{first_name}}, {{opener}}",
+            "fallback": "Hi, thanks for connecting. What are you working on at the moment?"
+          }
+        },
+        {
+          "id": "r_opener",
+          "until": "message.replied",
+          "timeout": "5d",
+          "then": "replied"
+        },
+        {
+          "id": "followup",
+          "do": "message.send",
+          "with": {
+            "text": "{{followup}}",
+            "fallback": "Following up once in case this got buried. All good if now is not the time."
+          }
+        },
+        {
+          "id": "r_followup",
+          "until": "message.replied",
+          "timeout": "7d",
+          "then": "replied"
+        },
+        {
+          "id": "silent",
+          "tag": "no-reply",
+          "next": "end"
+        },
+        {
+          "id": "replied",
+          "tag": "in-conversation",
+          "next": "end"
+        }
+      ]
+    }
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "path": "w_invite",
+      "rule": "merge point: reached by fall-through from comment and by a jump from react",
+      "code": "W1",
+      "message": "merge point: reached by fall-through from comment and by a jump from react",
+      "pointer": "/steps/3",
+      "hint": "If the merge is intended, keep it; otherwise give the jumping step its own continuation.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w1",
+      "severity": "warning"
+    }
+  ]
+}

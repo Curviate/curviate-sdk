@@ -41,6 +41,11 @@ import {
   type NetworkResource,
   type UniboxResource,
   type AnalyticsResource,
+  type BillingResource,
+  type DoNotContactResource,
+  type ExportsResource,
+  type IncomingEventsResource,
+  type TenantResource,
 } from "./resources/index.js";
 
 export class Curviate {
@@ -77,6 +82,16 @@ export class Curviate {
   readonly unibox: UniboxResource;
   /** Read-only Motion results, activity in budget units, the Motion events feed. */
   readonly analytics: AnalyticsResource;
+  /** Seat lending between your Teams, and the Team's invoices. */
+  readonly billing: BillingResource;
+  /** The Team-wide do-not-contact list every Motion and write respects. */
+  readonly doNotContact: DoNotContactResource;
+  /** Background exports and their files. */
+  readonly exports: ExportsResource;
+  /** Private URLs your tools post to, moving Enrollments waiting for the event. */
+  readonly incomingEvents: IncomingEventsResource;
+  /** Team settings: `tenant.beta` consent. */
+  readonly tenant: TenantResource;
 
   constructor(config: CurviateConfig) {
     this.config = resolveConfig(config);
@@ -98,6 +113,11 @@ export class Curviate {
     this.network = ns.network;
     this.unibox = ns.unibox;
     this.analytics = ns.analytics;
+    this.billing = ns.billing;
+    this.doNotContact = ns.doNotContact;
+    this.exports = ns.exports;
+    this.incomingEvents = ns.incomingEvents;
+    this.tenant = ns.tenant;
   }
 
   /**
@@ -121,6 +141,26 @@ export class Curviate {
     }
     const ctx = createContext(this.config, accountId);
     return buildAccountScopedNamespaces(ctx);
+  }
+
+  /**
+   * The same client acting in another Team: every call made through the
+   * returned client sends `X-Curviate-Team: <team>`, overriding the `team`
+   * client option. Use it per call with a key that works in all of your
+   * Teams, which a Team-level operation otherwise refuses with
+   * `TEAM_REQUIRED`. A Team key accepts only its own Team
+   * (`TEAM_ACCESS_DENIED`). No network call; `team` is checked as in the
+   * constructor.
+   *
+   * @param team - a Team id (`tnt_...`); `curviate.teams.list()` lists yours.
+   *
+   * @example
+   * for (const team of (await curviate.teams.list()).items) {
+   *   const { items } = await curviate.withTeam(team.id).motions.list({ status: ["active"] });
+   * }
+   */
+  withTeam(team: string): Curviate {
+    return new Curviate({ ...this.config, team });
   }
 
   /**

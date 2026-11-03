@@ -8,6 +8,10 @@
  * carrying base64-encoded `content`, the served surface has NO multipart
  * ops; every write here is `application/json`.
  *
+ * `startChat` with two or more `attendees_ids` starts a group chat, named by
+ * `subject`. `startChat` and `sendMessage` take `shared_content`, a post or a
+ * job posting shown natively beside the text. See each method.
+ *
  * `getMessage` / `editMessage` / `deleteMessage` / `addReaction` /
  * `getAttachment` are re-homed under `/chats/{chat_id}/messages/{message_id}`;
  * every one of them now takes `chatId` as well as `messageId`.
@@ -24,6 +28,13 @@
  * `string | string[] | null`, not a bare string: `null` when no message was
  * actually sent, and an array when the message was delivered as several, one
  * per attachment. Confirm a send with `chat_id`, which is always present.
+ *
+ * A send through the API (this SDK included) marks the chat read: the Unibox
+ * chat reads `unread: false` with `marked_unread: null`, and a `chat.updated`
+ * webhook with `unread` and `origin` reports the change. This holds for
+ * `startChat`, `sendMessage` and `sendInMail`; a Motion send leaves the read
+ * state as it is. On a disconnected Account every write here throws
+ * `REAUTH_REQUIRED` (409) and changes nothing; reconnect the Account first.
  */
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
@@ -105,12 +116,48 @@ export class MessagingResource {
 
   /**
    * Start a new chat with one or more members. `POST /v1/{account_id}/chats`
+   * One attendee starts a direct chat; two or more start a group chat, named
+   * by `subject`. `text` may be omitted only for a voice note (one audio
+   * attachment alone, to one member). `shared_content` shows a post or job
+   * natively beside the text.
    * `attachments[]`, when supplied, carry base64-encoded file bytes, always
    * sent as JSON, never multipart.
+   *
+   * One attendee starts a direct chat. Two or more start a group chat, named
+   * by `subject` (omit it and the group has no name of its own). A repeated
+   * id counts once, so `[a, a]` is a direct chat with `a`, not a group. A
+   * voice note stays out of groups: audio to a group sends as a file, and
+   * `send_mode: "native"` there throws `INVALID_REQUEST` (400).
+   *
+   * `shared_content: { type: "post" | "job_posting", id }` shows a LinkedIn
+   * post or job posting natively in the message. `text` is required with it.
+   * It throws `INVALID_REQUEST` (400) with any attachment or without `text`,
+   * and Sales Navigator and Recruiter chats do not take it. `id` for a post
+   * is the one `posts.get` or a list returns (a bare activity id, a URN or a
+   * share URL also work); for a job posting, the numeric job id. Whether a
+   * post id renders in the message is unproven until a live send.
    *
    * Company pages are reply-only and cannot start a conversation this way.
    * Reply to an existing one instead, with `sendMessage()` using a
    * `COMPANY_` chat id from `inboxes.listChats()`.
+   *
+   * When the Account already has a private
+   * conversation with this person that you may not read, this throws
+   * `CHAT_NOT_VISIBLE` (409) and sends nothing. Ask the person who connected
+   * the Account to reply, or to sync the full inbox. It is detected from what
+   * Curviate stored, so a thread older than 90 days that Curviate never
+   * touched is not detected. A person on the do-not-contact list throws
+   * `DO_NOT_CONTACT` (409). A send marks the chat read, and a disconnected
+   * Account throws `REAUTH_REQUIRED` (409).
+   * @example
+   * const acc = curviate.account("acc_YOUR_ACCOUNT_ID");
+   * // Two attendees start a group chat, named by subject.
+   * const result = await acc.messaging.startChat({
+   *   attendees_ids: ["YOUR_PROFILE_ID", "ANOTHER_PROFILE_ID"],
+   *   subject: "Q4 intro",
+   *   text: "Hi both, you two should meet.",
+   * });
+   * console.log(result.chat_id);
    */
   startChat(body: StartChatBody): Promise<StartChatResult> {
     return this.ctx.request<StartChatResult>({
@@ -139,6 +186,10 @@ export class MessagingResource {
   /**
    * Mark a chat read or unread. `PATCH /v1/{account_id}/chats/{chat_id}`
    * Body: `{read}`.
+   *
+   * `read: false` makes the Unibox chat's `marked_unread` read
+   * `{origin: "api", at}`. A later send through the API marks the chat read
+   * again. A disconnected Account throws `REAUTH_REQUIRED` (409).
    */
   markChatRead(chatId: string, body: MarkChatReadBody): Promise<MarkChatReadResult> {
     return this.ctx.request<MarkChatReadResult>({
@@ -159,6 +210,18 @@ export class MessagingResource {
    * first message rather than from the chat. Ordinary (non-InMail) messages
    * return `specifics: {}`.
    *
+   * A message the connected Account sent carries `origin`: `motion`, `unibox`,
+   * `api` (any API key or MCP grant) or `linkedin` (sent on LinkedIn itself).
+   * It is derived by Curviate, omitted when unknown, absent on a received
+   * message and never on a chat's `last_message`. `is_deleted` is `true` for a
+   * deleted message. For an API key or MCP grant, a message's `quoted` is
+   * omitted when the quoted message is from before the Motion chat's visible
+   * start, the same line the message list stops at.
+   *
+   * On a disconnected Account the page comes from Curviate's stored copy
+   * alone: `coverage.complete` is `false` when the stored history is not
+   * whole, and an attachment reads `unavailable: true`.
+   *
    * A CHAT READ CARRIES NO SUBJECT AT ALL, including on its embedded
    * `last_message`: the preview is deliberately narrower than a message read, so
    * that a chat read returns the same fields whether it was answered from
@@ -177,7 +240,19 @@ export class MessagingResource {
    * Send a message in a chat. `POST /v1/{account_id}/chats/{chat_id}/messages`
    * `attachments[]`, when supplied, carry base64-encoded file bytes, always
    * sent as JSON, never multipart. At least one of `text`/`attachments` is
-   * required (enforced server-side).
+   * required (enforced server-side). One audio attachment alone in a 1:1 chat
+   * arrives as a voice note (`send_mode: "native"`, the default for audio;
+   * `"file"` sends a download); `shared_content` shows a post or job
+   * natively beside the text.
+   *
+   * `shared_content: { type: "post" | "job_posting", id }` shows a LinkedIn
+   * post or job posting natively in the message. `text` is required with it.
+   * It throws `INVALID_REQUEST` (400) with any attachment, without `text`, or
+   * on a `COMPANY_` chat, and a reply into a Sales Navigator or Recruiter
+   * chat does not take it. `id` for a post is the one `posts.get` or a list
+   * returns (a bare activity id, a URN or a share URL also work); for a job
+   * posting, the numeric job id. Whether a post id renders in the message is
+   * unproven until a live send.
    *
    * Sending on behalf of a company page: this same method is the reply
    * surface for a company page, there is no separate send-as-page method.
@@ -194,6 +269,13 @@ export class MessagingResource {
    * `{ kind: "personal" }`. Never infer the acting identity from a
    * message's `sender` field, only from `sent_as`.
    *
+   *
+   * A person on the Team's do-not-contact list throws `DO_NOT_CONTACT` (409);
+   * nothing is sent.
+   *
+   * Marks the chat read (its `unread` turns `false`, `marked_unread` clears,
+   * and `chat.updated` reports it). A disconnected Account throws
+   * `REAUTH_REQUIRED` (409); nothing is sent.
    * @example
    * const acc = curviate.account("acc_YOUR_ACCOUNT_ID");
    * const result = await acc.messaging.sendMessage("COMPANY_83734124_2-YTQ3ODU3Njgt", {
@@ -272,7 +354,18 @@ export class MessagingResource {
     });
   }
 
-  /** Send an InMail. `POST /v1/{account_id}/messages/inmail` */
+  /**
+   * Send an InMail. `POST /v1/{account_id}/messages/inmail`
+   *
+   * When the Account already has a private
+   * conversation with this person that you may not read, this throws
+   * `CHAT_NOT_VISIBLE` (409) and sends nothing. Ask the person who connected
+   * the Account to reply, or to sync the full inbox. It is detected from what
+   * Curviate stored, so a thread older than 90 days that Curviate never
+   * touched is not detected. A person on the do-not-contact list throws
+   * `DO_NOT_CONTACT` (409). A send marks the chat read, and a disconnected
+   * Account throws `REAUTH_REQUIRED` (409).
+   */
   sendInMail(body: SendInMailBody): Promise<SendInMailResult> {
     return this.ctx.request<SendInMailResult>({
       method: "POST",

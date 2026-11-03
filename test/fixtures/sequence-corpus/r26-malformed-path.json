@@ -1,0 +1,68 @@
+{
+  "about": "a malformed save path (R26)",
+  "rules": [
+    "R26"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "booked",
+        "until": "event.meeting_booked",
+        "timeout": "14d",
+        "save": {
+          "score": "lead..score",
+          "stage": 7
+        },
+        "save_to_contact": {
+          "crm_stage": ""
+        },
+        "then": "msg",
+        "else": "end"
+      },
+      {
+        "id": "msg",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{enrollment.score}} {{enrollment.stage}}",
+          "fallback": "Thanks for booking."
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "booked.save.score",
+      "rule": "not a field path; use dots, items[0] and [\"a.b\"], at most 256 characters, like lead.score",
+      "code": "R26",
+      "message": "not a field path; use dots, items[0] and [\"a.b\"], at most 256 characters, like lead.score",
+      "pointer": "/steps/0/save/score",
+      "hint": "Write the path with dots, items[0] and [\"a.b\"], like lead.score, at most 256 characters.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r26",
+      "severity": "error"
+    },
+    {
+      "path": "booked.save.stage",
+      "rule": "not a field path; use dots, items[0] and [\"a.b\"], at most 256 characters, like lead.score",
+      "code": "R26",
+      "message": "not a field path; use dots, items[0] and [\"a.b\"], at most 256 characters, like lead.score",
+      "pointer": "/steps/0/save/stage",
+      "hint": "Write the path with dots, items[0] and [\"a.b\"], like lead.score, at most 256 characters.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r26",
+      "severity": "error"
+    },
+    {
+      "path": "booked.save_to_contact.crm_stage",
+      "rule": "not a field path; use dots, items[0] and [\"a.b\"], at most 256 characters, like lead.score",
+      "code": "R26",
+      "message": "not a field path; use dots, items[0] and [\"a.b\"], at most 256 characters, like lead.score",
+      "pointer": "/steps/0/save_to_contact/crm_stage",
+      "hint": "Write the path with dots, items[0] and [\"a.b\"], like lead.score, at most 256 characters.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r26",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

@@ -153,6 +153,30 @@ describe("accounts.disconnect", () => {
   });
 });
 
+// ─── accounts.getSafetyPolicy / updateSafetyPolicy (/v1/:account_id/safety-policy) ──
+describe("accounts safety policy", () => {
+  it("GET and PATCH /v1/:account_id/safety-policy, the PATCH body as given", async () => {
+    const seen: string[] = [];
+    let body: unknown;
+    server.use(
+      http.get(`${BASE}/v1/acc_1/safety-policy`, ({ request }) => {
+        seen.push(`${request.method} ${new URL(request.url).pathname}`);
+        return HttpResponse.json({ warm_up: { enabled: true } });
+      }),
+      http.patch(`${BASE}/v1/acc_1/safety-policy`, async ({ request }) => {
+        seen.push(`${request.method} ${new URL(request.url).pathname}`);
+        body = await request.json();
+        return HttpResponse.json({ warm_up: { enabled: false } });
+      }),
+    );
+    expect((await client.accounts.getSafetyPolicy("acc_1")).warm_up?.enabled).toBe(true);
+    const res = await client.accounts.updateSafetyPolicy("acc_1", { warm_up: { enabled: false } });
+    expect(res.warm_up?.enabled).toBe(false);
+    expect(body).toEqual({ warm_up: { enabled: false } });
+    expect(seen).toEqual(["GET /v1/acc_1/safety-policy", "PATCH /v1/acc_1/safety-policy"]);
+  });
+});
+
 // ─── accounts is unchanged by the auth split, reachable only from the root ──
 describe("accounts is root-scoped", () => {
   it("is absent from the account(id) accessor", () => {

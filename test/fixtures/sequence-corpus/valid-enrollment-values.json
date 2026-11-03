@@ -1,0 +1,68 @@
+{
+  "about": "EV-01's pinned shape: saves, gates on a value (number, unset arms) and a custom field, a message using a value",
+  "rules": [],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "booked",
+        "until": "event.meeting_booked",
+        "timeout": "14d",
+        "save": {
+          "meeting_type": "meeting.type",
+          "score": "lead.score"
+        },
+        "save_to_contact": {
+          "crm_stage": "deal.stage",
+          "email": "lead_email"
+        },
+        "then": "is_hot",
+        "else": "end"
+      },
+      {
+        "id": "is_hot",
+        "if": {
+          "enrollment.score": {
+            "gte": 50
+          }
+        },
+        "then": "typed",
+        "else": "big"
+      },
+      {
+        "id": "typed",
+        "if": {
+          "not": {
+            "enrollment.meeting_type": {
+              "exists": false
+            }
+          }
+        },
+        "then": "msg",
+        "else": "msg"
+      },
+      {
+        "id": "big",
+        "if": {
+          "contact.extra.seats": {
+            "lte": 10
+          }
+        },
+        "then": "msg",
+        "else": "msg"
+      },
+      {
+        "id": "msg",
+        "do": "message.send",
+        "with": {
+          "text": "Looking forward to the {{enrollment.meeting_type}}, {{first_name}}.",
+          "fallback": "Looking forward to it."
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": []
+}

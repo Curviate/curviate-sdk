@@ -97,3 +97,14 @@ describe("check:clean — YAML (CI workflow files) is scanned", () => {
     expect(() => run(dir)).not.toThrow();
   });
 });
+
+describe("check:clean — internal spec paths, not client versions", () => {
+  it("flags an internal spec path; passes sdk/2.0.0 (the Curviate-Client header value)", async () => {
+    const dir = await makeFixturePackage("MIT License\n\nCopyright (c) Example.\n");
+    const run = () => execFileSync(process.execPath, ["scripts/check-clean.mjs"], { cwd: dir, encoding: "utf8", stdio: "pipe" });
+    await writeFile(join(dir, "README.md"), "Sends `Curviate-Client: sdk/2.0.0`.\n", "utf8");
+    expect(run).not.toThrow();
+    await writeFile(join(dir, "README.md"), `See ${["sdk", "001"].join("/")} for the contract.\n`, "utf8");
+    expect(run).toThrow();
+  });
+});

@@ -1,0 +1,162 @@
+{
+  "about": "valid every predicate",
+  "rules": [],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "p0",
+        "if": {
+          "contact.connected": true
+        },
+        "then": "p1",
+        "else": "end"
+      },
+      {
+        "id": "p1",
+        "if": {
+          "contact.degree": {
+            "eq": 1
+          }
+        },
+        "then": "p2",
+        "else": "end"
+      },
+      {
+        "id": "p2",
+        "if": {
+          "contact.degree": {
+            "in": [
+              2,
+              3
+            ]
+          }
+        },
+        "then": "p3",
+        "else": "end"
+      },
+      {
+        "id": "p3",
+        "if": {
+          "contact.open_profile": false
+        },
+        "then": "p4",
+        "else": "end"
+      },
+      {
+        "id": "p4",
+        "if": {
+          "contact.premium": true
+        },
+        "then": "p5",
+        "else": "end"
+      },
+      {
+        "id": "p5",
+        "if": {
+          "contact.has_photo": true
+        },
+        "then": "p6",
+        "else": "end"
+      },
+      {
+        "id": "p6",
+        "if": {
+          "contact.connections_gte": 500
+        },
+        "then": "p7",
+        "else": "end"
+      },
+      {
+        "id": "p7",
+        "if": {
+          "contact.posted_within": "14d"
+        },
+        "then": "p8",
+        "else": "end"
+      },
+      {
+        "id": "p8",
+        "if": {
+          "contact.tag": "Customer"
+        },
+        "then": "p9",
+        "else": "end"
+      },
+      {
+        "id": "p9",
+        "if": {
+          "contact.company": {
+            "eq": "Acme"
+          }
+        },
+        "then": "p10",
+        "else": "end"
+      },
+      {
+        "id": "p10",
+        "if": {
+          "contact.job_title": {
+            "contains": "founder"
+          }
+        },
+        "then": "p11",
+        "else": "end"
+      },
+      {
+        "id": "p11",
+        "if": {
+          "contact.location": {
+            "in": [
+              "Berlin",
+              "Paris"
+            ]
+          }
+        },
+        "then": "p12",
+        "else": "end"
+      },
+      {
+        "id": "p12",
+        "if": {
+          "contact.email": {
+            "exists": true
+          }
+        },
+        "then": "p13",
+        "else": "end"
+      },
+      {
+        "id": "p13",
+        "if": {
+          "contact.extra.score": {
+            "neq": 3
+          }
+        },
+        "then": "p14",
+        "else": "end"
+      },
+      {
+        "id": "p14",
+        "if": {
+          "account.premium": true
+        },
+        "then": "p15",
+        "else": "end"
+      },
+      {
+        "id": "p15",
+        "if": {
+          "not": {
+            "contact.tag": "competitor"
+          }
+        },
+        "then": "end",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": []
+}

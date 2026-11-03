@@ -1,0 +1,23 @@
+{
+  "about": "A single-brace placeholder inside text.",
+  "rules": [
+    "T9"
+  ],
+  "source": "messaging",
+  "template": "{\"text\": \"Hi {first_name}\"}",
+  "errors": [
+    {
+      "path": "body_template",
+      "rule": "{first_name} is a single-brace placeholder",
+      "code": "T9",
+      "message": "{first_name} is a single-brace placeholder",
+      "pointer": "/body_template",
+      "line": 1,
+      "col": 14,
+      "hint": "Write the variable with double braces, like {{first_name}}.",
+      "docs_url": "https://docs.curviate.com/reference/webhooks/body-templates#t9",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

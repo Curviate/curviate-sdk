@@ -1,0 +1,31 @@
+{
+  "about": "event on a wait step is an unknown key",
+  "rules": [
+    "R5"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "w",
+        "wait": "1d",
+        "event": "waited",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "w.event",
+      "rule": "unknown key for a wait step",
+      "code": "R5",
+      "message": "unknown key for a wait step",
+      "pointer": "/steps/0/event",
+      "hint": "Remove the key: each step kind takes only its own keys, and the sending Account is chosen with settings.assign.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r5",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

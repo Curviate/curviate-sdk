@@ -1,0 +1,23 @@
+{
+  "about": "An empty string is not a template: null is the standard payload.",
+  "rules": [
+    "T1"
+  ],
+  "source": "motion",
+  "template": "",
+  "errors": [
+    {
+      "path": "body_template",
+      "rule": "the template is empty; send null for the standard payload",
+      "code": "T1",
+      "message": "the template is empty; send null for the standard payload",
+      "pointer": "/body_template",
+      "line": 1,
+      "col": 1,
+      "hint": "Send null for the standard payload, or write the JSON body your tool expects.",
+      "docs_url": "https://docs.curviate.com/reference/webhooks/body-templates#t1",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,32 @@
+{
+  "about": "r14 unknown event",
+  "rules": [
+    "R14"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "u",
+        "until": "comment.replied",
+        "timeout": "1d",
+        "then": "end",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "u.until",
+      "rule": "unknown event; use invite.accepted, message.replied, message.read or event.<name>",
+      "code": "R14",
+      "message": "unknown event; use invite.accepted, message.replied, message.read or event.<name>",
+      "pointer": "/steps/0/until",
+      "hint": "Wait for invite.accepted, message.replied, message.read or event.<name>, and give a timeout.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r14",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

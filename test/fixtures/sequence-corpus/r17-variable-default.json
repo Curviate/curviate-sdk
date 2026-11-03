@@ -1,0 +1,34 @@
+{
+  "about": "r17 variable default",
+  "rules": [
+    "R17"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{contact.first_name | default:'there'}}",
+          "fallback": "Hi"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "m.with.text",
+      "rule": "variable defaults are not supported; add a fallback",
+      "code": "R17",
+      "message": "variable defaults are not supported; add a fallback",
+      "pointer": "/steps/0/with/text",
+      "hint": "Remove the part after | and add a variable-free fallback on the step instead.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r17",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,34 @@
+{
+  "about": "r22 invite note 301 static characters plus a variable",
+  "rules": [
+    "R22"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "inv",
+        "do": "invite.send",
+        "with": {
+          "note": "{{contact.first_name}} aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "note_fallback": "drop"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "inv.with.note",
+      "rule": "301 characters; the limit is 300, variables not counted",
+      "code": "R22",
+      "message": "301 characters; the limit is 300, variables not counted",
+      "pointer": "/steps/0/with/note",
+      "hint": "Shorten the text to the limit (variables are not counted) or use fewer variables.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r22",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

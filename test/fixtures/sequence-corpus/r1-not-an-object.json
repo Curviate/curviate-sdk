@@ -1,0 +1,21 @@
+{
+  "about": "r1 not an object",
+  "rules": [
+    "R1"
+  ],
+  "schema_valid": false,
+  "document": [],
+  "errors": [
+    {
+      "path": "$",
+      "rule": "a Sequence document is a JSON object",
+      "code": "R1",
+      "message": "a Sequence document is a JSON object",
+      "pointer": "",
+      "hint": "Keep only $schema, on_reply and steps at the top level; $schema, when present, is https://docs.curviate.com/schemas/sequence/v1.json.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r1",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

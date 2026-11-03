@@ -1,0 +1,42 @@
+{
+  "about": "w1 merge point",
+  "rules": [
+    "W1"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "a",
+        "if": {
+          "contact.premium": true
+        },
+        "then": "c",
+        "else": "b"
+      },
+      {
+        "id": "b",
+        "wait": "1d"
+      },
+      {
+        "id": "c",
+        "wait": "1d",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "path": "c",
+      "rule": "merge point: reached by fall-through from b and by a jump from a",
+      "code": "W1",
+      "message": "merge point: reached by fall-through from b and by a jump from a",
+      "pointer": "/steps/2",
+      "hint": "If the merge is intended, keep it; otherwise give the jumping step its own continuation.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w1",
+      "severity": "warning"
+    }
+  ]
+}

@@ -26,6 +26,7 @@ export {
   type CurviateErrorInit,
   type CurviateErrorJSON,
   type CurviateErrorDetail,
+  type CurviateErrorDetails,
   type SequenceConflictCurrent,
 } from "./errors.js";
 
@@ -37,6 +38,10 @@ export type {
   AccountUpdateResult,
   SeatList,
   AccountTeamAccessResult,
+  AccountMetricsParams,
+  AccountMetricList,
+  AccountOverviewParams,
+  AccountOverview,
 } from "./resources/accounts.js";
 
 export type {
@@ -80,6 +85,9 @@ export type {
 
 export type {
   Team,
+  TeamCreateBody,
+  TeamCreateResult,
+  TeamLogoResult,
   TeamListParams,
   TeamListPage,
   TeamUpdateBody,
@@ -134,6 +142,9 @@ export type {
 export type { Tag, TagListParams, TagListPage, TagUpdateBody } from "./resources/tags.js";
 
 export type {
+  VoiceClip,
+  VoiceClipContentType,
+  VoiceClipUploadOptions,
   Motion,
   MotionCreateBody,
   MotionUpdateBody,
@@ -203,7 +214,39 @@ export type {
   AnalyticsEventListParams,
   AnalyticsEventListPage,
   BudgetRow,
+  AnalyticsExportParams,
 } from "./resources/analytics.js";
+
+export type { ExportCreateBody, Export, ExportGetResult } from "./resources/exports.js";
+
+export type {
+  SeatLendBody,
+  SeatLendResult,
+  SeatReturnResult,
+  InvoiceListParams,
+  InvoiceListPage,
+  Invoice,
+} from "./resources/billing.js";
+
+export type {
+  DoNotContactListParams,
+  DoNotContactPage,
+  DoNotContactEntry,
+  DoNotContactAddBody,
+  DoNotContactUpdateBody,
+} from "./resources/do-not-contact.js";
+
+export type {
+  IncomingEvent,
+  IncomingEventCreateBody,
+  IncomingEventCreateResult,
+  IncomingEventListParams,
+  IncomingEventPage,
+  IncomingEventUpdateBody,
+  IncomingEventArrivals,
+} from "./resources/incoming-events.js";
+
+export type { TenantBetaConsent, TenantBetaSetBody } from "./resources/tenant.js";
 
 export type { Pageable } from "./internal/paginate.js";
 
@@ -249,6 +292,9 @@ export {
   type CurviateEventEnvelope,
   type EventPayloadBase,
   type MessagePayload,
+  type OwnMessagePayload,
+  type ChatUpdatedPayload,
+  type MessageOrigin,
   type ConnectionPayload,
   type AccountPayload,
   type MotionPayload,
@@ -256,3 +302,33 @@ export {
   type PostPublishFailedPayload,
   type ConstructEventOptions,
 } from "./webhooks.js";
+
+// Offline webhook body templates: the API's lint and renderer (no network)
+export {
+  validateWebhookTemplate,
+  renderWebhookTemplate,
+  type WebhookTemplateContext,
+  type WebhookTemplateFinding,
+  type WebhookTemplateSource,
+} from "./templates.js";
+
+export type {
+  WebhookCreateBody,
+  WebhookCreateResult,
+  WebhookListParams,
+  WebhookListResult,
+  WebhookListEventsResult,
+  WebhookGetResult,
+  WebhookUpdateBody,
+  WebhookUpdateResult,
+  WebhookDeleteResult,
+  WebhookVariablesParams,
+  WebhookVariablesResult,
+  WebhookTestBody,
+  WebhookTestResult,
+  WebhookRotateSecretResult,
+  WebhookDeliveryListParams,
+  WebhookDeliveryPage,
+  WebhookDelivery,
+  WebhookRedeliverResult,
+} from "./resources/webhooks.js";

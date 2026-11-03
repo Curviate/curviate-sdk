@@ -1,0 +1,34 @@
+{
+  "about": "r19 inmail without fallback",
+  "rules": [
+    "R19"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "im",
+        "do": "inmail.send",
+        "with": {
+          "subject": "Hi {{contact.first_name}}",
+          "text": "Body"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "im.with.fallback",
+      "rule": "required because the subject or text uses a variable: an object with subject and text",
+      "code": "R19",
+      "message": "required because the subject or text uses a variable: an object with subject and text",
+      "pointer": "/steps/0/with",
+      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

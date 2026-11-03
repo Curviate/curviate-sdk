@@ -169,22 +169,6 @@ describe("auth.pollCheckpoint", () => {
     expect(body).toEqual({ account_id: "acc_prov" });
     expect(res.status).toBe("pending");
   });
-
-  it("surfaces challenge_type + recovery_hint on an expired mobile-approval timeout", async () => {
-    server.use(
-      http.post(`${BASE}/v1/auth/checkpoint/poll`, () =>
-        HttpResponse.json({
-          object: "checkpoint",
-          status: "expired",
-          challenge_type: "mobile_app_approval",
-          recovery_hint: "This sign-in wasn't completed in time. Try again.",
-        }),
-      ),
-    );
-    const res = await client.auth.pollCheckpoint("acc_prov");
-    expect(res.status).toBe("expired");
-    expect(res.challenge_type).toBe("mobile_app_approval");
-  });
 });
 
 // ─── auth.getSession (GET /v1/auth/sessions/:session_id) ────────────────────

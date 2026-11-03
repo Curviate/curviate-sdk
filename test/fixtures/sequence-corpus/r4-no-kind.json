@@ -1,0 +1,29 @@
+{
+  "about": "r4 no kind",
+  "rules": [
+    "R4"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "a",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "a",
+      "rule": "a step needs exactly one of do, wait, until, if, emit, tag",
+      "code": "R4",
+      "message": "a step needs exactly one of do, wait, until, if, emit, tag",
+      "pointer": "/steps/0",
+      "hint": "Give the step exactly one of do, wait, until, if, emit or tag.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r4",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

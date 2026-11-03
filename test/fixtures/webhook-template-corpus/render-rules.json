@@ -1,0 +1,48 @@
+{
+  "about": "TP-02: a whole-string variable keeps its type (72, true); quotes and a newline escaped; a missing whole-string value drops its key, or its element in an array (absent, blank, an object); missing inside text renders empty; \\\\{{ is a literal {{.",
+  "rules": [
+    "TP-02"
+  ],
+  "source": "motion",
+  "template": "{\n  \"score\": \"{{enrollment.score}}\",\n  \"hot\": \"{{enrollment.hot}}\",\n  \"headline\": \"{{headline}}\",\n  \"phone\": \"{{contact.extra.phone}}\",\n  \"greeting\": \"Hi {{first_name}}, from {{contact.extra.city}}!\",\n  \"literal\": \"\\\\{{first_name}}\",\n  \"list\": [\"{{contact.extra.phone}}\", \"{{first_name}}\", 3],\n  \"nested\": {\"empty\": \"{{contact.extra.blank}}\", \"obj\": \"{{contact.extra.obj}}\"},\n  \"fixed\": \"as written\"\n}",
+  "context": {
+    "event": "enrollment.finished",
+    "occurred_at": "2026-01-15T09:30:00.000Z",
+    "account": {
+      "first_name": "Sam",
+      "last_name": "Rivera",
+      "full_name": "Sam Rivera"
+    },
+    "contact": {
+      "full_name": "Alex Jordan",
+      "first_name": "Alex",
+      "last_name": "Jordan",
+      "headline": "Says \"hi\"\nand <b>more</b>",
+      "job_title": "Head of Operations",
+      "company": "Northwind",
+      "email": "alex.jordan@example.com",
+      "location": "Berlin, Germany",
+      "linkedin_url": "https://www.linkedin.com/in/alexjordan",
+      "about": "Operations lead building calm, repeatable processes.",
+      "extra": {
+        "blank": "  ",
+        "obj": {
+          "a": 1
+        }
+      }
+    },
+    "motion": {
+      "id": "mot_01J8Z3K9P0Q1R2S3T4V5W6X7Y8",
+      "name": "Q4 founders outreach"
+    },
+    "enrollment_id": "enr_01J8Z3K9P0Q1R2S3T4V5W6X7Y8",
+    "step_id": "wait_reply",
+    "enrollment": {
+      "score": 72,
+      "hot": true
+    }
+  },
+  "errors": [],
+  "warnings": [],
+  "body": "{\"score\":72,\"hot\":true,\"headline\":\"Says \\\"hi\\\"\\nand <b>more</b>\",\"greeting\":\"Hi Alex, from !\",\"literal\":\"{{first_name}}\",\"list\":[\"Alex\",3],\"nested\":{},\"fixed\":\"as written\"}"
+}

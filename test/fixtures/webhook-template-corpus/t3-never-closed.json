@@ -1,0 +1,23 @@
+{
+  "about": "{{ with no }} before the string ends.",
+  "rules": [
+    "T3"
+  ],
+  "source": "motion",
+  "template": "{\"email\": \"{{contact.email\"}",
+  "errors": [
+    {
+      "path": "body_template",
+      "rule": "{{ is never closed",
+      "code": "T3",
+      "message": "{{ is never closed",
+      "pointer": "/body_template",
+      "line": 1,
+      "col": 12,
+      "hint": "Close the variable with }}, like {{contact.email}}.",
+      "docs_url": "https://docs.curviate.com/reference/webhooks/body-templates#t3",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

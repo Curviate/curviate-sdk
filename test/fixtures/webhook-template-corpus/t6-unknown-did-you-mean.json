@@ -1,0 +1,41 @@
+{
+  "about": "A typo gets candidates by edit distance; a dotless custom name is refused with the contact.extra form.",
+  "rules": [
+    "T6"
+  ],
+  "source": "motion",
+  "template": "{\"a\": \"{{contact.emial}}\", \"b\": \"{{opener}}\"}",
+  "errors": [
+    {
+      "path": "body_template",
+      "rule": "unknown variable {{contact.emial}}",
+      "code": "T6",
+      "message": "unknown variable {{contact.emial}}",
+      "pointer": "/body_template",
+      "line": 1,
+      "col": 8,
+      "hint": "Use {{contact.email}}.",
+      "docs_url": "https://docs.curviate.com/reference/webhooks/body-templates#t6",
+      "severity": "error",
+      "candidates": [
+        "{{contact.email}}"
+      ]
+    },
+    {
+      "path": "body_template",
+      "rule": "unknown variable {{opener}}",
+      "code": "T6",
+      "message": "unknown variable {{opener}}",
+      "pointer": "/body_template",
+      "line": 1,
+      "col": 34,
+      "hint": "Use {{contact.extra.opener}}.",
+      "docs_url": "https://docs.curviate.com/reference/webhooks/body-templates#t6",
+      "severity": "error",
+      "candidates": [
+        "{{contact.extra.opener}}"
+      ]
+    }
+  ],
+  "warnings": []
+}

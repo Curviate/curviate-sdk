@@ -1,0 +1,47 @@
+{
+  "about": "{{score}} where score is a save name reads a Contact field (W16)",
+  "rules": [
+    "W16"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "booked",
+        "until": "event.meeting_booked",
+        "timeout": "14d",
+        "save": {
+          "score": "lead.score"
+        },
+        "then": "msg",
+        "else": "end"
+      },
+      {
+        "id": "msg",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{score}} {{enrollment.score}}",
+          "fallback": "Thanks for booking."
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "path": "msg.with.text",
+      "rule": "{{score}} is read as a Contact field; did you mean {{enrollment.score}}?",
+      "code": "W16",
+      "message": "{{score}} is read as a Contact field; did you mean {{enrollment.score}}?",
+      "pointer": "/steps/1/with/text",
+      "hint": "Use {{enrollment.score}} to read the saved value.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w16",
+      "severity": "warning",
+      "candidates": [
+        "{{enrollment.score}}"
+      ]
+    }
+  ]
+}

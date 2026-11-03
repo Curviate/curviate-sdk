@@ -1,0 +1,21 @@
+{
+  "about": "valid wait bounds",
+  "rules": [],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "a",
+        "wait": "1m"
+      },
+      {
+        "id": "b",
+        "wait": "365d",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": []
+}

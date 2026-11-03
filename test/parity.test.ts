@@ -5,8 +5,9 @@
 // table (namespace -> exact method set), enumerates the real prototype methods
 // on a constructed client, and asserts set-equality per namespace. A phantom
 // (extra) public method fails by name; a missing method fails by name; the
-// total must be 234 methods across 36 namespaces. A separate compile-time block
+// total must be 272 methods across 44 namespaces. A separate compile-time block
 // proves every removed method is gone at the type level.
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { Curviate } from "../src/index.js";
 
@@ -25,6 +26,10 @@ const ROOT_SURFACE: Record<string, readonly string[]> = {
     "cancelSeat",
     "revertSeatCancellation",
     "setTeamAccess",
+    "metrics",
+    "overview",
+    "getSafetyPolicy",
+    "updateSafetyPolicy",
   ],
   auth: [
     "intent",
@@ -33,7 +38,8 @@ const ROOT_SURFACE: Record<string, readonly string[]> = {
     "pollCheckpoint",
     "getSession",
   ],
-  webhooks: ["create", "list", "listEvents", "get", "update", "delete"],
+  webhooks: ["create", "list", "listEvents", "get", "update", "delete", "variables", "test", "redeliver", "rotateSecret"],
+  "webhooks.deliveries": ["list", "get"],
   drafts: [
     "create",
     "list",
@@ -55,6 +61,9 @@ const ROOT_SURFACE: Record<string, readonly string[]> = {
     "listInvites",
     "resendInvite",
     "revokeInvite",
+    "create",
+    "setLogo",
+    "removeLogo",
   ],
   // Curviate's own Notifications. Same key as the account-scoped LinkedIn
   // notifications below, different class.
@@ -67,15 +76,22 @@ const ROOT_SURFACE: Record<string, readonly string[]> = {
     "create", "list", "get", "update", "delete", "start", "pause", "resume", "archive",
     "preview", "getSequenceVersion", "addContacts", "removeContacts",
   ],
+  "motions.voiceClips": ["upload", "get"],
   enrollments: ["list", "get", "stop", "pause", "resume", "events", "reassign", "bulk", "retry", "signal"],
   tier: ["get"],
   network: ["syncStatus", "resync"],
   "network.connections": ["list"],
   unibox: ["list", "get", "unreadCount", "refresh", "tagContact", "enroll"],
   "unibox.accounts": ["list", "update"],
-  analytics: ["activity"],
+  analytics: ["activity", "export"],
   "analytics.motions": ["list", "get"],
   "analytics.events": ["list"],
+  "billing.seats": ["lend", "return"],
+  "billing.invoices": ["list", "pdf"],
+  doNotContact: ["list", "get", "add", "update", "remove"],
+  exports: ["create", "get", "download"],
+  incomingEvents: ["create", "list", "get", "update", "delete", "rotate", "capture", "arrivals"],
+  "tenant.beta": ["get", "set"],
 };
 
 // Account-scoped namespaces (hang off account(id) only).
@@ -233,6 +249,7 @@ const rootInstances: Record<string, object> = {
   accounts: client.accounts,
   auth: client.auth,
   webhooks: client.webhooks,
+  "webhooks.deliveries": client.webhooks.deliveries,
   drafts: client.drafts,
   connectRequests: client.connectRequests,
   teams: client.teams,
@@ -242,6 +259,7 @@ const rootInstances: Record<string, object> = {
   contactLists: client.contactLists,
   tags: client.tags,
   motions: client.motions,
+  "motions.voiceClips": client.motions.voiceClips,
   enrollments: client.enrollments,
   tier: client.tier,
   network: client.network,
@@ -251,6 +269,12 @@ const rootInstances: Record<string, object> = {
   analytics: client.analytics,
   "analytics.motions": client.analytics.motions,
   "analytics.events": client.analytics.events,
+  "billing.seats": client.billing.seats,
+  "billing.invoices": client.billing.invoices,
+  doNotContact: client.doNotContact,
+  exports: client.exports,
+  incomingEvents: client.incomingEvents,
+  "tenant.beta": client.tenant.beta,
 };
 
 const accountInstances: Record<string, object> = {
@@ -308,17 +332,17 @@ describe("per-namespace method bijection", () => {
 });
 
 describe("total mapped surface", () => {
-  it("the intended table sums to 234 methods across 36 namespaces", () => {
+  it("the intended table sums to 272 methods across 44 namespaces", () => {
     const namespaces = [
       ...Object.values(ROOT_SURFACE),
       ...Object.values(ACCOUNT_SURFACE),
     ];
-    expect(namespaces.length).toBe(36);
+    expect(namespaces.length).toBe(44);
     const total = namespaces.reduce((n, methods) => n + methods.length, 0);
-    expect(total).toBe(234);
+    expect(total).toBe(272);
   });
 
-  it("the real runtime surface also sums to exactly 234", () => {
+  it("the real runtime surface also sums to exactly 272", () => {
     const roots = Object.values(rootInstances).reduce(
       (n, inst) => n + ownMethods(inst).size,
       0,
@@ -327,7 +351,7 @@ describe("total mapped surface", () => {
       (n, inst) => n + ownMethods(inst).size,
       0,
     );
-    expect(roots + accounts).toBe(234);
+    expect(roots + accounts).toBe(272);
   });
 });
 
@@ -404,6 +428,9 @@ describe("root value exports", () => {
         "constructEvent",
         "isCurviateError",
         // offline, never on the client
+        "renderWebhookTemplate",
+        "validateWebhookTemplate",
+        // offline, never on the client
         "SEQUENCE_SCHEMA_URL",
         "SEQUENCE_SCHEMA_V1",
         "Sequence",
@@ -412,5 +439,19 @@ describe("root value exports", () => {
         "validateSequence",
       ].sort(),
     );
+  });
+});
+
+describe("surface header (Curviate-Client)", () => {
+  it("one request carries exactly one Curviate-Client: sdk/<version>; a `client` replaces it", async () => {
+    const { version } = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as { version: string };
+    const seen: string[][] = [];
+    const fetch = (async (_url: string, init: RequestInit) => {
+      seen.push(Object.entries(init.headers as Record<string, string>).filter(([k]) => k.toLowerCase() === "curviate-client").map(([, v]) => v));
+      return new Response(JSON.stringify({ object: "tier", tier: "starter" }), { headers: { "content-type": "application/json" } });
+    }) as unknown as typeof globalThis.fetch;
+    await new Curviate({ apiKey: "k", fetch }).tier.get();
+    await new Curviate({ apiKey: "k", fetch, client: "acme-agent/2.0.0" }).withTeam("tnt_1").tier.get();
+    expect(seen).toEqual([[`sdk/${version}`], ["acme-agent/2.0.0"]]);
   });
 });

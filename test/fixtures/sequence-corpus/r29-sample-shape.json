@@ -1,0 +1,89 @@
+{
+  "about": "server only: a saved path that is an object in the sample; gte on a value saved from a boolean (R29)",
+  "rules": [
+    "R29"
+  ],
+  "only": "server",
+  "context": {
+    "shapes": {
+      "meeting_booked": [
+        {
+          "path": "meeting",
+          "type": "object"
+        },
+        {
+          "path": "meeting.type",
+          "type": "string"
+        },
+        {
+          "path": "lead.hot",
+          "type": "boolean"
+        },
+        {
+          "path": "lead.score",
+          "type": "number"
+        }
+      ]
+    }
+  },
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "booked",
+        "until": "event.meeting_booked",
+        "timeout": "14d",
+        "save": {
+          "meeting": "meeting",
+          "hot": "lead.hot",
+          "score": "lead.score"
+        },
+        "then": "msg",
+        "else": "end"
+      },
+      {
+        "id": "msg",
+        "if": {
+          "enrollment.hot": {
+            "gte": 1
+          }
+        },
+        "then": "s",
+        "else": "s"
+      },
+      {
+        "id": "s",
+        "do": "message.send",
+        "with": {
+          "text": "{{enrollment.meeting}} {{enrollment.score}}",
+          "fallback": "Hi"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "booked.save.meeting",
+      "rule": "meeting is an object in the sample of event meeting_booked; save a field inside it",
+      "code": "R29",
+      "message": "meeting is an object in the sample of event meeting_booked; save a field inside it",
+      "pointer": "/steps/0/save/meeting",
+      "hint": "Save a field inside the object or list, or compare that value with eq, neq or exists instead.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r29",
+      "severity": "error"
+    },
+    {
+      "path": "msg.if",
+      "rule": "enrollment.hot is saved from lead.hot, a boolean in the sample of event meeting_booked; gte compares numbers",
+      "code": "R29",
+      "message": "enrollment.hot is saved from lead.hot, a boolean in the sample of event meeting_booked; gte compares numbers",
+      "pointer": "/steps/1/if",
+      "hint": "Save a field inside the object or list, or compare that value with eq, neq or exists instead.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r29",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

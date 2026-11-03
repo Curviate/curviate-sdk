@@ -118,6 +118,36 @@ describe("accounts.list() reference slice", () => {
     expect(JSON.stringify(err)).not.toContain("leak_me_not");
     expect(JSON.stringify(err)).not.toContain("Bearer");
   });
+
+  // withTeam: that call carries X-Curviate-Team, overriding the config's team.
+  it("sends a per-call team instead of the configured one", async () => {
+    const teams: (string | null)[] = [];
+    server.use(
+      http.get(`${BASE}/v1/accounts`, ({ request }) => {
+        teams.push(request.headers.get("x-curviate-team"));
+        return HttpResponse.json({ object: "account_list", items: [], cursor: null });
+      }),
+    );
+    const client = new Curviate({ apiKey: "k", baseUrl: BASE, team: "tnt_config" });
+    await client.withTeam("tnt_call").accounts.list();
+    await client.accounts.list();
+    expect(teams).toEqual(["tnt_call", "tnt_config"]);
+  });
+
+  // A removed safety-policy key names itself in `details.removed_key`.
+  it("surfaces the error body's details", async () => {
+    server.use(
+      http.get(`${BASE}/v1/accounts`, () =>
+        HttpResponse.json(
+          { code: "INVALID_REQUEST", message: "posture was removed.", user_fixable: true, retry_likely_to_succeed: false, details: { removed_key: "posture" } },
+          { status: 400 },
+        ),
+      ),
+    );
+    const err = (await new Curviate({ apiKey: "k", baseUrl: BASE }).accounts.list().catch((e: unknown) => e)) as CurviateError;
+    expect(err.details?.removed_key).toBe("posture");
+    expect(err.toJSON().details).toEqual({ removed_key: "posture" });
+  });
 });
 
 describe("account-scoped accessor", () => {

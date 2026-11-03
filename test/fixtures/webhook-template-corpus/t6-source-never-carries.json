@@ -1,0 +1,35 @@
+{
+  "about": "account_status events carry no Contact and no step.",
+  "rules": [
+    "T6"
+  ],
+  "source": "account_status",
+  "template": "{\"who\": \"{{first_name}}\", \"step\": \"{{step_id}}\", \"account\": \"{{my_full_name}}\"}",
+  "errors": [
+    {
+      "path": "body_template",
+      "rule": "{{first_name}} is not carried by account_status events",
+      "code": "T6",
+      "message": "{{first_name}} is not carried by account_status events",
+      "pointer": "/body_template",
+      "line": 1,
+      "col": 10,
+      "hint": "Use a variable this source carries: GET /v1/webhooks/variables?source=<source> lists them.",
+      "docs_url": "https://docs.curviate.com/reference/webhooks/body-templates#t6",
+      "severity": "error"
+    },
+    {
+      "path": "body_template",
+      "rule": "{{step_id}} is not carried by account_status events",
+      "code": "T6",
+      "message": "{{step_id}} is not carried by account_status events",
+      "pointer": "/body_template",
+      "line": 1,
+      "col": 36,
+      "hint": "Use a variable this source carries: GET /v1/webhooks/variables?source=<source> lists them.",
+      "docs_url": "https://docs.curviate.com/reference/webhooks/body-templates#t6",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

@@ -70,11 +70,9 @@ export class WebhookSignatureError extends Error {
 /**
  * The three fields every Curviate event payload carries, whatever its type.
  *
- * `occurred_at` matters beyond timestamping: together with `event` and
- * `account_id` it is the only key that survives a retry, because the platform
- * re-sends the identical payload while minting a fresh envelope `id` per
- * attempt. Typing it here is what lets a consumer build that key without
- * widening to `unknown`.
+ * `occurred_at` is when the event happened, stable across every attempt. To
+ * discard duplicate retries, key on the envelope `id` (the delivery id, the
+ * same on every attempt and redelivery).
  */
 export interface EventPayloadBase {
   /** The account the event happened on. */
@@ -91,6 +89,33 @@ export interface EventPayloadBase {
  */
 export interface MessagePayload extends EventPayloadBase {
   message_id?: string;
+}
+
+/** Who sent a message the connected account sent (derived by Curviate, never set by a caller). */
+export type MessageOrigin = "motion" | "unibox" | "api" | "linkedin";
+
+/**
+ * Payload of the own-message events `message.read`, `message.reaction`,
+ * `message.edited` and `message.deleted`. `origin` says who sent the message
+ * the event is about; it is omitted when unknown (a `message.read` carries it
+ * only where the payload names the message). `message.received` is
+ * {@link MessagePayload} and never carries `origin`.
+ */
+export interface OwnMessagePayload extends MessagePayload {
+  origin?: MessageOrigin;
+}
+
+/**
+ * Payload of `chat.updated`. `chat_id` is always present. On a change of the
+ * chat's stored read state it also carries `unread` (the new value) and
+ * `origin` (`unibox` or `api` for a change Curviate made, `linkedin` for one
+ * made on LinkedIn); an update that changed nothing carries neither. A new
+ * incoming message emits no `chat.updated`.
+ */
+export interface ChatUpdatedPayload extends EventPayloadBase {
+  chat_id: string;
+  unread?: boolean;
+  origin?: "unibox" | "api" | "linkedin";
 }
 
 /**
@@ -125,8 +150,6 @@ export interface PostPublishedPayload extends EventPayloadBase {
   post_id: string | null;
   scheduled_at: string;
   published_at: string;
-  /** Present when a warn-posture safety limit was breached by this publish. */
-  safety_warning?: unknown;
 }
 
 /**
@@ -156,8 +179,8 @@ export interface PostPublishFailedPayload extends EventPayloadBase {
  * Contact record, `null` once deleted). No payload carries the text Curviate
  * sent.
  *
- * `motion.custom_event` fires once when a step carrying an `event` ran (or a
- * legacy `emit` step is reached). `motion.signal` is its deprecated name: a
+ * `motion.custom_event` fires once when a step carrying an `event` ran or an
+ * `emit` step is reached. `motion.signal` is its deprecated name: a
  * webhook subscribed to it receives the same `data` under that name until
  * 2027-01-19.
  *
@@ -189,17 +212,19 @@ export interface MotionPayload {
  */
 export interface CurviateEventEnvelope {
   /**
-   * Unique id for this delivery attempt, e.g. `wdl_01J...`. Every retry mints a
-   * new one, so it identifies an attempt rather than a logical event and is
-   * **not** a de-duplication key. To discard duplicate retries, key on `event`
-   * plus `data.account_id` plus `data.occurred_at`, which are identical across
-   * every attempt of the same event. Use `id` to correlate one attempt with
-   * your own delivery logs.
+   * The delivery id, e.g. `wdl_01J...`: one event rendered once for this
+   * webhook. The same value on every attempt and every redelivery (it used to
+   * change per attempt), so it is the de-duplication key, and it is the id
+   * `webhooks.deliveries.get(webhook_id, id)` reads.
    */
   id?: string;
   /** Id of the webhook registration this delivery belongs to, e.g. `wh_01J...`. */
   webhook_id?: string;
-  /** ISO-8601 timestamp of the delivery attempt. */
+  /**
+   * ISO-8601 time the body was rendered, at the first attempt; the same on
+   * every retry and redelivery (it used to be the attempt's time). The
+   * signature's `t=` is the attempt's time.
+   */
   delivered_at?: string;
 }
 
@@ -242,11 +267,11 @@ export interface CurviateEventEnvelope {
 export type CurviateEvent = CurviateEventEnvelope &
   (
     | { event: "message.received"; data: MessagePayload }
-    | { event: "message.read"; data: MessagePayload }
-    | { event: "message.edited"; data: MessagePayload }
-    | { event: "message.deleted"; data: MessagePayload }
-    | { event: "message.reaction"; data: MessagePayload }
-    | { event: "chat.updated"; data: MessagePayload }
+    | { event: "message.read"; data: OwnMessagePayload }
+    | { event: "message.edited"; data: OwnMessagePayload }
+    | { event: "message.deleted"; data: OwnMessagePayload }
+    | { event: "message.reaction"; data: OwnMessagePayload }
+    | { event: "chat.updated"; data: ChatUpdatedPayload }
     | { event: "chat.deleted"; data: MessagePayload }
     | { event: "connection.accepted"; data: ConnectionPayload }
     | { event: "connection.new"; data: ConnectionPayload }
@@ -286,22 +311,23 @@ export type CurviateEvent = CurviateEventEnvelope &
 
 interface ParsedHeader {
   timestamp: number;
-  v1: string;
+  /** Every `v1` in the header, in order: two during a secret rotation (new first, old last). */
+  v1: string[];
 }
 
 function parseHeader(header: string): ParsedHeader {
   const parts = header.split(",");
   let tStr: string | undefined;
-  let v1: string | undefined;
+  const v1: string[] = [];
   for (const part of parts) {
     const eq = part.indexOf("=");
     if (eq === -1) continue;
     const key = part.slice(0, eq).trim();
     const val = part.slice(eq + 1).trim();
     if (key === "t") tStr = val;
-    else if (key === "v1") v1 = val;
+    else if (key === "v1") v1.push(val);
   }
-  if (tStr === undefined || v1 === undefined) {
+  if (tStr === undefined || v1.length === 0) {
     throw new WebhookSignatureError(
       "malformed_header",
       'Webhook signature header must contain both "t=<timestamp>" and "v1=<hmac>".',
@@ -402,27 +428,38 @@ export interface ConstructEventOptions {
 
 function verifyAndParse(
   computedHex: string,
-  v1: string,
+  v1: readonly string[],
   timestamp: number,
   bodyStr: string,
   replayWindowSecs: number,
 ): CurviateEvent {
-  // Step 3, constant-time HMAC comparison.
-  let providedBytes: Uint8Array;
-  try {
-    providedBytes = hexToBytes(v1);
-  } catch {
-    // hexToBytes throws WebhookSignatureError for invalid hex
+  // Step 3, constant-time HMAC comparison against every v1. During a secret
+  // rotation the header carries two (new first, old last) and either secret
+  // must verify. Every candidate is compared (no early exit), so the time
+  // taken does not say which one matched.
+  const computedBytes = hexToBytes(computedHex);
+  let matched = false;
+  let validHex = false;
+  for (const candidate of v1) {
+    let providedBytes: Uint8Array;
+    try {
+      providedBytes = hexToBytes(candidate);
+    } catch {
+      continue;
+    }
+    validHex = true;
+    if (constantTimeEqual(computedBytes, providedBytes)) matched = true;
+  }
+  if (!validHex) {
     throw new WebhookSignatureError(
       "invalid_signature",
       "Webhook signature v1 value is not valid hex.",
     );
   }
-  const computedBytes = hexToBytes(computedHex);
-  if (!constantTimeEqual(computedBytes, providedBytes)) {
+  if (!matched) {
     throw new WebhookSignatureError(
       "invalid_signature",
-      "Webhook signature does not match. Verify your signing secret.",
+      "Webhook signature does not match any v1. Verify your signing secret.",
     );
   }
 
@@ -503,6 +540,9 @@ function verifyAndParse(
  *   **Must be the exact bytes received**, do not JSON.parse then re-serialize.
  * @param signatureHeader - Full value of the `Curviate-Signature` header.
  * @param secret - The webhook signing secret from your webhook registration.
+ *   The delivery is accepted when any `v1` in the header matches it: for 24
+ *   hours after `webhooks.rotateSecret` every delivery carries two (new first,
+ *   old last), so the old and the new secret both verify while you deploy.
  * @param opts - Optional verification settings.
  * @returns `Promise<CurviateEvent>`, a typed event once verified.
  * @throws {WebhookSignatureError} if the header is malformed, the HMAC is

@@ -1,0 +1,23 @@
+{
+  "about": "Not JSON; the hint names the trailing comma.",
+  "rules": [
+    "T2"
+  ],
+  "source": "motion",
+  "template": "{\n  \"email\": \"{{contact.email}}\",\n}",
+  "errors": [
+    {
+      "path": "body_template",
+      "rule": "not valid JSON: trailing comma before '}'",
+      "code": "T2",
+      "message": "not valid JSON: trailing comma before '}'",
+      "pointer": "/body_template",
+      "line": 3,
+      "col": 1,
+      "hint": "Remove the trailing comma before '}'.",
+      "docs_url": "https://docs.curviate.com/reference/webhooks/body-templates#t2",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

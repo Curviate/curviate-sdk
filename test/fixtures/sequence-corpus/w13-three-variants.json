@@ -1,0 +1,44 @@
+{
+  "about": "3 variants: accepted with W13 in the P1 window (R23 after it)",
+  "rules": [
+    "W13"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "variants": [
+          {
+            "id": "a",
+            "text": "A"
+          },
+          {
+            "id": "b",
+            "text": "B"
+          },
+          {
+            "id": "c",
+            "text": "C"
+          }
+        ],
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "path": "m.variants",
+      "rule": "3 variants; A/B takes exactly 2; accepted until 2027-01-19",
+      "code": "W13",
+      "message": "3 variants; A/B takes exactly 2; accepted until 2027-01-19",
+      "pointer": "/steps/0/variants",
+      "hint": "Use 2 variants instead.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w13",
+      "severity": "warning"
+    }
+  ]
+}

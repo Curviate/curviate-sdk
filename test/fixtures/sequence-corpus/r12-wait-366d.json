@@ -1,0 +1,30 @@
+{
+  "about": "r12 wait 366d",
+  "rules": [
+    "R12"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "a",
+        "wait": "366d",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "a.wait",
+      "rule": "must be a duration between 1m and 365d: a number then m, h or d, like 30d",
+      "code": "R12",
+      "message": "must be a duration between 1m and 365d: a number then m, h or d, like 30d",
+      "pointer": "/steps/0/wait",
+      "hint": "Use a duration between 1m and 365d, for example 1d.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r12",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

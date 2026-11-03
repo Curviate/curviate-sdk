@@ -3,7 +3,7 @@
  * new steps alike. The API never generates, renames or rewrites an id.
  */
 import type { Action } from "./types.js";
-import { isObject } from "./vocab.js";
+import { isObject } from "../shared/sequence/limits.js";
 
 /** A step kind, or the action of a `do` step. */
 export type StepIdKind = Action | "wait" | "until" | "if" | "emit" | "tag";
@@ -16,6 +16,7 @@ const ID_BASE: Record<StepIdKind, string> = {
   "invite.withdraw": "withdraw",
   "message.send": "message",
   "inmail.send": "inmail",
+  "voice.send": "voice",
   "post.react": "like",
   "post.comment": "comment",
   "skill.endorse": "endorse",

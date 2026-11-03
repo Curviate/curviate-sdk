@@ -1,0 +1,126 @@
+{
+  "about": "save only on until event.<name>; id reserved; names and save_to_contact keys (R25)",
+  "rules": [
+    "R25"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "acc",
+        "until": "invite.accepted",
+        "timeout": "14d",
+        "save": {
+          "a": "x"
+        },
+        "then": "booked",
+        "else": "end"
+      },
+      {
+        "id": "booked",
+        "until": "event.meeting_booked",
+        "timeout": "14d",
+        "save": {
+          "id": "lead.id",
+          "Bad": "lead.bad",
+          "ok": "lead.ok"
+        },
+        "save_to_contact": {
+          "first_name": "lead.first",
+          "bad-key": "lead.k",
+          "email": "lead_email",
+          "crm_stage": "deal.stage"
+        },
+        "then": "msg",
+        "else": "end"
+      },
+      {
+        "id": "msg",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{enrollment.ok}}",
+          "fallback": "Hi"
+        },
+        "save": {
+          "b": "y"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "acc.save",
+      "rule": "save is allowed only on an until event.<name> step",
+      "code": "R25",
+      "message": "save is allowed only on an until event.<name> step",
+      "pointer": "/steps/0/save",
+      "hint": "Put save and save_to_contact on an until event.<name> step, 1 to 20 entries each: save names are lowercase (not id), save_to_contact keys are custom fields or email.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r25",
+      "severity": "error"
+    },
+    {
+      "path": "booked.save.id",
+      "rule": "\"id\" is reserved; enrollment_id is always sent",
+      "code": "R25",
+      "message": "\"id\" is reserved; enrollment_id is always sent",
+      "pointer": "/steps/1/save/id",
+      "hint": "Put save and save_to_contact on an until event.<name> step, 1 to 20 entries each: save names are lowercase (not id), save_to_contact keys are custom fields or email.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r25",
+      "severity": "error"
+    },
+    {
+      "path": "booked.save.Bad",
+      "rule": "a value name must match ^[a-z][a-z0-9_]{0,63}$",
+      "code": "R25",
+      "message": "a value name must match ^[a-z][a-z0-9_]{0,63}$",
+      "pointer": "/steps/1/save/Bad",
+      "hint": "Put save and save_to_contact on an until event.<name> step, 1 to 20 entries each: save names are lowercase (not id), save_to_contact keys are custom fields or email.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r25",
+      "severity": "error"
+    },
+    {
+      "path": "booked.save_to_contact.first_name",
+      "rule": "first_name is a standard Contact field; only email can be saved to one",
+      "code": "R25",
+      "message": "first_name is a standard Contact field; only email can be saved to one",
+      "pointer": "/steps/1/save_to_contact/first_name",
+      "hint": "Put save and save_to_contact on an until event.<name> step, 1 to 20 entries each: save names are lowercase (not id), save_to_contact keys are custom fields or email.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r25",
+      "severity": "error"
+    },
+    {
+      "path": "booked.save_to_contact.bad-key",
+      "rule": "a custom field key must match ^[A-Za-z0-9_]{1,64}$, or be email",
+      "code": "R25",
+      "message": "a custom field key must match ^[A-Za-z0-9_]{1,64}$, or be email",
+      "pointer": "/steps/1/save_to_contact/bad-key",
+      "hint": "Put save and save_to_contact on an until event.<name> step, 1 to 20 entries each: save names are lowercase (not id), save_to_contact keys are custom fields or email.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r25",
+      "severity": "error"
+    },
+    {
+      "path": "msg.save",
+      "rule": "save is allowed only on an until event.<name> step",
+      "code": "R25",
+      "message": "save is allowed only on an until event.<name> step",
+      "pointer": "/steps/2/save",
+      "hint": "Put save and save_to_contact on an until event.<name> step, 1 to 20 entries each: save names are lowercase (not id), save_to_contact keys are custom fields or email.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r25",
+      "severity": "error"
+    }
+  ],
+  "warnings": [
+    {
+      "path": "acc.until",
+      "rule": "until invite.accepted on a path with no invite.send before it",
+      "code": "W6",
+      "message": "until invite.accepted on a path with no invite.send before it",
+      "pointer": "/steps/0/until",
+      "hint": "Send an invitation on this path before waiting for its acceptance.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w6",
+      "severity": "warning"
+    }
+  ]
+}

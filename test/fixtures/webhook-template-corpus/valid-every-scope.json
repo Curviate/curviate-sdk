@@ -1,0 +1,8 @@
+{
+  "about": "Every scope on the motion source, short forms, a literal \\\\{{, whitespace in braces.",
+  "rules": [],
+  "source": "motion",
+  "template": "{\"e\": \"{{ event }}\", \"at\": \"{{occurred_at}}\", \"me\": \"{{my_first_name}}\", \"c\": \"{{contact.extra.seats}}\", \"m\": \"{{motion.name}}\", \"en\": \"{{enrollment_id}}\", \"s\": \"{{step_id}}\", \"v\": \"{{enrollment.score}}\", \"lit\": \"\\\\{{not a variable}}\"}",
+  "errors": [],
+  "warnings": []
+}

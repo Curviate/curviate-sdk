@@ -1,0 +1,32 @@
+{
+  "about": "r12 timeout 59m",
+  "rules": [
+    "R12"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "u",
+        "until": "message.replied",
+        "timeout": "59m",
+        "then": "end",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "u.timeout",
+      "rule": "must be a duration between 1h and 180d: a number then m, h or d, like 30d",
+      "code": "R12",
+      "message": "must be a duration between 1h and 180d: a number then m, h or d, like 30d",
+      "pointer": "/steps/0/timeout",
+      "hint": "Use a duration between 1h and 180d, for example 21d.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r12",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,32 @@
+{
+  "about": "w6 accepted without invite",
+  "rules": [
+    "W6"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "acc",
+        "until": "invite.accepted",
+        "timeout": "7d",
+        "then": "end",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "path": "acc.until",
+      "rule": "until invite.accepted on a path with no invite.send before it",
+      "code": "W6",
+      "message": "until invite.accepted on a path with no invite.send before it",
+      "pointer": "/steps/0/until",
+      "hint": "Send an invitation on this path before waiting for its acceptance.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w6",
+      "severity": "warning"
+    }
+  ]
+}

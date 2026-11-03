@@ -1,0 +1,31 @@
+{
+  "about": "r5 step level by",
+  "rules": [
+    "R5"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "invite",
+        "do": "invite.send",
+        "by": "acc_1",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "invite.by",
+      "rule": "step-level by is not supported; use settings.assign",
+      "code": "R5",
+      "message": "step-level by is not supported; use settings.assign",
+      "pointer": "/steps/0/by",
+      "hint": "Remove the key: each step kind takes only its own keys, and the sending Account is chosen with settings.assign.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r5",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

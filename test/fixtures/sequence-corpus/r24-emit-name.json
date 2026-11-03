@@ -1,0 +1,30 @@
+{
+  "about": "r24 emit name",
+  "rules": [
+    "R24"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "e",
+        "emit": "Reply Received",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "e.emit",
+      "rule": "must match ^[a-z][a-z0-9_.]{0,63}$, like reply.received",
+      "code": "R24",
+      "message": "must match ^[a-z][a-z0-9_.]{0,63}$, like reply.received",
+      "pointer": "/steps/0/emit",
+      "hint": "Name the event with lowercase letters, digits, _ and ., starting with a letter, like reply.received; a Tag is 1 to 64 characters without , or ;.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r24",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

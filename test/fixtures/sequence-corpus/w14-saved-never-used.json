@@ -1,0 +1,45 @@
+{
+  "about": "a save name nothing reads (W14)",
+  "rules": [
+    "W14"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "booked",
+        "until": "event.meeting_booked",
+        "timeout": "14d",
+        "save": {
+          "score": "lead.score",
+          "spare": "lead.spare"
+        },
+        "then": "msg",
+        "else": "end"
+      },
+      {
+        "id": "msg",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{enrollment.score}}",
+          "fallback": "Thanks for booking."
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "path": "booked.save.spare",
+      "rule": "spare is saved but nothing in this Sequence reads it; a webhook template may still send it",
+      "code": "W14",
+      "message": "spare is saved but nothing in this Sequence reads it; a webhook template may still send it",
+      "pointer": "/steps/0/save/spare",
+      "hint": "Use the value in a message or an if step, or remove it from save if no webhook template sends it.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w14",
+      "severity": "warning"
+    }
+  ]
+}

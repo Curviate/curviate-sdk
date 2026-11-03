@@ -1,0 +1,31 @@
+{
+  "about": "r1 unknown top level key",
+  "rules": [
+    "R1"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "a",
+        "wait": "1d",
+        "next": "end"
+      }
+    ],
+    "foo": 1
+  },
+  "errors": [
+    {
+      "path": "foo",
+      "rule": "unknown key; a Sequence document holds only $schema, on_reply and steps",
+      "code": "R1",
+      "message": "unknown key; a Sequence document holds only $schema, on_reply and steps",
+      "pointer": "/foo",
+      "hint": "Keep only $schema, on_reply and steps at the top level; $schema, when present, is https://docs.curviate.com/schemas/sequence/v1.json.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r1",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}
