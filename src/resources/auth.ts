@@ -206,11 +206,11 @@ export class AuthResource {
    * where it was. The account's time zone follows its connection location;
    * `timezone` is deprecated and ignored.
    *
-   * `warm_up: false` connects a NEW account with warm-up off (no connect ramp,
-   * no ramp after a quiet spell; recovery after a LinkedIn restriction still
-   * applies). Default `true`. Sent with `account_id` it is
-   * `400 INVALID_REQUEST`: change an existing account's switch on its safety
-   * policy instead.
+   * Warm-up is off by default: a new account gets full limits from the start.
+   * `warm_up: true` connects a NEW account with warm-up on (limits start at 15%
+   * and rise to full over 5 weeks); recovery after a LinkedIn restriction
+   * applies either way. Sent with `account_id` it is `400 INVALID_REQUEST`:
+   * change an existing account's switch on its safety policy instead.
    *
    * @example
    * const result = await curviate.auth.intent({

@@ -7,7 +7,12 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
-## Unreleased
+## [0.45.0] - 2026-11-03
+
+### Warm-up opt-in (regenerated from production 769c410e2)
+
+- **Same shape, new meaning:** warm-up is off by default. A new account connects with full limits; `warm_up: true` on `auth.intent` or `connectRequests.create` connects it with warm-up on, and `updateSafetyPolicy(id, { warm_up: { enabled: true } })` turns it on later, starting week 1 (15%) from that moment. `warm_up.triggers` gains `switched_on` and loses `dormant`; `warm_up.dormant` stays, as a fact only (a quiet account no longer restarts the ramp). Accounts already warming up keep their ramp.
+- **Descriptions only:** content fields no longer say "never stored", and entity-record fields say a record nothing links to and not fetched again for 90 days is deleted. No type or runtime change.
 
 ### Direct messaging at any hour (regenerated from staging de00c9e8f)
 
@@ -175,14 +180,14 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
   `timezone` and a row's `activity_window_timezone` are `400 INVALID_REQUEST`
   unless `null` (accepted and ignored, so an older document round-trips).
   Change the account's `country` or own `proxy` instead.
-- **`warm_up`**: `triggers` is now `connect`, `dormant` or
+- **`warm_up`**: `triggers` is now `connect`, `switched_on` or
   `post_restriction` (`account_age` and `connections` removed);
   `unevaluated` removed. `state: "ramping"` keeps its shape and now follows
   those triggers.
 
 #### Added
 
-- **`warm_up.enabled`** (default `true`, set with
+- **`warm_up.enabled`** (default `false`, set with
   `PATCH /v1/{account_id}/safety-policy` and `warm_up: { enabled }`; a
   Team-scope `warm_up` is a 400) and **`warm_up.dormant`** on the account and
   the policy read.
@@ -191,8 +196,8 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
   (`GET` / `PATCH /v1/{account_id}/safety-policy`), typed from the generated
   policy types. `updateSafetyPolicy(id, { warm_up: { enabled } })` is the
   warm-up switch.
-- **`warm_up: false`** on `auth.intent` and `connectRequests.create` connects
-  a new account with warm-up off. With `account_id` it is
+- **`warm_up: true`** on `auth.intent` and `connectRequests.create` connects
+  a new account with warm-up on. With `account_id` it is
   `400 INVALID_REQUEST`.
 - **`connection_location`** gains `checked_at`, `detected_country` and
   `flags` (`country_mismatch`, `zone_moved`). No IP field anywhere.

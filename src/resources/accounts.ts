@@ -224,12 +224,14 @@ export class AccountsResource {
    * always wait. Limits, warm-up, halts and do-not-contact still apply to a
    * direct message. Reads are never affected.
    *
-   * `warm_up` is the account's ramp: `enabled` (the switch, default `true`;
+   * `warm_up` is the account's ramp: `enabled` (the switch, default `false`;
    * set it with `PATCH /v1/{account_id}/safety-policy` and
-   * `warm_up: { enabled }`), `dormant` (no action for more than 30 days),
-   * `state` and the `triggers` that apply now (`connect`, `dormant`,
-   * `post_restriction`). Off skips the connect and quiet ramps; recovery after
-   * a LinkedIn restriction still applies.
+   * `warm_up: { enabled }`), `dormant` (no action for more than 30 days; a
+   * fact only, it starts no ramp), `state` and the `triggers` that apply now
+   * (`connect`, `switched_on`, `post_restriction`). On ramps the limits from
+   * 15% to full over 5 weeks, from connect or from the moment it is turned on;
+   * off is full limits. Recovery after a LinkedIn restriction applies either
+   * way.
    *
    * `connection_location` carries `checked_at` (the last location check, or
    * `null`), `detected_country` (where your own proxy was found to connect
@@ -474,9 +476,10 @@ export class AccountsResource {
    *
    * `auto_withdraw` (boolean) switches the automatic withdrawal of old
    * Curviate-sent invitations; a change is ledgered. A row's `green` is its
-   * target. `warm_up: { enabled }` turns the account's warm-up ramp on or off (default
-   * on; off skips the connect and quiet ramps, recovery after a LinkedIn
-   * restriction still applies). `active_hours` sets the account's own days and
+   * target. `warm_up: { enabled }` turns the account's warm-up ramp on or off
+   * (default off). On starts the ramp at week 1 (15%) from now, rising to full
+   * limits over 5 weeks; off is full limits at once. Recovery after a LinkedIn
+   * restriction applies either way. `active_hours` sets the account's own days and
    * local hours for Motions and other live writes (direct messaging ignores
    * them); a row's own `activity_window_start` / `activity_window_end` win over
    * it. Read-only fields (`activity_window`, a row's
@@ -488,7 +491,7 @@ export class AccountsResource {
    * `PATCH /v1/{account_id}/safety-policy`
    *
    * @example
-   * await curviate.accounts.updateSafetyPolicy("acc_123", { warm_up: { enabled: false } });
+   * await curviate.accounts.updateSafetyPolicy("acc_123", { warm_up: { enabled: true } });
    */
   updateSafetyPolicy(accountId: string, body: SafetyPolicyUpdateBody): Promise<SafetyPolicyUpdateResult> {
     return this.ctx.request<SafetyPolicyUpdateResult>({

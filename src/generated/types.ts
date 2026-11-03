@@ -5731,7 +5731,7 @@ export interface operations {
                                 ended_on?: string;
                                 /** @description Where the role was based, as written on the profile. */
                                 location?: string;
-                                /** @description The member's own description of the role. Passes through verbatim, never stored. */
+                                /** @description The member's own description of the role. */
                                 description?: string;
                                 /** @description Employment arrangement, e.g. PERMANENT, PERMANENT_PART_TIME, CONTRACT, CONTRACT_PART_TIME, FREELANCE, SELF_EMPLOYED, INTERNSHIP, APPRENTICESHIP, TEMPORARY, VOLUNTEERING. Not present on every entry. */
                                 employment_type?: string;
@@ -5773,7 +5773,7 @@ export interface operations {
                                 grade?: string;
                                 /** @description Activities carried out during the studies. */
                                 activities?: string;
-                                /** @description The member's own description of the studies. Passes through verbatim, never stored. */
+                                /** @description The member's own description of the studies. */
                                 description?: string;
                                 /** @description Date the studies started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value uses day 01, so read the month and year and ignore the day. */
                                 started_on?: string;
@@ -5854,7 +5854,7 @@ export interface operations {
                                 role?: string;
                                 /** @description The cause supported, as categorised by the platform. */
                                 cause?: string;
-                                /** @description The member's own description of the work. Passes through verbatim, never stored. */
+                                /** @description The member's own description of the work. */
                                 description?: string;
                                 /** @description Date the work started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value uses day 01, so read the month and year and ignore the day. */
                                 started_on?: string;
@@ -5867,7 +5867,7 @@ export interface operations {
                             projects?: ({
                                 /** @description Name of the project. */
                                 name?: string;
-                                /** @description The member's own description of the project. Passes through verbatim, never stored. */
+                                /** @description The member's own description of the project. */
                                 description?: string;
                                 /** @description Other members credited on the project. */
                                 contributors?: ({
@@ -5909,7 +5909,7 @@ export interface operations {
                             recommendations?: {
                                 /** @description Recommendations written about this member. */
                                 received?: ({
-                                    /** @description The recommendation text. Passes through verbatim, never stored. */
+                                    /** @description The recommendation text. */
                                     text?: string;
                                     /** @description How the two members worked together, as shown on the profile. */
                                     caption?: string;
@@ -5945,7 +5945,7 @@ export interface operations {
                                 })[];
                                 /** @description Recommendations this member wrote for others. */
                                 given?: ({
-                                    /** @description The recommendation text. Passes through verbatim, never stored. */
+                                    /** @description The recommendation text. */
                                     text?: string;
                                     /** @description How the two members worked together, as shown on the profile. */
                                     caption?: string;
@@ -6062,7 +6062,7 @@ export interface operations {
                                     id?: string;
                                     /** @description The newsletter's title. */
                                     title?: string;
-                                    /** @description The newsletter's description. Passes through verbatim, never stored. */
+                                    /** @description The newsletter's description. */
                                     description?: string;
                                     /** @description Full LinkedIn URL for the newsletter. */
                                     url?: string;
@@ -6850,7 +6850,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The company pages the account administers, each with its per-page admin capability matrix. An account that administers no pages returns an empty list; never a 403. Page names are returned verbatim and are stored in your tenant's entity records, with no expiry. */
+            /** @description The company pages the account administers, each with its per-page admin capability matrix. An account that administers no pages returns an empty list; never a 403. Page names are stored in your tenant's entity records; a record nothing links to and that is not fetched again for 90 days is deleted. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -6880,7 +6880,7 @@ export interface operations {
                             id: string | null;
                             /** @description Native company urn. */
                             entity_urn?: string | null;
-                            /** @description Page display name. Reading it back through Curviate stores it in your tenant's entity records, with no expiry. */
+                            /** @description Page display name. Reading it back through Curviate stores it in your tenant's entity records. A record nothing links to and that is not fetched again for 90 days is deleted. */
                             name?: string | null;
                             /** @description Vanity slug (the `/company/<slug>/` segment). */
                             universal_name?: string | null;
@@ -8234,7 +8234,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The company's LinkedIn profile. Content fields (description, tagline) are returned verbatim and are never stored. follower_count is the audience-size signal that replaces the retired company followers list. */
+            /** @description The company's LinkedIn profile. follower_count is the audience-size signal that replaces the retired company followers list. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -8252,7 +8252,7 @@ export interface operations {
                         id: string;
                         /** @description Company display name. */
                         name: string;
-                        /** @description Company description (content pass-through, never stored). */
+                        /** @description Company description. */
                         description?: string;
                         /** @description LinkedIn public slug (the segment after linkedin.com/company/). */
                         public_identifier?: string;
@@ -8653,7 +8653,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description A page of the company's posts. Post text is returned verbatim and is never stored. */
+            /** @description A page of the company's posts. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -9222,7 +9222,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description A page of the company page's followers; the admin analytics follower list. Follower names and headlines are returned verbatim and are stored in your tenant's entity records, with no expiry. Page until cursor is null. */
+            /** @description A page of the company page's followers; the admin analytics follower list. Follower names and headlines are stored in your tenant's entity records; a record nothing links to and that is not fetched again for 90 days is deleted. Page until cursor is null. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -9245,9 +9245,9 @@ export interface operations {
                             object: "company_follower";
                             /** @description The follower's member id. */
                             id: string;
-                            /** @description Follower display name. Reading it back through Curviate stores it in your tenant's entity records, with no expiry. */
+                            /** @description Follower display name. Reading it back through Curviate stores it in your tenant's entity records. A record nothing links to and that is not fetched again for 90 days is deleted. */
                             name?: string | null;
-                            /** @description Follower headline. Reading it back through Curviate stores it in your tenant's entity records, with no expiry. */
+                            /** @description Follower headline. Reading it back through Curviate stores it in your tenant's entity records. A record nothing links to and that is not fetched again for 90 days is deleted. */
                             headline?: string | null;
                             /** @description Vanity slug. */
                             public_identifier?: string | null;
@@ -15988,7 +15988,7 @@ export interface operations {
                                 /** @description Canonical profile URL. */
                                 profile_url: string | null;
                             };
-                            /** @description Full post body, verbatim, on both sorts. null when the post has no body. Pass-through, never stored. */
+                            /** @description Full post body, verbatim, on both sorts. null when the post has no body. */
                             text: string | null;
                             /** @description ISO-8601 UTC datetime the feed activity was created, derived from the activity id (the same source as get-post's `created_at`). Both sorts. For a reshare this is when the reshare was made. null when the id does not carry a time. */
                             created_at: string | null;
@@ -16004,7 +16004,7 @@ export interface operations {
                             reshared_from: {
                                 /** @description Original author's display name. */
                                 name: string | null;
-                                /** @description Original post body (pass-through; never stored). */
+                                /** @description Original post body. */
                                 text: string | null;
                             } | null;
                             /** @description Engagement counts. Every count is null on recent, which cannot read them; use sort=relevant for counts. A null count is unknown, never zero. */
@@ -16580,7 +16580,7 @@ export interface operations {
                             id?: string;
                             /** @description ISO-8601 UTC datetime the comment was created, or null. */
                             created_at?: string | null;
-                            /** @description Full comment text (content pass-through, never stored). */
+                            /** @description Full comment text. */
                             text?: string | null;
                             /** @description Total reply count on this comment. */
                             reply_count?: number;
@@ -16643,7 +16643,7 @@ export interface operations {
                                 object?: "post";
                                 /** @description Shareable URL for the parent post. Present on the full form only. */
                                 share_url?: string | null;
-                                /** @description Full text of the parent post (content pass-through, never stored). Present on the full form only. */
+                                /** @description Full text of the parent post. Present on the full form only. */
                                 text?: string | null;
                                 /** @description true if the parent post is itself a repost. Present on the full form only. */
                                 is_repost?: boolean;
@@ -16808,7 +16808,7 @@ export interface operations {
                             id?: string;
                             /** @description ISO-8601 UTC datetime the comment was created, or null. */
                             created_at?: string | null;
-                            /** @description Full comment text (content pass-through, never stored). */
+                            /** @description Full comment text. */
                             text?: string | null;
                             /** @description Total reply count on this comment. */
                             reply_count?: number;
@@ -16994,7 +16994,7 @@ export interface operations {
                         id?: string;
                         /** @description ISO-8601 UTC datetime the comment was created, or null. */
                         created_at?: string | null;
-                        /** @description Full comment text (content pass-through, never stored). */
+                        /** @description Full comment text. */
                         text?: string | null;
                         /** @description Total reply count on this comment. */
                         reply_count?: number;
@@ -17215,7 +17215,7 @@ export interface operations {
                         id?: string;
                         /** @description ISO-8601 UTC datetime the comment was created, or null. */
                         created_at?: string | null;
-                        /** @description Full comment text (content pass-through, never stored). */
+                        /** @description Full comment text. */
                         text?: string | null;
                         /** @description Total reply count on this comment. */
                         reply_count?: number;
@@ -17541,7 +17541,7 @@ export interface operations {
                         id?: string;
                         /** @description ISO-8601 UTC datetime the comment was created, or null. */
                         created_at?: string | null;
-                        /** @description Full comment text (content pass-through, never stored). */
+                        /** @description Full comment text. */
                         text?: string | null;
                         /** @description Total reply count on this comment. */
                         reply_count?: number;
@@ -17738,7 +17738,7 @@ export interface operations {
                             id?: string;
                             /** @description ISO-8601 UTC datetime the comment was created, or null. */
                             created_at?: string | null;
-                            /** @description Full comment text (content pass-through, never stored). */
+                            /** @description Full comment text. */
                             text?: string | null;
                             /** @description Total reply count on this comment. */
                             reply_count?: number;
@@ -20887,7 +20887,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The connected account's own classic job postings matching the filter. Content fields (title) are returned verbatim and are never stored. */
+            /** @description The connected account's own classic job postings matching the filter. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -20910,7 +20910,7 @@ export interface operations {
                             object: "job_posting";
                             /** @description The job posting's numeric identifier. */
                             id: string;
-                            /** @description Job title (content pass-through, never stored). */
+                            /** @description Job title. */
                             title: string;
                             /** @description Hiring company's display name. */
                             company: string;
@@ -21092,7 +21092,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The created job posting, in DRAFT state. Content fields (title, description) are returned verbatim and are never stored. This op never publishes and never spends money. */
+            /** @description The created job posting, in DRAFT state. This op never publishes and never spends money. */
             201: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -21108,7 +21108,7 @@ export interface operations {
                         object: "job_posting";
                         /** @description The job posting's numeric identifier. */
                         id: string;
-                        /** @description Job title (content pass-through, never stored). */
+                        /** @description Job title. */
                         title: string;
                         /** @description The hiring company. */
                         company: {
@@ -21138,7 +21138,7 @@ export interface operations {
                         industries?: string[];
                         /** @description ISO-8601 UTC timestamp the posting was created. */
                         created_at: string;
-                        /** @description Full job description text (content pass-through, never stored). */
+                        /** @description Full job description text. */
                         description: string;
                         /** @description Number of views so far, when tracked. */
                         views_count?: number;
@@ -21310,7 +21310,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The classic job posting's full detail. Content fields (title, description) are returned verbatim and are never stored. */
+            /** @description The classic job posting's full detail. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -21326,7 +21326,7 @@ export interface operations {
                         object: "job_posting";
                         /** @description The job posting's numeric identifier. */
                         id: string;
-                        /** @description Job title (content pass-through, never stored). */
+                        /** @description Job title. */
                         title: string;
                         /** @description The hiring company. */
                         company: {
@@ -21356,7 +21356,7 @@ export interface operations {
                         industries?: string[];
                         /** @description ISO-8601 UTC timestamp the posting was created. */
                         created_at: string;
-                        /** @description Full job description text (content pass-through, never stored). */
+                        /** @description Full job description text. */
                         description: string;
                         /** @description Number of views so far, when tracked. */
                         views_count?: number;
@@ -21578,7 +21578,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The updated job posting, reflecting only the fields included in the request. Content fields (title, description) are returned verbatim and are never stored. */
+            /** @description The updated job posting, reflecting only the fields included in the request. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -21594,7 +21594,7 @@ export interface operations {
                         object: "job_posting";
                         /** @description The job posting's numeric identifier. */
                         id: string;
-                        /** @description Job title (content pass-through, never stored). */
+                        /** @description Job title. */
                         title: string;
                         /** @description The hiring company. */
                         company: {
@@ -21624,7 +21624,7 @@ export interface operations {
                         industries?: string[];
                         /** @description ISO-8601 UTC timestamp the posting was created. */
                         created_at: string;
-                        /** @description Full job description text (content pass-through, never stored). */
+                        /** @description Full job description text. */
                         description: string;
                         /** @description Number of views so far, when tracked. */
                         views_count?: number;
@@ -22862,7 +22862,7 @@ export interface operations {
                         share_url?: string | null;
                         /** @description Post title, or null if not set. */
                         title?: string | null;
-                        /** @description Full post text (content pass-through, never stored). */
+                        /** @description Full post text. */
                         text?: string | null;
                         /** @description ISO-8601 UTC datetime this post was published, or null when it cannot be told reliably. Derived from the post's own activity identity, so it does not change with the route you used to reach it. null when the post carries no activity identity of its own (often a video or image post), never a guess. For a repost this is when the repost was made, not when the post it reshares was. */
                         created_at?: string | null;
@@ -23359,7 +23359,7 @@ export interface operations {
                             share_url?: string | null;
                             /** @description Post title, or null if not set. */
                             title?: string | null;
-                            /** @description Full post text (content pass-through, never stored). */
+                            /** @description Full post text. */
                             text?: string | null;
                             /** @description ISO-8601 UTC datetime this post was published, or null when it cannot be told reliably. Derived from the post's own activity identity, so it does not change with the route you used to reach it. null when the post carries no activity identity of its own (often a video or image post), never a guess. For a repost this is when the repost was made, not when the post it reshares was. */
                             created_at?: string | null;
@@ -24038,7 +24038,7 @@ export interface operations {
                                 created_at?: string | null;
                                 /** @description Shareable URL for the parent post. Present on the full form only. */
                                 share_url?: string | null;
-                                /** @description Full text of the parent post (content pass-through, never stored). Present on the full form only. */
+                                /** @description Full text of the parent post. Present on the full form only. */
                                 text?: string | null;
                                 /** @description true if the parent post is itself a repost. Present on the full form only. */
                                 is_repost?: boolean;
@@ -26137,7 +26137,7 @@ export interface operations {
                         public_picture_url?: string;
                         /** @description Large profile picture URL. */
                         public_picture_url_large?: string;
-                        /** @description The member's professional headline. Reading it back through Curviate stores it in your tenant's entity records, with no expiry. */
+                        /** @description The member's professional headline. Reading it back through Curviate stores it in your tenant's entity records. A record nothing links to and that is not fetched again for 90 days is deleted. */
                         description?: string;
                         /** @description Geographic location string. */
                         location?: string;
@@ -26206,7 +26206,7 @@ export interface operations {
                                 ended_on?: string;
                                 /** @description Where the role was based, as written on the profile. */
                                 location?: string;
-                                /** @description The member's own description of the role. Passes through verbatim, never stored. */
+                                /** @description The member's own description of the role. */
                                 description?: string;
                                 /** @description Employment arrangement, e.g. PERMANENT, PERMANENT_PART_TIME, CONTRACT, CONTRACT_PART_TIME, FREELANCE, SELF_EMPLOYED, INTERNSHIP, APPRENTICESHIP, TEMPORARY, VOLUNTEERING. Not present on every entry. */
                                 employment_type?: string;
@@ -26248,7 +26248,7 @@ export interface operations {
                                 grade?: string;
                                 /** @description Activities carried out during the studies. */
                                 activities?: string;
-                                /** @description The member's own description of the studies. Passes through verbatim, never stored. */
+                                /** @description The member's own description of the studies. */
                                 description?: string;
                                 /** @description Date the studies started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value on the classic profile's response uses day 01. Confirm against an entry whose real start date you know before assuming the day carries no information here. */
                                 started_on?: string;
@@ -26310,7 +26310,7 @@ export interface operations {
                             projects?: ({
                                 /** @description Name of the project. */
                                 name?: string;
-                                /** @description The member's own description of the project. Passes through verbatim, never stored. */
+                                /** @description The member's own description of the project. */
                                 description?: string;
                                 /** @description Other members credited on the project. */
                                 contributors?: ({
@@ -26371,7 +26371,7 @@ export interface operations {
                                 role?: string;
                                 /** @description The cause supported, as categorised by the platform. */
                                 cause?: string;
-                                /** @description The member's own description of the work. Passes through verbatim, never stored. */
+                                /** @description The member's own description of the work. */
                                 description?: string;
                                 /** @description Date the work started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value on the classic profile's response uses day 01. Confirm against an entry whose real start date you know before assuming the day carries no information here. */
                                 started_on?: string;
@@ -26382,7 +26382,7 @@ export interface operations {
                             })[];
                             /** @description Recommendations entries. Present only when recommendations or linkedin_* was requested. Declared from the classic profile's own live-measured shape for the same underlying LinkedIn section, since this surface's own typed fields already match that shape, rather than from a Recruiter-specific capture. Confirm field-for-field against a real response before treating any inference, an absent field or one under a different name, as fact. That reuse covers the ITEM shape only, not the container: on the classic profile this same underlying section is an OBJECT ({received, given}), not an array. Confirm the shape on this surface before iterating it as an array; guard for both shapes until then. */
                             recommendations?: ({
-                                /** @description The recommendation text. Passes through verbatim, never stored. */
+                                /** @description The recommendation text. */
                                 text?: string;
                                 /** @description How the two members worked together, as shown on the profile. */
                                 caption?: string;
@@ -26419,9 +26419,9 @@ export interface operations {
                             /** @description Section names that were requested but throttled by LinkedIn. */
                             throttled_sections?: string[];
                         };
-                        /** @description Recruiter-only enrichment: notes, tags, and message-activity events. The notes, the tags and each event's message text are removed before anything is written, on every path. The rest of this object is stored in your tenant's entity records, with no expiry. */
+                        /** @description Recruiter-only enrichment: notes, tags, and message-activity events. */
                         recruiting_profile: {
-                            /** @description Recruiter notes on this candidate. Passes through, never stored. */
+                            /** @description Recruiter notes on this candidate. */
                             notes?: string | null;
                             /** @description Recruiter tags applied to this candidate. */
                             tags?: string[];
@@ -26431,7 +26431,7 @@ export interface operations {
                                 last_updated_at?: string;
                                 /** @description The seat member who last updated this event. */
                                 last_updated_by?: string;
-                                /** @description Message text. Passes through, never stored. */
+                                /** @description Message text. */
                                 message_content?: string;
                                 /** @description Message delivery/read status. */
                                 message_status?: string;
@@ -26947,7 +26947,7 @@ export interface operations {
                             id: string;
                             /** @description SCREAMING_CASE network-distance enum. */
                             network_distance: string;
-                            /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
+                            /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records; a record nothing links to and that is not fetched again for 90 days is deleted. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                             headline?: string;
                             location?: string;
                             can_send_inmail?: boolean;
@@ -26969,7 +26969,7 @@ export interface operations {
                                 employment_type?: string;
                                 workplace_type?: string;
                             }[];
-                            /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
+                            /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records; a record nothing links to and that is not fetched again for 90 days is deleted. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                             display_name?: string;
                             public_identifier?: string;
                             profile_url?: string;
@@ -26979,11 +26979,11 @@ export interface operations {
                             industry?: string;
                             relations_count?: number;
                             followers_count?: number;
-                            /** @description Content, not stored. */
+                            /** @description Profile summary. */
                             summary?: string;
-                            /** @description PII, full variant only, never persisted/logged. */
+                            /** @description PII, full variant only. Never logged. */
                             emails?: string[];
-                            /** @description PII, full variant only, never persisted/logged. */
+                            /** @description PII, full variant only. Never logged. */
                             phone_numbers?: string[];
                             skills?: {
                                 name?: string;
@@ -28009,7 +28009,7 @@ export interface operations {
                                 id: string;
                                 /** @description SCREAMING_CASE network-distance enum. */
                                 network_distance: string;
-                                /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
+                                /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records; a record nothing links to and that is not fetched again for 90 days is deleted. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                                 headline?: string;
                                 location?: string;
                                 can_send_inmail?: boolean;
@@ -28031,7 +28031,7 @@ export interface operations {
                                     employment_type?: string;
                                     workplace_type?: string;
                                 }[];
-                                /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
+                                /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records; a record nothing links to and that is not fetched again for 90 days is deleted. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                                 display_name?: string;
                                 public_identifier?: string;
                                 profile_url?: string;
@@ -28041,11 +28041,11 @@ export interface operations {
                                 industry?: string;
                                 relations_count?: number;
                                 followers_count?: number;
-                                /** @description Content, not stored. */
+                                /** @description Profile summary. */
                                 summary?: string;
-                                /** @description PII, full variant only, never persisted/logged. */
+                                /** @description PII, full variant only. Never logged. */
                                 emails?: string[];
-                                /** @description PII, full variant only, never persisted/logged. */
+                                /** @description PII, full variant only. Never logged. */
                                 phone_numbers?: string[];
                                 skills?: {
                                     name?: string;
@@ -28322,7 +28322,7 @@ export interface operations {
                             id: string;
                             /** @description SCREAMING_CASE network-distance enum. */
                             network_distance: string;
-                            /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
+                            /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records; a record nothing links to and that is not fetched again for 90 days is deleted. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                             headline?: string;
                             location?: string;
                             can_send_inmail?: boolean;
@@ -28344,7 +28344,7 @@ export interface operations {
                                 employment_type?: string;
                                 workplace_type?: string;
                             }[];
-                            /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
+                            /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records; a record nothing links to and that is not fetched again for 90 days is deleted. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                             display_name?: string;
                             public_identifier?: string;
                             profile_url?: string;
@@ -28354,11 +28354,11 @@ export interface operations {
                             industry?: string;
                             relations_count?: number;
                             followers_count?: number;
-                            /** @description Content, not stored. */
+                            /** @description Profile summary. */
                             summary?: string;
-                            /** @description PII, full variant only, never persisted/logged. */
+                            /** @description PII, full variant only. Never logged. */
                             emails?: string[];
-                            /** @description PII, full variant only, never persisted/logged. */
+                            /** @description PII, full variant only. Never logged. */
                             phone_numbers?: string[];
                             skills?: {
                                 name?: string;
@@ -28526,7 +28526,7 @@ export interface operations {
                             id: string;
                             /** @description SCREAMING_CASE network-distance enum. */
                             network_distance: string;
-                            /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
+                            /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records; a record nothing links to and that is not fetched again for 90 days is deleted. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                             headline?: string;
                             location?: string;
                             can_send_inmail?: boolean;
@@ -28548,7 +28548,7 @@ export interface operations {
                                 employment_type?: string;
                                 workplace_type?: string;
                             }[];
-                            /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
+                            /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records; a record nothing links to and that is not fetched again for 90 days is deleted. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                             display_name?: string;
                             public_identifier?: string;
                             profile_url?: string;
@@ -28558,11 +28558,11 @@ export interface operations {
                             industry?: string;
                             relations_count?: number;
                             followers_count?: number;
-                            /** @description Content, not stored. */
+                            /** @description Profile summary. */
                             summary?: string;
-                            /** @description PII, full variant only, never persisted/logged. */
+                            /** @description PII, full variant only. Never logged. */
                             emails?: string[];
-                            /** @description PII, full variant only, never persisted/logged. */
+                            /** @description PII, full variant only. Never logged. */
                             phone_numbers?: string[];
                             skills?: {
                                 name?: string;
@@ -28598,7 +28598,7 @@ export interface operations {
                                 id: string;
                                 /** @description SCREAMING_CASE network-distance enum. */
                                 network_distance: string;
-                                /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
+                                /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records; a record nothing links to and that is not fetched again for 90 days is deleted. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                                 headline?: string;
                                 location?: string;
                                 can_send_inmail?: boolean;
@@ -28620,7 +28620,7 @@ export interface operations {
                                     employment_type?: string;
                                     workplace_type?: string;
                                 }[];
-                                /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
+                                /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records; a record nothing links to and that is not fetched again for 90 days is deleted. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                                 display_name?: string;
                                 public_identifier?: string;
                                 profile_url?: string;
@@ -28630,11 +28630,11 @@ export interface operations {
                                 industry?: string;
                                 relations_count?: number;
                                 followers_count?: number;
-                                /** @description Content, not stored. */
+                                /** @description Profile summary. */
                                 summary?: string;
-                                /** @description PII, full variant only, never persisted/logged. */
+                                /** @description PII, full variant only. Never logged. */
                                 emails?: string[];
-                                /** @description PII, full variant only, never persisted/logged. */
+                                /** @description PII, full variant only. Never logged. */
                                 phone_numbers?: string[];
                                 skills?: {
                                     name?: string;
@@ -28671,7 +28671,7 @@ export interface operations {
                                 id: string;
                                 /** @description SCREAMING_CASE network-distance enum. */
                                 network_distance: string;
-                                /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
+                                /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records; a record nothing links to and that is not fetched again for 90 days is deleted. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                                 headline?: string;
                                 location?: string;
                                 can_send_inmail?: boolean;
@@ -28693,7 +28693,7 @@ export interface operations {
                                     employment_type?: string;
                                     workplace_type?: string;
                                 }[];
-                                /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
+                                /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records; a record nothing links to and that is not fetched again for 90 days is deleted. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                                 display_name?: string;
                                 public_identifier?: string;
                                 profile_url?: string;
@@ -28703,11 +28703,11 @@ export interface operations {
                                 industry?: string;
                                 relations_count?: number;
                                 followers_count?: number;
-                                /** @description Content, not stored. */
+                                /** @description Profile summary. */
                                 summary?: string;
-                                /** @description PII, full variant only, never persisted/logged. */
+                                /** @description PII, full variant only. Never logged. */
                                 emails?: string[];
-                                /** @description PII, full variant only, never persisted/logged. */
+                                /** @description PII, full variant only. Never logged. */
                                 phone_numbers?: string[];
                                 skills?: {
                                     name?: string;
@@ -28860,7 +28860,7 @@ export interface operations {
                         object: "recruiter_job_posting";
                         id: string;
                         project_id: string;
-                        /** @description Content, not stored. */
+                        /** @description Job title. */
                         title: string;
                         company: {
                             id?: string | null;
@@ -28879,7 +28879,7 @@ export interface operations {
                         employment_status: "FULL_TIME" | "PART_TIME" | "CONTRACT" | "TEMPORARY" | "OTHER" | "VOLUNTEER" | "INTERNSHIP";
                         /** @enum {string} */
                         experience_level: "INTERNSHIP" | "ENTRY_LEVEL" | "ASSOCIATE" | "MID_SENIOR_LEVEL" | "DIRECTOR" | "EXECUTIVE";
-                        /** @description Content, not stored. */
+                        /** @description Job description. */
                         description: string;
                         views_count: number;
                         applications_count: number;
@@ -28897,7 +28897,7 @@ export interface operations {
                         company_apply_url?: string;
                         tracking_pixel_url?: string;
                         screening_questions: {
-                            /** @description Content, not stored. */
+                            /** @description Screening question text. */
                             question?: string;
                             is_eliminatory?: boolean;
                             choices?: string[];
@@ -29428,7 +29428,7 @@ export interface operations {
                             object: "recruiter_job_posting";
                             id: string;
                             project_id: string;
-                            /** @description Content, not stored. */
+                            /** @description Job title. */
                             title: string;
                             /** @description Company name. */
                             company: string;
@@ -29796,7 +29796,7 @@ export interface operations {
                         object: "recruiter_job_posting";
                         id: string;
                         project_id: string;
-                        /** @description Content, not stored. */
+                        /** @description Job title. */
                         title: string;
                         company: {
                             id?: string | null;
@@ -29815,7 +29815,7 @@ export interface operations {
                         employment_status: "FULL_TIME" | "PART_TIME" | "CONTRACT" | "TEMPORARY" | "OTHER" | "VOLUNTEER" | "INTERNSHIP";
                         /** @enum {string} */
                         experience_level: "INTERNSHIP" | "ENTRY_LEVEL" | "ASSOCIATE" | "MID_SENIOR_LEVEL" | "DIRECTOR" | "EXECUTIVE";
-                        /** @description Content, not stored. */
+                        /** @description Job description. */
                         description: string;
                         views_count: number;
                         applications_count: number;
@@ -29833,7 +29833,7 @@ export interface operations {
                         company_apply_url?: string;
                         tracking_pixel_url?: string;
                         screening_questions: {
-                            /** @description Content, not stored. */
+                            /** @description Screening question text. */
                             question?: string;
                             is_eliminatory?: boolean;
                             choices?: string[];
@@ -30828,7 +30828,7 @@ export interface operations {
                                 id: string;
                                 /** @description SCREAMING_CASE network-distance enum. */
                                 network_distance: string;
-                                /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
+                                /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records; a record nothing links to and that is not fetched again for 90 days is deleted. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                                 headline?: string;
                                 location?: string;
                                 can_send_inmail?: boolean;
@@ -30850,7 +30850,7 @@ export interface operations {
                                     employment_type?: string;
                                     workplace_type?: string;
                                 }[];
-                                /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
+                                /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records; a record nothing links to and that is not fetched again for 90 days is deleted. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                                 display_name?: string;
                                 public_identifier?: string;
                                 profile_url?: string;
@@ -30860,11 +30860,11 @@ export interface operations {
                                 industry?: string;
                                 relations_count?: number;
                                 followers_count?: number;
-                                /** @description Content, not stored. */
+                                /** @description Profile summary. */
                                 summary?: string;
-                                /** @description PII, full variant only, never persisted/logged. */
+                                /** @description PII, full variant only. Never logged. */
                                 emails?: string[];
-                                /** @description PII, full variant only, never persisted/logged. */
+                                /** @description PII, full variant only. Never logged. */
                                 phone_numbers?: string[];
                                 skills?: {
                                     name?: string;
@@ -31045,7 +31045,7 @@ export interface operations {
                             id: string;
                             /** @description SCREAMING_CASE network-distance enum. */
                             network_distance: string;
-                            /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
+                            /** @description The member's headline. A people search or a talent-pool search stores it in your tenant's entity records; a record nothing links to and that is not fetched again for 90 days is deleted. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                             headline?: string;
                             location?: string;
                             can_send_inmail?: boolean;
@@ -31067,7 +31067,7 @@ export interface operations {
                                 employment_type?: string;
                                 workplace_type?: string;
                             }[];
-                            /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records, with no expiry. A pipeline read, an applicant read and a pasted-URL search store nothing. */
+                            /** @description The member's display name. A people search or a talent-pool search stores it in your tenant's entity records; a record nothing links to and that is not fetched again for 90 days is deleted. A pipeline read, an applicant read and a pasted-URL search store nothing. */
                             display_name?: string;
                             public_identifier?: string;
                             profile_url?: string;
@@ -31077,11 +31077,11 @@ export interface operations {
                             industry?: string;
                             relations_count?: number;
                             followers_count?: number;
-                            /** @description Content, not stored. */
+                            /** @description Profile summary. */
                             summary?: string;
-                            /** @description PII, full variant only, never persisted/logged. */
+                            /** @description PII, full variant only. Never logged. */
                             emails?: string[];
-                            /** @description PII, full variant only, never persisted/logged. */
+                            /** @description PII, full variant only. Never logged. */
                             phone_numbers?: string[];
                             skills?: {
                                 name?: string;
@@ -31566,7 +31566,7 @@ export interface operations {
                         public_picture_url?: string;
                         /** @description Large variant of the profile picture URL. Present when available. */
                         public_picture_url_large?: string;
-                        /** @description Professional headline. Present when populated. Reading it back through Curviate stores it in your tenant's entity records, with no expiry. */
+                        /** @description Professional headline. Present when populated. Reading it back through Curviate stores it in your tenant's entity records. A record nothing links to and that is not fetched again for 90 days is deleted. */
                         description?: string;
                         /** @description Location as set on the profile. Present when available. */
                         location?: string;
@@ -31649,7 +31649,7 @@ export interface operations {
                                 ended_on?: string;
                                 /** @description Where the role was based, as written on the profile. */
                                 location?: string;
-                                /** @description The member's own description of the role. Passes through verbatim, never stored. */
+                                /** @description The member's own description of the role. */
                                 description?: string;
                                 /** @description Employment arrangement, e.g. PERMANENT, PERMANENT_PART_TIME, CONTRACT, CONTRACT_PART_TIME, FREELANCE, SELF_EMPLOYED, INTERNSHIP, APPRENTICESHIP, TEMPORARY, VOLUNTEERING. Not present on every entry. */
                                 employment_type?: string;
@@ -31691,7 +31691,7 @@ export interface operations {
                                 grade?: string;
                                 /** @description Activities carried out during the studies. */
                                 activities?: string;
-                                /** @description The member's own description of the studies. Passes through verbatim, never stored. */
+                                /** @description The member's own description of the studies. */
                                 description?: string;
                                 /** @description Date the studies started. Formatted MM/DD/YYYY, month first. The platform records month and year only. Every observed value on the classic profile's response uses day 01. Confirm against an entry whose real start date you know before assuming the day carries no information here. */
                                 started_on?: string;
@@ -34488,7 +34488,7 @@ export interface operations {
                                 used: number | null;
                                 /** @description What this account is allowed on this row in this window, as configured. `null` where the row deliberately has no ceiling: the tally is reported and never enforced, and an uncalibrated row has no figure at all. Change it on the safety policy; Curviate never clamps what you set. */
                                 ceiling: number | null;
-                                /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (its first four weeks after connect, after a quiet spell, or while it recovers from a restriction) the two differ, and in the first week after connect they differ by a factor of about seven. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
+                                /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (the first four weeks after warm-up was turned on, at connect or later, or while it recovers from a restriction) the two differ, and in the first week after connect they differ by a factor of about seven. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
                                 effective_ceiling?: number | null;
                                 /** @description What the Account aims at per window on this row. Only the invitation total, InMail and profile views carry one (null on other rows): the row's configured `green` when set, otherwise `ceiling` times the profile's seeded ratio. */
                                 target?: number | null;
@@ -34532,22 +34532,22 @@ export interface operations {
                             status_reason?: "trial_ended" | "proxy" | null;
                             /** @description The account's ACTIVE warm-up, derived on every read. While warm-up holds an account back, every row's effective ceiling is its configured ceiling multiplied by `factor`, so a `factor` of 0.15 means the account is held to 15 percent of the numbers the rows report. Only `enabled` is settable (PATCH with `warm_up: {enabled}`); the other keys are derived, and sent back on a write they are accepted and ignored. This is separate from the per-row `warm_up_state` and `warm_up_factor`, which report what is active on that row: set `warm_up_factor` on a row to override the ramps (recovery after a restriction still caps it). Every warm-up number is inferred; none is published by LinkedIn. Curviate infers no account age. */
                             warm_up?: {
-                                /** @description The account's warm-up switch, default true. Off skips the connect ramp and the quiet ramp; recovery after a LinkedIn restriction still applies. Set it with PATCH /v1/{account_id}/safety-policy and `warm_up: {enabled}`, or with `warm_up` at connect. */
+                                /** @description The account's warm-up switch, default false. On ramps the account's limits from 0.15 at week 1 to full over 5 weeks, from connect or from the moment it is turned on; off is full limits. Recovery after a LinkedIn restriction applies either way. Set it with PATCH /v1/{account_id}/safety-policy and `warm_up: {enabled}`, or with `warm_up` at connect. */
                                 enabled?: boolean;
                                 /**
-                                 * @description `none` is an account at full speed. `ramping` is an account climbing 0.15, 0.35, 0.60, 0.85 to 1.00 by week after its connect or after a quiet spell. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: it holds at 0 for seven days after the restriction lifts, resumes at 0.40, then steps up 0.15 every four days.
+                                 * @description `none` is an account at full speed. `ramping` is an account climbing 0.15, 0.35, 0.60, 0.85 to 1.00 by week after warm-up was turned on, at connect or later. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: it holds at 0 for seven days after the restriction lifts, resumes at 0.40, then steps up 0.15 every four days.
                                  * @enum {string}
                                  */
                                 state?: "none" | "ramping" | "restriction_recovery";
                                 /** @description The multiplier applied to every row's ceiling: the lowest of every applying trigger's. 1 is not ramping. */
                                 factor?: number;
-                                /** @description Which week of the ramp supplies `factor`, counted from the connect or the return from a quiet spell, whichever is later. Null when no ramp applies or restriction recovery is lower. */
+                                /** @description Which week of the ramp supplies `factor`, counted from the connect or the moment warm-up was turned on, whichever is later. Null when no ramp applies or restriction recovery is lower. */
                                 week?: number | null;
                                 /** @description How many weeks the ramp has (5 today: 0.15, 0.35, 0.60, 0.85, 1.00). Read with `week` (0-based): week 1 is the second of `steps`. */
                                 steps?: number;
-                                /** @description The triggers that apply now: `connect` in the first 28 days after connect, `dormant` after more than 30 days with no action (counted from the connect when the account never acted) until the ramp it started completes, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
-                                triggers?: ("connect" | "dormant" | "post_restriction")[];
-                                /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. With warm-up on, its next action starts the ramp at 0.15. */
+                                /** @description The triggers that apply now: `connect` in the first 28 days after a connect with warm-up on, `switched_on` in the first 28 days after warm-up was turned on, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
+                                triggers?: ("connect" | "switched_on" | "post_restriction")[];
+                                /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. A fact only: it starts no ramp. */
                                 dormant?: boolean;
                             };
                             /** @description The InMail credits LinkedIn last reported for this account, and when (`as_of`). Refreshed by every live InMail check and at connect; reading the account never calls LinkedIn. Null until a balance was observed, which on Basic can be never. */
@@ -34739,7 +34739,7 @@ export interface operations {
                             used: number | null;
                             /** @description What this account is allowed on this row in this window, as configured. `null` where the row deliberately has no ceiling: the tally is reported and never enforced, and an uncalibrated row has no figure at all. Change it on the safety policy; Curviate never clamps what you set. */
                             ceiling: number | null;
-                            /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (its first four weeks after connect, after a quiet spell, or while it recovers from a restriction) the two differ, and in the first week after connect they differ by a factor of about seven. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
+                            /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (the first four weeks after warm-up was turned on, at connect or later, or while it recovers from a restriction) the two differ, and in the first week after connect they differ by a factor of about seven. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
                             effective_ceiling?: number | null;
                             /** @description What the Account aims at per window on this row. Only the invitation total, InMail and profile views carry one (null on other rows): the row's configured `green` when set, otherwise `ceiling` times the profile's seeded ratio. */
                             target?: number | null;
@@ -34783,22 +34783,22 @@ export interface operations {
                         status_reason?: "trial_ended" | "proxy" | null;
                         /** @description The account's ACTIVE warm-up, derived on every read. While warm-up holds an account back, every row's effective ceiling is its configured ceiling multiplied by `factor`, so a `factor` of 0.15 means the account is held to 15 percent of the numbers the rows report. Only `enabled` is settable (PATCH with `warm_up: {enabled}`); the other keys are derived, and sent back on a write they are accepted and ignored. This is separate from the per-row `warm_up_state` and `warm_up_factor`, which report what is active on that row: set `warm_up_factor` on a row to override the ramps (recovery after a restriction still caps it). Every warm-up number is inferred; none is published by LinkedIn. Curviate infers no account age. */
                         warm_up?: {
-                            /** @description The account's warm-up switch, default true. Off skips the connect ramp and the quiet ramp; recovery after a LinkedIn restriction still applies. Set it with PATCH /v1/{account_id}/safety-policy and `warm_up: {enabled}`, or with `warm_up` at connect. */
+                            /** @description The account's warm-up switch, default false. On ramps the account's limits from 0.15 at week 1 to full over 5 weeks, from connect or from the moment it is turned on; off is full limits. Recovery after a LinkedIn restriction applies either way. Set it with PATCH /v1/{account_id}/safety-policy and `warm_up: {enabled}`, or with `warm_up` at connect. */
                             enabled?: boolean;
                             /**
-                             * @description `none` is an account at full speed. `ramping` is an account climbing 0.15, 0.35, 0.60, 0.85 to 1.00 by week after its connect or after a quiet spell. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: it holds at 0 for seven days after the restriction lifts, resumes at 0.40, then steps up 0.15 every four days.
+                             * @description `none` is an account at full speed. `ramping` is an account climbing 0.15, 0.35, 0.60, 0.85 to 1.00 by week after warm-up was turned on, at connect or later. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: it holds at 0 for seven days after the restriction lifts, resumes at 0.40, then steps up 0.15 every four days.
                              * @enum {string}
                              */
                             state?: "none" | "ramping" | "restriction_recovery";
                             /** @description The multiplier applied to every row's ceiling: the lowest of every applying trigger's. 1 is not ramping. */
                             factor?: number;
-                            /** @description Which week of the ramp supplies `factor`, counted from the connect or the return from a quiet spell, whichever is later. Null when no ramp applies or restriction recovery is lower. */
+                            /** @description Which week of the ramp supplies `factor`, counted from the connect or the moment warm-up was turned on, whichever is later. Null when no ramp applies or restriction recovery is lower. */
                             week?: number | null;
                             /** @description How many weeks the ramp has (5 today: 0.15, 0.35, 0.60, 0.85, 1.00). Read with `week` (0-based): week 1 is the second of `steps`. */
                             steps?: number;
-                            /** @description The triggers that apply now: `connect` in the first 28 days after connect, `dormant` after more than 30 days with no action (counted from the connect when the account never acted) until the ramp it started completes, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
-                            triggers?: ("connect" | "dormant" | "post_restriction")[];
-                            /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. With warm-up on, its next action starts the ramp at 0.15. */
+                            /** @description The triggers that apply now: `connect` in the first 28 days after a connect with warm-up on, `switched_on` in the first 28 days after warm-up was turned on, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
+                            triggers?: ("connect" | "switched_on" | "post_restriction")[];
+                            /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. A fact only: it starts no ramp. */
                             dormant?: boolean;
                         };
                         /** @description The InMail credits LinkedIn last reported for this account, and when (`as_of`). Refreshed by every live InMail check and at connect; reading the account never calls LinkedIn. Null until a balance was observed, which on Basic can be never. */
@@ -35217,22 +35217,22 @@ export interface operations {
                         status_reason?: "trial_ended" | "proxy" | null;
                         /** @description The account's ACTIVE warm-up, derived on every read. While warm-up holds an account back, every row's effective ceiling is its configured ceiling multiplied by `factor`, so a `factor` of 0.15 means the account is held to 15 percent of the numbers the rows report. Only `enabled` is settable (PATCH with `warm_up: {enabled}`); the other keys are derived, and sent back on a write they are accepted and ignored. This is separate from the per-row `warm_up_state` and `warm_up_factor`, which report what is active on that row: set `warm_up_factor` on a row to override the ramps (recovery after a restriction still caps it). Every warm-up number is inferred; none is published by LinkedIn. Curviate infers no account age. */
                         warm_up?: {
-                            /** @description The account's warm-up switch, default true. Off skips the connect ramp and the quiet ramp; recovery after a LinkedIn restriction still applies. Set it with PATCH /v1/{account_id}/safety-policy and `warm_up: {enabled}`, or with `warm_up` at connect. */
+                            /** @description The account's warm-up switch, default false. On ramps the account's limits from 0.15 at week 1 to full over 5 weeks, from connect or from the moment it is turned on; off is full limits. Recovery after a LinkedIn restriction applies either way. Set it with PATCH /v1/{account_id}/safety-policy and `warm_up: {enabled}`, or with `warm_up` at connect. */
                             enabled?: boolean;
                             /**
-                             * @description `none` is an account at full speed. `ramping` is an account climbing 0.15, 0.35, 0.60, 0.85 to 1.00 by week after its connect or after a quiet spell. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: it holds at 0 for seven days after the restriction lifts, resumes at 0.40, then steps up 0.15 every four days.
+                             * @description `none` is an account at full speed. `ramping` is an account climbing 0.15, 0.35, 0.60, 0.85 to 1.00 by week after warm-up was turned on, at connect or later. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: it holds at 0 for seven days after the restriction lifts, resumes at 0.40, then steps up 0.15 every four days.
                              * @enum {string}
                              */
                             state?: "none" | "ramping" | "restriction_recovery";
                             /** @description The multiplier applied to every row's ceiling: the lowest of every applying trigger's. 1 is not ramping. */
                             factor?: number;
-                            /** @description Which week of the ramp supplies `factor`, counted from the connect or the return from a quiet spell, whichever is later. Null when no ramp applies or restriction recovery is lower. */
+                            /** @description Which week of the ramp supplies `factor`, counted from the connect or the moment warm-up was turned on, whichever is later. Null when no ramp applies or restriction recovery is lower. */
                             week?: number | null;
                             /** @description How many weeks the ramp has (5 today: 0.15, 0.35, 0.60, 0.85, 1.00). Read with `week` (0-based): week 1 is the second of `steps`. */
                             steps?: number;
-                            /** @description The triggers that apply now: `connect` in the first 28 days after connect, `dormant` after more than 30 days with no action (counted from the connect when the account never acted) until the ramp it started completes, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
-                            triggers?: ("connect" | "dormant" | "post_restriction")[];
-                            /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. With warm-up on, its next action starts the ramp at 0.15. */
+                            /** @description The triggers that apply now: `connect` in the first 28 days after a connect with warm-up on, `switched_on` in the first 28 days after warm-up was turned on, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
+                            triggers?: ("connect" | "switched_on" | "post_restriction")[];
+                            /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. A fact only: it starts no ramp. */
                             dormant?: boolean;
                         };
                         /** @description The InMail credits LinkedIn last reported for this account, and when (`as_of`). Refreshed by every live InMail check and at connect; reading the account never calls LinkedIn. Null until a balance was observed, which on Basic can be never. */
@@ -35850,13 +35850,13 @@ export interface operations {
                             /** @description The account's ACTIVE warm-up, derived on every read. While warm-up holds an account back, every row's effective ceiling is its configured ceiling multiplied by `factor`, so a `factor` of 0.15 means the account is held to 15 percent of the numbers the rows report. Only `enabled` is settable (PATCH with `warm_up: {enabled}`); the other keys are derived, and sent back on a write they are accepted and ignored. This is separate from the per-row `warm_up_state` and `warm_up_factor`, which report what is active on that row: set `warm_up_factor` on a row to override the ramps (recovery after a restriction still caps it). Every warm-up number is inferred; none is published by LinkedIn. Curviate infers no account age. */
                             warm_up?: {
                                 /**
-                                 * @description `none` is an account at full speed. `ramping` is an account climbing 0.15, 0.35, 0.60, 0.85 to 1.00 by week after its connect or after a quiet spell. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: it holds at 0 for seven days after the restriction lifts, resumes at 0.40, then steps up 0.15 every four days.
+                                 * @description `none` is an account at full speed. `ramping` is an account climbing 0.15, 0.35, 0.60, 0.85 to 1.00 by week after warm-up was turned on, at connect or later. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: it holds at 0 for seven days after the restriction lifts, resumes at 0.40, then steps up 0.15 every four days.
                                  * @enum {string}
                                  */
                                 state?: "none" | "ramping" | "restriction_recovery";
                                 /** @description The multiplier applied to every row's ceiling: the lowest of every applying trigger's. 1 is not ramping. */
                                 factor?: number;
-                                /** @description Which week of the ramp supplies `factor`, counted from the connect or the return from a quiet spell, whichever is later. Null when no ramp applies or restriction recovery is lower. */
+                                /** @description Which week of the ramp supplies `factor`, counted from the connect or the moment warm-up was turned on, whichever is later. Null when no ramp applies or restriction recovery is lower. */
                                 week?: number | null;
                                 /** @description How many weeks the ramp has (5 today: 0.15, 0.35, 0.60, 0.85, 1.00). Read with `week` (0-based): week 1 is the second of `steps`. */
                                 steps?: number;
@@ -35915,7 +35915,7 @@ export interface operations {
                                 window?: "day" | "week" | "month" | null;
                                 /** @description Where the account stands: actions counted in the current window for a debit row, the summed tally for `total_actions`, the observed backlog for the gauge. A debit row with no activity reports 0, never null. Only the gauge can be `null`, and only before anything has observed it: 0 there would be a backlog nobody looked at. */
                                 used?: number | null;
-                                /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (its first four weeks after connect, after a quiet spell, or while it recovers from a restriction) the two differ, and in the first week after connect they differ by a factor of about seven. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
+                                /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (the first four weeks after warm-up was turned on, at connect or later, or while it recovers from a restriction) the two differ, and in the first week after connect they differ by a factor of about seven. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
                                 effective_ceiling?: number | null;
                                 /** @description `effective_ceiling` minus `used`, never below 0: what this account can still do on this row in the current window. Null when the row has no ceiling (`total_actions`) or no level yet (`pending_invites` before it was read). */
                                 remaining?: number | null;
@@ -36510,7 +36510,7 @@ export interface operations {
                     user_languages?: string[];
                     /** @description Which Sales Navigator or Recruiter contract this account sends from, for a LinkedIn account that holds several. Selected once the account is active; the answer then carries contract_selected (false: the account is connected but the contract could not be selected). */
                     recruiter_contract_id?: string;
-                    /** @description Optional, new connects only, default true. false connects this account with warm-up off: no connect ramp and no ramp after a quiet spell; recovery after a LinkedIn restriction still applies. Change it later with PATCH /v1/{account_id}/safety-policy and warm_up.enabled. */
+                    /** @description Optional, new connects only, default false (warm-up off: full limits from the start). true connects this account with warm-up on: its limits start at 15% and rise over 5 weeks, for a new account or one with few connections and little activity. Recovery after a LinkedIn restriction applies either way. Change it later with PATCH /v1/{account_id}/safety-policy and warm_up.enabled. */
                     warm_up?: boolean;
                 };
             };
@@ -37537,7 +37537,7 @@ export interface operations {
                 "application/json": {
                     /** @description Omit to ask for a new account. An existing account's id (acc_...) asks for its reconnect. */
                     account_id?: string;
-                    /** @description Optional, new connects only, default true. false connects this account with warm-up off: no connect ramp and no ramp after a quiet spell; recovery after a LinkedIn restriction still applies. Change it later with PATCH /v1/{account_id}/safety-policy and warm_up.enabled. */
+                    /** @description Optional, new connects only, default false (warm-up off: full limits from the start). true connects this account with warm-up on: its limits start at 15% and rise over 5 weeks, for a new account or one with few connections and little activity. Recovery after a LinkedIn restriction applies either way. Change it later with PATCH /v1/{account_id}/safety-policy and warm_up.enabled. */
                     warm_up?: boolean;
                 };
             };
@@ -39989,22 +39989,22 @@ export interface operations {
                         limit_profile_detected_at?: string | null;
                         /** @description The account's ACTIVE warm-up, derived on every read. While warm-up holds an account back, every row's effective ceiling is its configured ceiling multiplied by `factor`, so a `factor` of 0.15 means the account is held to 15 percent of the numbers the rows report. Only `enabled` is settable (PATCH with `warm_up: {enabled}`); the other keys are derived, and sent back on a write they are accepted and ignored. This is separate from the per-row `warm_up_state` and `warm_up_factor`, which report what is active on that row: set `warm_up_factor` on a row to override the ramps (recovery after a restriction still caps it). Every warm-up number is inferred; none is published by LinkedIn. Curviate infers no account age. */
                         warm_up?: {
-                            /** @description The account's warm-up switch, default true. Off skips the connect ramp and the quiet ramp; recovery after a LinkedIn restriction still applies. Set it with PATCH /v1/{account_id}/safety-policy and `warm_up: {enabled}`, or with `warm_up` at connect. */
+                            /** @description The account's warm-up switch, default false. On ramps the account's limits from 0.15 at week 1 to full over 5 weeks, from connect or from the moment it is turned on; off is full limits. Recovery after a LinkedIn restriction applies either way. Set it with PATCH /v1/{account_id}/safety-policy and `warm_up: {enabled}`, or with `warm_up` at connect. */
                             enabled?: boolean;
                             /**
-                             * @description `none` is an account at full speed. `ramping` is an account climbing 0.15, 0.35, 0.60, 0.85 to 1.00 by week after its connect or after a quiet spell. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: it holds at 0 for seven days after the restriction lifts, resumes at 0.40, then steps up 0.15 every four days.
+                             * @description `none` is an account at full speed. `ramping` is an account climbing 0.15, 0.35, 0.60, 0.85 to 1.00 by week after warm-up was turned on, at connect or later. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: it holds at 0 for seven days after the restriction lifts, resumes at 0.40, then steps up 0.15 every four days.
                              * @enum {string}
                              */
                             state?: "none" | "ramping" | "restriction_recovery";
                             /** @description The multiplier applied to every row's ceiling: the lowest of every applying trigger's. 1 is not ramping. */
                             factor?: number;
-                            /** @description Which week of the ramp supplies `factor`, counted from the connect or the return from a quiet spell, whichever is later. Null when no ramp applies or restriction recovery is lower. */
+                            /** @description Which week of the ramp supplies `factor`, counted from the connect or the moment warm-up was turned on, whichever is later. Null when no ramp applies or restriction recovery is lower. */
                             week?: number | null;
                             /** @description How many weeks the ramp has (5 today: 0.15, 0.35, 0.60, 0.85, 1.00). Read with `week` (0-based): week 1 is the second of `steps`. */
                             steps?: number;
-                            /** @description The triggers that apply now: `connect` in the first 28 days after connect, `dormant` after more than 30 days with no action (counted from the connect when the account never acted) until the ramp it started completes, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
-                            triggers?: ("connect" | "dormant" | "post_restriction")[];
-                            /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. With warm-up on, its next action starts the ramp at 0.15. */
+                            /** @description The triggers that apply now: `connect` in the first 28 days after a connect with warm-up on, `switched_on` in the first 28 days after warm-up was turned on, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
+                            triggers?: ("connect" | "switched_on" | "post_restriction")[];
+                            /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. A fact only: it starts no ramp. */
                             dormant?: boolean;
                         };
                         /** @description Whether Curviate withdraws this account's old Motion-sent invitations on its own (default true). Past 400 pending invitations, those over 14 days old go oldest first, at most the larger of 25 and the day's invitation allowance a day, one at a time inside the account's working hours, each after a check that it is still pending. Invitations sent by hand or through the API are never withdrawn, and a withdrawn person is never invited again by a Motion. It runs while invitations are stopped at 650 pending. Set it with PATCH /v1/{account_id}/safety-policy and `auto_withdraw`; a change is recorded in the account's ledger. */
@@ -40375,7 +40375,7 @@ export interface operations {
                                 }[];
                             };
                         };
-                        /** @description Present on a write only, and only when it sent a removed key (`posture`, `tenant_default_posture`): one POSTURE_REMOVED entry per key, naming it and the last day it is accepted (2027-01-25). Nothing was stored for it. Branch on code, never on message. */
+                        /** @description Present on a write only, and only when it sent a removed key (`posture`, `tenant_default_posture`): one POSTURE_REMOVED entry per key, naming it and the last day it is accepted (2027-02-01). Nothing was stored for it. Branch on code, never on message. */
                         notices?: {
                             /**
                              * @description The key was removed: limits are always enforced. Stop sending it.
@@ -40451,14 +40451,14 @@ export interface operations {
                     /** @description Not a setting: the time zone follows where this account connects from (activity_window shows it). Any value but null is a 400 INVALID_REQUEST; change where the account connects instead (its `country`, or your own `proxy`). Null is accepted and ignored, so a document read before this change can be sent back once its zone is null. */
                     timezone?: null;
                     /**
-                     * @description REMOVED: limits are always enforced; to send more, raise the limit. "enforce" (or null) is still accepted until 2027-01-25, changes nothing and earns a POSTURE_REMOVED notice; "warn", or any value after that day, is refused with INVALID_REQUEST.
+                     * @description REMOVED: limits are always enforced; to send more, raise the limit. "enforce" (or null) is still accepted until 2027-02-01, changes nothing and earns a POSTURE_REMOVED notice; "warn", or any value after that day, is refused with INVALID_REQUEST.
                      * @enum {string|null}
                      */
                     tenant_default_posture?: "warn" | "enforce" | null;
                     /** @description Lift the platform pause on these action types now, instead of waiting for it to expire. When the platform refuses a call on an account (a rate limit, a server error on a budgeted route, an invitation resend cooldown), Curviate pauses that action type for the platform's own retry-after or a seeded cooldown, and every later call on it is refused locally without reaching the platform. Naming an action type here clears that pause: the next call goes out. Read `quotas[].halt` on the account to see which action types are paused and for how long. A type with no active pause is accepted and does nothing, so this is safe to send for a set you have not checked. Clearing is recorded in the account's ledger with the expiry it cut short, who cleared it and when, and it appears on the safety-events surface. It does not disarm anything: if the platform refuses the account again, the pause comes straight back, longer than the one you cleared where the platform says so. Clear a pause when you have reason to believe the refusal was a transient upstream fault rather than the platform pushing back on this account; clearing one and calling straight back into a real rate limit is itself how accounts get restricted. */
                     clear_halts?: ("connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot")[];
                     /**
-                     * @description REMOVED: limits are always enforced; to send more, raise the limit. "enforce" (or null) is still accepted until 2027-01-25, changes nothing and earns a POSTURE_REMOVED notice; "warn", or any value after that day, is refused with INVALID_REQUEST.
+                     * @description REMOVED: limits are always enforced; to send more, raise the limit. "enforce" (or null) is still accepted until 2027-02-01, changes nothing and earns a POSTURE_REMOVED notice; "warn", or any value after that day, is refused with INVALID_REQUEST.
                      * @enum {string|null}
                      */
                     posture?: "warn" | "enforce" | null;
@@ -40485,7 +40485,7 @@ export interface operations {
                         /** @description IANA zone name the counting window is aligned to, e.g. `Europe/Berlin` or `UTC`. Must be a real zone; anything else is a 400. Null counts in UTC. */
                         window_timezone?: string | null;
                         /**
-                         * @description REMOVED: limits are always enforced; to send more, raise the limit. "enforce" (or null) is still accepted until 2027-01-25, changes nothing and earns a POSTURE_REMOVED notice; "warn", or any value after that day, is refused with INVALID_REQUEST.
+                         * @description REMOVED: limits are always enforced; to send more, raise the limit. "enforce" (or null) is still accepted until 2027-02-01, changes nothing and earns a POSTURE_REMOVED notice; "warn", or any value after that day, is refused with INVALID_REQUEST.
                          * @enum {string|null}
                          */
                         posture?: "warn" | "enforce" | null;
@@ -40528,7 +40528,7 @@ export interface operations {
                         interface_ceiling?: unknown;
                         /** @description READ-ONLY. `interface_ceiling` with the account's warm-up ramp applied. Read THIS to know where an elevated-interface call stops, for the same reason `effective_ceiling` and not `ceiling` answers that for a standard one. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                         effective_interface_ceiling?: unknown;
-                        /** @description REMOVED from the read (SF-04). Accepted and ignored until 2027-01-25 so an older document round-trips; refused after. */
+                        /** @description REMOVED from the read (SF-04). Accepted and ignored until 2027-02-01 so an older document round-trips; refused after. */
                         posture_source?: unknown;
                         /** @description READ-ONLY. The fields on this row configured above the Curviate default. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                         over_default?: unknown;
@@ -40568,11 +40568,11 @@ export interface operations {
                     limit_profile_source?: "default" | "detected" | "operator";
                     /** @description READ-ONLY. When `limit_profile` was last read from LinkedIn, or null if it never has been. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                     limit_profile_detected_at?: unknown;
-                    /** @description REMOVED from the read (SF-04). Accepted and ignored until 2027-01-25 so an older document round-trips; refused after. */
+                    /** @description REMOVED from the read (SF-04). Accepted and ignored until 2027-02-01 so an older document round-trips; refused after. */
                     posture_source?: unknown;
                     /** @description The account's warm-up. Only `enabled` is settable; its other keys are derived on every read, accepted and ignored, so the read's object can be sent back unchanged. */
                     warm_up?: {
-                        /** @description Turn this account's warm-up on (true, the default) or off (false). Off skips the connect ramp and the quiet ramp; recovery after a LinkedIn restriction still applies. */
+                        /** @description Turn this account's warm-up on (true) or off (false, the default). On starts the ramp at week 1 (0.15) from now, rising to full limits over 5 weeks; off is full limits at once. Recovery after a LinkedIn restriction applies either way. */
                         enabled?: boolean;
                     };
                     /** @description Automatic withdrawal of old invitations Curviate sent for this account's Motions, default true. While this account has more than 400 pending invitations, Curviate withdraws the Motion-sent ones older than 14 days, oldest first, a few a day (at most the larger of 25 and the day's invitation allowance), inside its working hours and one at a time with the usual gaps, after checking each is still pending. It never touches an invitation you sent by hand or through the API, and never invites a withdrawn person again. It keeps working while invitations are stopped at 650 pending, which is how the account comes back under. Set false to keep every old invitation pending; the level then falls only as people accept or you withdraw. */
@@ -40616,22 +40616,22 @@ export interface operations {
                         limit_profile_detected_at?: string | null;
                         /** @description The account's ACTIVE warm-up, derived on every read. While warm-up holds an account back, every row's effective ceiling is its configured ceiling multiplied by `factor`, so a `factor` of 0.15 means the account is held to 15 percent of the numbers the rows report. Only `enabled` is settable (PATCH with `warm_up: {enabled}`); the other keys are derived, and sent back on a write they are accepted and ignored. This is separate from the per-row `warm_up_state` and `warm_up_factor`, which report what is active on that row: set `warm_up_factor` on a row to override the ramps (recovery after a restriction still caps it). Every warm-up number is inferred; none is published by LinkedIn. Curviate infers no account age. */
                         warm_up?: {
-                            /** @description The account's warm-up switch, default true. Off skips the connect ramp and the quiet ramp; recovery after a LinkedIn restriction still applies. Set it with PATCH /v1/{account_id}/safety-policy and `warm_up: {enabled}`, or with `warm_up` at connect. */
+                            /** @description The account's warm-up switch, default false. On ramps the account's limits from 0.15 at week 1 to full over 5 weeks, from connect or from the moment it is turned on; off is full limits. Recovery after a LinkedIn restriction applies either way. Set it with PATCH /v1/{account_id}/safety-policy and `warm_up: {enabled}`, or with `warm_up` at connect. */
                             enabled?: boolean;
                             /**
-                             * @description `none` is an account at full speed. `ramping` is an account climbing 0.15, 0.35, 0.60, 0.85 to 1.00 by week after its connect or after a quiet spell. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: it holds at 0 for seven days after the restriction lifts, resumes at 0.40, then steps up 0.15 every four days.
+                             * @description `none` is an account at full speed. `ramping` is an account climbing 0.15, 0.35, 0.60, 0.85 to 1.00 by week after warm-up was turned on, at connect or later. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: it holds at 0 for seven days after the restriction lifts, resumes at 0.40, then steps up 0.15 every four days.
                              * @enum {string}
                              */
                             state?: "none" | "ramping" | "restriction_recovery";
                             /** @description The multiplier applied to every row's ceiling: the lowest of every applying trigger's. 1 is not ramping. */
                             factor?: number;
-                            /** @description Which week of the ramp supplies `factor`, counted from the connect or the return from a quiet spell, whichever is later. Null when no ramp applies or restriction recovery is lower. */
+                            /** @description Which week of the ramp supplies `factor`, counted from the connect or the moment warm-up was turned on, whichever is later. Null when no ramp applies or restriction recovery is lower. */
                             week?: number | null;
                             /** @description How many weeks the ramp has (5 today: 0.15, 0.35, 0.60, 0.85, 1.00). Read with `week` (0-based): week 1 is the second of `steps`. */
                             steps?: number;
-                            /** @description The triggers that apply now: `connect` in the first 28 days after connect, `dormant` after more than 30 days with no action (counted from the connect when the account never acted) until the ramp it started completes, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
-                            triggers?: ("connect" | "dormant" | "post_restriction")[];
-                            /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. With warm-up on, its next action starts the ramp at 0.15. */
+                            /** @description The triggers that apply now: `connect` in the first 28 days after a connect with warm-up on, `switched_on` in the first 28 days after warm-up was turned on, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
+                            triggers?: ("connect" | "switched_on" | "post_restriction")[];
+                            /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. A fact only: it starts no ramp. */
                             dormant?: boolean;
                         };
                         /** @description Whether Curviate withdraws this account's old Motion-sent invitations on its own (default true). Past 400 pending invitations, those over 14 days old go oldest first, at most the larger of 25 and the day's invitation allowance a day, one at a time inside the account's working hours, each after a check that it is still pending. Invitations sent by hand or through the API are never withdrawn, and a withdrawn person is never invited again by a Motion. It runs while invitations are stopped at 650 pending. Set it with PATCH /v1/{account_id}/safety-policy and `auto_withdraw`; a change is recorded in the account's ledger. */
@@ -41002,7 +41002,7 @@ export interface operations {
                                 }[];
                             };
                         };
-                        /** @description Present on a write only, and only when it sent a removed key (`posture`, `tenant_default_posture`): one POSTURE_REMOVED entry per key, naming it and the last day it is accepted (2027-01-25). Nothing was stored for it. Branch on code, never on message. */
+                        /** @description Present on a write only, and only when it sent a removed key (`posture`, `tenant_default_posture`): one POSTURE_REMOVED entry per key, naming it and the last day it is accepted (2027-02-01). Nothing was stored for it. Branch on code, never on message. */
                         notices?: {
                             /**
                              * @description The key was removed: limits are always enforced. Stop sending it.
@@ -41020,7 +41020,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST. The row name or source class is not one of the accepted values, `warm_up.enabled` is not a boolean, or a number is not a number (a negative ceiling). A value is never rejected for being unsafe: any limit may be set to any value, and a high one is reported rather than refused. A time zone is not a setting: any value but null in `timezone` or a row's `activity_window_timezone` is refused with "The time zone follows where this account connects from. Change it with PATCH /v1/accounts/{account_id} and `country`, or your own `proxy`." Null is accepted and ignored, so a document read before this change can be sent back once its zones are null. `posture` and `tenant_default_posture` were removed: limits are always enforced; to send more, raise the limit. Until 2027-01-25 (the last accepted day) the value "enforce" or null is still accepted, stores nothing and earns a POSTURE_REMOVED entry in `notices` plus a `Deprecation: true` header; "warn" on any day, or any value after that day, is refused with a message naming the key. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST. The row name or source class is not one of the accepted values, `warm_up.enabled` is not a boolean, or a number is not a number (a negative ceiling). A value is never rejected for being unsafe: any limit may be set to any value, and a high one is reported rather than refused. A time zone is not a setting: any value but null in `timezone` or a row's `activity_window_timezone` is refused with "The time zone follows where this account connects from. Change it with PATCH /v1/accounts/{account_id} and `country`, or your own `proxy`." Null is accepted and ignored, so a document read before this change can be sent back once its zones are null. `posture` and `tenant_default_posture` were removed: limits are always enforced; to send more, raise the limit. Until 2027-02-01 (the last accepted day) the value "enforce" or null is still accepted, stores nothing and earns a POSTURE_REMOVED entry in `notices` plus a `Deprecation: true` header; "warn" on any day, or any value after that day, is refused with a message naming the key. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -41541,7 +41541,7 @@ export interface operations {
                                 }[];
                             };
                         };
-                        /** @description Present on a write only, and only when it sent a removed key (`posture`, `tenant_default_posture`): one POSTURE_REMOVED entry per key, naming it and the last day it is accepted (2027-01-25). Nothing was stored for it. Branch on code, never on message. */
+                        /** @description Present on a write only, and only when it sent a removed key (`posture`, `tenant_default_posture`): one POSTURE_REMOVED entry per key, naming it and the last day it is accepted (2027-02-01). Nothing was stored for it. Branch on code, never on message. */
                         notices?: {
                             /**
                              * @description The key was removed: limits are always enforced. Stop sending it.
@@ -41598,7 +41598,7 @@ export interface operations {
             content: {
                 "application/json": {
                     /**
-                     * @description REMOVED: limits are always enforced; to send more, raise the limit. "enforce" (or null) is still accepted until 2027-01-25, changes nothing and earns a POSTURE_REMOVED notice; "warn", or any value after that day, is refused with INVALID_REQUEST.
+                     * @description REMOVED: limits are always enforced; to send more, raise the limit. "enforce" (or null) is still accepted until 2027-02-01, changes nothing and earns a POSTURE_REMOVED notice; "warn", or any value after that day, is refused with INVALID_REQUEST.
                      * @enum {string|null}
                      */
                     tenant_default_posture?: "warn" | "enforce" | null;
@@ -42051,7 +42051,7 @@ export interface operations {
                                 }[];
                             };
                         };
-                        /** @description Present on a write only, and only when it sent a removed key (`posture`, `tenant_default_posture`): one POSTURE_REMOVED entry per key, naming it and the last day it is accepted (2027-01-25). Nothing was stored for it. Branch on code, never on message. */
+                        /** @description Present on a write only, and only when it sent a removed key (`posture`, `tenant_default_posture`): one POSTURE_REMOVED entry per key, naming it and the last day it is accepted (2027-02-01). Nothing was stored for it. Branch on code, never on message. */
                         notices?: {
                             /**
                              * @description The key was removed: limits are always enforced. Stop sending it.
@@ -42076,7 +42076,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST. An unknown limit profile, row name or field, or a value that is not a value (a negative ceiling). A value is never rejected for being unsafe. A time zone is not a setting: any value but null in a row's `activity_window_timezone` is refused with "The time zone follows where this account connects from. Change it with PATCH /v1/accounts/{account_id} and `country`, or your own `proxy`." Null there is accepted and ignored. A top-level `timezone` is not a field of this operation: it is refused as an unknown key, null included. `posture` and `tenant_default_posture` were removed: limits are always enforced; to send more, raise the limit. Until 2027-01-25 (the last accepted day) the value "enforce" or null is still accepted, stores nothing and earns a POSTURE_REMOVED entry in `notices` plus a `Deprecation: true` header; "warn" on any day, or any value after that day, is refused with a message naming the key. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST. An unknown limit profile, row name or field, or a value that is not a value (a negative ceiling). A value is never rejected for being unsafe. A time zone is not a setting: any value but null in a row's `activity_window_timezone` is refused with "The time zone follows where this account connects from. Change it with PATCH /v1/accounts/{account_id} and `country`, or your own `proxy`." Null there is accepted and ignored. A top-level `timezone` is not a field of this operation: it is refused as an unknown key, null included. `posture` and `tenant_default_posture` were removed: limits are always enforced; to send more, raise the limit. Until 2027-02-01 (the last accepted day) the value "enforce" or null is still accepted, stores nothing and earns a POSTURE_REMOVED entry in `notices` plus a `Deprecation: true` header; "warn" on any day, or any value after that day, is refused with a message naming the key. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -54764,7 +54764,7 @@ export interface operations {
                                 used: number | null;
                                 /** @description What this account is allowed on this row in this window, as configured. `null` where the row deliberately has no ceiling: the tally is reported and never enforced, and an uncalibrated row has no figure at all. Change it on the safety policy; Curviate never clamps what you set. */
                                 ceiling: number | null;
-                                /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (its first four weeks after connect, after a quiet spell, or while it recovers from a restriction) the two differ, and in the first week after connect they differ by a factor of about seven. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
+                                /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (the first four weeks after warm-up was turned on, at connect or later, or while it recovers from a restriction) the two differ, and in the first week after connect they differ by a factor of about seven. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
                                 effective_ceiling?: number | null;
                                 /** @description What the Account aims at per window on this row. Only the invitation total, InMail and profile views carry one (null on other rows): the row's configured `green` when set, otherwise `ceiling` times the profile's seeded ratio. */
                                 target?: number | null;

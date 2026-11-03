@@ -41,8 +41,9 @@ export class ConnectRequestsResource {
    * A reconnect that signs in to a different LinkedIn account fails with
    * `LINKEDIN_ACCOUNT_MISMATCH` and leaves the account unchanged.
    *
-   * `warm_up: false` connects the new account with warm-up off (default
-   * `true`); with `account_id` it is `400 INVALID_REQUEST`.
+   * `warm_up: true` connects the new account with warm-up on (default off:
+   * full limits from the start); with `account_id` it is
+   * `400 INVALID_REQUEST`.
    *
    * @example
    * const req = await curviate.connectRequests.create();
