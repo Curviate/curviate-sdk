@@ -189,8 +189,8 @@ export class AccountsResource {
    * **Same name, new meaning:** `connection_requests_no_note` counts all
    * invitations, so its `used` is the invitation total (a noted one also
    * counts on `connection_requests_with_note` where that row has a ceiling:
-   * Free profiles, 3 a month). The strict rows (invitations, `inmail`,
-   * `profile_views`) also carry `target` (what the account aims at today:
+   * Free profiles, 3 a month). Rows with a limit (the invitation total, `inmail`,
+   * `profile_views` and others) also carry `target` (what the account aims at today:
    * the figure drawn for the account-day from its limit and green figure at
    * the level in force, `normal` about midway, `increased` close to the limit,
    * never past it; it differs from day to day; `green` is now this target) and
