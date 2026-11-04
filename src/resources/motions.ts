@@ -175,10 +175,11 @@ export class MotionsResource {
    * `accounts_per_contact` is locked once the Motion has started.
    *
    * `settings.priority` (`normal`, the default, or `prioritized`) is the
-   * Motion's share of each sending account's daily allowance: a prioritized
-   * Motion gets twice a normal one's share, and a share nobody uses flows to
-   * the others. Curviate paces all Motions on an account against one budget,
-   * so there is no per-Motion start cap. `settings.new_enrollments_per_account_per_day`
+   * Motion's weight in each sending account's budgets: `normal` weighs 1,
+   * `prioritized` 1.5, on every budget. Every Motion with work due still
+   * progresses, a limit is never exceeded, and a share nobody uses flows to
+   * the others the same day. Curviate paces all Motions on an account against
+   * one budget, so there is no per-Motion start cap. `settings.new_enrollments_per_account_per_day`
    * and `settings.assign: "even"` are retired: accepted and ignored until
    * 2027-01-28 with a `SETTING_REMOVED` entry in `notices[]` and
    * `Deprecation: true`, never returned, then a `400`. A pending Enrollment

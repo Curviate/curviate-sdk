@@ -7,6 +7,15 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [0.46.0] - 2026-11-05
+
+### Activity level (regenerated from staging b25643d91)
+
+- **`activity_level`** (`"normal"` | `"increased"`, default `"normal"`) on `accounts.getSafetyPolicy` and `accounts.updateSafetyPolicy(id, { activity_level })`: how close the account's daily targets sit to its limits. `normal` aims about midway between the green figure and the limit; `increased` works close to the limit, never past it, with a higher chance LinkedIn notices the activity. It changes only the targets. Whoever may change the account's active hours may set it.
+- **`activity_level_effective`** and **`activity_level_reason`** (`string | null`), read-only: `increased` runs as `normal`, and the setting stays, while warm-up is on or the account's health is not `healthy`. The reason says why, else `null`. One notification, `account.activity_level_fallback`, tells when it falls back; none when it returns.
+- **Same name, new meaning:** a row's `target` (and `effective_target`) is what the account aims at *today*: a figure the engine draws per account-day from the account's limit and green figure at the level in force, never past the limit. It differs from day to day. It was a fixed figure per window.
+- **Same name, new meaning:** `settings.priority` on a Motion weighs the Motion 1 (`normal`) or 1.5 (`prioritized`) in each sending account's budgets, on every budget. Every Motion with work due still progresses and a limit is never exceeded. It was "twice a normal Motion's share of the daily allowance". The doc comments on `motions.create`, `accounts.getSafetyPolicy`, `accounts.updateSafetyPolicy` and `accounts.get` say so.
+
 ## [0.45.0] - 2026-11-03
 
 ### Warm-up opt-in (regenerated from production 769c410e2)

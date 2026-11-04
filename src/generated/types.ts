@@ -25730,7 +25730,7 @@ export interface operations {
                             object: "curviate_notification";
                             /** @description Notification id (ntf_...). Valid for you only. */
                             id: string;
-                            /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, account.motion_work_paused, account.health_worsened, motion.auto_paused, motion.no_sending_account, motion.completed, contacts.import_finished, export.finished, team.invite_accepted, team.member_left. */
+                            /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, account.motion_work_paused, account.health_worsened, account.activity_level_fallback, motion.auto_paused, motion.no_sending_account, motion.completed, contacts.import_finished, export.finished, team.invite_accepted, team.member_left. */
                             type: string;
                             /** @description What the Notification is about. */
                             subject: {
@@ -25992,7 +25992,7 @@ export interface operations {
                         object: "curviate_notification";
                         /** @description Notification id (ntf_...). Valid for you only. */
                         id: string;
-                        /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, account.motion_work_paused, account.health_worsened, motion.auto_paused, motion.no_sending_account, motion.completed, contacts.import_finished, export.finished, team.invite_accepted, team.member_left. */
+                        /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, account.motion_work_paused, account.health_worsened, account.activity_level_fallback, motion.auto_paused, motion.no_sending_account, motion.completed, contacts.import_finished, export.finished, team.invite_accepted, team.member_left. */
                         type: string;
                         /** @description What the Notification is about. */
                         subject: {
@@ -34490,7 +34490,7 @@ export interface operations {
                                 ceiling: number | null;
                                 /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (the first four weeks after warm-up was turned on, at connect or later, or while it recovers from a restriction) the two differ, and in the first week after connect they differ by a factor of about seven. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
                                 effective_ceiling?: number | null;
-                                /** @description What the Account aims at per window on this row. Only the invitation total, InMail and profile views carry one (null on other rows): the row's configured `green` when set, otherwise `ceiling` times the profile's seeded ratio. */
+                                /** @description What the account aims at today on this row: the engine's own figure for the account-day, drawn from the account's limit and green figure at the level in force (`normal` about midway, `increased` close to the limit), never past the limit; it differs from day to day. On InMail it is the green figure. Null where the row has no limit to aim at. */
                                 target?: number | null;
                                 /** @description `target` with the account's warm-up and health applied, rounded down. Null where `target` is null. */
                                 effective_target?: number | null;
@@ -34741,7 +34741,7 @@ export interface operations {
                             ceiling: number | null;
                             /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (the first four weeks after warm-up was turned on, at connect or later, or while it recovers from a restriction) the two differ, and in the first week after connect they differ by a factor of about seven. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
                             effective_ceiling?: number | null;
-                            /** @description What the Account aims at per window on this row. Only the invitation total, InMail and profile views carry one (null on other rows): the row's configured `green` when set, otherwise `ceiling` times the profile's seeded ratio. */
+                            /** @description What the account aims at today on this row: the engine's own figure for the account-day, drawn from the account's limit and green figure at the level in force (`normal` about midway, `increased` close to the limit), never past the limit; it differs from day to day. On InMail it is the green figure. Null where the row has no limit to aim at. */
                             target?: number | null;
                             /** @description `target` with the account's warm-up and health applied, rounded down. Null where `target` is null. */
                             effective_target?: number | null;
@@ -40009,6 +40009,18 @@ export interface operations {
                         };
                         /** @description Whether Curviate withdraws this account's old Motion-sent invitations on its own (default true). Past 400 pending invitations, those over 14 days old go oldest first, at most the larger of 25 and the day's invitation allowance a day, one at a time inside the account's working hours, each after a check that it is still pending. Invitations sent by hand or through the API are never withdrawn, and a withdrawn person is never invited again by a Motion. It runs while invitations are stopped at 650 pending. Set it with PATCH /v1/{account_id}/safety-policy and `auto_withdraw`; a change is recorded in the account's ledger. */
                         auto_withdraw?: boolean;
+                        /**
+                         * @description How close this account's daily targets sit to its limits (default `normal`). `normal` aims about midway between the green figure and the limit. `increased` works close to the limit, never past it, and raises the chance LinkedIn notices the activity. It changes only the targets; the pace follows. Set it with PATCH /v1/{account_id}/safety-policy and `activity_level`, by whoever may change this account's active hours; a change is recorded in the account's ledger. It runs as `normal` on its own, and the setting stays, while warm-up is on or the account's health is not `healthy`: see `activity_level_effective`.
+                         * @enum {string}
+                         */
+                        activity_level?: "normal" | "increased";
+                        /**
+                         * @description The level in force now. Equal to `activity_level`, except that `increased` reads `normal` while warm-up is on or the account's health is not `healthy`. One notification (`account.activity_level_fallback`) tells you when it falls back; nothing is sent when it returns. Read-only.
+                         * @enum {string}
+                         */
+                        activity_level_effective?: "normal" | "increased";
+                        /** @description Why `activity_level_effective` differs from `activity_level`, in plain words. Null while they are equal. Read-only. */
+                        activity_level_reason?: string | null;
                         /** @description The zone the activity window is read in, derived from where the account connects. Outside the window, a live write to LinkedIn is refused, except direct messaging (a send, new chat, InMail, edit, delete, reaction or read mark), which goes at any hour; reads and anything served from Curviate's own store are never affected, at any hour. Read-only: a write accepts it back and ignores it, so a read policy can be sent back unchanged. */
                         activity_window?: {
                             /** @description The IANA zone the activity window is read in, from where the account connects (its Curviate proxy's country, or your own proxy's detected location). Nobody sets it. Null while the zone is unknown: see fallback_timezones. */
@@ -40093,7 +40105,7 @@ export interface operations {
                             source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
                             /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Read this one, not `ceiling`, to know where the next call will be stopped. On an account in warm-up the two differ, and in the first week after connect they differ by a factor of about seven. Null when the row has no ceiling to ramp. `warm_up_state` and `warm_up_factor` beside it are the values ACTIVE on this row, not the seeded ones. */
                             effective_ceiling?: number | null;
-                            /** @description What the Account aims at per window on this row. Only the invitation total, InMail and profile views carry one (null on other rows): the row's configured `green` when set, otherwise `ceiling` times the profile's seeded ratio. Read-only. */
+                            /** @description What the account aims at today on this row: the figure the engine draws for the account-day from the account's own limit and green figure, at the level in force (`activity_level_effective`), never past the limit. `normal` is about midway between green and the limit, `increased` close to the limit. It differs from day to day. On InMail and on a Team default it is the green figure (the configured `green` when set, otherwise `ceiling` times the profile's seeded ratio). Null where the row has no limit to aim at. Read-only. */
                             target?: number | null;
                             /** @description `target` with the account's warm-up and health factor applied, rounded down: LinkedIn pushback, forced sign-ins and low acceptance lower it, waiting invitations slow invitations separately. Null where `target` is null. Read-only. */
                             effective_target?: number | null;
@@ -40520,7 +40532,7 @@ export interface operations {
                         source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded" | null;
                         /** @description READ-ONLY. `ceiling` with the account's warm-up ramp applied, which is what this row is actually held to. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                         effective_ceiling?: unknown;
-                        /** @description READ-ONLY. What this Account aims at per window on this row (invitations, InMail, profile views only; null elsewhere): the row's `green` when set, otherwise `ceiling` times the profile's seeded ratio, so raising a ceiling alone moves it. Read-only. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                        /** @description READ-ONLY. What the account aims at today on this row: the engine's own figure for the account-day, drawn from the account's limit and green figure at the level in force (`normal` about midway, `increased` close to the limit), never past the limit; it differs from day to day. On InMail it is the green figure. Read-only. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                         target?: unknown;
                         /** @description READ-ONLY. `target` with the account's warm-up and health applied, rounded down. Read-only. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                         effective_target?: unknown;
@@ -40557,6 +40569,15 @@ export interface operations {
                         /** @description Read-only, ignored. */
                         source?: unknown;
                     } | null;
+                    /**
+                     * @description How close this account's daily targets sit to its limits. `normal` (the default): about midway between the green figure and the limit. `increased`: close to the limit, never past it. Higher chance LinkedIn notices the activity. It runs as `normal` on its own, and the setting stays, while warm-up is on or the account's health is not `healthy`; the read's `activity_level_effective` and `activity_level_reason` say which level is in force. Whoever may change this account's active hours may change it; a change is recorded in the account's ledger.
+                     * @enum {string}
+                     */
+                    activity_level?: "normal" | "increased";
+                    /** @description READ-ONLY. The level in force: `increased` reads `normal` while warm-up is on or health is not `healthy`. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                    activity_level_effective?: unknown;
+                    /** @description READ-ONLY. Why the level in force differs from `activity_level`, in plain words, or null. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                    activity_level_reason?: unknown;
                     /** @description READ-ONLY. The document's type discriminator. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                     object?: unknown;
                     /** @description READ-ONLY. The account this document describes; the path names it. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
@@ -40636,6 +40657,18 @@ export interface operations {
                         };
                         /** @description Whether Curviate withdraws this account's old Motion-sent invitations on its own (default true). Past 400 pending invitations, those over 14 days old go oldest first, at most the larger of 25 and the day's invitation allowance a day, one at a time inside the account's working hours, each after a check that it is still pending. Invitations sent by hand or through the API are never withdrawn, and a withdrawn person is never invited again by a Motion. It runs while invitations are stopped at 650 pending. Set it with PATCH /v1/{account_id}/safety-policy and `auto_withdraw`; a change is recorded in the account's ledger. */
                         auto_withdraw?: boolean;
+                        /**
+                         * @description How close this account's daily targets sit to its limits (default `normal`). `normal` aims about midway between the green figure and the limit. `increased` works close to the limit, never past it, and raises the chance LinkedIn notices the activity. It changes only the targets; the pace follows. Set it with PATCH /v1/{account_id}/safety-policy and `activity_level`, by whoever may change this account's active hours; a change is recorded in the account's ledger. It runs as `normal` on its own, and the setting stays, while warm-up is on or the account's health is not `healthy`: see `activity_level_effective`.
+                         * @enum {string}
+                         */
+                        activity_level?: "normal" | "increased";
+                        /**
+                         * @description The level in force now. Equal to `activity_level`, except that `increased` reads `normal` while warm-up is on or the account's health is not `healthy`. One notification (`account.activity_level_fallback`) tells you when it falls back; nothing is sent when it returns. Read-only.
+                         * @enum {string}
+                         */
+                        activity_level_effective?: "normal" | "increased";
+                        /** @description Why `activity_level_effective` differs from `activity_level`, in plain words. Null while they are equal. Read-only. */
+                        activity_level_reason?: string | null;
                         /** @description The zone the activity window is read in, derived from where the account connects. Outside the window, a live write to LinkedIn is refused, except direct messaging (a send, new chat, InMail, edit, delete, reaction or read mark), which goes at any hour; reads and anything served from Curviate's own store are never affected, at any hour. Read-only: a write accepts it back and ignores it, so a read policy can be sent back unchanged. */
                         activity_window?: {
                             /** @description The IANA zone the activity window is read in, from where the account connects (its Curviate proxy's country, or your own proxy's detected location). Nobody sets it. Null while the zone is unknown: see fallback_timezones. */
@@ -40720,7 +40753,7 @@ export interface operations {
                             source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
                             /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Read this one, not `ceiling`, to know where the next call will be stopped. On an account in warm-up the two differ, and in the first week after connect they differ by a factor of about seven. Null when the row has no ceiling to ramp. `warm_up_state` and `warm_up_factor` beside it are the values ACTIVE on this row, not the seeded ones. */
                             effective_ceiling?: number | null;
-                            /** @description What the Account aims at per window on this row. Only the invitation total, InMail and profile views carry one (null on other rows): the row's configured `green` when set, otherwise `ceiling` times the profile's seeded ratio. Read-only. */
+                            /** @description What the account aims at today on this row: the figure the engine draws for the account-day from the account's own limit and green figure, at the level in force (`activity_level_effective`), never past the limit. `normal` is about midway between green and the limit, `increased` close to the limit. It differs from day to day. On InMail and on a Team default it is the green figure (the configured `green` when set, otherwise `ceiling` times the profile's seeded ratio). Null where the row has no limit to aim at. Read-only. */
                             target?: number | null;
                             /** @description `target` with the account's warm-up and health factor applied, rounded down: LinkedIn pushback, forced sign-ins and low acceptance lower it, waiting invitations slow invitations separately. Null where `target` is null. Read-only. */
                             effective_target?: number | null;
@@ -48411,7 +48444,7 @@ export interface operations {
                                  */
                                 assign: "auto" | "already_connected";
                                 /**
-                                 * @description This Motion's share of each sending account's daily allowance: normal, or prioritized for twice a normal Motion's share. A share nobody uses flows to the other Motions the same day.
+                                 * @description This Motion's weight in each sending account's budgets: normal (1) or prioritized (1.5). Motions with a higher priority are preferred in the weighting on every budget; every Motion with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Motions the same day.
                                  * @enum {string}
                                  */
                                 priority: "normal" | "prioritized";
@@ -48577,7 +48610,7 @@ export interface operations {
                     /** @description Merged key by key on update. */
                     settings?: {
                         /**
-                         * @description This Motion's share of each sending account's daily allowance: normal, or prioritized for twice a normal Motion's share. Default normal.
+                         * @description This Motion's weight in each sending account's budgets: normal (1) or prioritized (1.5). Motions with a higher priority are preferred in the weighting on every budget; every Motion with work due still progresses, and a limit is never exceeded. Default normal.
                          * @enum {string}
                          */
                         priority?: "normal" | "prioritized";
@@ -48677,7 +48710,7 @@ export interface operations {
                              */
                             assign: "auto" | "already_connected";
                             /**
-                             * @description This Motion's share of each sending account's daily allowance: normal, or prioritized for twice a normal Motion's share. A share nobody uses flows to the other Motions the same day.
+                             * @description This Motion's weight in each sending account's budgets: normal (1) or prioritized (1.5). Motions with a higher priority are preferred in the weighting on every budget; every Motion with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Motions the same day.
                              * @enum {string}
                              */
                             priority: "normal" | "prioritized";
@@ -48922,7 +48955,7 @@ export interface operations {
                              */
                             assign: "auto" | "already_connected";
                             /**
-                             * @description This Motion's share of each sending account's daily allowance: normal, or prioritized for twice a normal Motion's share. A share nobody uses flows to the other Motions the same day.
+                             * @description This Motion's weight in each sending account's budgets: normal (1) or prioritized (1.5). Motions with a higher priority are preferred in the weighting on every budget; every Motion with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Motions the same day.
                              * @enum {string}
                              */
                             priority: "normal" | "prioritized";
@@ -49188,7 +49221,7 @@ export interface operations {
                     /** @description Merged key by key on update. */
                     settings?: {
                         /**
-                         * @description This Motion's share of each sending account's daily allowance: normal, or prioritized for twice a normal Motion's share. Default normal.
+                         * @description This Motion's weight in each sending account's budgets: normal (1) or prioritized (1.5). Motions with a higher priority are preferred in the weighting on every budget; every Motion with work due still progresses, and a limit is never exceeded. Default normal.
                          * @enum {string}
                          */
                         priority?: "normal" | "prioritized";
@@ -49290,7 +49323,7 @@ export interface operations {
                              */
                             assign: "auto" | "already_connected";
                             /**
-                             * @description This Motion's share of each sending account's daily allowance: normal, or prioritized for twice a normal Motion's share. A share nobody uses flows to the other Motions the same day.
+                             * @description This Motion's weight in each sending account's budgets: normal (1) or prioritized (1.5). Motions with a higher priority are preferred in the weighting on every budget; every Motion with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Motions the same day.
                              * @enum {string}
                              */
                             priority: "normal" | "prioritized";
@@ -49537,7 +49570,7 @@ export interface operations {
                              */
                             assign: "auto" | "already_connected";
                             /**
-                             * @description This Motion's share of each sending account's daily allowance: normal, or prioritized for twice a normal Motion's share. A share nobody uses flows to the other Motions the same day.
+                             * @description This Motion's weight in each sending account's budgets: normal (1) or prioritized (1.5). Motions with a higher priority are preferred in the weighting on every budget; every Motion with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Motions the same day.
                              * @enum {string}
                              */
                             priority: "normal" | "prioritized";
@@ -49765,7 +49798,7 @@ export interface operations {
                              */
                             assign: "auto" | "already_connected";
                             /**
-                             * @description This Motion's share of each sending account's daily allowance: normal, or prioritized for twice a normal Motion's share. A share nobody uses flows to the other Motions the same day.
+                             * @description This Motion's weight in each sending account's budgets: normal (1) or prioritized (1.5). Motions with a higher priority are preferred in the weighting on every budget; every Motion with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Motions the same day.
                              * @enum {string}
                              */
                             priority: "normal" | "prioritized";
@@ -49984,7 +50017,7 @@ export interface operations {
                              */
                             assign: "auto" | "already_connected";
                             /**
-                             * @description This Motion's share of each sending account's daily allowance: normal, or prioritized for twice a normal Motion's share. A share nobody uses flows to the other Motions the same day.
+                             * @description This Motion's weight in each sending account's budgets: normal (1) or prioritized (1.5). Motions with a higher priority are preferred in the weighting on every budget; every Motion with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Motions the same day.
                              * @enum {string}
                              */
                             priority: "normal" | "prioritized";
@@ -50212,7 +50245,7 @@ export interface operations {
                              */
                             assign: "auto" | "already_connected";
                             /**
-                             * @description This Motion's share of each sending account's daily allowance: normal, or prioritized for twice a normal Motion's share. A share nobody uses flows to the other Motions the same day.
+                             * @description This Motion's weight in each sending account's budgets: normal (1) or prioritized (1.5). Motions with a higher priority are preferred in the weighting on every budget; every Motion with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Motions the same day.
                              * @enum {string}
                              */
                             priority: "normal" | "prioritized";
@@ -54766,7 +54799,7 @@ export interface operations {
                                 ceiling: number | null;
                                 /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (the first four weeks after warm-up was turned on, at connect or later, or while it recovers from a restriction) the two differ, and in the first week after connect they differ by a factor of about seven. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
                                 effective_ceiling?: number | null;
-                                /** @description What the Account aims at per window on this row. Only the invitation total, InMail and profile views carry one (null on other rows): the row's configured `green` when set, otherwise `ceiling` times the profile's seeded ratio. */
+                                /** @description What the account aims at today on this row: the engine's own figure for the account-day, drawn from the account's limit and green figure at the level in force (`normal` about midway, `increased` close to the limit), never past the limit; it differs from day to day. On InMail it is the green figure. Null where the row has no limit to aim at. */
                                 target?: number | null;
                                 /** @description `target` with the account's warm-up and health applied, rounded down. Null where `target` is null. */
                                 effective_target?: number | null;

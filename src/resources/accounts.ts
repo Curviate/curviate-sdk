@@ -189,11 +189,14 @@ export class AccountsResource {
    * **Same name, new meaning:** `connection_requests_no_note` counts all
    * invitations, so its `used` is the invitation total (a noted one also
    * counts on `connection_requests_with_note` where that row has a ceiling:
-   * Free profiles, 3 a month). The strict rows (invitations, `inmail`,
-   * `profile_views`) also carry `target` (what the account aims at per
-   * window, below the ceiling; `green` is now this target) and
-   * `effective_target` (target times warm-up times health), both `null` on
-   * other rows and read-only. Aim at the target, not the ceiling.
+   * Free profiles, 3 a month). Rows with a limit (the invitation total, `inmail`,
+   * `profile_views` and others) also carry `target` (what the account aims at today:
+   * the figure drawn for the account-day from its limit and green figure at
+   * the level in force, `normal` about midway, `increased` close to the limit,
+   * never past it; it differs from day to day; `green` is now this target) and
+   * `effective_target` (target times warm-up times health), both `null` where
+   * the row has no limit to aim at, and read-only. Aim at the target, not the
+   * ceiling.
    *
    * `health` is Curviate's inference of how LinkedIn sees the account:
    * `{ state, factor, reasons, until }`, `state` one of `healthy`, `watch`,
@@ -454,8 +457,14 @@ export class AccountsResource {
    * and `activity_window` (the zone the hours are read in, from where the
    * account connects) and `auto_withdraw` (default `true`: Curviate withdraws
    * its own invitations older than 14 days once more than 400 are pending;
-   * hand-sent ones are never touched). Rows carry `target` and
-   * `effective_target` (read-only). Limits are always enforced.
+   * hand-sent ones are never touched). `activity_level` (`normal`, the
+   * default, or `increased`) is how close the account's daily targets sit to
+   * its limits; `activity_level_effective` is the level in force, and
+   * `activity_level_reason` says why it differs (`increased` runs as `normal`
+   * while warm-up is on or the account's health is not `healthy`). Rows carry
+   * `target` (what the account aims at today, drawn from its limit and green
+   * figure at the level in force) and `effective_target` (read-only). Limits
+   * are always enforced.
    * `GET /v1/{account_id}/safety-policy`
    *
    * @example
@@ -475,7 +484,15 @@ export class AccountsResource {
    * `getSafetyPolicy` reads it.
    *
    * `auto_withdraw` (boolean) switches the automatic withdrawal of old
-   * Curviate-sent invitations; a change is ledgered. A row's `green` is its
+   * Curviate-sent invitations; a change is ledgered. `activity_level`
+   * (`normal` or `increased`) sets how close the daily targets sit to the
+   * limits: `normal` aims about midway between the green figure and the
+   * limit, `increased` close to the limit, never past it, with a higher chance
+   * LinkedIn notices the activity. It changes only the targets. It runs as
+   * `normal`, and the setting stays, while warm-up is on or the account's
+   * health is not `healthy`; read `activity_level_effective` and
+   * `activity_level_reason`. Whoever may change the account's active hours may
+   * set it; a change is ledgered. A row's `green` is its
    * target. `warm_up: { enabled }` turns the account's warm-up ramp on or off
    * (default off). On starts the ramp at week 1 (15%) from now, rising to full
    * limits over 5 weeks; off is full limits at once. Recovery after a LinkedIn
