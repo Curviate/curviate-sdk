@@ -67,6 +67,16 @@ export class AnalyticsMotionsResource {
    * by sent, `flags`. Give none and you still get the full body, with a
    * `Deprecation` header: it becomes the summary later.
    *
+   * Forecast: `include: "forecast"` (never in the summary) adds `forecast`,
+   * what your Motions are expected to send and get per day (`invites_sent`,
+   * `accepted`, `messages_sent`, `replies` with InMail replies included,
+   * `inmails_sent`, `inmail_replies`) from today through `forecast_days`
+   * (1-365, default 30) or the last day with activity (`through`). A
+   * simulation of each Motion's Sequence, limits, warm-up, schedule and
+   * accounts with its observed rates: Motions only, the configuration frozen
+   * as it is now (no new Enrollments, no edits). Cache it until `version`
+   * changes. `forecast_days` without the section is a `400`.
+   *
    * Window: `from` and `to` reach back up to 3650 days (more is a `400` naming
    * `from`). Beyond 12 months you get daily counts only:
    * `window.counts_only_through` is the last day read from the daily counts
@@ -80,6 +90,9 @@ export class AnalyticsMotionsResource {
    *
    * @example
    * const summary = await curviate.analytics.motions.list({ range: "30d", compare: "previous_period", origin: ["motion", "unibox"] });
+   *
+   * @example
+   * const { forecast } = await curviate.analytics.motions.list({ include: "forecast", forecast_days: 14 });
    */
   list(params?: MotionAnalyticsParams): Promise<MotionAnalyticsOverview> {
     return this.ctx.request<MotionAnalyticsOverview>({ method: "GET", path: "/v1/analytics/motions", query: commaLists(params, "account_id", "motion_id", "origin", "include", "fields", "sort") });
@@ -93,7 +106,9 @@ export class AnalyticsMotionsResource {
    * `accounts` and `flags`, and `steps`, `variants` and `paths` come with
    * `include`. `paths` splits the Motion by the Contact's relationship to the
    * account when the Enrollment started (provisional); it covers only the
-   * days after `window.paths_through`.
+   * days after `window.paths_through`. `include: "forecast"` adds this
+   * Motion's forecast; a draft reads as if turned on now with its picked
+   * accounts (`forecast: null` with none).
    * `GET /v1/analytics/motions/{motion_id}`
    *
    * @example

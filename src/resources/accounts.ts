@@ -436,7 +436,8 @@ export class AccountsResource {
    * `include`, `fields`, `sort`, `limit` and `compare` work as on
    * `analytics.motions.list`; with none of `include` and `fields` the body is
    * trimmed to a summary. `flags` includes `account_attention` and
-   * `limit_reached` for this account.
+   * `limit_reached` for this account. `include: "forecast"` adds the
+   * account's forecast (Motions only), as on `analytics.motions.list`.
    * `GET /v1/accounts/{account_id}/overview`
    *
    * @example

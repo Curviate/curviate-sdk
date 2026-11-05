@@ -7,6 +7,13 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [0.47.0] - unreleased
+
+### Forecast (regenerated from a local document at curviate 6146661c2; regenerate from the deployed one before publishing)
+
+- **`include: "forecast"`** and **`forecast_days`** (1-365, default 30) on `analytics.motions.list`, `analytics.motions.get` and `accounts.overview`: `forecast` is `{ computed_at, version, through, daily[] }`, each day's expected `invites_sent`, `accepted`, `messages_sent`, `replies` (InMail replies included), `inmails_sent` and `inmail_replies`, from today through `forecast_days` or the last day with activity. A simulation of each Motion's Sequence, limits, warm-up, schedule and accounts with its observed rates: Motions only, the configuration frozen as it is now. A draft Motion reads as if turned on now (`null` with no account). Never in the summary; `forecast_days` without the section is a `400`. Cache it until `version` changes.
+- **Same name, new meaning:** a draft's `projection.accounts[].expected_actions_per_day` on `motions.preview` is the mean daily invitations, messages and InMails of the first 7 days of its forecast, as if turned on now. It was the steady-state pace times every budgeted step of the costliest route, an upper estimate, and stays so for a started Motion. The doc comment on `motions.preview` says so.
+
 ## [0.46.0] - 2026-11-05
 
 ### Activity level (regenerated from staging b25643d91)
