@@ -1878,7 +1878,8 @@
                             "company",
                             "location",
                             "linkedin_url",
-                            "about"
+                            "about",
+                            "language"
                           ]
                         }
                       },
@@ -2432,6 +2433,46 @@
                               "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                             },
                             "contact.about": {
+                              "type": "object",
+                              "minProperties": 1,
+                              "maxProperties": 1,
+                              "additionalProperties": false,
+                              "properties": {
+                                "eq": {
+                                  "type": [
+                                    "string",
+                                    "number",
+                                    "boolean"
+                                  ]
+                                },
+                                "neq": {
+                                  "type": [
+                                    "string",
+                                    "number",
+                                    "boolean"
+                                  ]
+                                },
+                                "in": {
+                                  "type": "array",
+                                  "minItems": 1,
+                                  "items": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  }
+                                },
+                                "contains": {
+                                  "type": "string"
+                                },
+                                "exists": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                            },
+                            "contact.language": {
                               "type": "object",
                               "minProperties": 1,
                               "maxProperties": 1,
@@ -3124,6 +3165,46 @@
                                       "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                                     },
                                     "contact.about": {
+                                      "type": "object",
+                                      "minProperties": 1,
+                                      "maxProperties": 1,
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "eq": {
+                                          "type": [
+                                            "string",
+                                            "number",
+                                            "boolean"
+                                          ]
+                                        },
+                                        "neq": {
+                                          "type": [
+                                            "string",
+                                            "number",
+                                            "boolean"
+                                          ]
+                                        },
+                                        "in": {
+                                          "type": "array",
+                                          "minItems": 1,
+                                          "items": {
+                                            "type": [
+                                              "string",
+                                              "number",
+                                              "boolean"
+                                            ]
+                                          }
+                                        },
+                                        "contains": {
+                                          "type": "string"
+                                        },
+                                        "exists": {
+                                          "type": "boolean"
+                                        }
+                                      },
+                                      "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                                    },
+                                    "contact.language": {
                                       "type": "object",
                                       "minProperties": 1,
                                       "maxProperties": 1,
@@ -36329,6 +36410,10 @@
                         "public_picture_url": {
                           "type": "string",
                           "description": "Public profile picture URL."
+                        },
+                        "public_identifier": {
+                          "type": "string",
+                          "description": "LinkedIn public identifier (vanity URL slug). LinkedIn does not send it for sent invitations; present when Curviate already knows this person's slug from stored data (a Contact or a profile read), else omitted."
                         }
                       },
                       "required": [
@@ -36789,6 +36874,10 @@
                               "public_picture_url": {
                                 "type": "string",
                                 "description": "Public profile picture URL."
+                              },
+                              "public_identifier": {
+                                "type": "string",
+                                "description": "LinkedIn public identifier (vanity URL slug). LinkedIn does not send it for sent invitations; present when Curviate already knows this person's slug from stored data (a Contact or a profile read), else omitted."
                               }
                             },
                             "required": [
@@ -43027,7 +43116,7 @@
                         "object",
                         "null"
                       ],
-                      "description": "What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it.",
+                      "description": "What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them.",
                       "properties": {
                         "kind": {
                           "type": "string",
@@ -43040,7 +43129,8 @@
                             "motion_paused",
                             "halt",
                             "kill_switch",
-                            "paused_by_user"
+                            "paused_by_user",
+                            "no_overlap"
                           ]
                         },
                         "step_id": {
@@ -43097,6 +43187,7 @@
                         "in_exclusion_list",
                         "in_other_motion",
                         "known_chat",
+                        "pending_invite",
                         "filtered",
                         "profile_unavailable",
                         "no_connected_account",
@@ -86481,6 +86572,7 @@
                                   "in_exclusion_list",
                                   "in_other_motion",
                                   "known_chat",
+                                  "pending_invite",
                                   "filtered",
                                   "profile_unavailable",
                                   "no_connected_account",
@@ -86531,6 +86623,7 @@
                                   "in_exclusion_list",
                                   "in_other_motion",
                                   "known_chat",
+                                  "pending_invite",
                                   "filtered",
                                   "profile_unavailable",
                                   "no_connected_account",
@@ -87068,6 +87161,7 @@
                                     "in_exclusion_list",
                                     "in_other_motion",
                                     "known_chat",
+                                    "pending_invite",
                                     "filtered",
                                     "profile_unavailable",
                                     "no_connected_account",
@@ -87118,6 +87212,7 @@
                                     "in_exclusion_list",
                                     "in_other_motion",
                                     "known_chat",
+                                    "pending_invite",
                                     "filtered",
                                     "profile_unavailable",
                                     "no_connected_account",
@@ -111054,6 +111149,13 @@
                       ],
                       "description": "About text."
                     },
+                    "language": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with contact.language."
+                    },
                     "extra": {
                       "type": "object",
                       "additionalProperties": true,
@@ -111167,6 +111269,7 @@
                     "email",
                     "location",
                     "about",
+                    "language",
                     "extra",
                     "sources",
                     "tags",
@@ -111311,6 +111414,13 @@
                       ],
                       "description": "About text."
                     },
+                    "language": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with contact.language."
+                    },
                     "extra": {
                       "type": "object",
                       "additionalProperties": true,
@@ -111424,6 +111534,7 @@
                     "email",
                     "location",
                     "about",
+                    "language",
                     "extra",
                     "sources",
                     "tags",
@@ -111454,6 +111565,7 @@
                       "email": null,
                       "location": null,
                       "about": null,
+                      "language": "en",
                       "extra": {
                         "note": "Met at the agent meetup."
                       },
@@ -111462,7 +111574,8 @@
                         "first_name": "tenant",
                         "last_name": "tenant",
                         "job_title": "tenant",
-                        "company": "tenant"
+                        "company": "tenant",
+                        "language": "linkedin"
                       },
                       "tags": [
                         "Interested"
@@ -111721,6 +111834,11 @@
                   "about": {
                     "type": "string",
                     "description": "About text, up to 10000 characters.",
+                    "nullable": true
+                  },
+                  "language": {
+                    "type": "string",
+                    "description": "Language, an ISO 639-1 code like de or en, stored lowercase: what you supply, else the language of the person's LinkedIn profile locale (yours is never overwritten).",
                     "nullable": true
                   },
                   "extra": {
@@ -112145,6 +112263,13 @@
                             ],
                             "description": "About text."
                           },
+                          "language": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with contact.language."
+                          },
                           "extra": {
                             "type": "object",
                             "additionalProperties": true,
@@ -112250,6 +112375,7 @@
                           "email",
                           "location",
                           "about",
+                          "language",
                           "extra",
                           "sources",
                           "tags",
@@ -112302,6 +112428,7 @@
                           "email": null,
                           "location": null,
                           "about": null,
+                          "language": "en",
                           "extra": {
                             "note": "Met at the agent meetup."
                           },
@@ -112310,7 +112437,8 @@
                             "first_name": "tenant",
                             "last_name": "tenant",
                             "job_title": "tenant",
-                            "company": "tenant"
+                            "company": "tenant",
+                            "language": "linkedin"
                           },
                           "tags": [
                             "Interested"
@@ -112821,6 +112949,13 @@
                         ],
                         "description": "About text."
                       },
+                      "language": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with contact.language."
+                      },
                       "extra": {
                         "type": "object",
                         "additionalProperties": true,
@@ -112926,6 +113061,7 @@
                       "email",
                       "location",
                       "about",
+                      "language",
                       "extra",
                       "sources",
                       "tags",
@@ -112960,6 +113096,7 @@
                         "email": null,
                         "location": null,
                         "about": null,
+                        "language": "en",
                         "extra": {
                           "note": "Met at the agent meetup."
                         },
@@ -112968,7 +113105,8 @@
                           "first_name": "tenant",
                           "last_name": "tenant",
                           "job_title": "tenant",
-                          "company": "tenant"
+                          "company": "tenant",
+                          "language": "linkedin"
                         },
                         "tags": [
                           "Interested"
@@ -114601,6 +114739,7 @@
                               "invalid_linkedin_url",
                               "invalid_tag",
                               "field_too_long",
+                              "invalid_language",
                               "contact_too_large",
                               "too_many_tags",
                               "tag_limit_reached",
@@ -114886,6 +115025,7 @@
                               "invalid_linkedin_url",
                               "invalid_tag",
                               "field_too_long",
+                              "invalid_language",
                               "contact_too_large",
                               "too_many_tags",
                               "tag_limit_reached",
@@ -115495,6 +115635,7 @@
                                     "invalid_linkedin_url",
                                     "invalid_tag",
                                     "field_too_long",
+                                    "invalid_language",
                                     "contact_too_large",
                                     "too_many_tags",
                                     "tag_limit_reached",
@@ -115914,6 +116055,7 @@
                               "invalid_linkedin_url",
                               "invalid_tag",
                               "field_too_long",
+                              "invalid_language",
                               "contact_too_large",
                               "too_many_tags",
                               "tag_limit_reached",
@@ -116234,6 +116376,7 @@
                               "invalid_linkedin_url",
                               "invalid_tag",
                               "field_too_long",
+                              "invalid_language",
                               "contact_too_large",
                               "too_many_tags",
                               "tag_limit_reached",
@@ -116587,6 +116730,13 @@
                       ],
                       "description": "About text."
                     },
+                    "language": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with contact.language."
+                    },
                     "extra": {
                       "type": "object",
                       "additionalProperties": true,
@@ -116692,6 +116842,7 @@
                     "email",
                     "location",
                     "about",
+                    "language",
                     "extra",
                     "sources",
                     "tags",
@@ -116722,6 +116873,7 @@
                       "email": null,
                       "location": null,
                       "about": null,
+                      "language": "en",
                       "extra": {
                         "note": "Met at the agent meetup."
                       },
@@ -116730,7 +116882,8 @@
                         "first_name": "tenant",
                         "last_name": "tenant",
                         "job_title": "tenant",
-                        "company": "tenant"
+                        "company": "tenant",
+                        "language": "linkedin"
                       },
                       "tags": [
                         "Interested"
@@ -117024,6 +117177,13 @@
                       ],
                       "description": "About text."
                     },
+                    "language": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with contact.language."
+                    },
                     "extra": {
                       "type": "object",
                       "additionalProperties": true,
@@ -117129,6 +117289,7 @@
                     "email",
                     "location",
                     "about",
+                    "language",
                     "extra",
                     "sources",
                     "tags",
@@ -117159,6 +117320,7 @@
                       "email": null,
                       "location": null,
                       "about": null,
+                      "language": "en",
                       "extra": {
                         "note": "Met at the agent meetup."
                       },
@@ -117167,7 +117329,8 @@
                         "first_name": "tenant",
                         "last_name": "tenant",
                         "job_title": "tenant",
-                        "company": "tenant"
+                        "company": "tenant",
+                        "language": "linkedin"
                       },
                       "tags": [
                         "Interested"
@@ -117409,6 +117572,11 @@
                   "about": {
                     "type": "string",
                     "description": "About text, up to 10000 characters.",
+                    "nullable": true
+                  },
+                  "language": {
+                    "type": "string",
+                    "description": "Language, an ISO 639-1 code like de or en, stored lowercase: what you supply, else the language of the person's LinkedIn profile locale (yours is never overwritten).",
                     "nullable": true
                   },
                   "extra": {
@@ -122147,11 +122315,15 @@
                             },
                             "known_chats": {
                               "type": "boolean"
+                            },
+                            "pending_invites": {
+                              "type": "boolean"
                             }
                           },
                           "required": [
                             "other_motions",
-                            "known_chats"
+                            "known_chats",
+                            "pending_invites"
                           ]
                         },
                         "acceptance_floor": {
@@ -122469,7 +122641,8 @@
                         "assign": "auto",
                         "exclude": {
                           "other_motions": true,
-                          "known_chats": true
+                          "known_chats": true,
+                          "pending_invites": true
                         },
                         "acceptance_floor": null,
                         "variables": {}
@@ -122956,6 +123129,10 @@
                           "known_chats": {
                             "type": "boolean",
                             "description": "Skip Contacts the account already chats with. Default true."
+                          },
+                          "pending_invites": {
+                            "type": "boolean",
+                            "description": "Skip Contacts with a pending invitation from any account of the team, sent from Curviate or not. Default true."
                           }
                         },
                         "additionalProperties": false
@@ -123452,11 +123629,15 @@
                                   },
                                   "known_chats": {
                                     "type": "boolean"
+                                  },
+                                  "pending_invites": {
+                                    "type": "boolean"
                                   }
                                 },
                                 "required": [
                                   "other_motions",
-                                  "known_chats"
+                                  "known_chats",
+                                  "pending_invites"
                                 ]
                               },
                               "acceptance_floor": {
@@ -123697,7 +123878,8 @@
                             "assign": "auto",
                             "exclude": {
                               "other_motions": true,
-                              "known_chats": true
+                              "known_chats": true,
+                              "pending_invites": true
                             },
                             "acceptance_floor": null,
                             "variables": {}
@@ -124068,11 +124250,15 @@
                             },
                             "known_chats": {
                               "type": "boolean"
+                            },
+                            "pending_invites": {
+                              "type": "boolean"
                             }
                           },
                           "required": [
                             "other_motions",
-                            "known_chats"
+                            "known_chats",
+                            "pending_invites"
                           ]
                         },
                         "acceptance_floor": {
@@ -124361,7 +124547,8 @@
                         "assign": "auto",
                         "exclude": {
                           "other_motions": true,
-                          "known_chats": true
+                          "known_chats": true,
+                          "pending_invites": true
                         },
                         "acceptance_floor": null,
                         "variables": {}
@@ -124811,11 +124998,15 @@
                             },
                             "known_chats": {
                               "type": "boolean"
+                            },
+                            "pending_invites": {
+                              "type": "boolean"
                             }
                           },
                           "required": [
                             "other_motions",
-                            "known_chats"
+                            "known_chats",
+                            "pending_invites"
                           ]
                         },
                         "acceptance_floor": {
@@ -125142,7 +125333,8 @@
                         "assign": "auto",
                         "exclude": {
                           "other_motions": true,
-                          "known_chats": true
+                          "known_chats": true,
+                          "pending_invites": true
                         },
                         "acceptance_floor": null,
                         "variables": {}
@@ -125630,6 +125822,10 @@
                           "known_chats": {
                             "type": "boolean",
                             "description": "Skip Contacts the account already chats with. Default true."
+                          },
+                          "pending_invites": {
+                            "type": "boolean",
+                            "description": "Skip Contacts with a pending invitation from any account of the team, sent from Curviate or not. Default true."
                           }
                         },
                         "additionalProperties": false
@@ -126143,11 +126339,15 @@
                             },
                             "known_chats": {
                               "type": "boolean"
+                            },
+                            "pending_invites": {
+                              "type": "boolean"
                             }
                           },
                           "required": [
                             "other_motions",
-                            "known_chats"
+                            "known_chats",
+                            "pending_invites"
                           ]
                         },
                         "acceptance_floor": {
@@ -126436,7 +126636,8 @@
                         "assign": "auto",
                         "exclude": {
                           "other_motions": true,
-                          "known_chats": true
+                          "known_chats": true,
+                          "pending_invites": true
                         },
                         "acceptance_floor": null,
                         "variables": {}
@@ -126961,11 +127162,15 @@
                             },
                             "known_chats": {
                               "type": "boolean"
+                            },
+                            "pending_invites": {
+                              "type": "boolean"
                             }
                           },
                           "required": [
                             "other_motions",
-                            "known_chats"
+                            "known_chats",
+                            "pending_invites"
                           ]
                         },
                         "acceptance_floor": {
@@ -127254,7 +127459,8 @@
                         "assign": "auto",
                         "exclude": {
                           "other_motions": true,
-                          "known_chats": true
+                          "known_chats": true,
+                          "pending_invites": true
                         },
                         "acceptance_floor": null,
                         "variables": {}
@@ -127746,11 +127952,15 @@
                             },
                             "known_chats": {
                               "type": "boolean"
+                            },
+                            "pending_invites": {
+                              "type": "boolean"
                             }
                           },
                           "required": [
                             "other_motions",
-                            "known_chats"
+                            "known_chats",
+                            "pending_invites"
                           ]
                         },
                         "acceptance_floor": {
@@ -128039,7 +128249,8 @@
                         "assign": "auto",
                         "exclude": {
                           "other_motions": true,
-                          "known_chats": true
+                          "known_chats": true,
+                          "pending_invites": true
                         },
                         "acceptance_floor": null,
                         "variables": {}
@@ -128564,11 +128775,15 @@
                             },
                             "known_chats": {
                               "type": "boolean"
+                            },
+                            "pending_invites": {
+                              "type": "boolean"
                             }
                           },
                           "required": [
                             "other_motions",
-                            "known_chats"
+                            "known_chats",
+                            "pending_invites"
                           ]
                         },
                         "acceptance_floor": {
@@ -128857,7 +129072,8 @@
                         "assign": "auto",
                         "exclude": {
                           "other_motions": true,
-                          "known_chats": true
+                          "known_chats": true,
+                          "pending_invites": true
                         },
                         "acceptance_floor": null,
                         "variables": {}
@@ -129607,9 +129823,10 @@
                               "in_exclusion_list",
                               "in_other_motion",
                               "known_chat",
+                              "pending_invite",
                               null
                             ],
-                            "description": "Why the Contact would not be enrolled, from stored data: the Team's do-not-contact list holds it, an Exclusion list holds it, it is or was within 90 days in another Motion, or an account already chats with it. null: nothing excludes it."
+                            "description": "Why the Contact would not be enrolled, from stored data: the Team's do-not-contact list holds it, an Exclusion list holds it, it is or was within 90 days in another Motion, an account already chats with it, or an account of the team has a pending invitation to it. null: nothing excludes it."
                           },
                           "filters": {
                             "type": "array",
@@ -129733,7 +129950,7 @@
                       "properties": {
                         "audience": {
                           "type": "object",
-                          "description": "The Contacts of the source lists, counted from stored data (nothing is read from LinkedIn), each once. A Contact that would be skipped for several reasons counts under the first: do_not_contact, excluded, other_motion, known_chat, filtered, not_connected. Present even when the Motion has no Sequence.",
+                          "description": "The Contacts of the source lists, counted from stored data (nothing is read from LinkedIn), each once. A Contact that would be skipped for several reasons counts under the first: do_not_contact, excluded, other_motion, known_chat, pending_invite, filtered, not_connected. Present even when the Motion has no Sequence.",
                           "properties": {
                             "total": {
                               "type": "integer",
@@ -129758,6 +129975,10 @@
                                   "type": "integer",
                                   "description": "An account already chats with them (when settings.exclude.known_chats is on)."
                                 },
+                                "pending_invite": {
+                                  "type": "integer",
+                                  "description": "An account of the team has a pending invitation to them, sent from Curviate or not, as each account's sent invitations were last read (when settings.exclude.pending_invites is on)."
+                                },
                                 "filtered": {
                                   "type": "integer",
                                   "description": "Fail a where filter on stored Contact data (fields, extra fields, tags). A filter only LinkedIn can answer, such as degree or premium, is checked when the Contact enrolls and does not count here."
@@ -129772,6 +129993,7 @@
                                 "excluded",
                                 "other_motion",
                                 "known_chat",
+                                "pending_invite",
                                 "filtered",
                                 "not_connected"
                               ]
@@ -130064,6 +130286,7 @@
                             "excluded": 3,
                             "other_motion": 3,
                             "known_chat": 2,
+                            "pending_invite": 0,
                             "filtered": 3,
                             "not_connected": 0
                           },
@@ -130257,7 +130480,7 @@
         ],
         "responses": {
           "200": {
-            "description": "One result per Contact id, in the order sent (an id sent twice is answered once). queued: a queued Enrollment was created, or one that was skipped or ended before it started was re-queued. already_enrolled: nothing changed (enrollment_ids leaves out an Enrollment on a teammate's account you cannot operate). do_not_contact, in_exclusion_list, in_other_motion, known_chat: the Contact is recorded as skipped. filtered_out: the Contact fails the Motion's where filters, no Enrollment. not_found: not one of your Contacts.",
+            "description": "One result per Contact id, in the order sent (an id sent twice is answered once). queued: a queued Enrollment was created, or one that was skipped or ended before it started was re-queued. already_enrolled: nothing changed (enrollment_ids leaves out an Enrollment on a teammate's account you cannot operate). do_not_contact, in_exclusion_list, in_other_motion, known_chat, pending_invite: the Contact is recorded as skipped. filtered_out: the Contact fails the Motion's where filters, no Enrollment. not_found: not one of your Contacts.",
             "content": {
               "application/json": {
                 "schema": {
@@ -130286,6 +130509,7 @@
                               "in_exclusion_list",
                               "in_other_motion",
                               "known_chat",
+                              "pending_invite",
                               "filtered_out",
                               "not_found"
                             ]
@@ -131015,6 +131239,7 @@
                   "in_exclusion_list",
                   "in_other_motion",
                   "known_chat",
+                  "pending_invite",
                   "filtered",
                   "profile_unavailable",
                   "no_connected_account",
@@ -131181,7 +131406,7 @@
                               "object",
                               "null"
                             ],
-                            "description": "What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it.",
+                            "description": "What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them.",
                             "properties": {
                               "kind": {
                                 "type": "string",
@@ -131194,7 +131419,8 @@
                                   "motion_paused",
                                   "halt",
                                   "kill_switch",
-                                  "paused_by_user"
+                                  "paused_by_user",
+                                  "no_overlap"
                                 ]
                               },
                               "step_id": {
@@ -131251,6 +131477,7 @@
                               "in_exclusion_list",
                               "in_other_motion",
                               "known_chat",
+                              "pending_invite",
                               "filtered",
                               "profile_unavailable",
                               "no_connected_account",
@@ -131661,7 +131888,7 @@
                         "object",
                         "null"
                       ],
-                      "description": "What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it.",
+                      "description": "What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them.",
                       "properties": {
                         "kind": {
                           "type": "string",
@@ -131674,7 +131901,8 @@
                             "motion_paused",
                             "halt",
                             "kill_switch",
-                            "paused_by_user"
+                            "paused_by_user",
+                            "no_overlap"
                           ]
                         },
                         "step_id": {
@@ -131731,6 +131959,7 @@
                         "in_exclusion_list",
                         "in_other_motion",
                         "known_chat",
+                        "pending_invite",
                         "filtered",
                         "profile_unavailable",
                         "no_connected_account",
@@ -131871,6 +132100,7 @@
                               "in_exclusion_list",
                               "in_other_motion",
                               "known_chat",
+                              "pending_invite",
                               "filtered",
                               "profile_unavailable",
                               "no_connected_account",
@@ -132272,7 +132502,7 @@
                         "object",
                         "null"
                       ],
-                      "description": "What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it.",
+                      "description": "What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them.",
                       "properties": {
                         "kind": {
                           "type": "string",
@@ -132285,7 +132515,8 @@
                             "motion_paused",
                             "halt",
                             "kill_switch",
-                            "paused_by_user"
+                            "paused_by_user",
+                            "no_overlap"
                           ]
                         },
                         "step_id": {
@@ -132342,6 +132573,7 @@
                         "in_exclusion_list",
                         "in_other_motion",
                         "known_chat",
+                        "pending_invite",
                         "filtered",
                         "profile_unavailable",
                         "no_connected_account",
@@ -132737,7 +132969,7 @@
                         "object",
                         "null"
                       ],
-                      "description": "What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it.",
+                      "description": "What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them.",
                       "properties": {
                         "kind": {
                           "type": "string",
@@ -132750,7 +132982,8 @@
                             "motion_paused",
                             "halt",
                             "kill_switch",
-                            "paused_by_user"
+                            "paused_by_user",
+                            "no_overlap"
                           ]
                         },
                         "step_id": {
@@ -132807,6 +133040,7 @@
                         "in_exclusion_list",
                         "in_other_motion",
                         "known_chat",
+                        "pending_invite",
                         "filtered",
                         "profile_unavailable",
                         "no_connected_account",
@@ -133206,7 +133440,7 @@
                         "object",
                         "null"
                       ],
-                      "description": "What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it.",
+                      "description": "What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them.",
                       "properties": {
                         "kind": {
                           "type": "string",
@@ -133219,7 +133453,8 @@
                             "motion_paused",
                             "halt",
                             "kill_switch",
-                            "paused_by_user"
+                            "paused_by_user",
+                            "no_overlap"
                           ]
                         },
                         "step_id": {
@@ -133276,6 +133511,7 @@
                         "in_exclusion_list",
                         "in_other_motion",
                         "known_chat",
+                        "pending_invite",
                         "filtered",
                         "profile_unavailable",
                         "no_connected_account",
@@ -133741,7 +133977,7 @@
                         "object",
                         "null"
                       ],
-                      "description": "What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it.",
+                      "description": "What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them.",
                       "properties": {
                         "kind": {
                           "type": "string",
@@ -133754,7 +133990,8 @@
                             "motion_paused",
                             "halt",
                             "kill_switch",
-                            "paused_by_user"
+                            "paused_by_user",
+                            "no_overlap"
                           ]
                         },
                         "step_id": {
@@ -133811,6 +134048,7 @@
                         "in_exclusion_list",
                         "in_other_motion",
                         "known_chat",
+                        "pending_invite",
                         "filtered",
                         "profile_unavailable",
                         "no_connected_account",
@@ -134283,7 +134521,7 @@
                         "object",
                         "null"
                       ],
-                      "description": "What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it.",
+                      "description": "What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them.",
                       "properties": {
                         "kind": {
                           "type": "string",
@@ -134296,7 +134534,8 @@
                             "motion_paused",
                             "halt",
                             "kill_switch",
-                            "paused_by_user"
+                            "paused_by_user",
+                            "no_overlap"
                           ]
                         },
                         "step_id": {
@@ -134353,6 +134592,7 @@
                         "in_exclusion_list",
                         "in_other_motion",
                         "known_chat",
+                        "pending_invite",
                         "filtered",
                         "profile_unavailable",
                         "no_connected_account",
@@ -134875,7 +135115,7 @@
                         "object",
                         "null"
                       ],
-                      "description": "What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it.",
+                      "description": "What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them.",
                       "properties": {
                         "kind": {
                           "type": "string",
@@ -134888,7 +135128,8 @@
                             "motion_paused",
                             "halt",
                             "kill_switch",
-                            "paused_by_user"
+                            "paused_by_user",
+                            "no_overlap"
                           ]
                         },
                         "step_id": {
@@ -134945,6 +135186,7 @@
                         "in_exclusion_list",
                         "in_other_motion",
                         "known_chat",
+                        "pending_invite",
                         "filtered",
                         "profile_unavailable",
                         "no_connected_account",
@@ -135803,6 +136045,7 @@
                             "in_exclusion_list",
                             "in_other_motion",
                             "known_chat",
+                            "pending_invite",
                             "filtered",
                             "profile_unavailable",
                             "no_connected_account",
@@ -136652,6 +136895,7 @@
                                   "in_exclusion_list",
                                   "in_other_motion",
                                   "known_chat",
+                                  "pending_invite",
                                   "filtered",
                                   "profile_unavailable",
                                   "no_connected_account",
@@ -136702,6 +136946,7 @@
                                   "in_exclusion_list",
                                   "in_other_motion",
                                   "known_chat",
+                                  "pending_invite",
                                   "filtered",
                                   "profile_unavailable",
                                   "no_connected_account",
@@ -137333,6 +137578,7 @@
                                     "in_exclusion_list",
                                     "in_other_motion",
                                     "known_chat",
+                                    "pending_invite",
                                     "filtered",
                                     "profile_unavailable",
                                     "no_connected_account",
@@ -137383,6 +137629,7 @@
                                     "in_exclusion_list",
                                     "in_other_motion",
                                     "known_chat",
+                                    "pending_invite",
                                     "filtered",
                                     "profile_unavailable",
                                     "no_connected_account",
@@ -137886,6 +138133,7 @@
                                     "in_exclusion_list",
                                     "in_other_motion",
                                     "known_chat",
+                                    "pending_invite",
                                     "filtered",
                                     "profile_unavailable",
                                     "no_connected_account",
@@ -137936,6 +138184,7 @@
                                     "in_exclusion_list",
                                     "in_other_motion",
                                     "known_chat",
+                                    "pending_invite",
                                     "filtered",
                                     "profile_unavailable",
                                     "no_connected_account",
@@ -138438,6 +138687,7 @@
                                   "in_exclusion_list",
                                   "in_other_motion",
                                   "known_chat",
+                                  "pending_invite",
                                   "filtered",
                                   "profile_unavailable",
                                   "no_connected_account",
@@ -138488,6 +138738,7 @@
                                   "in_exclusion_list",
                                   "in_other_motion",
                                   "known_chat",
+                                  "pending_invite",
                                   "filtered",
                                   "profile_unavailable",
                                   "no_connected_account",
@@ -140066,6 +140317,7 @@
                                   "in_exclusion_list",
                                   "in_other_motion",
                                   "known_chat",
+                                  "pending_invite",
                                   "filtered",
                                   "profile_unavailable",
                                   "no_connected_account",
@@ -140116,6 +140368,7 @@
                                   "in_exclusion_list",
                                   "in_other_motion",
                                   "known_chat",
+                                  "pending_invite",
                                   "filtered",
                                   "profile_unavailable",
                                   "no_connected_account",
@@ -140643,6 +140896,7 @@
                                     "in_exclusion_list",
                                     "in_other_motion",
                                     "known_chat",
+                                    "pending_invite",
                                     "filtered",
                                     "profile_unavailable",
                                     "no_connected_account",
@@ -140693,6 +140947,7 @@
                                     "in_exclusion_list",
                                     "in_other_motion",
                                     "known_chat",
+                                    "pending_invite",
                                     "filtered",
                                     "profile_unavailable",
                                     "no_connected_account",
@@ -141521,6 +141776,7 @@
                                         "in_exclusion_list",
                                         "in_other_motion",
                                         "known_chat",
+                                        "pending_invite",
                                         "filtered",
                                         "profile_unavailable",
                                         "no_connected_account",
@@ -141571,6 +141827,7 @@
                                         "in_exclusion_list",
                                         "in_other_motion",
                                         "known_chat",
+                                        "pending_invite",
                                         "filtered",
                                         "profile_unavailable",
                                         "no_connected_account",
@@ -141967,6 +142224,7 @@
                                           "in_exclusion_list",
                                           "in_other_motion",
                                           "known_chat",
+                                          "pending_invite",
                                           "filtered",
                                           "profile_unavailable",
                                           "no_connected_account",
@@ -142017,6 +142275,7 @@
                                           "in_exclusion_list",
                                           "in_other_motion",
                                           "known_chat",
+                                          "pending_invite",
                                           "filtered",
                                           "profile_unavailable",
                                           "no_connected_account",
@@ -142874,6 +143133,7 @@
                                     "in_exclusion_list",
                                     "in_other_motion",
                                     "known_chat",
+                                    "pending_invite",
                                     "filtered",
                                     "profile_unavailable",
                                     "no_connected_account",
@@ -142924,6 +143184,7 @@
                                     "in_exclusion_list",
                                     "in_other_motion",
                                     "known_chat",
+                                    "pending_invite",
                                     "filtered",
                                     "profile_unavailable",
                                     "no_connected_account",
@@ -143426,6 +143687,7 @@
                                   "in_exclusion_list",
                                   "in_other_motion",
                                   "known_chat",
+                                  "pending_invite",
                                   "filtered",
                                   "profile_unavailable",
                                   "no_connected_account",
@@ -143476,6 +143738,7 @@
                                   "in_exclusion_list",
                                   "in_other_motion",
                                   "known_chat",
+                                  "pending_invite",
                                   "filtered",
                                   "profile_unavailable",
                                   "no_connected_account",
@@ -145255,6 +145518,7 @@
                               "in_exclusion_list",
                               "in_other_motion",
                               "known_chat",
+                              "pending_invite",
                               "filtered",
                               "profile_unavailable",
                               "no_connected_account",

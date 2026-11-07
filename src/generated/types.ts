@@ -5354,6 +5354,14 @@ export interface components {
                         contains?: string;
                         exists?: boolean;
                     };
+                    /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
+                    "contact.language"?: {
+                        eq?: string | number | boolean;
+                        neq?: string | number | boolean;
+                        in?: (string | number | boolean)[];
+                        contains?: string;
+                        exists?: boolean;
+                    };
                 } | {
                     [key: string]: {
                         eq?: string | number | boolean;
@@ -5477,6 +5485,14 @@ export interface components {
                         };
                         /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
                         "contact.about"?: {
+                            eq?: string | number | boolean;
+                            neq?: string | number | boolean;
+                            in?: (string | number | boolean)[];
+                            contains?: string;
+                            exists?: boolean;
+                        };
+                        /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
+                        "contact.language"?: {
                             eq?: string | number | boolean;
                             neq?: string | number | boolean;
                             in?: (string | number | boolean)[];
@@ -18400,6 +18416,8 @@ export interface operations {
                             last_name?: string;
                             /** @description Public profile picture URL. */
                             public_picture_url?: string;
+                            /** @description LinkedIn public identifier (vanity URL slug). LinkedIn does not send it for sent invitations; present when Curviate already knows this person's slug from stored data (a Contact or a profile read), else omitted. */
+                            public_identifier?: string;
                         };
                     };
                 };
@@ -18574,6 +18592,8 @@ export interface operations {
                                 last_name?: string;
                                 /** @description Public profile picture URL. */
                                 public_picture_url?: string;
+                                /** @description LinkedIn public identifier (vanity URL slug). LinkedIn does not send it for sent invitations; present when Curviate already knows this person's slug from stored data (a Contact or a profile read), else omitted. */
+                                public_identifier?: string;
                             };
                         }[];
                         /** @description Opaque pagination cursor for the next page, or null if at the end. */
@@ -20737,10 +20757,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -20755,7 +20775,7 @@ export interface operations {
                          * @description Why the Contact was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
@@ -44818,6 +44838,8 @@ export interface operations {
                             location: string | null;
                             /** @description About text. */
                             about: string | null;
+                            /** @description ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with contact.language. */
+                            language: string | null;
                             /** @description Your own fields. */
                             extra: {
                                 [key: string]: unknown;
@@ -44940,6 +44962,8 @@ export interface operations {
                     location?: string | null;
                     /** @description About text, up to 10000 characters. */
                     about?: string | null;
+                    /** @description Language, an ISO 639-1 code like de or en, stored lowercase: what you supply, else the language of the person's LinkedIn profile locale (yours is never overwritten). */
+                    language?: string | null;
                     /** @description Your own fields, merged key by key. Keys are letters, digits and underscore, up to 64 characters; values any JSON. */
                     extra?: {
                         [key: string]: unknown;
@@ -45000,6 +45024,8 @@ export interface operations {
                         location: string | null;
                         /** @description About text. */
                         about: string | null;
+                        /** @description ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with contact.language. */
+                        language: string | null;
                         /** @description Your own fields. */
                         extra: {
                             [key: string]: unknown;
@@ -45080,6 +45106,8 @@ export interface operations {
                         location: string | null;
                         /** @description About text. */
                         about: string | null;
+                        /** @description ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with contact.language. */
+                        language: string | null;
                         /** @description Your own fields. */
                         extra: {
                             [key: string]: unknown;
@@ -45275,6 +45303,8 @@ export interface operations {
                         location: string | null;
                         /** @description About text. */
                         about: string | null;
+                        /** @description ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with contact.language. */
+                        language: string | null;
                         /** @description Your own fields. */
                         extra: {
                             [key: string]: unknown;
@@ -45851,7 +45881,7 @@ export interface operations {
                                  * @description Why a row was skipped.
                                  * @enum {string|null}
                                  */
-                                reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
+                                reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
                                 /** @description The field a field_too_long row names. */
                                 field: string | null;
                                 /** @description An earlier row of this import for the same person. */
@@ -45997,7 +46027,7 @@ export interface operations {
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -46066,7 +46096,7 @@ export interface operations {
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -46220,7 +46250,7 @@ export interface operations {
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -46316,7 +46346,7 @@ export interface operations {
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -46431,6 +46461,8 @@ export interface operations {
                         location: string | null;
                         /** @description About text. */
                         about: string | null;
+                        /** @description ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with contact.language. */
+                        language: string | null;
                         /** @description Your own fields. */
                         extra: {
                             [key: string]: unknown;
@@ -46616,6 +46648,8 @@ export interface operations {
                     location?: string | null;
                     /** @description About text, up to 10000 characters. */
                     about?: string | null;
+                    /** @description Language, an ISO 639-1 code like de or en, stored lowercase: what you supply, else the language of the person's LinkedIn profile locale (yours is never overwritten). */
+                    language?: string | null;
                     /** @description Keys to set; a key set to null is removed, keys left out are untouched. */
                     extra?: {
                         [key: string]: unknown;
@@ -46670,6 +46704,8 @@ export interface operations {
                         location: string | null;
                         /** @description About text. */
                         about: string | null;
+                        /** @description ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with contact.language. */
+                        language: string | null;
                         /** @description Your own fields. */
                         extra: {
                             [key: string]: unknown;
@@ -48451,6 +48487,7 @@ export interface operations {
                                 exclude: {
                                     other_motions: boolean;
                                     known_chats: boolean;
+                                    pending_invites: boolean;
                                 };
                                 /** @description Optional, off by default (null). When on, pauses the Motion when the invitation acceptance rate falls below percent. */
                                 acceptance_floor: {
@@ -48628,6 +48665,8 @@ export interface operations {
                             other_motions?: boolean;
                             /** @description Skip Contacts the account already chats with. Default true. */
                             known_chats?: boolean;
+                            /** @description Skip Contacts with a pending invitation from any account of the team, sent from Curviate or not. Default true. */
+                            pending_invites?: boolean;
                         };
                         /** @description Optional, off by default (null). When on, pauses the Motion when the invitation acceptance rate falls below percent. null turns it off. */
                         acceptance_floor?: {
@@ -48717,6 +48756,7 @@ export interface operations {
                             exclude: {
                                 other_motions: boolean;
                                 known_chats: boolean;
+                                pending_invites: boolean;
                             };
                             /** @description Optional, off by default (null). When on, pauses the Motion when the invitation acceptance rate falls below percent. */
                             acceptance_floor: {
@@ -48962,6 +49002,7 @@ export interface operations {
                             exclude: {
                                 other_motions: boolean;
                                 known_chats: boolean;
+                                pending_invites: boolean;
                             };
                             /** @description Optional, off by default (null). When on, pauses the Motion when the invitation acceptance rate falls below percent. */
                             acceptance_floor: {
@@ -49239,6 +49280,8 @@ export interface operations {
                             other_motions?: boolean;
                             /** @description Skip Contacts the account already chats with. Default true. */
                             known_chats?: boolean;
+                            /** @description Skip Contacts with a pending invitation from any account of the team, sent from Curviate or not. Default true. */
+                            pending_invites?: boolean;
                         };
                         /** @description Optional, off by default (null). When on, pauses the Motion when the invitation acceptance rate falls below percent. null turns it off. */
                         acceptance_floor?: {
@@ -49330,6 +49373,7 @@ export interface operations {
                             exclude: {
                                 other_motions: boolean;
                                 known_chats: boolean;
+                                pending_invites: boolean;
                             };
                             /** @description Optional, off by default (null). When on, pauses the Motion when the invitation acceptance rate falls below percent. */
                             acceptance_floor: {
@@ -49577,6 +49621,7 @@ export interface operations {
                             exclude: {
                                 other_motions: boolean;
                                 known_chats: boolean;
+                                pending_invites: boolean;
                             };
                             /** @description Optional, off by default (null). When on, pauses the Motion when the invitation acceptance rate falls below percent. */
                             acceptance_floor: {
@@ -49805,6 +49850,7 @@ export interface operations {
                             exclude: {
                                 other_motions: boolean;
                                 known_chats: boolean;
+                                pending_invites: boolean;
                             };
                             /** @description Optional, off by default (null). When on, pauses the Motion when the invitation acceptance rate falls below percent. */
                             acceptance_floor: {
@@ -50024,6 +50070,7 @@ export interface operations {
                             exclude: {
                                 other_motions: boolean;
                                 known_chats: boolean;
+                                pending_invites: boolean;
                             };
                             /** @description Optional, off by default (null). When on, pauses the Motion when the invitation acceptance rate falls below percent. */
                             acceptance_floor: {
@@ -50252,6 +50299,7 @@ export interface operations {
                             exclude: {
                                 other_motions: boolean;
                                 known_chats: boolean;
+                                pending_invites: boolean;
                             };
                             /** @description Optional, off by default (null). When on, pauses the Motion when the invitation acceptance rate falls below percent. */
                             acceptance_floor: {
@@ -50526,10 +50574,10 @@ export interface operations {
                             /** @description A sending account to render this sample with, not a promise: the account is set when one takes the Contact. null when none can act or assignment needs LinkedIn. */
                             account_id: string | null;
                             /**
-                             * @description Why the Contact would not be enrolled, from stored data: the Team's do-not-contact list holds it, an Exclusion list holds it, it is or was within 90 days in another Motion, or an account already chats with it. null: nothing excludes it.
+                             * @description Why the Contact would not be enrolled, from stored data: the Team's do-not-contact list holds it, an Exclusion list holds it, it is or was within 90 days in another Motion, an account already chats with it, or an account of the team has a pending invitation to it. null: nothing excludes it.
                              * @enum {string|null}
                              */
-                            excluded: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | null;
+                            excluded: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | null;
                             filters: {
                                 index: number;
                                 /**
@@ -50564,7 +50612,7 @@ export interface operations {
                         }[];
                         /** @description An estimate of how long the list takes, from each account's current budget ceilings (warm-up applied). Each Contact is enrolled on min(accounts_per_contact, accounts that can act) accounts; those Enrollments split evenly over the accounts. It ignores what other Motions spend. */
                         projection: {
-                            /** @description The Contacts of the source lists, counted from stored data (nothing is read from LinkedIn), each once. A Contact that would be skipped for several reasons counts under the first: do_not_contact, excluded, other_motion, known_chat, filtered, not_connected. Present even when the Motion has no Sequence. */
+                            /** @description The Contacts of the source lists, counted from stored data (nothing is read from LinkedIn), each once. A Contact that would be skipped for several reasons counts under the first: do_not_contact, excluded, other_motion, known_chat, pending_invite, filtered, not_connected. Present even when the Motion has no Sequence. */
                             audience: {
                                 /** @description Contacts in the Motion's source lists, each counted once. */
                                 total: number;
@@ -50577,6 +50625,8 @@ export interface operations {
                                     other_motion: number;
                                     /** @description An account already chats with them (when settings.exclude.known_chats is on). */
                                     known_chat: number;
+                                    /** @description An account of the team has a pending invitation to them, sent from Curviate or not, as each account's sent invitations were last read (when settings.exclude.pending_invites is on). */
+                                    pending_invite: number;
                                     /** @description Fail a where filter on stored Contact data (fields, extra fields, tags). A filter only LinkedIn can answer, such as degree or premium, is checked when the Contact enrolls and does not count here. */
                                     filtered: number;
                                     /** @description With settings.assign already_connected: no sending account is connected to them, so the Motion will skip them. 0 for any other assign, and while a sending account has not finished reading its Connections. */
@@ -50719,7 +50769,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description One result per Contact id, in the order sent (an id sent twice is answered once). queued: a queued Enrollment was created, or one that was skipped or ended before it started was re-queued. already_enrolled: nothing changed (enrollment_ids leaves out an Enrollment on a teammate's account you cannot operate). do_not_contact, in_exclusion_list, in_other_motion, known_chat: the Contact is recorded as skipped. filtered_out: the Contact fails the Motion's where filters, no Enrollment. not_found: not one of your Contacts. */
+            /** @description One result per Contact id, in the order sent (an id sent twice is answered once). queued: a queued Enrollment was created, or one that was skipped or ended before it started was re-queued. already_enrolled: nothing changed (enrollment_ids leaves out an Enrollment on a teammate's account you cannot operate). do_not_contact, in_exclusion_list, in_other_motion, known_chat, pending_invite: the Contact is recorded as skipped. filtered_out: the Contact fails the Motion's where filters, no Enrollment. not_found: not one of your Contacts. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -50733,7 +50783,7 @@ export interface operations {
                         results: {
                             contact_id: string;
                             /** @enum {string} */
-                            outcome: "queued" | "already_enrolled" | "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered_out" | "not_found";
+                            outcome: "queued" | "already_enrolled" | "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered_out" | "not_found";
                             /** @description The Contact's Enrollments this answer is about; empty for not_found. */
                             enrollment_ids: string[];
                         }[];
@@ -50934,7 +50984,7 @@ export interface operations {
                 /** @description With done_step only: how that Step ended. The 200 response description defines each value. */
                 outcome?: "executed" | "skipped" | "failed" | "accepted" | "not_accepted" | "replied" | "no_reply" | "seen";
                 /** @description Catalogue reason codes: skip, finish or Step reasons (on done_step when given). Repeat the key, comma-separate or mix; empties ignored. */
-                reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit")[];
+                reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit")[];
                 /** @description Only Enrollments whose variant on that variant's Step is this one. */
                 variant_id?: string;
                 /** @description Relationship to the account at the start: connected, not_connected, invite_pending, unknown. Repeat the key, comma-separate or mix; empties ignored. */
@@ -50989,10 +51039,10 @@ export interface operations {
                             status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                             /** @description The Step it is at; null before it starts. */
                             current_step_id: string | null;
-                            /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
+                            /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
                             waiting: {
                                 /** @enum {string} */
-                                kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                                kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
                                 /** @description The Step it waits at; null before it starts. */
                                 step_id: string | null;
                                 /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -51007,7 +51057,7 @@ export interface operations {
                              * @description Why the Contact was not enrolled; null unless status is skipped.
                              * @enum {string|null}
                              */
-                            skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                            skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
                             /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
                             finish_message: string | null;
                             /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
@@ -51139,10 +51189,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -51157,7 +51207,7 @@ export interface operations {
                          * @description Why the Contact was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
@@ -51205,7 +51255,7 @@ export interface operations {
                              * @description Why it was skipped or failed: a code of the reasons catalogue, https://docs.curviate.com/reference/motion-reasons.
                              * @enum {string|null}
                              */
-                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit" | null;
+                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit" | null;
                             /** @description The catalogue's one-line sentence for reason; null when reason is. */
                             reason_message: string | null;
                             /** @description The account that ran it; null for an entry no account ran (requeued). */
@@ -51307,10 +51357,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -51325,7 +51375,7 @@ export interface operations {
                          * @description Why the Contact was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
@@ -51463,10 +51513,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -51481,7 +51531,7 @@ export interface operations {
                          * @description Why the Contact was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
@@ -51626,10 +51676,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -51644,7 +51694,7 @@ export interface operations {
                          * @description Why the Contact was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
@@ -51798,10 +51848,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -51816,7 +51866,7 @@ export interface operations {
                          * @description Why the Contact was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
@@ -51970,10 +52020,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -51988,7 +52038,7 @@ export interface operations {
                          * @description Why the Contact was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
@@ -52151,10 +52201,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -52169,7 +52219,7 @@ export interface operations {
                          * @description Why the Contact was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
@@ -52323,7 +52373,7 @@ export interface operations {
                          */
                         outcome?: "executed" | "skipped" | "failed" | "accepted" | "not_accepted" | "replied" | "no_reply" | "seen";
                         /** @description Catalogue reason codes. */
-                        reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit")[];
+                        reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit")[];
                         /** @description Only Enrollments whose variant on that variant's Step is this one. */
                         variant_id?: string;
                         /** @description Any of connected, not_connected, invite_pending, unknown. */
@@ -54967,7 +55017,7 @@ export interface operations {
                              * @description Why a step was skipped or failed, as a code of the reasons catalogue (https://docs.curviate.com/reference/motion-reasons); null otherwise.
                              * @enum {string|null}
                              */
-                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit" | null;
+                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit" | null;
                             /** @description The catalogue's one-line plain-words sentence for reason; null when reason is. */
                             reason_message: string | null;
                             /** @description The person, read live; null once the Contact is deleted. */
