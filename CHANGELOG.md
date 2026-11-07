@@ -7,6 +7,14 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [Unreleased]
+
+### Enrollment move (types to regenerate from the deployed document before publish)
+
+- **`enrollments.move(id, { motion_id, at? })`**: ends the Enrollment with `finish_reason: "moved"` and enrolls its Contact in another Motion on the same account, at that Motion's first Step (`at` takes only `"start"`). Being in the first Motion never refuses it; the other Motion's rules do (`CONTACT_NOT_ENROLLABLE` with `reason`). Moving back later is allowed. Returns the new Enrollment.
+- **`ACCOUNT_NOT_IN_MOTION`** (409): the Motion you move to does not send from the Enrollment's account.
+- **Same shape, new meaning:** `finish_reason` gains `moved`; `CONTACT_NOT_ENROLLABLE`'s `reason` gains `known_chat` and `pending_invite` (a move only). An Enrollment ended `removed` or `moved` no longer counts for a Motion's `exclude.other_motions`. One **open** Enrollment per Contact, Motion and account (was: one ever).
+
 ## [0.46.0] - 2026-11-05
 
 ### Activity level (regenerated from staging b25643d91)

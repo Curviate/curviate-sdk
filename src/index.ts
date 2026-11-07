@@ -167,6 +167,7 @@ export type {
   EnrollmentEventBody,
   EnrollmentSignalBody,
   EnrollmentReassignBody,
+  EnrollmentMoveBody,
   EnrollmentReassignResult,
   EnrollmentBulkBody,
   EnrollmentBulkResult,
