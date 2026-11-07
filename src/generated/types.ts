@@ -4342,6 +4342,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/enrollments/{id}/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Move an enrollment to another motion
+         * @description Ends the Enrollment (finish_reason moved) and enrolls its Contact in another Motion on the same account, to start at that Motion's first Step. Being in the first Motion never refuses it; every other rule of the new Motion applies (do-not-contact, exclusion lists, filters). Moving back later is allowed. Refused, nothing changed, when that Motion is archived or does not send from the account. Needs Automate.
+         */
+        post: operations["postV1EnrollmentsIdMove"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/enrollments/bulk": {
         parameters: {
             query?: never;
@@ -4743,10 +4763,10 @@ export interface components {
                 message: string;
             };
             /**
-             * @description Present on CONTACT_NOT_ENROLLABLE: why the Contact was not enrolled (already_enrolled, do_not_contact, in_exclusion_list, in_other_motion or filtered_out). Present on BUDGET_EXHAUSTED: which rule refused. ceiling means the row's configured limit is spent, and you wait until reset_at or raise it. activity_window means the account is outside the hours it works in (never for a direct message: a send, new chat, edit, delete, reaction or read mark), and reset_at is when the window next opens. The two need different fixes, so branch on this rather than on the message; hint.parameter already names the right setting for each.
+             * @description Present on CONTACT_NOT_ENROLLABLE: why the Contact was not enrolled (already_enrolled, do_not_contact, in_exclusion_list, in_other_motion, known_chat, pending_invite or filtered_out; known_chat and pending_invite only on a move to another Motion). Present on BUDGET_EXHAUSTED: which rule refused. ceiling means the row's configured limit is spent, and you wait until reset_at or raise it. activity_window means the account is outside the hours it works in (never for a direct message: a send, new chat, edit, delete, reaction or read mark), and reset_at is when the window next opens. The two need different fixes, so branch on this rather than on the message; hint.parameter already names the right setting for each.
              * @enum {string}
              */
-            reason?: "ceiling" | "activity_window" | "already_enrolled" | "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "filtered_out";
+            reason?: "ceiling" | "activity_window" | "already_enrolled" | "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered_out";
             /** @description Present on BUDGET_EXHAUSTED, always true: the action did not happen and spent nothing. Limits are always enforced; no success response carries a safety warning. */
             blocked?: boolean;
             /** @description Present on RESOURCE_NOT_FOUND for a Contact id that was merged into another Contact (two records turned out to be one person): the id to use instead. */
@@ -20770,7 +20790,7 @@ export interface operations {
                          * @description Why it finished; null unless status is finished.
                          * @enum {string|null}
                          */
-                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | null;
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
                         /**
                          * @description Why the Contact was not enrolled; null unless status is skipped.
                          * @enum {string|null}
@@ -50984,7 +51004,7 @@ export interface operations {
                 /** @description With done_step only: how that Step ended. The 200 response description defines each value. */
                 outcome?: "executed" | "skipped" | "failed" | "accepted" | "not_accepted" | "replied" | "no_reply" | "seen";
                 /** @description Catalogue reason codes: skip, finish or Step reasons (on done_step when given). Repeat the key, comma-separate or mix; empties ignored. */
-                reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit")[];
+                reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit")[];
                 /** @description Only Enrollments whose variant on that variant's Step is this one. */
                 variant_id?: string;
                 /** @description Relationship to the account at the start: connected, not_connected, invite_pending, unknown. Repeat the key, comma-separate or mix; empties ignored. */
@@ -51052,7 +51072,7 @@ export interface operations {
                              * @description Why it finished; null unless status is finished.
                              * @enum {string|null}
                              */
-                            finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | null;
+                            finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
                             /**
                              * @description Why the Contact was not enrolled; null unless status is skipped.
                              * @enum {string|null}
@@ -51202,7 +51222,7 @@ export interface operations {
                          * @description Why it finished; null unless status is finished.
                          * @enum {string|null}
                          */
-                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | null;
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
                         /**
                          * @description Why the Contact was not enrolled; null unless status is skipped.
                          * @enum {string|null}
@@ -51255,7 +51275,7 @@ export interface operations {
                              * @description Why it was skipped or failed: a code of the reasons catalogue, https://docs.curviate.com/reference/motion-reasons.
                              * @enum {string|null}
                              */
-                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit" | null;
+                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit" | null;
                             /** @description The catalogue's one-line sentence for reason; null when reason is. */
                             reason_message: string | null;
                             /** @description The account that ran it; null for an entry no account ran (requeued). */
@@ -51370,7 +51390,7 @@ export interface operations {
                          * @description Why it finished; null unless status is finished.
                          * @enum {string|null}
                          */
-                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | null;
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
                         /**
                          * @description Why the Contact was not enrolled; null unless status is skipped.
                          * @enum {string|null}
@@ -51526,7 +51546,7 @@ export interface operations {
                          * @description Why it finished; null unless status is finished.
                          * @enum {string|null}
                          */
-                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | null;
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
                         /**
                          * @description Why the Contact was not enrolled; null unless status is skipped.
                          * @enum {string|null}
@@ -51689,7 +51709,7 @@ export interface operations {
                          * @description Why it finished; null unless status is finished.
                          * @enum {string|null}
                          */
-                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | null;
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
                         /**
                          * @description Why the Contact was not enrolled; null unless status is skipped.
                          * @enum {string|null}
@@ -51761,7 +51781,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ENROLLMENT_NOT_ACTIVE: a queued or skipped Enrollment, one whose Contact is gone, or one that finished with account_removed, account_unavailable, contact_deleted or contact_merged. MOTION_STATUS_CONFLICT: the Motion is archived, or its schedule.end_at has passed. STEP_IN_FLIGHT: a Step is being sent right now; try again in a minute. */
+            /** @description ENROLLMENT_NOT_ACTIVE: a queued or skipped Enrollment, one whose Contact is gone, or one that finished with account_removed, account_unavailable, contact_deleted, contact_merged, do_not_contact or moved. ALREADY_ENROLLED_ON_ACCOUNT: the Contact has another open Enrollment on this account in the Motion (moved back in); act on that one. MOTION_STATUS_CONFLICT: the Motion is archived, or its schedule.end_at has passed. STEP_IN_FLIGHT: a Step is being sent right now; try again in a minute. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -51861,7 +51881,7 @@ export interface operations {
                          * @description Why it finished; null unless status is finished.
                          * @enum {string|null}
                          */
-                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | null;
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
                         /**
                          * @description Why the Contact was not enrolled; null unless status is skipped.
                          * @enum {string|null}
@@ -52033,7 +52053,7 @@ export interface operations {
                          * @description Why it finished; null unless status is finished.
                          * @enum {string|null}
                          */
-                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | null;
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
                         /**
                          * @description Why the Contact was not enrolled; null unless status is skipped.
                          * @enum {string|null}
@@ -52214,7 +52234,7 @@ export interface operations {
                          * @description Why it finished; null unless status is finished.
                          * @enum {string|null}
                          */
-                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | null;
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
                         /**
                          * @description Why the Contact was not enrolled; null unless status is skipped.
                          * @enum {string|null}
@@ -52329,6 +52349,192 @@ export interface operations {
             };
         };
     };
+    postV1EnrollmentsIdMove: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Enrollment id (enr_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The Motion (mot_...) to move the Enrollment's Contact to. It must send from the Enrollment's account. */
+                    motion_id: string;
+                    /**
+                     * @description Where the new Enrollment begins: start (the default and only value), the first Step of that Motion's Sequence. Its own conditions (already connected, already messaged) decide what runs.
+                     * @enum {string}
+                     */
+                    at?: "start";
+                };
+            };
+        };
+        responses: {
+            /** @description The new Enrollment in the Motion you named, on the same account, queued to start at the first Step of that Motion's Sequence. The one you moved finished with finish_reason moved; its sends stay counted for its own Motion. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "enrollment";
+                        /** @description Enrollment id (enr_...). */
+                        id: string;
+                        /** @description The Motion (mot_...). */
+                        motion_id: string;
+                        /** @description The Contact (con_...); null once the Contact is deleted. */
+                        contact_id: string | null;
+                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Motion takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
+                        account_id: string | null;
+                        /** @description The Sequence version this Enrollment runs on. */
+                        sequence_version: number;
+                        /**
+                         * @description queued: Waiting to start. active: Running. paused: Paused. finished: Finished, for any reason but a lost account (replied and messaged_manually included). failed: Finished because the sending account became unavailable or was removed (derived: such an Enrollment is stored as finished). skipped: Skipped at admission or start.
+                         * @enum {string}
+                         */
+                        status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
+                        /** @description The Step it is at; null before it starts. */
+                        current_step_id: string | null;
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
+                        waiting: {
+                            /** @enum {string} */
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
+                            /** @description The Step it waits at; null before it starts. */
+                            step_id: string | null;
+                            /** @description ISO 8601, when the wait ends; null when open-ended. */
+                            until: string | null;
+                        } | null;
+                        /**
+                         * @description Why it finished; null unless status is finished.
+                         * @enum {string|null}
+                         */
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
+                        /**
+                         * @description Why the Contact was not enrolled; null unless status is skipped.
+                         * @enum {string|null}
+                         */
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
+                        finish_message: string | null;
+                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
+                        skip_message: string | null;
+                        /** @description More on the skip, for example the index of the where filter that failed. */
+                        skip_detail: string | null;
+                        /** @description True once the Contact replied. */
+                        replied: boolean;
+                        /** @description The variant chosen per Step: step id to variant id. */
+                        variants: {
+                            [key: string]: string;
+                        };
+                        /**
+                         * @description The Contact's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
+                         * @enum {string|null}
+                         */
+                        relationship_at_enrollment: "connected" | "not_connected" | "invite_pending" | "unknown" | null;
+                        /** @description ISO 8601. */
+                        created_at: string;
+                        /** @description When it started. */
+                        started_at: string | null;
+                        /** @description When it finished. */
+                        finished_at: string | null;
+                        /** @description Enrollment values: what the Sequence's save maps took from an incoming event, name to value (read them as {{enrollment.<name>}} and if enrollment.<name>). They end with the Enrollment: empty from the moment it finishes, and empty after a resume. */
+                        values: {
+                            [key: string]: string | number | boolean;
+                        };
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: motion_id is missing or names the Enrollment's own Motion, at is not start, or an unknown key. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Motion sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Motion sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. The same for the Motion you move it to: you need to be allowed to send from its accounts. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Enrollment, or no such Motion (another team's included). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Nothing changed. ENROLLMENT_NOT_ACTIVE: the Enrollment is finished or skipped; move needs queued, active or paused. MOTION_STATUS_CONFLICT: the Motion you named is archived, or its schedule.end_at has passed. ACCOUNT_NOT_IN_MOTION: that Motion does not send from the Enrollment's account. ALREADY_ENROLLED_ON_ACCOUNT: the Contact's Enrollment in that Motion on this account completed or ended by a reply or a manual message, so it is not started over. STEP_IN_FLIGHT: a Step is being sent right now; try again in a minute. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description CONTACT_NOT_ENROLLABLE: the Motion you named refused the Contact; reason is do_not_contact, in_exclusion_list, known_chat, pending_invite, filtered_out or already_enrolled (an open Enrollment there already). Being in the other Motion never refuses a move. Nothing changed. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     postV1EnrollmentsBulk: {
         parameters: {
             query?: never;
@@ -52373,7 +52579,7 @@ export interface operations {
                          */
                         outcome?: "executed" | "skipped" | "failed" | "accepted" | "not_accepted" | "replied" | "no_reply" | "seen";
                         /** @description Catalogue reason codes. */
-                        reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit")[];
+                        reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit")[];
                         /** @description Only Enrollments whose variant on that variant's Step is this one. */
                         variant_id?: string;
                         /** @description Any of connected, not_connected, invite_pending, unknown. */
@@ -55017,7 +55223,7 @@ export interface operations {
                              * @description Why a step was skipped or failed, as a code of the reasons catalogue (https://docs.curviate.com/reference/motion-reasons); null otherwise.
                              * @enum {string|null}
                              */
-                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit" | null;
+                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit" | null;
                             /** @description The catalogue's one-line plain-words sentence for reason; null when reason is. */
                             reason_message: string | null;
                             /** @description The person, read live; null once the Contact is deleted. */
