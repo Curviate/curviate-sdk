@@ -460,6 +460,7 @@ export const TEMPLATE_SAMPLE: Omit<TemplateContext, "event"> = {
         location: "Berlin, Germany",
         linkedin_url: "https://www.linkedin.com/in/alexjordan",
         about: "Operations lead building calm, repeatable processes.",
+        language: "en",
         extra: {},
     },
     motion: { id: "mot_01J8Z3K9P0Q1R2S3T4V5W6X7Y8", name: "Q4 founders outreach" },
