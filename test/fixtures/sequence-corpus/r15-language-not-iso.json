@@ -1,0 +1,58 @@
+{
+  "about": "r15 contact.language compares ISO 639-1 codes: a language name or an unknown code is refused",
+  "rules": [
+    "R15"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "c",
+        "if": {
+          "contact.language": {
+            "in": [
+              "de",
+              "German"
+            ]
+          }
+        },
+        "then": "d",
+        "else": "end"
+      },
+      {
+        "id": "d",
+        "if": {
+          "contact.language": {
+            "eq": "xx"
+          }
+        },
+        "then": "end",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "c.if",
+      "rule": "contact.language compares ISO 639-1 language codes, like {\"eq\": \"de\"}",
+      "code": "R15",
+      "message": "contact.language compares ISO 639-1 language codes, like {\"eq\": \"de\"}",
+      "pointer": "/steps/0/if",
+      "hint": "Use one predicate key per object with its typed operand; chain if steps instead of all or any. account.* and message.* work in if steps only.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r15",
+      "severity": "error"
+    },
+    {
+      "path": "d.if",
+      "rule": "contact.language compares ISO 639-1 language codes, like {\"eq\": \"de\"}",
+      "code": "R15",
+      "message": "contact.language compares ISO 639-1 language codes, like {\"eq\": \"de\"}",
+      "pointer": "/steps/1/if",
+      "hint": "Use one predicate key per object with its typed operand; chain if steps instead of all or any. account.* and message.* work in if steps only.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r15",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}
