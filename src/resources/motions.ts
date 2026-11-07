@@ -68,6 +68,16 @@ export type EnrollmentEventBody = NonNullable<paths["/v1/enrollments/{id}/events
 export type EnrollmentSignalBody = NonNullable<paths["/v1/enrollments/{id}/signal"]["post"]["requestBody"]>["content"]["application/json"];
 export type EnrollmentReassignBody = NonNullable<paths["/v1/enrollments/{id}/reassign"]["post"]["requestBody"]>["content"]["application/json"];
 export type EnrollmentReassignResult = paths["/v1/enrollments/{id}/reassign"]["post"]["responses"]["200"]["content"]["application/json"];
+/**
+ * Body of `enrollments.move`. Hand-written until the types are regenerated from the deployed OpenAPI document,
+ * which gains `POST /v1/enrollments/{id}/move`.
+ */
+export interface EnrollmentMoveBody {
+  /** The Motion (`mot_...`) to move the Enrollment's Contact to. It must send from the Enrollment's account. */
+  motion_id: string;
+  /** Where the new Enrollment begins: `start` (the default and only value), the first Step of that Motion's Sequence. */
+  at?: "start";
+}
 export type EnrollmentBulkBody = NonNullable<paths["/v1/enrollments/bulk"]["post"]["requestBody"]>["content"]["application/json"];
 export type EnrollmentBulkResult = paths["/v1/enrollments/bulk"]["post"]["responses"]["200"]["content"]["application/json"];
 /** One Enrollment's result in a bulk call; what `enrollments.retry` resolves with. */
@@ -517,6 +527,30 @@ export class EnrollmentsResource {
    */
   reassign(enrollmentId: string, body: EnrollmentReassignBody): Promise<EnrollmentReassignResult> {
     return this.ctx.request<EnrollmentReassignResult>({ method: "POST", path: apiPath`/v1/enrollments/${enrollmentId}/reassign`, body });
+  }
+
+  /**
+   * Move an Enrollment's Contact to another Motion on the same account. The
+   * Enrollment ends with `finish_reason: "moved"`; the new one, in the Motion
+   * you name, is returned queued to start at that Motion's first Step, whose
+   * own conditions (already connected, already messaged) read the person's
+   * live state. Being in the first Motion never refuses it; every other rule
+   * of the new Motion does, as `CONTACT_NOT_ENROLLABLE` with `reason`
+   * (`do_not_contact`, `in_exclusion_list`, `known_chat`, `pending_invite`,
+   * `filtered_out`, `already_enrolled`). Moving back later is allowed.
+   * Refused, nothing changed, with `ENROLLMENT_NOT_ACTIVE` (finished or
+   * skipped), `MOTION_STATUS_CONFLICT` (that Motion is archived or past its
+   * end), `ACCOUNT_NOT_IN_MOTION` (it does not send from the account) or
+   * `STEP_IN_FLIGHT`. Sends so far stay counted for the first Motion.
+   * `POST /v1/enrollments/{id}/move`
+   *
+   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   *
+   * @example
+   * const moved = await curviate.enrollments.move("enr_123", { motion_id: "mot_456" });
+   */
+  move(enrollmentId: string, body: EnrollmentMoveBody): Promise<Enrollment> {
+    return this.ctx.request<Enrollment>({ method: "POST", path: apiPath`/v1/enrollments/${enrollmentId}/move`, body });
   }
 
   /**

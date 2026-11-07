@@ -409,8 +409,12 @@ export const ERROR_CODES = [
   //   account already holds this Contact in the Motion, or is its own account.
   // - `KNOWN_CHAT` (409): reassign refused: the Motion excludes known chats
   //   and the Contact already has a chat with your team.
-  // - `CONTACT_NOT_ENROLLABLE` (422): adding a Contact to a Motion from a chat
-  //   was refused (already enrolled, excluded, in another Motion, filtered).
+  // - `ACCOUNT_NOT_IN_MOTION` (409): move refused: the Motion you move an
+  //   Enrollment to does not send from the Enrollment's account.
+  // - `CONTACT_NOT_ENROLLABLE` (422): adding a Contact to a Motion from a chat,
+  //   or moving an Enrollment to another Motion, was refused (already enrolled,
+  //   excluded, in another Motion, known chat or pending invitation on a move,
+  //   filtered).
   // - `CHAT_NOT_ONE_TO_ONE` (422): a Unibox Contact action on a group chat,
   //   or a chat whose counterpart is not a person.
   "MOTION_NOT_STARTABLE",
@@ -421,6 +425,7 @@ export const ERROR_CODES = [
   "ACCOUNT_ALREADY_ENGAGED",
   "ALREADY_ENROLLED_ON_ACCOUNT",
   "KNOWN_CHAT",
+  "ACCOUNT_NOT_IN_MOTION",
   "CONTACT_NOT_ENROLLABLE",
   "CHAT_NOT_ONE_TO_ONE",
 
