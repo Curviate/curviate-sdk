@@ -7,6 +7,12 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [Unreleased]
+
+### Pending invitations
+
+- `motions.preview()` JSDoc lists the `pending_invite` skip count (Motions skip a Contact any Team Account has a pending invitation to; `settings.exclude.pending_invites`, default on) and `not_connected`. `invites.listSent()` items may carry `user.public_identifier`, filled from stored data. Generated types follow on the next regeneration from the deployed API.
+
 ## [0.48.0] - 2026-11-08
 
 ### Contact import applies lists
