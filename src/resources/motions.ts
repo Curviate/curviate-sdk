@@ -540,7 +540,9 @@ export class EnrollmentsResource {
    * `filtered_out`, `already_enrolled`). Moving back later is allowed.
    * Refused, nothing changed, with `ENROLLMENT_NOT_ACTIVE` (finished or
    * skipped), `MOTION_STATUS_CONFLICT` (that Motion is archived or past its
-   * end), `ACCOUNT_NOT_IN_MOTION` (it does not send from the account) or
+   * end), `ACCOUNT_NOT_IN_MOTION` (it does not send from the account),
+   * `ALREADY_ENROLLED_ON_ACCOUNT` (the person completed that Motion or
+   * replied there on this account, so it is not started over) or
    * `STEP_IN_FLIGHT`. Sends so far stay counted for the first Motion.
    * `POST /v1/enrollments/{id}/move`
    *
