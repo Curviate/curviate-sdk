@@ -322,7 +322,8 @@ export class MotionsResource {
    *
    * `projection.audience` is `{ total, skipped, to_enroll }`, `skipped`
    * counted per reason (`do_not_contact`, `excluded`, `other_motion`,
-   * `known_chat`, `filtered`; a Contact counts under the first that applies);
+   * `known_chat`, `pending_invite`, `filtered`, `not_connected`; a Contact
+   * counts under the first that applies);
    * `projection.contacts` equals `to_enroll`. `projection.accounts[]` names the
    * pool that binds each account's pace (`binding`), its
    * `expected_actions_per_day` (an upper estimate) and `projection.warnings[]`
