@@ -3705,7 +3705,7 @@ export interface paths {
         put?: never;
         /**
          * Import contacts
-         * @description Imports Contacts from rows or CSV text, keyed on LinkedIn identity as POST /v1/contacts; re-importing merges. Up to 10000 rows. 500 rows or fewer run in the request (201, per-row report inline); more run in the background (202). A bad value skips its row, a bad structure refuses all. Needs Automate.
+         * @description Imports Contacts from rows or CSV text, keyed on LinkedIn identity as POST /v1/contacts; re-importing merges. Up to 10000 rows. 500 rows or fewer run in the request (201, per-row report inline); more run in the background (202). A bad value skips its row, a bad structure refuses all. apply_lists: true adds each row's Contact to the Contact lists named in its lists (created by name), so an export re-imports with its lists; the Team's list limit skips the row (list_limit_reached). Needs Automate.
          */
         post: operations["postV1ContactsImports"];
         delete?: never;
@@ -45941,7 +45941,7 @@ export interface operations {
                                  * @description Why a row was skipped.
                                  * @enum {string|null}
                                  */
-                                reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
+                                reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
                                 /** @description The field a field_too_long row names. */
                                 field: string | null;
                                 /** @description An earlier row of this import for the same person. */
@@ -46014,6 +46014,8 @@ export interface operations {
                     tags?: string[];
                     /** @description Tag names removed from every row's Contact. */
                     remove_tags?: string[];
+                    /** @description Default false: a row's `lists` (names) is ignored. True: each row's Contact joins those Contact lists, created if missing; never removed. Past the Team's list limit the row is skipped (list_limit_reached). */
+                    apply_lists?: boolean;
                     /** @description csv only: a map of header to target (a standard field, `tags`, `extra.<key>` or `ignore`) that overrides the header matching. */
                     mapping?: {
                         [key: string]: string;
@@ -46087,7 +46089,7 @@ export interface operations {
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -46156,7 +46158,7 @@ export interface operations {
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -46310,7 +46312,7 @@ export interface operations {
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -46406,7 +46408,7 @@ export interface operations {
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */

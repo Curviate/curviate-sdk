@@ -7,6 +7,14 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [0.48.0] - 2026-11-08
+
+### Contact import applies lists
+
+- **`contacts.imports.create({ ..., apply_lists: true })`** (`POST /v1/contacts/imports`): each row's Contact joins the Contact lists named in its `lists` (a JSON array of names, or the CSV export's `lists` column, names joined with `;`), and a list that does not exist is created by name (any casing matches). Membership is only added, never removed. A row that would take the Team past its Contact list limit is skipped with the new reason `list_limit_reached`; a list name that is empty or over 100 characters skips its row with `invalid_list`. Works for inline and queued imports. One export re-imports into another Team with its lists: a CSV export always has the `lists` column; a JSON or NDJSON export has it when `fields` includes `lists`.
+- **Same name, new meaning:** `lists` on an import row, and a `lists` CSV column, stay ignored (read-only, as before) unless `apply_lists` is true. Default off, so an existing import file behaves as it did.
+- `ContactImportCreateBody` gains `apply_lists?: boolean`; the report `reason` enum gains `invalid_list` and `list_limit_reached`. Types regenerated from a local build of the server change (not yet deployed); refresh from staging after the deploy.
+
 ## [0.47.0] - 2026-11-08
 
 ### Do-not-contact file

@@ -73,6 +73,11 @@ export class ContactImportsResource {
    * as is) or `csv` (the file as text; `delimiter` and a header `mapping`
    * are optional). `list_id` or `list_name` adds every row's Contact to a
    * list, `tags`/`remove_tags` add or remove Tags on every row's Contact.
+   * `apply_lists: true` also adds each row's Contact to the Contact lists named
+   * in its `lists` (a JSON array of names, or the CSV export's `lists` column),
+   * creating a missing list by name; it only adds, and a row past the Team's
+   * list limit is skipped (`list_limit_reached`). Off by default, `lists` is
+   * ignored. A JSON export names lists only when `fields` includes `lists`.
    * `POST /v1/contacts/imports`
    *
    * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
