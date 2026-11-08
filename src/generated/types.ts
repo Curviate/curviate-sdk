@@ -3043,7 +3043,7 @@ export interface paths {
         };
         /**
          * List webhook event types
-         * @description Returns the complete canonical event catalogue (40 events) grouped by source: messaging (7), user (2), account_status (15), post (2), motion (11), plus 3 recruiter/sales_nav events. A local catalogue read: no platform call is made.
+         * @description Returns the complete canonical event catalogue (37 events) grouped by source: messaging (7), user (2), account_status (12), post (2), motion (11), plus 3 recruiter/sales_nav events. A local catalogue read: no platform call is made.
          */
         get: operations["getV1WebhooksEvents"];
         put?: never;
