@@ -234,6 +234,10 @@ export type {
   DoNotContactEntry,
   DoNotContactAddBody,
   DoNotContactUpdateBody,
+  DoNotContactExportParams,
+  DoNotContactExportRow,
+  DoNotContactImportBody,
+  DoNotContactImportResult,
 } from "./resources/do-not-contact.js";
 
 export type {

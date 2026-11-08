@@ -82,3 +82,25 @@ describe("served error details", () => {
     expect(isCurviateError(err) && err.details).toEqual({ account_id: "acc_9" });
   });
 });
+
+describe("do-not-contact file", () => {
+  it("export asks for the format and resolves json as entries, csv as bytes; import posts the rows and resolves the report", async () => {
+    let posted: unknown;
+    server.use(
+      http.get(`${BASE}/v1/do-not-contact/export`, ({ request }) =>
+        new URL(request.url).searchParams.get("format") === "json"
+          ? HttpResponse.json([{ linkedin_url: "https://www.linkedin.com/in/ana/", reason: null, added_by: null, via: "api", created_at: "2026-11-08T10:00:00.000Z", id: "dnc_1" }])
+          : new HttpResponse("﻿linkedin_url,reason\r\n", { headers: { "content-type": "text/csv" } }),
+      ),
+      http.post(`${BASE}/v1/do-not-contact/import`, async ({ request }) => {
+        posted = await request.json();
+        return HttpResponse.json({ object: "do_not_contact_import", total_rows: 1, counts: { created: 1, unchanged: 0, skipped: 0 }, report: [] });
+      }),
+    );
+    expect((await client.doNotContact.export({ format: "json" }))[0]?.id).toBe("dnc_1");
+    expect(text(await client.doNotContact.export({ format: "csv" }))).toBe("﻿linkedin_url,reason\r\n");
+    const rows = [{ linkedin_url: "https://www.linkedin.com/in/ana/", reason: "asked_to_stop" as const }];
+    expect((await client.doNotContact.import({ rows })).counts?.created).toBe(1);
+    expect(posted).toEqual({ rows });
+  });
+});
