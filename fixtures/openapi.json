@@ -114750,6 +114750,8 @@
                               "contact_too_large",
                               "too_many_tags",
                               "tag_limit_reached",
+                              "invalid_list",
+                              "list_limit_reached",
                               "malformed_row",
                               "contact_limit_reached",
                               "contact_deleted",
@@ -115036,6 +115038,8 @@
                               "contact_too_large",
                               "too_many_tags",
                               "tag_limit_reached",
+                              "invalid_list",
+                              "list_limit_reached",
                               "malformed_row",
                               "contact_limit_reached",
                               "contact_deleted",
@@ -115302,7 +115306,7 @@
           }
         ],
         "x-curviate-tier": "automate",
-        "description": "Imports Contacts from rows or CSV text, keyed on LinkedIn identity as POST /v1/contacts; re-importing merges. Up to 10000 rows. 500 rows or fewer run in the request (201, per-row report inline); more run in the background (202). A bad value skips its row, a bad structure refuses all. Needs Automate.",
+        "description": "Imports Contacts from rows or CSV text, keyed on LinkedIn identity as POST /v1/contacts; re-importing merges. Up to 10000 rows. 500 rows or fewer run in the request (201, per-row report inline); more run in the background (202). A bad value skips its row, a bad structure refuses all. apply_lists: true adds each row's Contact to the Contact lists named in its lists (created by name), so an export re-imports with its lists; the Team's list limit skips the row (list_limit_reached). Needs Automate.",
         "x-curviate-limits": {
           "rows": 10000,
           "body_bytes": 9437184
@@ -115355,6 +115359,10 @@
                     },
                     "description": "Tag names removed from every row's Contact."
                   },
+                  "apply_lists": {
+                    "type": "boolean",
+                    "description": "Default false: a row's `lists` (names) is ignored. True: each row's Contact joins those Contact lists, created if missing; never removed. Past the Team's list limit the row is skipped (list_limit_reached)."
+                  },
                   "mapping": {
                     "type": "object",
                     "additionalProperties": {
@@ -115400,6 +115408,22 @@
                       "Vorname": "first_name"
                     },
                     "list_name": "Q4 webinar"
+                  }
+                },
+                "lists": {
+                  "summary": "An export, lists applied",
+                  "value": {
+                    "rows": [
+                      {
+                        "linkedin_url": "https://www.linkedin.com/in/jane-doe/",
+                        "first_name": "Jane",
+                        "lists": [
+                          "Q4 webinar",
+                          "Customers"
+                        ]
+                      }
+                    ],
+                    "apply_lists": true
                   }
                 }
               }
@@ -115646,6 +115670,8 @@
                                     "contact_too_large",
                                     "too_many_tags",
                                     "tag_limit_reached",
+                                    "invalid_list",
+                                    "list_limit_reached",
                                     "malformed_row",
                                     "contact_limit_reached",
                                     "contact_deleted",
@@ -116066,6 +116092,8 @@
                               "contact_too_large",
                               "too_many_tags",
                               "tag_limit_reached",
+                              "invalid_list",
+                              "list_limit_reached",
                               "malformed_row",
                               "contact_limit_reached",
                               "contact_deleted",
@@ -116387,6 +116415,8 @@
                               "contact_too_large",
                               "too_many_tags",
                               "tag_limit_reached",
+                              "invalid_list",
+                              "list_limit_reached",
                               "malformed_row",
                               "contact_limit_reached",
                               "contact_deleted",
