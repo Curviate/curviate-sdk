@@ -9,7 +9,7 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [0.47.0] - 2026-11-08
 
-### Do-not-contact file (types added from the staging API at the #3241 head)
+### Do-not-contact file
 
 - **`doNotContact.export({ format? })`** (`GET /v1/do-not-contact/export`): the whole list in one download, oldest first. `format: "json"` resolves with the entry array (`DoNotContactExportRow`: `linkedin_url`, `reason`, `added_by`, `via`, `created_at`, `id`); `csv` (UTF-8 with a BOM) and `ndjson` (default) resolve with the raw bytes. `linkedin_url` is `null` once the Contact was deleted. Owners and Managers only (`INSUFFICIENT_ROLE`).
 - **`doNotContact.import({ rows } | { csv, delimiter? })`** (`POST /v1/do-not-contact/import`): up to 10,000 rows of `{ linkedin_url, reason? }`, or CSV text with a header line (an exported file works as it is). Each row works as `add`: a person already listed is `unchanged`, their entry and reason stay. A bad URL or reason skips its row (`skip_reason`), a bad structure rejects the file. Resolves with `{ counts, report }`. Any team member may import; needs Automate.
