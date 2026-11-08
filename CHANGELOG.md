@@ -13,15 +13,19 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 - **`contacts.imports.create({ ..., apply_lists: true })`** (`POST /v1/contacts/imports`): each row's Contact joins the Contact lists named in its `lists` (a JSON array of names, or the CSV export's `lists` column, names joined with `;`), and a list that does not exist is created by name (any casing matches). Membership is only added, never removed. A row that would take the Team past its Contact list limit is skipped with the new reason `list_limit_reached`; a list name that is empty or over 100 characters skips its row with `invalid_list`. Works for inline and queued imports. One export re-imports into another Team with its lists: a CSV export always has the `lists` column; a JSON or NDJSON export has it when `fields` includes `lists`.
 - **Same name, new meaning:** `lists` on an import row, and a `lists` CSV column, stay ignored (read-only, as before) unless `apply_lists` is true. Default off, so an existing import file behaves as it did.
-- `ContactImportCreateBody` gains `apply_lists?: boolean`; the report `reason` enum gains `invalid_list` and `list_limit_reached`. Types regenerated from a local build of the server change (not yet deployed); refresh from staging after the deploy.
-
-## [0.47.0] - 2026-11-08
+- `ContactImportCreateBody` gains `apply_lists?: boolean`; the report `reason` enum gains `invalid_list` and `list_limit_reached`.
 
 ### Do-not-contact file
 
 - **`doNotContact.export({ format? })`** (`GET /v1/do-not-contact/export`): the whole list in one download, oldest first. `format: "json"` resolves with the entry array (`DoNotContactExportRow`: `linkedin_url`, `reason`, `added_by`, `via`, `created_at`, `id`); `csv` (UTF-8 with a BOM) and `ndjson` (default) resolve with the raw bytes. `linkedin_url` is `null` once the Contact was deleted. Owners and Managers only (`INSUFFICIENT_ROLE`).
 - **`doNotContact.import({ rows } | { csv, delimiter? })`** (`POST /v1/do-not-contact/import`): up to 10,000 rows of `{ linkedin_url, reason? }`, or CSV text with a header line (an exported file works as it is). Each row works as `add`: a person already listed is `unchanged`, their entry and reason stay. A bad URL or reason skips its row (`skip_reason`), a bad structure rejects the file. Resolves with `{ counts, report }`. Any team member may import; needs Automate.
 - **Same name, new meaning:** `doNotContact.add` no longer says there is no bulk route; `import` is it. No type or runtime change to `add`.
+
+### Descriptions only (regenerated from staging f4ecd2656)
+
+- The `credentials.password` doc comment on `auth.intent` now says the password is used to connect the Account and is not stored unless Keep connected is on. No type or runtime change.
+
+0.47.0 was never published; its changes ship in 0.48.0.
 
 ## [0.46.0] - 2026-11-05
 
