@@ -3893,9 +3893,49 @@ export interface paths {
         put?: never;
         /**
          * Add a person to the do-not-contact list
-         * @description Adds one person by contact_id or linkedin_url; a URL of someone who is not a Contact yet creates the Contact first, from stored data only. 201 when added; a person already on the list answers 200 with their entry. Any team member may add. No bulk route: loop for many. Needs Automate.
+         * @description Adds one person by contact_id or linkedin_url; a URL of someone who is not a Contact yet creates the Contact first, from stored data only. 201 when added; a person already on the list answers 200 with their entry. Any team member may add. For many people, POST /v1/do-not-contact/import takes a file. Needs Automate.
          */
         post: operations["postV1DoNotContact"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/do-not-contact/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export the do-not-contact list
+         * @description Streams your team's whole do-not-contact list in one download, oldest first, as CSV, JSON or NDJSON (default). No cursor. Each entry has linkedin_url, reason, added_by, via, created_at, id; linkedin_url is empty once the person's Contact was deleted. The file re-imports as it is (POST /v1/do-not-contact/import). Owner and Manager only.
+         */
+        get: operations["getV1DoNotContactExport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/do-not-contact/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import a do-not-contact file
+         * @description Adds the people of a file to the do-not-contact list: rows of linkedin_url and an optional reason, as JSON rows or CSV text, up to 10000 rows. Each row works as POST /v1/do-not-contact: a URL of someone who is not a Contact yet creates the Contact from stored data, and a person already on the list is reported unchanged (their entry and reason stay). The answer is the per-row report. A bad URL or reason skips its row and the others apply; a bad structure refuses the file. A do-not-contact export re-imports as it is. Any team member may import. Needs Automate.
+         */
+        post: operations["postV1DoNotContactImport"];
         delete?: never;
         options?: never;
         head?: never;
@@ -47814,6 +47854,224 @@ export interface operations {
             };
             /** @description CONTACT_LIMIT_REACHED: adding by URL would create a Contact past your team's cap. Nothing is written. */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1DoNotContactExport: {
+        parameters: {
+            query?: {
+                /** @description csv, json or ndjson (default). */
+                format?: "csv" | "json" | "ndjson";
+            };
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The whole list in one streamed download (Content-Disposition: attachment): NDJSON (default), CSV (UTF-8 with a BOM) or JSON. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/x-ndjson": string;
+                    "text/csv": string;
+                    "application/json": {
+                        /** @description The person's LinkedIn profile URL; null once the Contact is deleted. */
+                        linkedin_url?: string | null;
+                        /**
+                         * @description Why, from a fixed list.
+                         * @enum {string|null}
+                         */
+                        reason?: "asked_to_stop" | "existing_customer" | "competitor" | "partner" | "employee" | "other" | null;
+                        /** @description Name of the team member who added it. */
+                        added_by?: string | null;
+                        /**
+                         * @description Where it was added.
+                         * @enum {string}
+                         */
+                        via?: "dashboard" | "api" | "mcp";
+                        /** Format: date-time */
+                        created_at?: string;
+                        /** @description Entry id (dnc_...). */
+                        id?: string;
+                    }[];
+                };
+            };
+            /** @description A format outside csv, json and ndjson. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: in a team, only an Owner or a Manager exports. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1DoNotContactImport: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The rows: objects with linkedin_url (required) and reason (optional). Send rows or csv, not both. */
+                    rows?: {
+                        [key: string]: unknown;
+                    }[];
+                    /** @description The file as text (RFC 4180, UTF-8) with a header line; a linkedin_url column and optionally a reason column. A do-not-contact export re-imports as it is. Send rows or csv, not both. */
+                    csv?: string;
+                    /**
+                     * @description csv only: , ; or tab. Default: the most frequent in the header line.
+                     * @enum {string}
+                     */
+                    delimiter?: "," | ";" | "\t";
+                };
+            };
+        };
+        responses: {
+            /** @description The per-row report. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object?: "do_not_contact_import";
+                        /** @description Rows in the file. */
+                        total_rows?: number;
+                        /** @description Rows by outcome. */
+                        counts?: {
+                            created?: number;
+                            unchanged?: number;
+                            skipped?: number;
+                        };
+                        /** @description One entry per row, in file order. */
+                        report?: {
+                            /** @description Data row number, from 1 (the header line does not count). */
+                            row?: number;
+                            /**
+                             * @description created: put on the list. unchanged: already on the list. skipped: see skip_reason.
+                             * @enum {string}
+                             */
+                            outcome?: "created" | "unchanged" | "skipped";
+                            /** @description The person's entry (dnc_...), created or existing. */
+                            entry_id?: string | null;
+                            /** @description The person's Contact (con_...). */
+                            contact_id?: string | null;
+                            /**
+                             * @description Why the row was skipped.
+                             * @enum {string|null}
+                             */
+                            skip_reason?: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_reason" | "malformed_row" | "contact_limit_reached" | null;
+                            /** @description The field a skip is about. */
+                            field?: string | null;
+                            /** @description The first row of the file that named this person. */
+                            duplicate_of_row?: number | null;
+                        }[];
+                    };
+                };
+            };
+            /** @description Neither or both of rows and csv, a row that is not an object or holds an unknown key, a CSV without a header line or a LinkedIn URL column. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description PAYLOAD_TOO_LARGE: more than 10000 rows or a body over 9 MiB. Nothing is written. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -120511,7 +120511,7 @@
           }
         ],
         "x-curviate-tier": "automate",
-        "description": "Adds one person by contact_id or linkedin_url; a URL of someone who is not a Contact yet creates the Contact first, from stored data only. 201 when added; a person already on the list answers 200 with their entry. Any team member may add. No bulk route: loop for many. Needs Automate.",
+        "description": "Adds one person by contact_id or linkedin_url; a URL of someone who is not a Contact yet creates the Contact first, from stored data only. 201 when added; a person already on the list answers 200 with their entry. Any team member may add. For many people, POST /v1/do-not-contact/import takes a file. Needs Automate.",
         "requestBody": {
           "required": true,
           "content": {
@@ -120565,6 +120565,653 @@
           }
         },
         "x-order": 41
+      }
+    },
+    "/v1/do-not-contact/export": {
+      "get": {
+        "operationId": "getV1DoNotContactExport",
+        "tags": [
+          "Contacts"
+        ],
+        "summary": "Export the do-not-contact list",
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Curviate-Team",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team."
+          },
+          {
+            "name": "Curviate-Client",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "sdk/2.0.0"
+            },
+            "description": "Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you."
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "csv",
+                "json",
+                "ndjson"
+              ],
+              "default": "ndjson"
+            },
+            "description": "csv, json or ndjson (default)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The whole list in one streamed download (Content-Disposition: attachment): NDJSON (default), CSV (UTF-8 with a BOM) or JSON.",
+            "content": {
+              "application/x-ndjson": {
+                "schema": {
+                  "type": "string",
+                  "description": "One entry per line."
+                }
+              },
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "description": "A header row, then one row per entry."
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "linkedin_url": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "The person's LinkedIn profile URL; null once the Contact is deleted."
+                      },
+                      "reason": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "enum": [
+                          "asked_to_stop",
+                          "existing_customer",
+                          "competitor",
+                          "partner",
+                          "employee",
+                          "other",
+                          null
+                        ],
+                        "description": "Why, from a fixed list."
+                      },
+                      "added_by": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Name of the team member who added it."
+                      },
+                      "via": {
+                        "type": "string",
+                        "enum": [
+                          "dashboard",
+                          "api",
+                          "mcp"
+                        ],
+                        "description": "Where it was added."
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "id": {
+                        "type": "string",
+                        "description": "Entry id (dnc_...)."
+                      }
+                    }
+                  },
+                  "description": "Entries."
+                },
+                "examples": {
+                  "entries": {
+                    "summary": "format=json",
+                    "value": [
+                      {
+                        "linkedin_url": "https://www.linkedin.com/in/jane-doe/",
+                        "reason": "asked_to_stop",
+                        "added_by": "Sam Lee",
+                        "via": "api",
+                        "created_at": "2026-10-28T09:30:00.000Z",
+                        "id": "dnc_01J8Z3K9P0Q1R2S3T4V5W6X7Y8"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "headers": {
+              "RateLimit-Policy": {
+                "$ref": "#/components/headers/RateLimit-Policy"
+              },
+              "RateLimit": {
+                "$ref": "#/components/headers/RateLimit"
+              }
+            }
+          },
+          "400": {
+            "description": "A format outside csv, json and ndjson. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "400 error",
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "message": "A parameter failed validation.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  },
+                  "teamRequired": {
+                    "summary": "TEAM_REQUIRED",
+                    "value": {
+                      "code": "TEAM_REQUIRED",
+                      "message": "Name the Team with the X-Curviate-Team header. GET /v1/teams lists yours.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "401 error",
+                    "value": {
+                      "code": "UNAUTHORIZED",
+                      "message": "Missing or invalid API key.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "INSUFFICIENT_ROLE: in a team, only an Owner or a Manager exports. Not fixed by retrying.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "403 error",
+                    "value": {
+                      "code": "NO_ACTIVE_SEAT",
+                      "message": "The targeted account is not on an active seat.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited, slow down and retry after the hinted delay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "429 error",
+                    "value": {
+                      "code": "RATE_LIMIT_ACCOUNT",
+                      "message": "The per-account request rate limit was exceeded; retry after the delay in retry_hint. Per-team breaches carry RATE_LIMIT_TENANT; ingress-wide breaches (pre-auth, no per-client key) and upstream saturation both carry PLATFORM_RATE_LIMIT. A 429 on a budgeted action can also be BUDGET_EXHAUSTED, which is Curviate's own account-safety ceiling rather than a request-rate limit: it never reached LinkedIn, spent nothing, and carries row, reset_at and hint.",
+                      "user_fixable": false,
+                      "retry_likely_to_succeed": true
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "RateLimit-Policy": {
+                "$ref": "#/components/headers/RateLimit-Policy"
+              },
+              "RateLimit": {
+                "$ref": "#/components/headers/RateLimit"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          }
+        },
+        "description": "Streams your team's whole do-not-contact list in one download, oldest first, as CSV, JSON or NDJSON (default). No cursor. Each entry has linkedin_url, reason, added_by, via, created_at, id; linkedin_url is empty once the person's Contact was deleted. The file re-imports as it is (POST /v1/do-not-contact/import). Owner and Manager only.",
+        "x-order": 45
+      }
+    },
+    "/v1/do-not-contact/import": {
+      "post": {
+        "operationId": "postV1DoNotContactImport",
+        "tags": [
+          "Contacts"
+        ],
+        "summary": "Import a do-not-contact file",
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Curviate-Team",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team."
+          },
+          {
+            "name": "Curviate-Client",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "sdk/2.0.0"
+            },
+            "description": "Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The per-row report.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "object": {
+                      "type": "string",
+                      "enum": [
+                        "do_not_contact_import"
+                      ],
+                      "description": "Response type discriminator."
+                    },
+                    "total_rows": {
+                      "type": "integer",
+                      "description": "Rows in the file."
+                    },
+                    "counts": {
+                      "type": "object",
+                      "properties": {
+                        "created": {
+                          "type": "integer"
+                        },
+                        "unchanged": {
+                          "type": "integer"
+                        },
+                        "skipped": {
+                          "type": "integer"
+                        }
+                      },
+                      "description": "Rows by outcome."
+                    },
+                    "report": {
+                      "type": "array",
+                      "description": "One entry per row, in file order.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "row": {
+                            "type": "integer",
+                            "description": "Data row number, from 1 (the header line does not count)."
+                          },
+                          "outcome": {
+                            "type": "string",
+                            "enum": [
+                              "created",
+                              "unchanged",
+                              "skipped"
+                            ],
+                            "description": "created: put on the list. unchanged: already on the list. skipped: see skip_reason."
+                          },
+                          "entry_id": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "The person's entry (dnc_...), created or existing."
+                          },
+                          "contact_id": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "The person's Contact (con_...)."
+                          },
+                          "skip_reason": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "enum": [
+                              "missing_linkedin_url",
+                              "invalid_linkedin_url",
+                              "invalid_reason",
+                              "malformed_row",
+                              "contact_limit_reached",
+                              null
+                            ],
+                            "description": "Why the row was skipped."
+                          },
+                          "field": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "The field a skip is about."
+                          },
+                          "duplicate_of_row": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "description": "The first row of the file that named this person."
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "report": {
+                    "value": {
+                      "object": "do_not_contact_import",
+                      "total_rows": 3,
+                      "counts": {
+                        "created": 1,
+                        "unchanged": 1,
+                        "skipped": 1
+                      },
+                      "report": [
+                        {
+                          "row": 1,
+                          "outcome": "created",
+                          "entry_id": "dnc_01J8Z3K9P0Q1R2S3T4V5W6X7Y8",
+                          "contact_id": "con_01J8Z3K9P0Q1R2S3T4V5W6X7Y8",
+                          "skip_reason": null,
+                          "field": null,
+                          "duplicate_of_row": null
+                        },
+                        {
+                          "row": 2,
+                          "outcome": "unchanged",
+                          "entry_id": "dnc_01J8Z3K9P0Q1R2S3T4V5W6X7Y9",
+                          "contact_id": "con_01J8Z3K9P0Q1R2S3T4V5W6X7Y9",
+                          "skip_reason": null,
+                          "field": null,
+                          "duplicate_of_row": null
+                        },
+                        {
+                          "row": 3,
+                          "outcome": "skipped",
+                          "entry_id": null,
+                          "contact_id": null,
+                          "skip_reason": "invalid_reason",
+                          "field": "reason",
+                          "duplicate_of_row": null
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "RateLimit-Policy": {
+                "$ref": "#/components/headers/RateLimit-Policy"
+              },
+              "RateLimit": {
+                "$ref": "#/components/headers/RateLimit"
+              }
+            }
+          },
+          "400": {
+            "description": "Neither or both of rows and csv, a row that is not an object or holds an unknown key, a CSV without a header line or a LinkedIn URL column. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "400 error",
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "message": "A parameter failed validation.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  },
+                  "teamRequired": {
+                    "summary": "TEAM_REQUIRED",
+                    "value": {
+                      "code": "TEAM_REQUIRED",
+                      "message": "Name the Team with the X-Curviate-Team header. GET /v1/teams lists yours.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "401 error",
+                    "value": {
+                      "code": "UNAUTHORIZED",
+                      "message": "Missing or invalid API key.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "tierRequired": {
+                    "summary": "The team's Tier does not include Contacts",
+                    "value": {
+                      "code": "TIER_REQUIRED",
+                      "message": "Contacts are part of Automate. Ask a team Owner to upgrade.",
+                      "retry_hint": {
+                        "kind": "never"
+                      },
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false,
+                      "feature": "contacts",
+                      "required_tier": "automate",
+                      "current_tier": "build"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "PAYLOAD_TOO_LARGE: more than 10000 rows or a body over 9 MiB. Nothing is written.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "413 error",
+                    "value": {
+                      "code": "PAYLOAD_TOO_LARGE",
+                      "message": "Request body is too large: it exceeds the 9437184-byte limit.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited, slow down and retry after the hinted delay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "429 error",
+                    "value": {
+                      "code": "RATE_LIMIT_ACCOUNT",
+                      "message": "The per-account request rate limit was exceeded; retry after the delay in retry_hint. Per-team breaches carry RATE_LIMIT_TENANT; ingress-wide breaches (pre-auth, no per-client key) and upstream saturation both carry PLATFORM_RATE_LIMIT. A 429 on a budgeted action can also be BUDGET_EXHAUSTED, which is Curviate's own account-safety ceiling rather than a request-rate limit: it never reached LinkedIn, spent nothing, and carries row, reset_at and hint.",
+                      "user_fixable": false,
+                      "retry_likely_to_succeed": true
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "RateLimit-Policy": {
+                "$ref": "#/components/headers/RateLimit-Policy"
+              },
+              "RateLimit": {
+                "$ref": "#/components/headers/RateLimit"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          }
+        },
+        "x-badges": [
+          {
+            "name": "Automate",
+            "position": "after",
+            "color": "#A1A1AA"
+          }
+        ],
+        "x-curviate-tier": "automate",
+        "description": "Adds the people of a file to the do-not-contact list: rows of linkedin_url and an optional reason, as JSON rows or CSV text, up to 10000 rows. Each row works as POST /v1/do-not-contact: a URL of someone who is not a Contact yet creates the Contact from stored data, and a person already on the list is reported unchanged (their entry and reason stay). The answer is the per-row report. A bad URL or reason skips its row and the others apply; a bad structure refuses the file. A do-not-contact export re-imports as it is. Any team member may import. Needs Automate.",
+        "x-curviate-limits": {
+          "rows": 10000,
+          "body_bytes": 9437184
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rows": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": {}
+                    },
+                    "description": "The rows: objects with linkedin_url (required) and reason (optional). Send rows or csv, not both."
+                  },
+                  "csv": {
+                    "type": "string",
+                    "description": "The file as text (RFC 4180, UTF-8) with a header line; a linkedin_url column and optionally a reason column. A do-not-contact export re-imports as it is. Send rows or csv, not both."
+                  },
+                  "delimiter": {
+                    "type": "string",
+                    "enum": [
+                      ",",
+                      ";",
+                      "\t"
+                    ],
+                    "description": "csv only: , ; or tab. Default: the most frequent in the header line."
+                  }
+                },
+                "additionalProperties": false
+              },
+              "examples": {
+                "rows": {
+                  "summary": "Rows",
+                  "value": {
+                    "rows": [
+                      {
+                        "linkedin_url": "https://www.linkedin.com/in/jane-doe/",
+                        "reason": "asked_to_stop"
+                      },
+                      {
+                        "linkedin_url": "https://www.linkedin.com/in/sam-lee/"
+                      }
+                    ]
+                  }
+                },
+                "csv": {
+                  "summary": "CSV",
+                  "value": {
+                    "csv": "linkedin_url,reason\nhttps://www.linkedin.com/in/jane-doe/,asked_to_stop\n"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-order": 46
       }
     },
     "/v1/do-not-contact/{id}": {
