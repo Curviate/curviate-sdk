@@ -36526,7 +36526,7 @@ export interface operations {
                     credentials?: {
                         /** @description LinkedIn account email. */
                         email: string;
-                        /** @description LinkedIn account password. Encrypted at rest, never logged. */
+                        /** @description LinkedIn account password. Used to connect the Account; not stored unless Keep connected is on. Never logged. */
                         password: string;
                     };
                     /** @description Session-cookie authentication, supplied as a NESTED object (li_at does not go at the top level). Required when auth_method=cookie, which also requires a top-level user_agent. */
