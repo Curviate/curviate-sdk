@@ -6204,7 +6204,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. LINKEDIN_FEATURE_NOT_SUBSCRIBED: the connected LinkedIn account's own subscription level does not entitle it to view this person's profile. This is the same condition a people-search result reports in-band as visibility:"hidden" on GET/POST .../search/..., reading a hidden result back always ends here. It is not a bug or a misconfiguration; retrying will not help, and there is no request shape that makes this person readable from this account. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
+            /** @description Forbidden. LINKEDIN_FEATURE_NOT_SUBSCRIBED: the connected LinkedIn account's own subscription level does not entitle it to view this person's profile. This is the same condition a people-search result reports in-band as visibility:"hidden" on GET/POST .../search/..., reading a hidden result back always ends here. A profile outside the account's network, or one with restricted visibility, ends here too: the response does not say which. It is not a bug or a misconfiguration; retrying will not help, and there is no request shape that makes this person readable from this account. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -23279,6 +23279,10 @@ export interface operations {
                         object: "post_created";
                         /** @description The newly published post's own identifier. */
                         id: string;
+                        /** @description The post's plain numeric activity id, decoded from `id`. Null when `id` is absent or does not decode. */
+                        activity_id: string | null;
+                        /** @description Link to the post on LinkedIn, built from the activity id. Null when `activity_id` is null. */
+                        share_url: string | null;
                     };
                 };
             };
@@ -25478,6 +25482,10 @@ export interface operations {
                         object: "post_created";
                         /** @description The published post's id. */
                         id: string | null;
+                        /** @description The post's plain numeric activity id, decoded from `id`. Null when `id` is null or does not decode. */
+                        activity_id: string | null;
+                        /** @description Link to the post on LinkedIn, built from the activity id. Null when `activity_id` is null. */
+                        share_url: string | null;
                     };
                 };
             };
@@ -36538,6 +36546,8 @@ export interface operations {
                     };
                     /** @description Present = re-authenticate this existing account in place (reconnect); omit = connect a new account. */
                     account_id?: string;
+                    /** @description Retired. Accepted and ignored; use linkedin_premium. */
+                    trial_premium?: unknown;
                     /**
                      * @description Optional. Which LinkedIn premium surface this connection should ask for: 'sales_navigator' or 'recruiter'. Omit it and the connection asks for every product, and LinkedIn activates whichever ones the account actually has. One LinkedIn account can hold only one of the two premium surfaces, and when both are asked for Sales Navigator takes precedence, so set this to 'recruiter' if the account holds both and you want the Recruiter surface. This applies per connection and is not remembered: state it on every connect and reconnect where Recruiter must win.
                      * @enum {string}
@@ -39866,6 +39876,8 @@ export interface operations {
                     body_template?: string | null;
                     /** @description With motion.custom_event in events: null (the default) delivers every custom event, a list only those names (up to 50). GET /v1/webhooks/events lists the names your Sequences send under custom_events. */
                     custom_event_names?: string[] | null;
+                    /** @description Immutable. The webhook's current source is accepted and changes nothing; any other value is refused. */
+                    source?: string;
                 };
             };
         };
