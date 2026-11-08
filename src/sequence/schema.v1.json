@@ -863,7 +863,8 @@
                       "company",
                       "location",
                       "linkedin_url",
-                      "about"
+                      "about",
+                      "language"
                     ]
                   }
                 },
@@ -1417,6 +1418,46 @@
                         "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                       },
                       "contact.about": {
+                        "type": "object",
+                        "minProperties": 1,
+                        "maxProperties": 1,
+                        "additionalProperties": false,
+                        "properties": {
+                          "eq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "neq": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          },
+                          "in": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                              "type": [
+                                "string",
+                                "number",
+                                "boolean"
+                              ]
+                            }
+                          },
+                          "contains": {
+                            "type": "string"
+                          },
+                          "exists": {
+                            "type": "boolean"
+                          }
+                        },
+                        "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                      },
+                      "contact.language": {
                         "type": "object",
                         "minProperties": 1,
                         "maxProperties": 1,
@@ -2109,6 +2150,46 @@
                                 "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                               },
                               "contact.about": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "maxProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "eq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "neq": {
+                                    "type": [
+                                      "string",
+                                      "number",
+                                      "boolean"
+                                    ]
+                                  },
+                                  "in": {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "items": {
+                                      "type": [
+                                        "string",
+                                        "number",
+                                        "boolean"
+                                      ]
+                                    }
+                                  },
+                                  "contains": {
+                                    "type": "string"
+                                  },
+                                  "exists": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
+                              },
+                              "contact.language": {
                                 "type": "object",
                                 "minProperties": 1,
                                 "maxProperties": 1,
