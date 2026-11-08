@@ -88471,7 +88471,7 @@
                       "password": {
                         "type": "string",
                         "minLength": 1,
-                        "description": "LinkedIn account password. Encrypted at rest, never logged."
+                        "description": "LinkedIn account password. Used to connect the Account; not stored unless Keep connected is on. Never logged."
                       }
                     },
                     "required": [
