@@ -326,7 +326,9 @@ export class MotionsResource {
    * counts under the first that applies);
    * `projection.contacts` equals `to_enroll`. `projection.accounts[]` names the
    * pool that binds each account's pace (`binding`), its
-   * `expected_actions_per_day` (an upper estimate) and `projection.warnings[]`
+   * `expected_actions_per_day` (a draft: the mean daily invitations, messages
+   * and InMails of the first 7 days of its forecast, as if turned on now; a
+   * started Motion: an upper estimate at that pace) and `projection.warnings[]`
    * (`hours_below_share`, `no_sending_account`: no account of the Motion can
    * send its InMail step). There is no `daily_cap`. In
    * Several mode `accounts[].contacts` counts Enrollments, not people, and
