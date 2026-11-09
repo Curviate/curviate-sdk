@@ -34662,6 +34662,16 @@ export interface operations {
                         }[];
                         /** @description Next-page cursor; null on the last page. */
                         cursor?: string | null;
+                        /** @description How many accounts the whole list holds per status, whatever the page: every account you would page through, not only these items. warming: warm-up still below full limits. in_motion: in at least one Motion. */
+                        status_counts?: {
+                            active: number;
+                            connecting: number;
+                            reconnect_needed: number;
+                            restricted: number;
+                            disconnected: number;
+                            warming: number;
+                            in_motion: number;
+                        };
                     };
                 };
             };
