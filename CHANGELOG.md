@@ -9,6 +9,12 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+### Forecast (regenerated from a local document at curviate 0008e3269 (qa instance, `CURVIATE_FLAG_FORECAST=on`); regenerate from the deployed one before publishing)
+
+- **`include: "forecast"`** and **`forecast_days`** (1-365, default 30) on `analytics.motions.list`, `analytics.motions.get` and `accounts.overview`: `forecast` is `{ status, computed_at, version, through, daily[] }`, each day's expected `invites_sent`, `accepted`, `messages_sent`, `replies` (InMail replies included), `inmails_sent` and `inmail_replies`, from today through `forecast_days` or the last day with activity. A simulation of each Motion's Sequence, limits, warm-up, schedule and accounts with its observed rates: Motions only, the configuration frozen as it is now. `status: "computing"` while an account of the scope has had no simulation yet: `daily` is then today's zeros, not a forecast. A draft Motion reads as if turned on now (`null` with no account). Never in the summary; `forecast_days` without the section is a `400`. Cache it until `version` changes.
+- The regen also carries what staging already serves: a busy-Team `429` (`RATE_LIMIT_TENANT`) `details.import_id` and `details.started_at`, and description updates. No runtime change.
+- **Same name, new meaning:** a draft's `projection.accounts[].expected_actions_per_day` on `motions.preview` is the mean daily invitations, messages and InMails of the first 7 days of its forecast, as if turned on now. It was the steady-state pace times every budgeted step of the costliest route, an upper estimate, and stays so for a started Motion. The doc comment on `motions.preview` says so.
+
 ### Pending invitations
 
 - `motions.preview()` JSDoc lists the `pending_invite` skip count (Motions skip a Contact any Team Account has a pending invitation to; `settings.exclude.pending_invites`, default on) and `not_connected`. `invites.listSent()` items may carry `user.public_identifier`, filled from stored data. The generated types and `fixtures/openapi.json` already carry `settings.exclude.pending_invites`, the preview `skipped.pending_invite` and the `pending_invite` outcome; regenerated from staging e858d1ed0 with no type change (provenance only).

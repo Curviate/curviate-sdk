@@ -4898,9 +4898,12 @@ export interface components {
                 /** @description true: never connects from another country. */
                 strict?: boolean | null;
             };
-            /** @description Present on INVALID_REQUEST, CONNECTION_LOCATION_REQUIRED and PLATFORM_ERROR when an account PATCH's location change was refused (your own proxy, a country, clearing the proxy): account says where the account stands now, re-read after the attempt. Never any proxy field. Present on EXPORT_IN_PROGRESS: export_id names the export your team already has queued or running. It may be a teammate's, which GET /v1/exports/{id} answers 404; it finishes or fails within the hour, then start yours. Present on INVALID_REQUEST when a safety-policy write sent a removed key: removed_key names it. Drop that key from the request; limits are always enforced. Present on TIER_REQUIRED when one account lacks the feature while the team has it (an account on a seat another team lent this one carries that seat's Tier): account_id names it. Leave that account out, or ask the Owner who lent the seat. */
+            /** @description Present on INVALID_REQUEST, CONNECTION_LOCATION_REQUIRED and PLATFORM_ERROR when an account PATCH's location change was refused (your own proxy, a country, clearing the proxy): account says where the account stands now, re-read after the attempt. Never any proxy field. Present on RATE_LIMIT_TENANT when an import of your team holds the team's Contact write lock: import_id and started_at name it. Read it with GET /v1/contacts/imports/{id} (404 while an import of up to 500 rows is still being applied in its request: its record commits with its rows), then retry. Present on EXPORT_IN_PROGRESS: export_id names the export your team already has queued or running. It may be a teammate's, which GET /v1/exports/{id} answers 404; it finishes or fails within the hour, then start yours. Present on INVALID_REQUEST when a safety-policy write sent a removed key: removed_key names it. Drop that key from the request; limits are always enforced. Present on TIER_REQUIRED when one account lacks the feature while the team has it (an account on a seat another team lent this one carries that seat's Tier): account_id names it. Leave that account out, or ask the Owner who lent the seat. */
             details?: {
                 export_id?: string;
+                import_id?: string;
+                /** Format: date-time */
+                started_at?: string;
                 account_id?: string;
                 /** @enum {string} */
                 removed_key?: "posture" | "tenant_default_posture" | "posture_source";
@@ -35852,7 +35855,7 @@ export interface operations {
                 motion_id?: string;
                 /** @description motion, unibox (the Unibox), api (any API key or MCP grant), direct (unibox and api). Default: all. Repeat the key, comma-separate or mix; empties ignored. */
                 origin?: string;
-                /** @description Sections: profile, metrics, performance, daily, limits, motions, activity, flags. Omitted: the summary. Repeat the key, comma-separate or mix; empties ignored. */
+                /** @description Sections: profile, metrics, performance, daily, limits, motions, activity, flags, forecast. Omitted: the summary, which never holds forecast. Repeat the key, comma-separate or mix; empties ignored. */
                 include?: string;
                 /** @description Dotted paths kept in the sections, e.g. performance.reply.rate. A requested path always appears. Repeat the key, comma-separate or mix; empties ignored. */
                 fields?: string;
@@ -35862,6 +35865,8 @@ export interface operations {
                 limit?: number;
                 /** @description previous_period: each rate gains previous (the same number of days just before from) and delta (rate - previous rate). */
                 compare?: "previous_period";
+                /** @description Days of the Forecast after today, 1-365. Default: 30. Only with include=forecast. */
+                forecast_days?: number;
             };
             header?: {
                 /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
@@ -36465,6 +36470,36 @@ export interface operations {
                             /** @description The exact CLI call that looks into it. */
                             next: string;
                         }[];
+                        /** @description Only with include=forecast. forecast: what your Motions are expected to send and get per day, from today (its whole expected day) through forecast_days (1-365, default 30) or the last day with activity, whichever comes first. A simulation of each Motion's Sequence, limits, warm-up, schedule and accounts with its observed acceptance and reply rates. Motions only, no direct actions; the configuration is frozen as it is now: no new Enrollments, no edits. A draft Motion: as if turned on now with its picked accounts; null when none is picked. Whole actions: each day's expected values summed over the scope, then rounded. */
+                        forecast?: {
+                            /**
+                             * @description computing: an account of the scope has had no simulation yet, so daily is today's zeros and is not a forecast; read again in a few minutes. computed otherwise (always for a draft Motion).
+                             * @enum {string}
+                             */
+                            status: "computed" | "computing";
+                            /** @description When the newest of the scope's simulations ran (UTC); null when none has. */
+                            computed_at: string | null;
+                            /** @description Changes whenever any simulation of the team runs again: cache the section until it changes. */
+                            version: string | null;
+                            /** @description The last day served, YYYY-MM-DD: today when nothing lies ahead. */
+                            through: string;
+                            /** @description Every day from today through `through`, in the read's timezone; a day with nothing expected is all zeros. */
+                            daily: {
+                                date: string;
+                                /** @description Invitations expected to be sent. */
+                                invites_sent: number;
+                                /** @description Invitations expected to be accepted that day. */
+                                accepted: number;
+                                /** @description Messages expected to be sent. */
+                                messages_sent: number;
+                                /** @description Replies expected, InMail replies included. */
+                                replies: number;
+                                /** @description InMails expected to be sent. */
+                                inmails_sent: number;
+                                /** @description Of replies, those to an InMail. */
+                                inmail_replies: number;
+                            }[];
+                        } | null;
                     };
                 };
             };
@@ -46243,7 +46278,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description IMPORT_QUEUE_FULL: 5 background imports are already queued or running. Wait for one to finish, then retry. */
+            /** @description IMPORT_QUEUE_FULL: 5 background imports are already queued or running. Wait for one to finish, then retry. RATE_LIMIT_TENANT: other Contact or Motion writes of your team held its write lock for 5 s, nothing was imported; when an import holds it, details.import_id and details.started_at name it. Retry with a backoff. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -50947,7 +50982,7 @@ export interface operations {
                                 enroll_days: number | null;
                                 /** @description The limit that set this account's pace: the pool whose share sets the start rate (invitations, views), pace for a Motion with no invitation or profile view (about 60 new people a day), or a budget row such as messages_first_degree. */
                                 binding: string;
-                                /** @description The LinkedIn actions a day this Motion is expected to make on this account at that pace, every budgeted step of the costliest route counted. An estimate; 0 when the account carries no Contact. */
+                                /** @description The LinkedIn actions a day this Motion is expected to make on this account. A draft: the mean daily invitations, messages and InMails of the first 7 days of its forecast, as if turned on now (the same simulation as include=forecast on GET /v1/analytics/motions/{motion_id}). A started Motion: at that pace, every budgeted step of the costliest route counted. An estimate; 0 when the account carries no Contact. */
                                 expected_actions_per_day: number;
                             }[];
                             /** @description Calendar days of waits and timeouts on the longest route, rounded up. null when the Motion has no Sequence. */
@@ -52993,7 +53028,7 @@ export interface operations {
                 motion_id?: string;
                 /** @description motion, unibox (the Unibox), api (any API key or MCP grant), direct (unibox and api). Default: all. Repeat the key, comma-separate or mix; empties ignored. */
                 origin?: string;
-                /** @description Sections: performance, daily, motions, accounts, flags. Omitted: the summary. Repeat the key, comma-separate or mix; empties ignored. */
+                /** @description Sections: performance, daily, motions, accounts, flags, forecast. Omitted: the summary, which never holds forecast. Repeat the key, comma-separate or mix; empties ignored. */
                 include?: string;
                 /** @description Dotted paths kept in the sections, e.g. motions.reply.rate. A requested path always appears. Repeat the key, comma-separate or mix; empties ignored. */
                 fields?: string;
@@ -53003,6 +53038,8 @@ export interface operations {
                 limit?: number;
                 /** @description previous_period: each rate gains previous (the same number of days just before from) and delta (rate - previous rate). */
                 compare?: "previous_period";
+                /** @description Days of the Forecast after today, 1-365. Default: 30. Only with include=forecast. */
+                forecast_days?: number;
             };
             header?: {
                 /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
@@ -53793,6 +53830,36 @@ export interface operations {
                             /** @description The exact CLI call that looks into it. */
                             next: string;
                         }[];
+                        /** @description Only with include=forecast. forecast: what your Motions are expected to send and get per day, from today (its whole expected day) through forecast_days (1-365, default 30) or the last day with activity, whichever comes first. A simulation of each Motion's Sequence, limits, warm-up, schedule and accounts with its observed acceptance and reply rates. Motions only, no direct actions; the configuration is frozen as it is now: no new Enrollments, no edits. A draft Motion: as if turned on now with its picked accounts; null when none is picked. Whole actions: each day's expected values summed over the scope, then rounded. */
+                        forecast?: {
+                            /**
+                             * @description computing: an account of the scope has had no simulation yet, so daily is today's zeros and is not a forecast; read again in a few minutes. computed otherwise (always for a draft Motion).
+                             * @enum {string}
+                             */
+                            status: "computed" | "computing";
+                            /** @description When the newest of the scope's simulations ran (UTC); null when none has. */
+                            computed_at: string | null;
+                            /** @description Changes whenever any simulation of the team runs again: cache the section until it changes. */
+                            version: string | null;
+                            /** @description The last day served, YYYY-MM-DD: today when nothing lies ahead. */
+                            through: string;
+                            /** @description Every day from today through `through`, in the read's timezone; a day with nothing expected is all zeros. */
+                            daily: {
+                                date: string;
+                                /** @description Invitations expected to be sent. */
+                                invites_sent: number;
+                                /** @description Invitations expected to be accepted that day. */
+                                accepted: number;
+                                /** @description Messages expected to be sent. */
+                                messages_sent: number;
+                                /** @description Replies expected, InMail replies included. */
+                                replies: number;
+                                /** @description InMails expected to be sent. */
+                                inmails_sent: number;
+                                /** @description Of replies, those to an InMail. */
+                                inmail_replies: number;
+                            }[];
+                        } | null;
                     };
                 };
             };
@@ -53871,7 +53938,7 @@ export interface operations {
                 started_to?: string;
                 /** @description motion, unibox (the Unibox), api (any API key or MCP grant), direct (unibox and api). Default: all. Repeat the key, comma-separate or mix; empties ignored. */
                 origin?: string;
-                /** @description Sections: performance, daily, steps, variants, paths, accounts, flags. Omitted: the summary. Repeat the key, comma-separate or mix; empties ignored. */
+                /** @description Sections: performance, daily, steps, variants, paths, accounts, flags, forecast. Omitted: the summary, which never holds forecast. Repeat the key, comma-separate or mix; empties ignored. */
                 include?: string;
                 /** @description Dotted paths kept in the sections, e.g. performance.reply.rate. A requested path always appears. Repeat the key, comma-separate or mix; empties ignored. */
                 fields?: string;
@@ -53881,6 +53948,8 @@ export interface operations {
                 limit?: number;
                 /** @description previous_period: each rate gains previous (the same number of days just before from) and delta (rate - previous rate). */
                 compare?: "previous_period";
+                /** @description Days of the Forecast after today, 1-365. Default: 30. Only with include=forecast. */
+                forecast_days?: number;
             };
             header?: {
                 /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
@@ -55150,6 +55219,36 @@ export interface operations {
                             /** @description The exact CLI call that looks into it. */
                             next: string;
                         }[];
+                        /** @description Only with include=forecast. forecast: what your Motions are expected to send and get per day, from today (its whole expected day) through forecast_days (1-365, default 30) or the last day with activity, whichever comes first. A simulation of each Motion's Sequence, limits, warm-up, schedule and accounts with its observed acceptance and reply rates. Motions only, no direct actions; the configuration is frozen as it is now: no new Enrollments, no edits. A draft Motion: as if turned on now with its picked accounts; null when none is picked. Whole actions: each day's expected values summed over the scope, then rounded. */
+                        forecast?: {
+                            /**
+                             * @description computing: an account of the scope has had no simulation yet, so daily is today's zeros and is not a forecast; read again in a few minutes. computed otherwise (always for a draft Motion).
+                             * @enum {string}
+                             */
+                            status: "computed" | "computing";
+                            /** @description When the newest of the scope's simulations ran (UTC); null when none has. */
+                            computed_at: string | null;
+                            /** @description Changes whenever any simulation of the team runs again: cache the section until it changes. */
+                            version: string | null;
+                            /** @description The last day served, YYYY-MM-DD: today when nothing lies ahead. */
+                            through: string;
+                            /** @description Every day from today through `through`, in the read's timezone; a day with nothing expected is all zeros. */
+                            daily: {
+                                date: string;
+                                /** @description Invitations expected to be sent. */
+                                invites_sent: number;
+                                /** @description Invitations expected to be accepted that day. */
+                                accepted: number;
+                                /** @description Messages expected to be sent. */
+                                messages_sent: number;
+                                /** @description Replies expected, InMail replies included. */
+                                replies: number;
+                                /** @description InMails expected to be sent. */
+                                inmails_sent: number;
+                                /** @description Of replies, those to an InMail. */
+                                inmail_replies: number;
+                            }[];
+                        } | null;
                     };
                 };
             };
