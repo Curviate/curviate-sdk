@@ -9,7 +9,9 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
-### Forecast (regenerated from a local document at curviate 0008e3269 (qa instance, `CURVIATE_FLAG_FORECAST=on`); regenerate from the deployed one before publishing)
+## [0.49.0] - 2026-11-09
+
+### Forecast (regenerated from production 134827ce6)
 
 - **`include: "forecast"`** and **`forecast_days`** (1-365, default 30) on `analytics.motions.list`, `analytics.motions.get` and `accounts.overview`: `forecast` is `{ status, computed_at, version, through, daily[] }`, each day's expected `invites_sent`, `accepted`, `messages_sent`, `replies` (InMail replies included), `inmails_sent` and `inmail_replies`, from today through `forecast_days` or the last day with activity. A simulation of each Motion's Sequence, limits, warm-up, schedule and accounts with its observed rates: Motions only, the configuration frozen as it is now. `status: "computing"` while an account of the scope has had no simulation yet: `daily` is then today's zeros, not a forecast. A draft Motion reads as if turned on now (`null` with no account). Never in the summary; `forecast_days` without the section is a `400`. Cache it until `version` changes.
 - The regen also carries what staging already serves: a busy-Team `429` (`RATE_LIMIT_TENANT`) `details.import_id` and `details.started_at`, and description updates. No runtime change.
