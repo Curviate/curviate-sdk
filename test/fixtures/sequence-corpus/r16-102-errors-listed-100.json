@@ -372,11 +372,11 @@
   "errors": [
     {
       "path": "m0.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/0/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -392,11 +392,11 @@
     },
     {
       "path": "m1.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/1/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -412,11 +412,11 @@
     },
     {
       "path": "m2.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/2/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -432,11 +432,11 @@
     },
     {
       "path": "m3.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/3/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -452,11 +452,11 @@
     },
     {
       "path": "m4.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/4/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -472,11 +472,11 @@
     },
     {
       "path": "m5.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/5/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -492,11 +492,11 @@
     },
     {
       "path": "m6.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/6/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -512,11 +512,11 @@
     },
     {
       "path": "m7.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/7/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -532,11 +532,11 @@
     },
     {
       "path": "m8.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/8/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -552,11 +552,11 @@
     },
     {
       "path": "m9.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/9/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -572,11 +572,11 @@
     },
     {
       "path": "m10.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/10/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -592,11 +592,11 @@
     },
     {
       "path": "m11.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/11/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -612,11 +612,11 @@
     },
     {
       "path": "m12.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/12/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -632,11 +632,11 @@
     },
     {
       "path": "m13.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/13/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -652,11 +652,11 @@
     },
     {
       "path": "m14.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/14/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -672,11 +672,11 @@
     },
     {
       "path": "m15.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/15/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -692,11 +692,11 @@
     },
     {
       "path": "m16.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/16/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -712,11 +712,11 @@
     },
     {
       "path": "m17.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/17/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -732,11 +732,11 @@
     },
     {
       "path": "m18.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/18/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -752,11 +752,11 @@
     },
     {
       "path": "m19.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/19/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -772,11 +772,11 @@
     },
     {
       "path": "m20.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/20/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -792,11 +792,11 @@
     },
     {
       "path": "m21.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/21/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -812,11 +812,11 @@
     },
     {
       "path": "m22.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/22/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -832,11 +832,11 @@
     },
     {
       "path": "m23.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/23/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -852,11 +852,11 @@
     },
     {
       "path": "m24.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/24/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -872,11 +872,11 @@
     },
     {
       "path": "m25.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/25/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -892,11 +892,11 @@
     },
     {
       "path": "m26.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/26/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -912,11 +912,11 @@
     },
     {
       "path": "m27.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/27/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -932,11 +932,11 @@
     },
     {
       "path": "m28.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/28/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -952,11 +952,11 @@
     },
     {
       "path": "m29.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/29/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -972,11 +972,11 @@
     },
     {
       "path": "m30.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/30/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -992,11 +992,11 @@
     },
     {
       "path": "m31.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/31/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -1012,11 +1012,11 @@
     },
     {
       "path": "m32.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/32/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -1032,11 +1032,11 @@
     },
     {
       "path": "m33.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/33/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -1052,11 +1052,11 @@
     },
     {
       "path": "m34.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/34/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -1072,11 +1072,11 @@
     },
     {
       "path": "m35.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/35/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -1092,11 +1092,11 @@
     },
     {
       "path": "m36.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/36/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -1112,11 +1112,11 @@
     },
     {
       "path": "m37.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/37/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -1132,11 +1132,11 @@
     },
     {
       "path": "m38.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/38/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -1152,11 +1152,11 @@
     },
     {
       "path": "m39.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/39/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -1172,11 +1172,11 @@
     },
     {
       "path": "m40.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/40/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -1192,11 +1192,11 @@
     },
     {
       "path": "m41.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/41/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -1212,11 +1212,11 @@
     },
     {
       "path": "m42.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/42/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -1232,11 +1232,11 @@
     },
     {
       "path": "m43.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/43/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -1252,11 +1252,11 @@
     },
     {
       "path": "m44.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/44/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -1272,11 +1272,11 @@
     },
     {
       "path": "m45.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/45/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -1292,11 +1292,11 @@
     },
     {
       "path": "m46.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/46/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -1312,11 +1312,11 @@
     },
     {
       "path": "m47.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/47/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -1332,11 +1332,11 @@
     },
     {
       "path": "m48.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/48/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -1352,11 +1352,11 @@
     },
     {
       "path": "m49.with.text",
-      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{X}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/49/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },

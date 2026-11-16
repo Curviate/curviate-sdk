@@ -1,24 +1,24 @@
 {
-  "about": "A typo gets candidates by edit distance; a dotless custom name is refused with the contact.extra form.",
+  "about": "A typo gets candidates by edit distance; a dotless custom name is refused with the lead.extra form.",
   "rules": [
     "T6"
   ],
-  "source": "motion",
-  "template": "{\"a\": \"{{contact.emial}}\", \"b\": \"{{opener}}\"}",
+  "source": "campaign",
+  "template": "{\"a\": \"{{lead.emial}}\", \"b\": \"{{opener}}\"}",
   "errors": [
     {
       "path": "body_template",
-      "rule": "unknown variable {{contact.emial}}",
+      "rule": "unknown variable {{lead.emial}}",
       "code": "T6",
-      "message": "unknown variable {{contact.emial}}",
+      "message": "unknown variable {{lead.emial}}",
       "pointer": "/body_template",
       "line": 1,
       "col": 8,
-      "hint": "Use {{contact.email}}.",
+      "hint": "Use {{lead.email}}.",
       "docs_url": "https://docs.curviate.com/reference/webhooks/body-templates#t6",
       "severity": "error",
       "candidates": [
-        "{{contact.email}}"
+        "{{lead.email}}"
       ]
     },
     {
@@ -28,12 +28,12 @@
       "message": "unknown variable {{opener}}",
       "pointer": "/body_template",
       "line": 1,
-      "col": 34,
-      "hint": "Use {{contact.extra.opener}}.",
+      "col": 31,
+      "hint": "Use {{lead.extra.opener}}.",
       "docs_url": "https://docs.curviate.com/reference/webhooks/body-templates#t6",
       "severity": "error",
       "candidates": [
-        "{{contact.extra.opener}}"
+        "{{lead.extra.opener}}"
       ]
     }
   ],

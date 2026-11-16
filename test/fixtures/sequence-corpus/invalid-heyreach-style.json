@@ -1,5 +1,5 @@
 {
-  "about": "motion research counter-example: a step-level sender, single-brace and camelCase placeholders, a default, a comment without a Contact variable, no on_reply",
+  "about": "motion research counter-example: a step-level sender, single-brace and camelCase placeholders, a default, a comment without a Lead variable, no on_reply",
   "rules": [
     "R5",
     "R11",
@@ -33,7 +33,7 @@
         "id": "msg2",
         "do": "message.send",
         "with": {
-          "text": "Hi {{contact.first_name | default:'there'}}",
+          "text": "Hi {{lead.first_name | default:'there'}}",
           "fallback": "Hi there"
         }
       },
@@ -80,9 +80,9 @@
     },
     {
       "path": "invite.with.note",
-      "rule": "{FIRST_NAME} is not a variable; write {{contact.<field>}} or remove the braces",
+      "rule": "{FIRST_NAME} is not a variable; write {{lead.<field>}} or remove the braces",
       "code": "R18",
-      "message": "{FIRST_NAME} is not a variable; write {{contact.<field>}} or remove the braces",
+      "message": "{FIRST_NAME} is not a variable; write {{lead.<field>}} or remove the braces",
       "pointer": "/steps/0/with/note",
       "hint": "Write a variable with double braces, like {{first_name}}, or remove the braces.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r18",
@@ -90,11 +90,11 @@
     },
     {
       "path": "msg.with.text",
-      "rule": "unknown variable {{firstName}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "rule": "unknown variable {{firstName}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "code": "R16",
-      "message": "unknown variable {{firstName}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name",
+      "message": "unknown variable {{firstName}}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name",
       "pointer": "/steps/1/with/text",
-      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{contact.first_name}}, {{contact.extra.opener}} and {{account.first_name}} work too.",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
       "severity": "error"
     },
@@ -120,11 +120,11 @@
     },
     {
       "path": "comment.with.text",
-      "rule": "a comment must use a contact variable, such as {{contact.extra.comment}}",
+      "rule": "a comment must use a Lead variable, such as {{lead.extra.comment}}",
       "code": "R20",
-      "message": "a comment must use a contact variable, such as {{contact.extra.comment}}",
+      "message": "a comment must use a Lead variable, such as {{lead.extra.comment}}",
       "pointer": "/steps/3/with/text",
-      "hint": "Use a Contact variable in the comment, for example a custom field {{comment}} your AI writes per Contact.",
+      "hint": "Use a Lead variable in the comment, for example a custom field {{comment}} your AI writes per Lead.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r20",
       "severity": "error"
     }

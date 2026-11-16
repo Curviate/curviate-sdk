@@ -12,7 +12,7 @@
       {
         "id": "check",
         "if": {
-          "contact.connected": true
+          "lead.connected": true
         },
         "then": "hello",
         "else": "invite"

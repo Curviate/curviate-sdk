@@ -88,7 +88,7 @@ const clone = <T>(v: T): T => (v === undefined ? v : (JSON.parse(JSON.stringify(
  *     step.do("invite", "invite.send", { with: { note: null } }),
  *     step.until("w_accept", "invite.accepted", { timeout: "14d", then: "opener", else: "end" }),
  *     step.do("opener", "message.send", {
- *       with: { text: "Hi {{contact.first_name}}, thanks for connecting.", fallback: "Hi, thanks for connecting." },
+ *       with: { text: "Hi {{lead.first_name}}, thanks for connecting.", fallback: "Hi, thanks for connecting." },
  *       next: "end",
  *     }),
  *   );
@@ -113,7 +113,7 @@ export class Sequence<S = never, R extends string = never, O extends boolean = f
   }
 
   /**
-   * Loads a parsed Sequence document (a fetched Motion's `sequence`, a version's
+   * Loads a parsed Sequence document (a fetched Campaign's `sequence`, a version's
    * `document`, JSON you wrote). Valid: a builder whose `toDocument()`
    * deep-equals the input, keys in canonical order. Invalid: throws
    * `SEQUENCE_INVALID` with every error. A string is not parsed. The input is

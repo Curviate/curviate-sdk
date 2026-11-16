@@ -1,5 +1,5 @@
 {
-  "about": "an enrollment key no save writes, did-you-mean candidates; a save_to_contact key; enrollment.id reserved (R27)",
+  "about": "an enrollment key no save writes, did-you-mean candidates; a save_to_lead key; enrollment.id reserved (R27)",
   "rules": [
     "R27"
   ],
@@ -14,7 +14,7 @@
         "save": {
           "score": "lead.score"
         },
-        "save_to_contact": {
+        "save_to_lead": {
           "crm_stage": "deal.stage"
         },
         "then": "msg",
@@ -61,11 +61,11 @@
       "code": "R27",
       "message": "{{enrollment.crm_stage}}: no save of this Sequence writes crm_stage",
       "pointer": "/steps/1/with/text",
-      "hint": "Use {{contact.extra.crm_stage}}.",
+      "hint": "Use {{lead.extra.crm_stage}}.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r27",
       "severity": "error",
       "candidates": [
-        "{{contact.extra.crm_stage}}"
+        "{{lead.extra.crm_stage}}"
       ]
     },
     {
@@ -87,7 +87,7 @@
       "code": "R27",
       "message": "enrollment.tier: no save of this Sequence writes tier",
       "pointer": "/steps/2/if",
-      "hint": "Save the value with save on an until event.<name> step first; a save_to_contact key reads as {{contact.extra.<key>}}.",
+      "hint": "Save the value with save on an until event.<name> step first; a save_to_lead key reads as {{lead.extra.<key>}}.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r27",
       "severity": "error"
     }

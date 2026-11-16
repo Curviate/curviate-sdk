@@ -3,7 +3,7 @@
   "rules": [
     "T7"
   ],
-  "source": "motion",
+  "source": "campaign",
   "template": "{\"id\": \"{{enrollment.id}}\"}",
   "errors": [
     {

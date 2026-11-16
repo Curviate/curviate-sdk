@@ -8,7 +8,7 @@
       {
         "id": "p0",
         "if": {
-          "contact.connected": true
+          "lead.connected": true
         },
         "then": "p1",
         "else": "end"
@@ -16,7 +16,7 @@
       {
         "id": "p1",
         "if": {
-          "contact.degree": {
+          "lead.degree": {
             "eq": 1
           }
         },
@@ -26,7 +26,7 @@
       {
         "id": "p2",
         "if": {
-          "contact.degree": {
+          "lead.degree": {
             "in": [
               2,
               3
@@ -39,7 +39,7 @@
       {
         "id": "p3",
         "if": {
-          "contact.open_profile": false
+          "lead.open_profile": false
         },
         "then": "p4",
         "else": "end"
@@ -47,7 +47,7 @@
       {
         "id": "p4",
         "if": {
-          "contact.premium": true
+          "lead.premium": true
         },
         "then": "p5",
         "else": "end"
@@ -55,7 +55,7 @@
       {
         "id": "p5",
         "if": {
-          "contact.has_photo": true
+          "lead.has_photo": true
         },
         "then": "p6",
         "else": "end"
@@ -63,7 +63,7 @@
       {
         "id": "p6",
         "if": {
-          "contact.connections_gte": 500
+          "lead.connections_gte": 500
         },
         "then": "p7",
         "else": "end"
@@ -71,7 +71,7 @@
       {
         "id": "p7",
         "if": {
-          "contact.posted_within": "14d"
+          "lead.posted_within": "14d"
         },
         "then": "p8",
         "else": "end"
@@ -79,7 +79,7 @@
       {
         "id": "p8",
         "if": {
-          "contact.tag": "Customer"
+          "lead.tag": "Customer"
         },
         "then": "p9",
         "else": "end"
@@ -87,7 +87,7 @@
       {
         "id": "p9",
         "if": {
-          "contact.company": {
+          "lead.company": {
             "eq": "Acme"
           }
         },
@@ -97,7 +97,7 @@
       {
         "id": "p10",
         "if": {
-          "contact.job_title": {
+          "lead.job_title": {
             "contains": "founder"
           }
         },
@@ -107,7 +107,7 @@
       {
         "id": "p11",
         "if": {
-          "contact.location": {
+          "lead.location": {
             "in": [
               "Berlin",
               "Paris"
@@ -120,7 +120,7 @@
       {
         "id": "p12",
         "if": {
-          "contact.email": {
+          "lead.email": {
             "exists": true
           }
         },
@@ -130,7 +130,7 @@
       {
         "id": "p13",
         "if": {
-          "contact.extra.score": {
+          "lead.extra.score": {
             "neq": 3
           }
         },
@@ -149,7 +149,7 @@
         "id": "p15",
         "if": {
           "not": {
-            "contact.tag": "competitor"
+            "lead.tag": "competitor"
           }
         },
         "then": "end",

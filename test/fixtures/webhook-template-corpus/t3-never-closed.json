@@ -3,8 +3,8 @@
   "rules": [
     "T3"
   ],
-  "source": "motion",
-  "template": "{\"email\": \"{{contact.email\"}",
+  "source": "campaign",
+  "template": "{\"email\": \"{{lead.email\"}",
   "errors": [
     {
       "path": "body_template",
@@ -14,7 +14,7 @@
       "pointer": "/body_template",
       "line": 1,
       "col": 12,
-      "hint": "Close the variable with }}, like {{contact.email}}.",
+      "hint": "Close the variable with }}, like {{lead.email}}.",
       "docs_url": "https://docs.curviate.com/reference/webhooks/body-templates#t3",
       "severity": "error"
     }

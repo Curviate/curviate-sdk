@@ -24,8 +24,8 @@ import type {
 type Flow = { next?: string; note?: string };
 type TagFlow = Flow & { event?: string };
 type Branch = { then: string; else?: string; note?: string };
-/** `save` / `save_to_contact` (name or key to a path in the post) apply to `until: "event.<name>"` only. */
-type Timed = Branch & { timeout: string; save?: Record<string, string>; save_to_contact?: Record<string, string> };
+/** `save` / `save_to_lead` (name or key to a path in the post) apply to `until: "event.<name>"` only. */
+type Timed = Branch & { timeout: string; save?: Record<string, string>; save_to_lead?: Record<string, string> };
 type TimeoutOf<F> = F extends { readonly timeout: infer D } ? D : never;
 
 function build(id: string, kind: string, value: unknown, fields: object | undefined): Record<string, unknown> {
@@ -75,7 +75,7 @@ export const step: {
    * event your agent sends with `enrollments.events` or a tool posts to an
    * incoming event. On `event.<name>`, `save` keeps values from that post on
    * the Enrollment (name to path; read as `{{enrollment.<name>}}` and
-   * `if: { "enrollment.<name>": ... }`) and `save_to_contact` writes Contact
+   * `if: { "enrollment.<name>": ... }`) and `save_to_lead` writes Lead
    * custom fields.
    *
    * @example
@@ -89,11 +89,11 @@ export const step: {
     fields: F & Exact<F, keyof Timed> & { timeout: CheckDuration<TimeoutOf<F>> },
   ): { id: Id; until: E } & F;
   /**
-   * An `if` step: branch on one predicate about the Contact, the sending
+   * An `if` step: branch on one predicate about the Lead, the sending
    * Account, or the last message (`message.seen`).
    *
    * @example
-   * step.if("is_connected", { "contact.connected": true }, { then: "opener", else: "invite" });
+   * step.if("is_connected", { "lead.connected": true }, { then: "opener", else: "invite" });
    * step.if("was_seen", { "message.seen": true }, { then: "bump", else: "end" });
    */
   if<const Id extends string, const F extends Branch>(
@@ -103,7 +103,7 @@ export const step: {
   ): { id: Id; if: Predicate } & F;
   /**
    * An `emit` step ("Send event") sends a custom event with this name: the
-   * `motion.custom_event` webhook, and what an `until: "event.<name>"` wait
+   * `campaign.custom_event` webhook, and what an `until: "event.<name>"` wait
    * elsewhere can react to. `event` on a `do` or `tag` step does the same as
    * part of that step.
    *
@@ -116,7 +116,7 @@ export const step: {
     fields?: F & Exact<F, keyof Flow>,
   ): { id: Id; emit: string } & F;
   /**
-   * A `tag` step: add a Tag to the Contact; `fields.event` sends a custom
+   * A `tag` step: add a Tag to the Lead; `fields.event` sends a custom
    * event each time it runs.
    *
    * @example

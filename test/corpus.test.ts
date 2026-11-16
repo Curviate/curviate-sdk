@@ -6,7 +6,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { renderWebhookTemplate, validateSequence, validateWebhookTemplate, type WebhookTemplateContext, type WebhookTemplateSource } from "../src/index.js";
+import { Sequence, SEQUENCE_SCHEMA_V1, renderWebhookTemplate, step, validateSequence, validateWebhookTemplate, type WebhookTemplateContext, type WebhookTemplateSource } from "../src/index.js";
 
 const read = <T>(dir: string) =>
   readdirSync(join(__dirname, "fixtures", dir))
@@ -28,5 +28,21 @@ describe("webhook template corpus (validateWebhookTemplate, renderWebhookTemplat
 describe("sequence corpus (validateSequence)", () => {
   it.each(sequences.filter(([, e]) => e.only !== "server"))("%s", (_f, e) => {
     expect(validateSequence(isFile(e.document) ? e.document.sequence : e.document)).toEqual({ errors: e.errors, warnings: e.warnings });
+  });
+});
+
+describe("builder and embedded schema speak Lead and Campaign", () => {
+  it("builds lead.connected and {{lead.first_name}}, validates clean offline, and the schema holds no old word", () => {
+    const doc = Sequence.create({ on_reply: "end" })
+      .add(
+        step.if("is_connected", { "lead.connected": true }, { then: "opener", else: "end" }),
+        step.do("opener", "message.send", { with: { text: "Hi {{lead.first_name}}", fallback: "Hi" }, next: "end" }),
+      )
+      .toDocument();
+    const json = JSON.stringify(doc);
+    expect(json).toContain('"lead.connected":true');
+    expect(json).toContain("{{lead.first_name}}");
+    expect(validateSequence(doc).errors).toEqual([]);
+    expect(JSON.stringify(SEQUENCE_SCHEMA_V1)).not.toMatch(/contact|motion/i);
   });
 });

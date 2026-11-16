@@ -11,7 +11,7 @@
         "id": "im",
         "do": "inmail.send",
         "with": {
-          "subject": "Hi {{contact.first_name}}",
+          "subject": "Hi {{lead.first_name}}",
           "text": "Body"
         },
         "next": "end"

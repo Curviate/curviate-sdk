@@ -22,7 +22,7 @@
         "id": "invite",
         "do": "invite.send",
         "with": {
-          "note": "Hi {{contact.first_name}}, saw your talk.",
+          "note": "Hi {{lead.first_name}}, saw your talk.",
           "note_fallback": "drop",
           "withdraw_after": "14d"
         }
@@ -43,7 +43,7 @@
         "id": "dm",
         "do": "message.send",
         "with": {
-          "text": "Hi {{ contact.first_name }} from {{account.full_name}}",
+          "text": "Hi {{ lead.first_name }} from {{account.full_name}}",
           "fallback": "Hi there"
         },
         "else": "inmail"
@@ -53,7 +53,7 @@
         "do": "inmail.send",
         "with": {
           "subject": "Quick question",
-          "text": "Hi {{contact.extra.hook}}",
+          "text": "Hi {{lead.extra.hook}}",
           "fallback": {
             "subject": "Quick question",
             "text": "Hi there"
@@ -91,7 +91,7 @@
         "with": {
           "post": "latest",
           "newer_than": "365d",
-          "text": "{{contact.extra.comment}}",
+          "text": "{{lead.extra.comment}}",
           "fallback": "Thoughtful point on the rollout."
         }
       },

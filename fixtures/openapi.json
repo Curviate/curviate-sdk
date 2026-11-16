@@ -1027,7 +1027,7 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "https://docs.curviate.com/schemas/sequence/v1.json",
         "title": "Sequence document v1",
-        "description": "A Motion's Sequence: a flat steps array run from the first step, ending explicitly in \"end\". Served documents use this key order: $schema, on_reply, steps; in a step id, the kind key, timeout, save, save_to_contact, variants, with, event, then, else, next, note; in with post, newer_than, reaction, subject, text, note, note_fallback, fallback, withdraw_after; in a variant id, subject, text. A text holds at most 50 variables. Variables: `{{first_name}}` (any standard Contact field), `{{my_first_name}}`, `{{my_last_name}}`, `{{my_full_name}}` (the sending Account), any other `{{<key>}}` is the custom field `contact.extra.<key>`; the long forms `{{contact.<field>}}`, `{{contact.extra.<key>}}` and `{{account.<name>}}` stay valid; `{{enrollment.<name>}}` is a value a save of this Sequence writes. Delays are about their duration: every wait and until timeout gets a small random spread that only ever adds time.",
+        "description": "A Campaign's Sequence: a flat steps array run from the first step, ending explicitly in \"end\". Served documents use this key order: $schema, on_reply, steps; in a step id, the kind key, timeout, save, save_to_lead, variants, with, event, then, else, next, note; in with post, newer_than, reaction, subject, text, note, note_fallback, fallback, withdraw_after; in a variant id, subject, text. A text holds at most 50 variables. Variables: `{{first_name}}` (any standard Lead field), `{{my_first_name}}`, `{{my_last_name}}`, `{{my_full_name}}` (the sending Account), any other `{{<key>}}` is the custom field `lead.extra.<key>`; the long forms `{{lead.<field>}}`, `{{lead.extra.<key>}}` and `{{account.<name>}}` stay valid; `{{enrollment.<name>}}` is a value a save of this Sequence writes. Delays are about their duration: every wait and until timeout gets a small random spread that only ever adds time.",
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -1525,7 +1525,7 @@
                         "clip_id": {
                           "type": "string",
                           "pattern": "^vc_[0-9A-HJKMNP-TV-Z]{26}$",
-                          "description": "A Voice clip of this Team: the id from POST /v1/motions/voice-clips."
+                          "description": "A Voice clip of this Team: the id from POST /v1/campaigns/voice-clips."
                         },
                         "fallback": {
                           "type": "string",
@@ -1555,7 +1555,7 @@
                           "clip_id": {
                             "type": "string",
                             "pattern": "^vc_[0-9A-HJKMNP-TV-Z]{26}$",
-                            "description": "A Voice clip of this Team: the id from POST /v1/motions/voice-clips."
+                            "description": "A Voice clip of this Team: the id from POST /v1/campaigns/voice-clips."
                           }
                         }
                       }
@@ -1872,7 +1872,7 @@
                       },
                       "description": "until event.<name> only: Enrollment values saved from the incoming event, name to path (at most 20). Read them as {{enrollment.<name>}} and if enrollment.<name>; they end with the Enrollment."
                     },
-                    "save_to_contact": {
+                    "save_to_lead": {
                       "type": "object",
                       "minProperties": 1,
                       "maxProperties": 20,
@@ -1899,7 +1899,7 @@
                         "maxLength": 256,
                         "description": "A field path into the incoming payload: dots, items[0] and [\"a.b\"]."
                       },
-                      "description": "until event.<name> only: Contact custom fields (contact.extra.<key>) saved from the incoming event, key to path (at most 20); email fills only an empty email."
+                      "description": "until event.<name> only: Lead custom fields (lead.extra.<key>) saved from the incoming event, key to path (at most 20); email fills only an empty email."
                     },
                     "then": {
                       "type": "string",
@@ -1939,10 +1939,10 @@
                           "type": "object",
                           "additionalProperties": false,
                           "required": [
-                            "contact.connected"
+                            "lead.connected"
                           ],
                           "properties": {
-                            "contact.connected": {
+                            "lead.connected": {
                               "type": "boolean"
                             }
                           }
@@ -1951,10 +1951,10 @@
                           "type": "object",
                           "additionalProperties": false,
                           "required": [
-                            "contact.open_profile"
+                            "lead.open_profile"
                           ],
                           "properties": {
-                            "contact.open_profile": {
+                            "lead.open_profile": {
                               "type": "boolean"
                             }
                           }
@@ -1963,10 +1963,10 @@
                           "type": "object",
                           "additionalProperties": false,
                           "required": [
-                            "contact.premium"
+                            "lead.premium"
                           ],
                           "properties": {
-                            "contact.premium": {
+                            "lead.premium": {
                               "type": "boolean"
                             }
                           }
@@ -1975,10 +1975,10 @@
                           "type": "object",
                           "additionalProperties": false,
                           "required": [
-                            "contact.has_photo"
+                            "lead.has_photo"
                           ],
                           "properties": {
-                            "contact.has_photo": {
+                            "lead.has_photo": {
                               "type": "boolean"
                             }
                           }
@@ -1987,10 +1987,10 @@
                           "type": "object",
                           "additionalProperties": false,
                           "required": [
-                            "contact.degree"
+                            "lead.degree"
                           ],
                           "properties": {
-                            "contact.degree": {
+                            "lead.degree": {
                               "oneOf": [
                                 {
                                   "type": "object",
@@ -2038,10 +2038,10 @@
                           "type": "object",
                           "additionalProperties": false,
                           "required": [
-                            "contact.connections_gte"
+                            "lead.connections_gte"
                           ],
                           "properties": {
-                            "contact.connections_gte": {
+                            "lead.connections_gte": {
                               "type": "integer",
                               "minimum": 0
                             }
@@ -2051,10 +2051,10 @@
                           "type": "object",
                           "additionalProperties": false,
                           "required": [
-                            "contact.posted_within"
+                            "lead.posted_within"
                           ],
                           "properties": {
-                            "contact.posted_within": {
+                            "lead.posted_within": {
                               "type": "string",
                               "pattern": "^[1-9][0-9]*(m|h|d)$",
                               "description": "Posted within this long."
@@ -2065,10 +2065,10 @@
                           "type": "object",
                           "additionalProperties": false,
                           "required": [
-                            "contact.tag"
+                            "lead.tag"
                           ],
                           "properties": {
-                            "contact.tag": {
+                            "lead.tag": {
                               "type": "string",
                               "minLength": 1,
                               "maxLength": 64,
@@ -2082,7 +2082,7 @@
                           "maxProperties": 1,
                           "additionalProperties": false,
                           "properties": {
-                            "contact.full_name": {
+                            "lead.full_name": {
                               "type": "object",
                               "minProperties": 1,
                               "maxProperties": 1,
@@ -2122,7 +2122,7 @@
                               },
                               "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                             },
-                            "contact.first_name": {
+                            "lead.first_name": {
                               "type": "object",
                               "minProperties": 1,
                               "maxProperties": 1,
@@ -2162,7 +2162,7 @@
                               },
                               "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                             },
-                            "contact.last_name": {
+                            "lead.last_name": {
                               "type": "object",
                               "minProperties": 1,
                               "maxProperties": 1,
@@ -2202,7 +2202,7 @@
                               },
                               "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                             },
-                            "contact.headline": {
+                            "lead.headline": {
                               "type": "object",
                               "minProperties": 1,
                               "maxProperties": 1,
@@ -2242,7 +2242,7 @@
                               },
                               "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                             },
-                            "contact.job_title": {
+                            "lead.job_title": {
                               "type": "object",
                               "minProperties": 1,
                               "maxProperties": 1,
@@ -2282,7 +2282,7 @@
                               },
                               "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                             },
-                            "contact.company": {
+                            "lead.company": {
                               "type": "object",
                               "minProperties": 1,
                               "maxProperties": 1,
@@ -2322,7 +2322,7 @@
                               },
                               "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                             },
-                            "contact.email": {
+                            "lead.email": {
                               "type": "object",
                               "minProperties": 1,
                               "maxProperties": 1,
@@ -2362,7 +2362,7 @@
                               },
                               "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                             },
-                            "contact.location": {
+                            "lead.location": {
                               "type": "object",
                               "minProperties": 1,
                               "maxProperties": 1,
@@ -2402,7 +2402,7 @@
                               },
                               "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                             },
-                            "contact.linkedin_url": {
+                            "lead.linkedin_url": {
                               "type": "object",
                               "minProperties": 1,
                               "maxProperties": 1,
@@ -2442,7 +2442,7 @@
                               },
                               "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                             },
-                            "contact.about": {
+                            "lead.about": {
                               "type": "object",
                               "minProperties": 1,
                               "maxProperties": 1,
@@ -2482,7 +2482,7 @@
                               },
                               "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                             },
-                            "contact.language": {
+                            "lead.language": {
                               "type": "object",
                               "minProperties": 1,
                               "maxProperties": 1,
@@ -2530,7 +2530,7 @@
                           "maxProperties": 1,
                           "additionalProperties": false,
                           "patternProperties": {
-                            "^contact\\.extra\\.[A-Za-z0-9_]{1,64}$": {
+                            "^lead\\.extra\\.[A-Za-z0-9_]{1,64}$": {
                               "type": "object",
                               "minProperties": 1,
                               "maxProperties": 1,
@@ -2671,10 +2671,10 @@
                                   "type": "object",
                                   "additionalProperties": false,
                                   "required": [
-                                    "contact.connected"
+                                    "lead.connected"
                                   ],
                                   "properties": {
-                                    "contact.connected": {
+                                    "lead.connected": {
                                       "type": "boolean"
                                     }
                                   }
@@ -2683,10 +2683,10 @@
                                   "type": "object",
                                   "additionalProperties": false,
                                   "required": [
-                                    "contact.open_profile"
+                                    "lead.open_profile"
                                   ],
                                   "properties": {
-                                    "contact.open_profile": {
+                                    "lead.open_profile": {
                                       "type": "boolean"
                                     }
                                   }
@@ -2695,10 +2695,10 @@
                                   "type": "object",
                                   "additionalProperties": false,
                                   "required": [
-                                    "contact.premium"
+                                    "lead.premium"
                                   ],
                                   "properties": {
-                                    "contact.premium": {
+                                    "lead.premium": {
                                       "type": "boolean"
                                     }
                                   }
@@ -2707,10 +2707,10 @@
                                   "type": "object",
                                   "additionalProperties": false,
                                   "required": [
-                                    "contact.has_photo"
+                                    "lead.has_photo"
                                   ],
                                   "properties": {
-                                    "contact.has_photo": {
+                                    "lead.has_photo": {
                                       "type": "boolean"
                                     }
                                   }
@@ -2719,10 +2719,10 @@
                                   "type": "object",
                                   "additionalProperties": false,
                                   "required": [
-                                    "contact.degree"
+                                    "lead.degree"
                                   ],
                                   "properties": {
-                                    "contact.degree": {
+                                    "lead.degree": {
                                       "oneOf": [
                                         {
                                           "type": "object",
@@ -2770,10 +2770,10 @@
                                   "type": "object",
                                   "additionalProperties": false,
                                   "required": [
-                                    "contact.connections_gte"
+                                    "lead.connections_gte"
                                   ],
                                   "properties": {
-                                    "contact.connections_gte": {
+                                    "lead.connections_gte": {
                                       "type": "integer",
                                       "minimum": 0
                                     }
@@ -2783,10 +2783,10 @@
                                   "type": "object",
                                   "additionalProperties": false,
                                   "required": [
-                                    "contact.posted_within"
+                                    "lead.posted_within"
                                   ],
                                   "properties": {
-                                    "contact.posted_within": {
+                                    "lead.posted_within": {
                                       "type": "string",
                                       "pattern": "^[1-9][0-9]*(m|h|d)$",
                                       "description": "Posted within this long."
@@ -2797,10 +2797,10 @@
                                   "type": "object",
                                   "additionalProperties": false,
                                   "required": [
-                                    "contact.tag"
+                                    "lead.tag"
                                   ],
                                   "properties": {
-                                    "contact.tag": {
+                                    "lead.tag": {
                                       "type": "string",
                                       "minLength": 1,
                                       "maxLength": 64,
@@ -2814,7 +2814,7 @@
                                   "maxProperties": 1,
                                   "additionalProperties": false,
                                   "properties": {
-                                    "contact.full_name": {
+                                    "lead.full_name": {
                                       "type": "object",
                                       "minProperties": 1,
                                       "maxProperties": 1,
@@ -2854,7 +2854,7 @@
                                       },
                                       "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                                     },
-                                    "contact.first_name": {
+                                    "lead.first_name": {
                                       "type": "object",
                                       "minProperties": 1,
                                       "maxProperties": 1,
@@ -2894,7 +2894,7 @@
                                       },
                                       "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                                     },
-                                    "contact.last_name": {
+                                    "lead.last_name": {
                                       "type": "object",
                                       "minProperties": 1,
                                       "maxProperties": 1,
@@ -2934,7 +2934,7 @@
                                       },
                                       "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                                     },
-                                    "contact.headline": {
+                                    "lead.headline": {
                                       "type": "object",
                                       "minProperties": 1,
                                       "maxProperties": 1,
@@ -2974,7 +2974,7 @@
                                       },
                                       "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                                     },
-                                    "contact.job_title": {
+                                    "lead.job_title": {
                                       "type": "object",
                                       "minProperties": 1,
                                       "maxProperties": 1,
@@ -3014,7 +3014,7 @@
                                       },
                                       "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                                     },
-                                    "contact.company": {
+                                    "lead.company": {
                                       "type": "object",
                                       "minProperties": 1,
                                       "maxProperties": 1,
@@ -3054,7 +3054,7 @@
                                       },
                                       "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                                     },
-                                    "contact.email": {
+                                    "lead.email": {
                                       "type": "object",
                                       "minProperties": 1,
                                       "maxProperties": 1,
@@ -3094,7 +3094,7 @@
                                       },
                                       "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                                     },
-                                    "contact.location": {
+                                    "lead.location": {
                                       "type": "object",
                                       "minProperties": 1,
                                       "maxProperties": 1,
@@ -3134,7 +3134,7 @@
                                       },
                                       "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                                     },
-                                    "contact.linkedin_url": {
+                                    "lead.linkedin_url": {
                                       "type": "object",
                                       "minProperties": 1,
                                       "maxProperties": 1,
@@ -3174,7 +3174,7 @@
                                       },
                                       "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                                     },
-                                    "contact.about": {
+                                    "lead.about": {
                                       "type": "object",
                                       "minProperties": 1,
                                       "maxProperties": 1,
@@ -3214,7 +3214,7 @@
                                       },
                                       "description": "Exactly one operator. Strings compare trimmed, case-insensitive."
                                     },
-                                    "contact.language": {
+                                    "lead.language": {
                                       "type": "object",
                                       "minProperties": 1,
                                       "maxProperties": 1,
@@ -3262,7 +3262,7 @@
                                   "maxProperties": 1,
                                   "additionalProperties": false,
                                   "patternProperties": {
-                                    "^contact\\.extra\\.[A-Za-z0-9_]{1,64}$": {
+                                    "^lead\\.extra\\.[A-Za-z0-9_]{1,64}$": {
                                       "type": "object",
                                       "minProperties": 1,
                                       "maxProperties": 1,
@@ -3429,7 +3429,7 @@
                     "emit": {
                       "type": "string",
                       "pattern": "^[a-z][a-z0-9_.]{0,63}$",
-                      "description": "Send event: the custom event name this step sends (motion.custom_event)."
+                      "description": "Send event: the custom event name this step sends (campaign.custom_event)."
                     },
                     "next": {
                       "type": "string",
@@ -3461,7 +3461,7 @@
                       "minLength": 1,
                       "maxLength": 64,
                       "pattern": "^[^,;]*[^,;\\s][^,;]*$",
-                      "description": "Tag added to the Contact."
+                      "description": "Tag added to the Lead."
                     },
                     "event": {
                       "type": "string",

@@ -13,7 +13,7 @@
           "meeting_type": "meeting.type",
           "score": "lead.score"
         },
-        "save_to_contact": {
+        "save_to_lead": {
           "crm_stage": "deal.stage",
           "email": "lead_email"
         },
@@ -45,7 +45,7 @@
       {
         "id": "big",
         "if": {
-          "contact.extra.seats": {
+          "lead.extra.seats": {
             "lte": 10
           }
         },

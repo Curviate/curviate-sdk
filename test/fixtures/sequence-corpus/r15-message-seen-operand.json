@@ -32,7 +32,7 @@
       "code": "R15",
       "message": "message.seen takes true or false",
       "pointer": "/steps/1/if",
-      "hint": "Use one predicate key per object with its typed operand; chain if steps instead of all or any. account.* and message.* work in if steps only.",
+      "hint": "Use one predicate key per object with its typed operand; chain if steps instead of all or any. account.premium and message.seen work in if steps only.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r15",
       "severity": "error"
     }

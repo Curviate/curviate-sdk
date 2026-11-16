@@ -1,5 +1,5 @@
 {
-  "about": "save and save_to_contact at 20 entries each pass (EV-01)",
+  "about": "save and save_to_lead at 20 entries each pass (EV-01)",
   "rules": [],
   "schema_valid": true,
   "document": {
@@ -31,7 +31,7 @@
           "v18": "lead.f18",
           "v19": "lead.f19"
         },
-        "save_to_contact": {
+        "save_to_lead": {
           "k0": "deal.k0",
           "k1": "deal.k1",
           "k2": "deal.k2",
