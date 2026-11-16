@@ -30931,7 +30931,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A page of the account's notification cards, plus the account-level unread badge (unread_count) and newest-notification watermark (latest_published_at). Injected/promo cards are included and flagged (injected:true). Zero notifications is a valid 200 (items:[], cursor:null, unread_count:0). Page until cursor is null.",
+            "description": "A page of the account's notification cards, plus the account-level unread badge (unread_count) and newest-notification watermark (latest_published_at, on every page). Each card carries its kind, its actors (members and organizations) and the ids of the post and comment it is about. Injected/promo cards are included and flagged (injected:true). Zero notifications is a valid 200 (items:[], cursor:null, unread_count:0). Page until cursor is null.",
             "content": {
               "application/json": {
                 "schema": {
@@ -30969,7 +30969,10 @@
                           "read",
                           "published_at",
                           "target_url",
-                          "can_show_less"
+                          "can_show_less",
+                          "kind",
+                          "actors",
+                          "object_ids"
                         ],
                         "properties": {
                           "object": {
@@ -31043,6 +31046,74 @@
                           "can_show_less": {
                             "type": "boolean",
                             "description": "Whether the card exposes a 'show less like this' affordance."
+                          },
+                          "kind": {
+                            "type": "string",
+                            "nullable": true,
+                            "enum": [
+                              "post_engaged",
+                              "post_reposted",
+                              "network_posted",
+                              "profile_viewed",
+                              "followed_you",
+                              "mentioned_you"
+                            ],
+                            "description": "What the card means, decided from its `type` code alone through one fixed table, never from the `text`. REACTED_TO_YOUR_UPDATE and COMMENTED_ON_YOUR_UPDATE are post_engaged; RESHARED_YOUR_UPDATE is post_reposted; SHARED_BY_YOUR_NETWORK and COLLABORATED_BY_YOUR_NETWORK are network_posted (a post or a repost, the card does not say which); WVMP_V2 and WVMP_WHILE_ANONYMOUS are profile_viewed; PEOPLE_FOLLOW is followed_you; MENTIONED_YOU_IN_THIS is mentioned_you. null for every other type code and for injected cards."
+                          },
+                          "actors": {
+                            "type": "array",
+                            "description": "Everyone the card names, in card order: members and organizations (an organization that acts is kept, never dropped). [] for system cards. A superset of `actor_ids`, which lists members only.",
+                            "items": {
+                              "type": "object",
+                              "required": [
+                                "type",
+                                "id"
+                              ],
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "member",
+                                    "organization"
+                                  ],
+                                  "description": "Whether the actor is a person or an organization."
+                                },
+                                "id": {
+                                  "type": "string",
+                                  "description": "The member profile id or the organization id."
+                                }
+                              }
+                            }
+                          },
+                          "object_ids": {
+                            "type": "object",
+                            "description": "The post and comment the card is about, parsed from the card's urns. Each is null when the card has none.",
+                            "required": [
+                              "post_id",
+                              "comment_id"
+                            ],
+                            "properties": {
+                              "post_id": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "Numeric post id, the same value as activity_urn_id."
+                              },
+                              "comment_id": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "Numeric comment id, for a card about a comment."
+                              }
+                            }
+                          },
+                          "aggregate": {
+                            "type": "object",
+                            "description": "Present only when LinkedIn groups several people into one card and says how many; absent otherwise.",
+                            "properties": {
+                              "count": {
+                                "type": "integer",
+                                "description": "How many people the card groups."
+                              }
+                            }
                           }
                         }
                       },
@@ -31060,7 +31131,7 @@
                     "latest_published_at": {
                       "type": "number",
                       "nullable": true,
-                      "description": "Timestamp (epoch ms) of the newest notification, a poll watermark to detect 'anything new since last poll'. null if unavailable."
+                      "description": "Timestamp (epoch ms) of the newest notification, a poll watermark to detect 'anything new since last poll'. Carried on every page, including pages read with a cursor. null if unavailable."
                     }
                   }
                 },
@@ -31076,6 +31147,7 @@
                           "object_urn": "urn:li:notificationV2:(urn:li:member:747216553,SHARED_BY_YOUR_NETWORK,urn:li:uniqueSuffix:(urn:li:none,rwpKFSX4QQKXFV6bDYxCsw))",
                           "injected": false,
                           "type": "SHARED_BY_YOUR_NETWORK",
+                          "kind": "network_posted",
                           "text": "Dana Ellison reposted a post about agent-native infrastructure.",
                           "actor_id": "ACoAADg2T7kBExample",
                           "actor_ids": [
@@ -31083,6 +31155,16 @@
                           ],
                           "actor_profile_url": "https://www.linkedin.com/in/ACoAADg2T7kBExample/",
                           "activity_urn_id": "7479820624010510336",
+                          "actors": [
+                            {
+                              "type": "member",
+                              "id": "ACoAADg2T7kBExample"
+                            }
+                          ],
+                          "object_ids": {
+                            "post_id": "7479820624010510336",
+                            "comment_id": null
+                          },
                           "read": false,
                           "published_at": 1783332707063,
                           "target_url": "/feed/?highlightedUpdateUrn=urn%3Ali%3Aactivity%3A7479820624010510336",
@@ -31094,11 +31176,17 @@
                           "object_urn": null,
                           "injected": true,
                           "type": null,
+                          "kind": null,
                           "text": null,
                           "actor_id": null,
                           "actor_ids": [],
                           "actor_profile_url": null,
                           "activity_urn_id": null,
+                          "actors": [],
+                          "object_ids": {
+                            "post_id": null,
+                            "comment_id": null
+                          },
                           "read": null,
                           "published_at": null,
                           "target_url": "/premium/products/",
@@ -31320,7 +31408,7 @@
             }
           }
         },
-        "description": "Returns the account's notification cards, cursor-paginated, plus unread_count and a latest_published_at watermark for cheap polling. Each post-related card carries the activity id for the Posts group. Page until cursor is null.",
+        "description": "Returns the account's notification cards, cursor-paginated, plus unread_count and a latest_published_at watermark for cheap polling. Each card carries a kind (from its type code, null outside the fixed table), its actors (members and organizations) and the post and comment ids it is about; a post-related card carries the activity id for the Posts group. Page until cursor is null.",
         "x-order": 1
       }
     },
@@ -111183,6 +111271,2428 @@
           }
         },
         "description": "Deletes it and its arrivals. Its URL answers 410 for 30 days, then 404. The creator, an Owner or a Manager.",
+        "x-order": 5
+      }
+    },
+    "/v1/mailboxes": {
+      "get": {
+        "operationId": "getV1Mailboxes",
+        "tags": [
+          "Mailboxes"
+        ],
+        "summary": "List Mailboxes",
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Curviate-Team",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team."
+          },
+          {
+            "name": "Curviate-Client",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "sdk/2.0.0"
+            },
+            "description": "Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you."
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "connected",
+                "ramping",
+                "paused",
+                "paused_by_bounces",
+                "paused_by_provider",
+                "reconnect_needed"
+              ]
+            },
+            "description": "Only Mailboxes in this state."
+          },
+          {
+            "name": "sends_for",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "description": "An Account id, `shared` (a shared Mailbox) or `none` (no link yet)."
+          },
+          {
+            "name": "domain",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "description": "Only Mailboxes on this domain (the part after the @)."
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "Opaque pagination cursor from a previous response; pass it back verbatim"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "description": "Max items per page (1-100, default 50)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "This team's Mailboxes, newest first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "object": {
+                      "type": "string",
+                      "enum": [
+                        "list"
+                      ]
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "Mailbox id (mbx_...), opaque."
+                          },
+                          "address": {
+                            "type": "string"
+                          },
+                          "display_name": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "domain": {
+                            "type": "string",
+                            "description": "The domain name of the address."
+                          },
+                          "connection": {
+                            "type": "string",
+                            "enum": [
+                              "google_app_password",
+                              "google_sign_in",
+                              "microsoft_sign_in",
+                              "imap_smtp",
+                              "curviate"
+                            ],
+                            "description": "How the Mailbox is reached; `curviate` for a Mailbox bought from Curviate."
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "connected",
+                              "ramping",
+                              "paused",
+                              "paused_by_bounces",
+                              "paused_by_provider",
+                              "reconnect_needed"
+                            ],
+                            "description": "`ramping` means the daily cap is still being worked up to: it sends up to the cap a day and the limit rises each sending day."
+                          },
+                          "sends_for": {
+                            "oneOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "account"
+                                    ]
+                                  },
+                                  "account_id": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "account_id"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "shared"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "kind"
+                                ]
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ],
+                            "description": "The Account this Mailbox sends for, `shared` (any Account may send from it), or null (it sends nothing until linked)."
+                          },
+                          "sends_for_suggestion": {
+                            "type": [
+                              "object",
+                              "null"
+                            ],
+                            "description": "The link Curviate suggests; never applied until you confirm it."
+                          },
+                          "daily_cap": {
+                            "type": "integer",
+                            "description": "Emails a day across all Campaigns and Accounts, at most 50."
+                          },
+                          "cap_lowered_to": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "description": "The cap in force while it is lowered; null otherwise."
+                          },
+                          "sent_today": {
+                            "type": "integer"
+                          },
+                          "bounces_7d": {
+                            "type": "object",
+                            "properties": {
+                              "sent": {
+                                "type": "integer"
+                              },
+                              "bounced": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "sent",
+                              "bounced"
+                            ],
+                            "description": "Emails sent and hard bounces over the last 7 days."
+                          },
+                          "paused_until": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "format": "date-time"
+                          },
+                          "pause_reason": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "signature": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "connected_by_user_id": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "connected_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "used_with": {
+                            "type": "object",
+                            "properties": {
+                              "accounts": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "account_id": {
+                                      "type": "string"
+                                    },
+                                    "emails": {
+                                      "type": "integer"
+                                    }
+                                  }
+                                }
+                              },
+                              "campaigns": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "campaign_id": {
+                                      "type": "string"
+                                    },
+                                    "emails": {
+                                      "type": "integer"
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "required": [
+                              "accounts",
+                              "campaigns"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "address",
+                          "display_name",
+                          "domain",
+                          "connection",
+                          "state",
+                          "sends_for",
+                          "sends_for_suggestion",
+                          "daily_cap",
+                          "cap_lowered_to",
+                          "sent_today",
+                          "bounces_7d",
+                          "paused_until",
+                          "pause_reason",
+                          "signature",
+                          "connected_by_user_id",
+                          "connected_at",
+                          "used_with"
+                        ]
+                      }
+                    },
+                    "cursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                },
+                "examples": {
+                  "page": {
+                    "value": {
+                      "object": "list",
+                      "items": [
+                        {
+                          "id": "mbx_01J8Z3K9P0Q1R2S3T4V5W6X7Y8",
+                          "address": "anna.berg@acme.example",
+                          "display_name": "Anna Berg",
+                          "domain": "acme.example",
+                          "connection": "google_app_password",
+                          "state": "ramping",
+                          "sends_for": {
+                            "kind": "account",
+                            "account_id": "acc_01J8Z3K9P0Q1R2S3T4V5W6X7Y8"
+                          },
+                          "sends_for_suggestion": null,
+                          "daily_cap": 30,
+                          "cap_lowered_to": null,
+                          "sent_today": 5,
+                          "bounces_7d": {
+                            "sent": 0,
+                            "bounced": 0
+                          },
+                          "paused_until": null,
+                          "pause_reason": null,
+                          "signature": null,
+                          "connected_by_user_id": "7f8e5f3a-2b1c-4d5e-8f9a-0b1c2d3e4f5a",
+                          "connected_at": "2026-11-16T09:00:00.000Z",
+                          "used_with": {
+                            "accounts": [],
+                            "campaigns": []
+                          }
+                        }
+                      ],
+                      "cursor": null
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "RateLimit-Policy": {
+                "$ref": "#/components/headers/RateLimit-Policy"
+              },
+              "RateLimit": {
+                "$ref": "#/components/headers/RateLimit"
+              }
+            }
+          },
+          "400": {
+            "description": "Unknown state, limit out of range or malformed cursor. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "400 error",
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "message": "A parameter failed validation.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  },
+                  "teamRequired": {
+                    "summary": "TEAM_REQUIRED",
+                    "value": {
+                      "code": "TEAM_REQUIRED",
+                      "message": "Name the Team with the X-Curviate-Team header. GET /v1/teams lists yours.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "401 error",
+                    "value": {
+                      "code": "UNAUTHORIZED",
+                      "message": "Missing or invalid API key.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "RESOURCE_NOT_FOUND: Mailboxes are not available to this team.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "404 error",
+                    "value": {
+                      "code": "RESOURCE_NOT_FOUND",
+                      "message": "The referenced resource does not exist for this tenant.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited, slow down and retry after the hinted delay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "429 error",
+                    "value": {
+                      "code": "RATE_LIMIT_ACCOUNT",
+                      "message": "The per-account request rate limit was exceeded; retry after the delay in retry_hint. Per-team breaches carry RATE_LIMIT_TENANT; ingress-wide breaches (pre-auth, no per-client key) and upstream saturation both carry PLATFORM_RATE_LIMIT. A 429 on a budgeted action can also be BUDGET_EXHAUSTED, which is Curviate's own account-safety ceiling rather than a request-rate limit: it never reached LinkedIn, spent nothing, and carries row, reset_at and hint.",
+                      "user_fixable": false,
+                      "retry_likely_to_succeed": true
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "RateLimit-Policy": {
+                "$ref": "#/components/headers/RateLimit-Policy"
+              },
+              "RateLimit": {
+                "$ref": "#/components/headers/RateLimit"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          }
+        },
+        "description": "This team's Mailboxes, newest first, every role. Filter by `state`, by `sends_for` (an Account id, `shared` or `none`) or by `domain`. A Mailbox in `ramping` is working up to its daily cap; the read never shows the steps.",
+        "x-order": 1
+      }
+    },
+    "/v1/mailboxes/{id}": {
+      "get": {
+        "operationId": "getV1MailboxesId",
+        "tags": [
+          "Mailboxes"
+        ],
+        "summary": "Get a Mailbox",
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Mailbox id (mbx_...)."
+          },
+          {
+            "name": "X-Curviate-Team",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team."
+          },
+          {
+            "name": "Curviate-Client",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "sdk/2.0.0"
+            },
+            "description": "Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One Mailbox.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "Mailbox id (mbx_...), opaque."
+                    },
+                    "address": {
+                      "type": "string"
+                    },
+                    "display_name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "domain": {
+                      "type": "string",
+                      "description": "The domain name of the address."
+                    },
+                    "connection": {
+                      "type": "string",
+                      "enum": [
+                        "google_app_password",
+                        "google_sign_in",
+                        "microsoft_sign_in",
+                        "imap_smtp",
+                        "curviate"
+                      ],
+                      "description": "How the Mailbox is reached; `curviate` for a Mailbox bought from Curviate."
+                    },
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "connected",
+                        "ramping",
+                        "paused",
+                        "paused_by_bounces",
+                        "paused_by_provider",
+                        "reconnect_needed"
+                      ],
+                      "description": "`ramping` means the daily cap is still being worked up to: it sends up to the cap a day and the limit rises each sending day."
+                    },
+                    "sends_for": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "account"
+                              ]
+                            },
+                            "account_id": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "account_id"
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "shared"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The Account this Mailbox sends for, `shared` (any Account may send from it), or null (it sends nothing until linked)."
+                    },
+                    "sends_for_suggestion": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "description": "The link Curviate suggests; never applied until you confirm it."
+                    },
+                    "daily_cap": {
+                      "type": "integer",
+                      "description": "Emails a day across all Campaigns and Accounts, at most 50."
+                    },
+                    "cap_lowered_to": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "description": "The cap in force while it is lowered; null otherwise."
+                    },
+                    "sent_today": {
+                      "type": "integer"
+                    },
+                    "bounces_7d": {
+                      "type": "object",
+                      "properties": {
+                        "sent": {
+                          "type": "integer"
+                        },
+                        "bounced": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "sent",
+                        "bounced"
+                      ],
+                      "description": "Emails sent and hard bounces over the last 7 days."
+                    },
+                    "paused_until": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time"
+                    },
+                    "pause_reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "signature": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "connected_by_user_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "connected_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "used_with": {
+                      "type": "object",
+                      "properties": {
+                        "accounts": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "account_id": {
+                                "type": "string"
+                              },
+                              "emails": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        },
+                        "campaigns": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "campaign_id": {
+                                "type": "string"
+                              },
+                              "emails": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "required": [
+                        "accounts",
+                        "campaigns"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "address",
+                    "display_name",
+                    "domain",
+                    "connection",
+                    "state",
+                    "sends_for",
+                    "sends_for_suggestion",
+                    "daily_cap",
+                    "cap_lowered_to",
+                    "sent_today",
+                    "bounces_7d",
+                    "paused_until",
+                    "pause_reason",
+                    "signature",
+                    "connected_by_user_id",
+                    "connected_at",
+                    "used_with"
+                  ]
+                },
+                "examples": {
+                  "one": {
+                    "value": {
+                      "id": "mbx_01J8Z3K9P0Q1R2S3T4V5W6X7Y8",
+                      "address": "anna.berg@acme.example",
+                      "display_name": "Anna Berg",
+                      "domain": "acme.example",
+                      "connection": "google_app_password",
+                      "state": "ramping",
+                      "sends_for": {
+                        "kind": "account",
+                        "account_id": "acc_01J8Z3K9P0Q1R2S3T4V5W6X7Y8"
+                      },
+                      "sends_for_suggestion": null,
+                      "daily_cap": 30,
+                      "cap_lowered_to": null,
+                      "sent_today": 5,
+                      "bounces_7d": {
+                        "sent": 0,
+                        "bounced": 0
+                      },
+                      "paused_until": null,
+                      "pause_reason": null,
+                      "signature": null,
+                      "connected_by_user_id": "7f8e5f3a-2b1c-4d5e-8f9a-0b1c2d3e4f5a",
+                      "connected_at": "2026-11-16T09:00:00.000Z",
+                      "used_with": {
+                        "accounts": [],
+                        "campaigns": []
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "RateLimit-Policy": {
+                "$ref": "#/components/headers/RateLimit-Policy"
+              },
+              "RateLimit": {
+                "$ref": "#/components/headers/RateLimit"
+              }
+            }
+          },
+          "400": {
+            "description": "TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "teamRequired": {
+                    "summary": "TEAM_REQUIRED",
+                    "value": {
+                      "code": "TEAM_REQUIRED",
+                      "message": "Name the Team with the X-Curviate-Team header. GET /v1/teams lists yours.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "401 error",
+                    "value": {
+                      "code": "UNAUTHORIZED",
+                      "message": "Missing or invalid API key.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "MAILBOX_NOT_FOUND: no Mailbox with this id in this team (another team's id answers the same), or RESOURCE_NOT_FOUND where Mailboxes are not available to this team.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "404 error",
+                    "value": {
+                      "code": "RESOURCE_NOT_FOUND",
+                      "message": "The referenced resource does not exist for this tenant.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited, slow down and retry after the hinted delay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "429 error",
+                    "value": {
+                      "code": "RATE_LIMIT_ACCOUNT",
+                      "message": "The per-account request rate limit was exceeded; retry after the delay in retry_hint. Per-team breaches carry RATE_LIMIT_TENANT; ingress-wide breaches (pre-auth, no per-client key) and upstream saturation both carry PLATFORM_RATE_LIMIT. A 429 on a budgeted action can also be BUDGET_EXHAUSTED, which is Curviate's own account-safety ceiling rather than a request-rate limit: it never reached LinkedIn, spent nothing, and carries row, reset_at and hint.",
+                      "user_fixable": false,
+                      "retry_likely_to_succeed": true
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "RateLimit-Policy": {
+                "$ref": "#/components/headers/RateLimit-Policy"
+              },
+              "RateLimit": {
+                "$ref": "#/components/headers/RateLimit"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          }
+        },
+        "description": "One Mailbox of this team. An unknown id and another team's id answer the same `404 MAILBOX_NOT_FOUND`.",
+        "x-order": 2
+      },
+      "patch": {
+        "operationId": "patchV1MailboxesId",
+        "tags": [
+          "Mailboxes"
+        ],
+        "summary": "Update a Mailbox",
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Mailbox id (mbx_...)."
+          },
+          {
+            "name": "X-Curviate-Team",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team."
+          },
+          {
+            "name": "Curviate-Client",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "sdk/2.0.0"
+            },
+            "description": "Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The Mailbox as updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "Mailbox id (mbx_...), opaque."
+                    },
+                    "address": {
+                      "type": "string"
+                    },
+                    "display_name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "domain": {
+                      "type": "string",
+                      "description": "The domain name of the address."
+                    },
+                    "connection": {
+                      "type": "string",
+                      "enum": [
+                        "google_app_password",
+                        "google_sign_in",
+                        "microsoft_sign_in",
+                        "imap_smtp",
+                        "curviate"
+                      ],
+                      "description": "How the Mailbox is reached; `curviate` for a Mailbox bought from Curviate."
+                    },
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "connected",
+                        "ramping",
+                        "paused",
+                        "paused_by_bounces",
+                        "paused_by_provider",
+                        "reconnect_needed"
+                      ],
+                      "description": "`ramping` means the daily cap is still being worked up to: it sends up to the cap a day and the limit rises each sending day."
+                    },
+                    "sends_for": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "account"
+                              ]
+                            },
+                            "account_id": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "account_id"
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "shared"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The Account this Mailbox sends for, `shared` (any Account may send from it), or null (it sends nothing until linked)."
+                    },
+                    "sends_for_suggestion": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "description": "The link Curviate suggests; never applied until you confirm it."
+                    },
+                    "daily_cap": {
+                      "type": "integer",
+                      "description": "Emails a day across all Campaigns and Accounts, at most 50."
+                    },
+                    "cap_lowered_to": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "description": "The cap in force while it is lowered; null otherwise."
+                    },
+                    "sent_today": {
+                      "type": "integer"
+                    },
+                    "bounces_7d": {
+                      "type": "object",
+                      "properties": {
+                        "sent": {
+                          "type": "integer"
+                        },
+                        "bounced": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "sent",
+                        "bounced"
+                      ],
+                      "description": "Emails sent and hard bounces over the last 7 days."
+                    },
+                    "paused_until": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time"
+                    },
+                    "pause_reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "signature": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "connected_by_user_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "connected_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "used_with": {
+                      "type": "object",
+                      "properties": {
+                        "accounts": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "account_id": {
+                                "type": "string"
+                              },
+                              "emails": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        },
+                        "campaigns": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "campaign_id": {
+                                "type": "string"
+                              },
+                              "emails": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "required": [
+                        "accounts",
+                        "campaigns"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "address",
+                    "display_name",
+                    "domain",
+                    "connection",
+                    "state",
+                    "sends_for",
+                    "sends_for_suggestion",
+                    "daily_cap",
+                    "cap_lowered_to",
+                    "sent_today",
+                    "bounces_7d",
+                    "paused_until",
+                    "pause_reason",
+                    "signature",
+                    "connected_by_user_id",
+                    "connected_at",
+                    "used_with"
+                  ]
+                },
+                "examples": {
+                  "one": {
+                    "value": {
+                      "id": "mbx_01J8Z3K9P0Q1R2S3T4V5W6X7Y8",
+                      "address": "anna.berg@acme.example",
+                      "display_name": "Anna Berg",
+                      "domain": "acme.example",
+                      "connection": "google_app_password",
+                      "state": "ramping",
+                      "sends_for": {
+                        "kind": "account",
+                        "account_id": "acc_01J8Z3K9P0Q1R2S3T4V5W6X7Y8"
+                      },
+                      "sends_for_suggestion": null,
+                      "daily_cap": 30,
+                      "cap_lowered_to": null,
+                      "sent_today": 5,
+                      "bounces_7d": {
+                        "sent": 0,
+                        "bounced": 0
+                      },
+                      "paused_until": null,
+                      "pause_reason": null,
+                      "signature": null,
+                      "connected_by_user_id": "7f8e5f3a-2b1c-4d5e-8f9a-0b1c2d3e4f5a",
+                      "connected_at": "2026-11-16T09:00:00.000Z",
+                      "used_with": {
+                        "accounts": [],
+                        "campaigns": []
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "RateLimit-Policy": {
+                "$ref": "#/components/headers/RateLimit-Policy"
+              },
+              "RateLimit": {
+                "$ref": "#/components/headers/RateLimit"
+              }
+            }
+          },
+          "400": {
+            "description": "INVALID_REQUEST: `daily_cap` above 50 or below 1, `signature` above 2,000 characters, no field, or an unknown field. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "400 error",
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "message": "A parameter failed validation.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  },
+                  "teamRequired": {
+                    "summary": "TEAM_REQUIRED",
+                    "value": {
+                      "code": "TEAM_REQUIRED",
+                      "message": "Name the Team with the X-Curviate-Team header. GET /v1/teams lists yours.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "401 error",
+                    "value": {
+                      "code": "UNAUTHORIZED",
+                      "message": "Missing or invalid API key.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "INSUFFICIENT_ROLE: a Member changing a Mailbox they did not connect.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "403 error",
+                    "value": {
+                      "code": "NO_ACTIVE_SEAT",
+                      "message": "The targeted account is not on an active seat.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "MAILBOX_NOT_FOUND: no Mailbox with this id in this team (another team's id answers the same), or RESOURCE_NOT_FOUND where Mailboxes are not available to this team.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "404 error",
+                    "value": {
+                      "code": "RESOURCE_NOT_FOUND",
+                      "message": "The referenced resource does not exist for this tenant.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large, the request body exceeds the size limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "413 error",
+                    "value": {
+                      "code": "PAYLOAD_TOO_LARGE",
+                      "message": "Request body is too large: it exceeds the 9437184-byte limit.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited, slow down and retry after the hinted delay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "429 error",
+                    "value": {
+                      "code": "RATE_LIMIT_ACCOUNT",
+                      "message": "The per-account request rate limit was exceeded; retry after the delay in retry_hint. Per-team breaches carry RATE_LIMIT_TENANT; ingress-wide breaches (pre-auth, no per-client key) and upstream saturation both carry PLATFORM_RATE_LIMIT. A 429 on a budgeted action can also be BUDGET_EXHAUSTED, which is Curviate's own account-safety ceiling rather than a request-rate limit: it never reached LinkedIn, spent nothing, and carries row, reset_at and hint.",
+                      "user_fixable": false,
+                      "retry_likely_to_succeed": true
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "RateLimit-Policy": {
+                "$ref": "#/components/headers/RateLimit-Policy"
+              },
+              "RateLimit": {
+                "$ref": "#/components/headers/RateLimit"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          }
+        },
+        "description": "Sets the daily cap (1 to 50, a hard maximum for every caller) and/or the signature (plain text, at most 2,000 characters, `null` clears it). Owners and Managers change any Mailbox; a Member only the ones they connected.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "daily_cap": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 50,
+                    "description": "Emails a day across all Campaigns and Accounts, at most 50."
+                  },
+                  "signature": {
+                    "type": "string",
+                    "description": "Plain text sign-off, at most 2000 characters; null clears it.",
+                    "nullable": true
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "x-order": 3
+      },
+      "delete": {
+        "operationId": "deleteV1MailboxesId",
+        "tags": [
+          "Mailboxes"
+        ],
+        "summary": "Remove a Mailbox",
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Mailbox id (mbx_...)."
+          },
+          {
+            "name": "X-Curviate-Team",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team."
+          },
+          {
+            "name": "Curviate-Client",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "sdk/2.0.0"
+            },
+            "description": "Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The Mailbox and its credentials are gone.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "object": {
+                      "type": "string",
+                      "enum": [
+                        "mailbox"
+                      ]
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "deleted": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    }
+                  }
+                },
+                "examples": {
+                  "gone": {
+                    "value": {
+                      "object": "mailbox",
+                      "id": "mbx_01J8Z3K9P0Q1R2S3T4V5W6X7Y8",
+                      "deleted": true
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "RateLimit-Policy": {
+                "$ref": "#/components/headers/RateLimit-Policy"
+              },
+              "RateLimit": {
+                "$ref": "#/components/headers/RateLimit"
+              }
+            }
+          },
+          "400": {
+            "description": "TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "teamRequired": {
+                    "summary": "TEAM_REQUIRED",
+                    "value": {
+                      "code": "TEAM_REQUIRED",
+                      "message": "Name the Team with the X-Curviate-Team header. GET /v1/teams lists yours.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "401 error",
+                    "value": {
+                      "code": "UNAUTHORIZED",
+                      "message": "Missing or invalid API key.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "INSUFFICIENT_ROLE: a Member removing a Mailbox they did not connect.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "403 error",
+                    "value": {
+                      "code": "NO_ACTIVE_SEAT",
+                      "message": "The targeted account is not on an active seat.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "MAILBOX_NOT_FOUND: no Mailbox with this id in this team (another team's id answers the same), or RESOURCE_NOT_FOUND where Mailboxes are not available to this team.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "404 error",
+                    "value": {
+                      "code": "RESOURCE_NOT_FOUND",
+                      "message": "The referenced resource does not exist for this tenant.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited, slow down and retry after the hinted delay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "429 error",
+                    "value": {
+                      "code": "RATE_LIMIT_ACCOUNT",
+                      "message": "The per-account request rate limit was exceeded; retry after the delay in retry_hint. Per-team breaches carry RATE_LIMIT_TENANT; ingress-wide breaches (pre-auth, no per-client key) and upstream saturation both carry PLATFORM_RATE_LIMIT. A 429 on a budgeted action can also be BUDGET_EXHAUSTED, which is Curviate's own account-safety ceiling rather than a request-rate limit: it never reached LinkedIn, spent nothing, and carries row, reset_at and hint.",
+                      "user_fixable": false,
+                      "retry_likely_to_succeed": true
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "RateLimit-Policy": {
+                "$ref": "#/components/headers/RateLimit-Policy"
+              },
+              "RateLimit": {
+                "$ref": "#/components/headers/RateLimit"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          }
+        },
+        "description": "Removes the Mailbox and deletes its stored credentials in one step. It changes no seat count and makes no Stripe call.",
+        "x-order": 6
+      }
+    },
+    "/v1/mailboxes/{id}/pause": {
+      "post": {
+        "operationId": "postV1MailboxesIdPause",
+        "tags": [
+          "Mailboxes"
+        ],
+        "summary": "Pause a Mailbox",
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Mailbox id (mbx_...)."
+          },
+          {
+            "name": "X-Curviate-Team",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team."
+          },
+          {
+            "name": "Curviate-Client",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "sdk/2.0.0"
+            },
+            "description": "Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The Mailbox, now `paused`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "Mailbox id (mbx_...), opaque."
+                    },
+                    "address": {
+                      "type": "string"
+                    },
+                    "display_name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "domain": {
+                      "type": "string",
+                      "description": "The domain name of the address."
+                    },
+                    "connection": {
+                      "type": "string",
+                      "enum": [
+                        "google_app_password",
+                        "google_sign_in",
+                        "microsoft_sign_in",
+                        "imap_smtp",
+                        "curviate"
+                      ],
+                      "description": "How the Mailbox is reached; `curviate` for a Mailbox bought from Curviate."
+                    },
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "connected",
+                        "ramping",
+                        "paused",
+                        "paused_by_bounces",
+                        "paused_by_provider",
+                        "reconnect_needed"
+                      ],
+                      "description": "`ramping` means the daily cap is still being worked up to: it sends up to the cap a day and the limit rises each sending day."
+                    },
+                    "sends_for": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "account"
+                              ]
+                            },
+                            "account_id": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "account_id"
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "shared"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The Account this Mailbox sends for, `shared` (any Account may send from it), or null (it sends nothing until linked)."
+                    },
+                    "sends_for_suggestion": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "description": "The link Curviate suggests; never applied until you confirm it."
+                    },
+                    "daily_cap": {
+                      "type": "integer",
+                      "description": "Emails a day across all Campaigns and Accounts, at most 50."
+                    },
+                    "cap_lowered_to": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "description": "The cap in force while it is lowered; null otherwise."
+                    },
+                    "sent_today": {
+                      "type": "integer"
+                    },
+                    "bounces_7d": {
+                      "type": "object",
+                      "properties": {
+                        "sent": {
+                          "type": "integer"
+                        },
+                        "bounced": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "sent",
+                        "bounced"
+                      ],
+                      "description": "Emails sent and hard bounces over the last 7 days."
+                    },
+                    "paused_until": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time"
+                    },
+                    "pause_reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "signature": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "connected_by_user_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "connected_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "used_with": {
+                      "type": "object",
+                      "properties": {
+                        "accounts": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "account_id": {
+                                "type": "string"
+                              },
+                              "emails": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        },
+                        "campaigns": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "campaign_id": {
+                                "type": "string"
+                              },
+                              "emails": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "required": [
+                        "accounts",
+                        "campaigns"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "address",
+                    "display_name",
+                    "domain",
+                    "connection",
+                    "state",
+                    "sends_for",
+                    "sends_for_suggestion",
+                    "daily_cap",
+                    "cap_lowered_to",
+                    "sent_today",
+                    "bounces_7d",
+                    "paused_until",
+                    "pause_reason",
+                    "signature",
+                    "connected_by_user_id",
+                    "connected_at",
+                    "used_with"
+                  ]
+                },
+                "examples": {
+                  "one": {
+                    "value": {
+                      "id": "mbx_01J8Z3K9P0Q1R2S3T4V5W6X7Y8",
+                      "address": "anna.berg@acme.example",
+                      "display_name": "Anna Berg",
+                      "domain": "acme.example",
+                      "connection": "google_app_password",
+                      "state": "paused",
+                      "sends_for": {
+                        "kind": "account",
+                        "account_id": "acc_01J8Z3K9P0Q1R2S3T4V5W6X7Y8"
+                      },
+                      "sends_for_suggestion": null,
+                      "daily_cap": 30,
+                      "cap_lowered_to": null,
+                      "sent_today": 5,
+                      "bounces_7d": {
+                        "sent": 0,
+                        "bounced": 0
+                      },
+                      "paused_until": null,
+                      "pause_reason": "manual",
+                      "signature": null,
+                      "connected_by_user_id": "7f8e5f3a-2b1c-4d5e-8f9a-0b1c2d3e4f5a",
+                      "connected_at": "2026-11-16T09:00:00.000Z",
+                      "used_with": {
+                        "accounts": [],
+                        "campaigns": []
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "RateLimit-Policy": {
+                "$ref": "#/components/headers/RateLimit-Policy"
+              },
+              "RateLimit": {
+                "$ref": "#/components/headers/RateLimit"
+              }
+            }
+          },
+          "400": {
+            "description": "TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "teamRequired": {
+                    "summary": "TEAM_REQUIRED",
+                    "value": {
+                      "code": "TEAM_REQUIRED",
+                      "message": "Name the Team with the X-Curviate-Team header. GET /v1/teams lists yours.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "401 error",
+                    "value": {
+                      "code": "UNAUTHORIZED",
+                      "message": "Missing or invalid API key.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "INSUFFICIENT_ROLE: a Member pausing a Mailbox they did not connect.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "403 error",
+                    "value": {
+                      "code": "NO_ACTIVE_SEAT",
+                      "message": "The targeted account is not on an active seat.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "MAILBOX_NOT_FOUND: no Mailbox with this id in this team (another team's id answers the same), or RESOURCE_NOT_FOUND where Mailboxes are not available to this team.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "404 error",
+                    "value": {
+                      "code": "RESOURCE_NOT_FOUND",
+                      "message": "The referenced resource does not exist for this tenant.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "MAILBOX_STATE_CONFLICT: the Mailbox is not `connected` or `ramping`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited, slow down and retry after the hinted delay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "429 error",
+                    "value": {
+                      "code": "RATE_LIMIT_ACCOUNT",
+                      "message": "The per-account request rate limit was exceeded; retry after the delay in retry_hint. Per-team breaches carry RATE_LIMIT_TENANT; ingress-wide breaches (pre-auth, no per-client key) and upstream saturation both carry PLATFORM_RATE_LIMIT. A 429 on a budgeted action can also be BUDGET_EXHAUSTED, which is Curviate's own account-safety ceiling rather than a request-rate limit: it never reached LinkedIn, spent nothing, and carries row, reset_at and hint.",
+                      "user_fixable": false,
+                      "retry_likely_to_succeed": true
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "RateLimit-Policy": {
+                "$ref": "#/components/headers/RateLimit-Policy"
+              },
+              "RateLimit": {
+                "$ref": "#/components/headers/RateLimit"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          }
+        },
+        "description": "Stops this Mailbox sending until it is resumed. Only a `connected` or `ramping` Mailbox pauses; any other state answers `409 MAILBOX_STATE_CONFLICT`.",
+        "x-order": 4
+      }
+    },
+    "/v1/mailboxes/{id}/resume": {
+      "post": {
+        "operationId": "postV1MailboxesIdResume",
+        "tags": [
+          "Mailboxes"
+        ],
+        "summary": "Resume a Mailbox",
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Mailbox id (mbx_...)."
+          },
+          {
+            "name": "X-Curviate-Team",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team."
+          },
+          {
+            "name": "Curviate-Client",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "sdk/2.0.0"
+            },
+            "description": "Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The Mailbox, now `ramping` from 5 a day.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "Mailbox id (mbx_...), opaque."
+                    },
+                    "address": {
+                      "type": "string"
+                    },
+                    "display_name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "domain": {
+                      "type": "string",
+                      "description": "The domain name of the address."
+                    },
+                    "connection": {
+                      "type": "string",
+                      "enum": [
+                        "google_app_password",
+                        "google_sign_in",
+                        "microsoft_sign_in",
+                        "imap_smtp",
+                        "curviate"
+                      ],
+                      "description": "How the Mailbox is reached; `curviate` for a Mailbox bought from Curviate."
+                    },
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "connected",
+                        "ramping",
+                        "paused",
+                        "paused_by_bounces",
+                        "paused_by_provider",
+                        "reconnect_needed"
+                      ],
+                      "description": "`ramping` means the daily cap is still being worked up to: it sends up to the cap a day and the limit rises each sending day."
+                    },
+                    "sends_for": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "account"
+                              ]
+                            },
+                            "account_id": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "account_id"
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "shared"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The Account this Mailbox sends for, `shared` (any Account may send from it), or null (it sends nothing until linked)."
+                    },
+                    "sends_for_suggestion": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "description": "The link Curviate suggests; never applied until you confirm it."
+                    },
+                    "daily_cap": {
+                      "type": "integer",
+                      "description": "Emails a day across all Campaigns and Accounts, at most 50."
+                    },
+                    "cap_lowered_to": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "description": "The cap in force while it is lowered; null otherwise."
+                    },
+                    "sent_today": {
+                      "type": "integer"
+                    },
+                    "bounces_7d": {
+                      "type": "object",
+                      "properties": {
+                        "sent": {
+                          "type": "integer"
+                        },
+                        "bounced": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "sent",
+                        "bounced"
+                      ],
+                      "description": "Emails sent and hard bounces over the last 7 days."
+                    },
+                    "paused_until": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time"
+                    },
+                    "pause_reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "signature": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "connected_by_user_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "connected_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "used_with": {
+                      "type": "object",
+                      "properties": {
+                        "accounts": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "account_id": {
+                                "type": "string"
+                              },
+                              "emails": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        },
+                        "campaigns": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "campaign_id": {
+                                "type": "string"
+                              },
+                              "emails": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "required": [
+                        "accounts",
+                        "campaigns"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "address",
+                    "display_name",
+                    "domain",
+                    "connection",
+                    "state",
+                    "sends_for",
+                    "sends_for_suggestion",
+                    "daily_cap",
+                    "cap_lowered_to",
+                    "sent_today",
+                    "bounces_7d",
+                    "paused_until",
+                    "pause_reason",
+                    "signature",
+                    "connected_by_user_id",
+                    "connected_at",
+                    "used_with"
+                  ]
+                },
+                "examples": {
+                  "one": {
+                    "value": {
+                      "id": "mbx_01J8Z3K9P0Q1R2S3T4V5W6X7Y8",
+                      "address": "anna.berg@acme.example",
+                      "display_name": "Anna Berg",
+                      "domain": "acme.example",
+                      "connection": "google_app_password",
+                      "state": "ramping",
+                      "sends_for": {
+                        "kind": "account",
+                        "account_id": "acc_01J8Z3K9P0Q1R2S3T4V5W6X7Y8"
+                      },
+                      "sends_for_suggestion": null,
+                      "daily_cap": 30,
+                      "cap_lowered_to": null,
+                      "sent_today": 5,
+                      "bounces_7d": {
+                        "sent": 0,
+                        "bounced": 0
+                      },
+                      "paused_until": null,
+                      "pause_reason": null,
+                      "signature": null,
+                      "connected_by_user_id": "7f8e5f3a-2b1c-4d5e-8f9a-0b1c2d3e4f5a",
+                      "connected_at": "2026-11-16T09:00:00.000Z",
+                      "used_with": {
+                        "accounts": [],
+                        "campaigns": []
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "RateLimit-Policy": {
+                "$ref": "#/components/headers/RateLimit-Policy"
+              },
+              "RateLimit": {
+                "$ref": "#/components/headers/RateLimit"
+              }
+            }
+          },
+          "400": {
+            "description": "TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "teamRequired": {
+                    "summary": "TEAM_REQUIRED",
+                    "value": {
+                      "code": "TEAM_REQUIRED",
+                      "message": "Name the Team with the X-Curviate-Team header. GET /v1/teams lists yours.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "401 error",
+                    "value": {
+                      "code": "UNAUTHORIZED",
+                      "message": "Missing or invalid API key.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "INSUFFICIENT_ROLE: a Member resuming a Mailbox they did not connect.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "403 error",
+                    "value": {
+                      "code": "NO_ACTIVE_SEAT",
+                      "message": "The targeted account is not on an active seat.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "MAILBOX_NOT_FOUND: no Mailbox with this id in this team (another team's id answers the same), or RESOURCE_NOT_FOUND where Mailboxes are not available to this team.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "404 error",
+                    "value": {
+                      "code": "RESOURCE_NOT_FOUND",
+                      "message": "The referenced resource does not exist for this tenant.",
+                      "user_fixable": true,
+                      "retry_likely_to_succeed": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "MAILBOX_STATE_CONFLICT: not paused, a provider pause before its `paused_until` (the message names the time), or one Curviate is fixing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited, slow down and retry after the hinted delay.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "error": {
+                    "summary": "429 error",
+                    "value": {
+                      "code": "RATE_LIMIT_ACCOUNT",
+                      "message": "The per-account request rate limit was exceeded; retry after the delay in retry_hint. Per-team breaches carry RATE_LIMIT_TENANT; ingress-wide breaches (pre-auth, no per-client key) and upstream saturation both carry PLATFORM_RATE_LIMIT. A 429 on a budgeted action can also be BUDGET_EXHAUSTED, which is Curviate's own account-safety ceiling rather than a request-rate limit: it never reached LinkedIn, spent nothing, and carries row, reset_at and hint.",
+                      "user_fixable": false,
+                      "retry_likely_to_succeed": true
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "RateLimit-Policy": {
+                "$ref": "#/components/headers/RateLimit-Policy"
+              },
+              "RateLimit": {
+                "$ref": "#/components/headers/RateLimit"
+              },
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              }
+            }
+          }
+        },
+        "description": "Resumes a paused Mailbox: it goes to `ramping`, starting again at 5 emails a day. A Mailbox that is not paused, a provider pause before its `paused_until`, and one Curviate is fixing answer `409 MAILBOX_STATE_CONFLICT`.",
         "x-order": 5
       }
     },

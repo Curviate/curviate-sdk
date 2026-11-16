@@ -983,7 +983,7 @@ export interface paths {
         };
         /**
          * List the account's notifications
-         * @description Returns the account's notification cards, cursor-paginated, plus unread_count and a latest_published_at watermark for cheap polling. Each post-related card carries the activity id for the Posts group. Page until cursor is null.
+         * @description Returns the account's notification cards, cursor-paginated, plus unread_count and a latest_published_at watermark for cheap polling. Each card carries a kind (from its type code, null outside the fixed table), its actors (members and organizations) and the post and comment ids it is about; a post-related card carries the activity id for the Posts group. Page until cursor is null.
          */
         get: operations["getV1AccountIdNotifications"];
         put?: never;
@@ -3584,6 +3584,94 @@ export interface paths {
          * @description Every field is optional; a given field replaces its value. Switching on needs a sample and at least one match path. The creator edits; Owners and Managers may only switch it on or off ({"enabled": ...} alone).
          */
         patch: operations["patchV1IncomingEventsId"];
+        trace?: never;
+    };
+    "/v1/mailboxes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Mailboxes
+         * @description This team's Mailboxes, newest first, every role. Filter by `state`, by `sends_for` (an Account id, `shared` or `none`) or by `domain`. A Mailbox in `ramping` is working up to its daily cap; the read never shows the steps.
+         */
+        get: operations["getV1Mailboxes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/mailboxes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a Mailbox
+         * @description One Mailbox of this team. An unknown id and another team's id answer the same `404 MAILBOX_NOT_FOUND`.
+         */
+        get: operations["getV1MailboxesId"];
+        put?: never;
+        post?: never;
+        /**
+         * Remove a Mailbox
+         * @description Removes the Mailbox and deletes its stored credentials in one step. It changes no seat count and makes no Stripe call.
+         */
+        delete: operations["deleteV1MailboxesId"];
+        options?: never;
+        head?: never;
+        /**
+         * Update a Mailbox
+         * @description Sets the daily cap (1 to 50, a hard maximum for every caller) and/or the signature (plain text, at most 2,000 characters, `null` clears it). Owners and Managers change any Mailbox; a Member only the ones they connected.
+         */
+        patch: operations["patchV1MailboxesId"];
+        trace?: never;
+    };
+    "/v1/mailboxes/{id}/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pause a Mailbox
+         * @description Stops this Mailbox sending until it is resumed. Only a `connected` or `ramping` Mailbox pauses; any other state answers `409 MAILBOX_STATE_CONFLICT`.
+         */
+        post: operations["postV1MailboxesIdPause"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/mailboxes/{id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resume a Mailbox
+         * @description Resumes a paused Mailbox: it goes to `ramping`, starting again at 5 emails a day. A Mailbox that is not paused, a provider pause before its `paused_until`, and one Curviate is fixing answer `409 MAILBOX_STATE_CONFLICT`.
+         */
+        post: operations["postV1MailboxesIdResume"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/v1/contacts": {
@@ -16211,7 +16299,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description A page of the account's notification cards, plus the account-level unread badge (unread_count) and newest-notification watermark (latest_published_at). Injected/promo cards are included and flagged (injected:true). Zero notifications is a valid 200 (items:[], cursor:null, unread_count:0). Page until cursor is null. */
+            /** @description A page of the account's notification cards, plus the account-level unread badge (unread_count) and newest-notification watermark (latest_published_at, on every page). Each card carries its kind, its actors (members and organizations) and the ids of the post and comment it is about. Injected/promo cards are included and flagged (injected:true). Zero notifications is a valid 200 (items:[], cursor:null, unread_count:0). Page until cursor is null. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -16258,12 +16346,39 @@ export interface operations {
                             target_url: string | null;
                             /** @description Whether the card exposes a 'show less like this' affordance. */
                             can_show_less: boolean;
+                            /**
+                             * @description What the card means, decided from its `type` code alone through one fixed table, never from the `text`. REACTED_TO_YOUR_UPDATE and COMMENTED_ON_YOUR_UPDATE are post_engaged; RESHARED_YOUR_UPDATE is post_reposted; SHARED_BY_YOUR_NETWORK and COLLABORATED_BY_YOUR_NETWORK are network_posted (a post or a repost, the card does not say which); WVMP_V2 and WVMP_WHILE_ANONYMOUS are profile_viewed; PEOPLE_FOLLOW is followed_you; MENTIONED_YOU_IN_THIS is mentioned_you. null for every other type code and for injected cards.
+                             * @enum {string|null}
+                             */
+                            kind: "post_engaged" | "post_reposted" | "network_posted" | "profile_viewed" | "followed_you" | "mentioned_you" | null;
+                            /** @description Everyone the card names, in card order: members and organizations (an organization that acts is kept, never dropped). [] for system cards. A superset of `actor_ids`, which lists members only. */
+                            actors: {
+                                /**
+                                 * @description Whether the actor is a person or an organization.
+                                 * @enum {string}
+                                 */
+                                type: "member" | "organization";
+                                /** @description The member profile id or the organization id. */
+                                id: string;
+                            }[];
+                            /** @description The post and comment the card is about, parsed from the card's urns. Each is null when the card has none. */
+                            object_ids: {
+                                /** @description Numeric post id, the same value as activity_urn_id. */
+                                post_id: string | null;
+                                /** @description Numeric comment id, for a card about a comment. */
+                                comment_id: string | null;
+                            };
+                            /** @description Present only when LinkedIn groups several people into one card and says how many; absent otherwise. */
+                            aggregate?: {
+                                /** @description How many people the card groups. */
+                                count?: number;
+                            };
                         }[];
                         /** @description Opaque cursor for the next page; null on the terminal page. Pass it back verbatim. There is no total (a shifting feed), page until cursor is null. */
                         cursor: string | null;
                         /** @description The unseen-badge count for the account (0 when nothing is unread). Threaded from account metadata, NOT a count of items. Poll this cheaply rather than deep-paging. */
                         unread_count: number;
-                        /** @description Timestamp (epoch ms) of the newest notification, a poll watermark to detect 'anything new since last poll'. null if unavailable. */
+                        /** @description Timestamp (epoch ms) of the newest notification, a poll watermark to detect 'anything new since last poll'. Carried on every page, including pages read with a cursor. null if unavailable. */
                         latest_published_at: number | null;
                     };
                 };
@@ -44836,6 +44951,786 @@ export interface operations {
             };
             /** @description Payload too large, the request body exceeds the size limit. */
             413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1Mailboxes: {
+        parameters: {
+            query?: {
+                /** @description Only Mailboxes in this state. */
+                state?: "connected" | "ramping" | "paused" | "paused_by_bounces" | "paused_by_provider" | "reconnect_needed";
+                /** @description An Account id, `shared` (a shared Mailbox) or `none` (no link yet). */
+                sends_for?: string;
+                /** @description Only Mailboxes on this domain (the part after the @). */
+                domain?: string;
+                /** @description Opaque pagination cursor from a previous response; pass it back verbatim */
+                cursor?: string;
+                /** @description Max items per page (1-100, default 50) */
+                limit?: number;
+            };
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description This team's Mailboxes, newest first. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object?: "list";
+                        items?: {
+                            /** @description Mailbox id (mbx_...), opaque. */
+                            id: string;
+                            address: string;
+                            display_name: string | null;
+                            /** @description The domain name of the address. */
+                            domain: string;
+                            /**
+                             * @description How the Mailbox is reached; `curviate` for a Mailbox bought from Curviate.
+                             * @enum {string}
+                             */
+                            connection: "google_app_password" | "google_sign_in" | "microsoft_sign_in" | "imap_smtp" | "curviate";
+                            /**
+                             * @description `ramping` means the daily cap is still being worked up to: it sends up to the cap a day and the limit rises each sending day.
+                             * @enum {string}
+                             */
+                            state: "connected" | "ramping" | "paused" | "paused_by_bounces" | "paused_by_provider" | "reconnect_needed";
+                            /** @description The Account this Mailbox sends for, `shared` (any Account may send from it), or null (it sends nothing until linked). */
+                            sends_for: {
+                                /** @enum {string} */
+                                kind: "account";
+                                account_id: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "shared";
+                            } | null;
+                            /** @description The link Curviate suggests; never applied until you confirm it. */
+                            sends_for_suggestion: Record<string, never> | null;
+                            /** @description Emails a day across all Campaigns and Accounts, at most 50. */
+                            daily_cap: number;
+                            /** @description The cap in force while it is lowered; null otherwise. */
+                            cap_lowered_to: number | null;
+                            sent_today: number;
+                            /** @description Emails sent and hard bounces over the last 7 days. */
+                            bounces_7d: {
+                                sent: number;
+                                bounced: number;
+                            };
+                            /** Format: date-time */
+                            paused_until: string | null;
+                            pause_reason: string | null;
+                            signature: string | null;
+                            connected_by_user_id: string | null;
+                            /** Format: date-time */
+                            connected_at: string;
+                            used_with: {
+                                accounts: {
+                                    account_id?: string;
+                                    emails?: number;
+                                }[];
+                                campaigns: {
+                                    campaign_id?: string;
+                                    emails?: number;
+                                }[];
+                            };
+                        }[];
+                        cursor?: string | null;
+                    };
+                };
+            };
+            /** @description Unknown state, limit out of range or malformed cursor. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: Mailboxes are not available to this team. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1MailboxesId: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Mailbox id (mbx_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One Mailbox. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Mailbox id (mbx_...), opaque. */
+                        id: string;
+                        address: string;
+                        display_name: string | null;
+                        /** @description The domain name of the address. */
+                        domain: string;
+                        /**
+                         * @description How the Mailbox is reached; `curviate` for a Mailbox bought from Curviate.
+                         * @enum {string}
+                         */
+                        connection: "google_app_password" | "google_sign_in" | "microsoft_sign_in" | "imap_smtp" | "curviate";
+                        /**
+                         * @description `ramping` means the daily cap is still being worked up to: it sends up to the cap a day and the limit rises each sending day.
+                         * @enum {string}
+                         */
+                        state: "connected" | "ramping" | "paused" | "paused_by_bounces" | "paused_by_provider" | "reconnect_needed";
+                        /** @description The Account this Mailbox sends for, `shared` (any Account may send from it), or null (it sends nothing until linked). */
+                        sends_for: {
+                            /** @enum {string} */
+                            kind: "account";
+                            account_id: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "shared";
+                        } | null;
+                        /** @description The link Curviate suggests; never applied until you confirm it. */
+                        sends_for_suggestion: Record<string, never> | null;
+                        /** @description Emails a day across all Campaigns and Accounts, at most 50. */
+                        daily_cap: number;
+                        /** @description The cap in force while it is lowered; null otherwise. */
+                        cap_lowered_to: number | null;
+                        sent_today: number;
+                        /** @description Emails sent and hard bounces over the last 7 days. */
+                        bounces_7d: {
+                            sent: number;
+                            bounced: number;
+                        };
+                        /** Format: date-time */
+                        paused_until: string | null;
+                        pause_reason: string | null;
+                        signature: string | null;
+                        connected_by_user_id: string | null;
+                        /** Format: date-time */
+                        connected_at: string;
+                        used_with: {
+                            accounts: {
+                                account_id?: string;
+                                emails?: number;
+                            }[];
+                            campaigns: {
+                                campaign_id?: string;
+                                emails?: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_NOT_FOUND: no Mailbox with this id in this team (another team's id answers the same), or RESOURCE_NOT_FOUND where Mailboxes are not available to this team. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    deleteV1MailboxesId: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Mailbox id (mbx_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The Mailbox and its credentials are gone. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object?: "mailbox";
+                        id?: string;
+                        /** @enum {boolean} */
+                        deleted?: true;
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: a Member removing a Mailbox they did not connect. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_NOT_FOUND: no Mailbox with this id in this team (another team's id answers the same), or RESOURCE_NOT_FOUND where Mailboxes are not available to this team. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    patchV1MailboxesId: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Mailbox id (mbx_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Emails a day across all Campaigns and Accounts, at most 50. */
+                    daily_cap?: number;
+                    /** @description Plain text sign-off, at most 2000 characters; null clears it. */
+                    signature?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description The Mailbox as updated. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Mailbox id (mbx_...), opaque. */
+                        id: string;
+                        address: string;
+                        display_name: string | null;
+                        /** @description The domain name of the address. */
+                        domain: string;
+                        /**
+                         * @description How the Mailbox is reached; `curviate` for a Mailbox bought from Curviate.
+                         * @enum {string}
+                         */
+                        connection: "google_app_password" | "google_sign_in" | "microsoft_sign_in" | "imap_smtp" | "curviate";
+                        /**
+                         * @description `ramping` means the daily cap is still being worked up to: it sends up to the cap a day and the limit rises each sending day.
+                         * @enum {string}
+                         */
+                        state: "connected" | "ramping" | "paused" | "paused_by_bounces" | "paused_by_provider" | "reconnect_needed";
+                        /** @description The Account this Mailbox sends for, `shared` (any Account may send from it), or null (it sends nothing until linked). */
+                        sends_for: {
+                            /** @enum {string} */
+                            kind: "account";
+                            account_id: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "shared";
+                        } | null;
+                        /** @description The link Curviate suggests; never applied until you confirm it. */
+                        sends_for_suggestion: Record<string, never> | null;
+                        /** @description Emails a day across all Campaigns and Accounts, at most 50. */
+                        daily_cap: number;
+                        /** @description The cap in force while it is lowered; null otherwise. */
+                        cap_lowered_to: number | null;
+                        sent_today: number;
+                        /** @description Emails sent and hard bounces over the last 7 days. */
+                        bounces_7d: {
+                            sent: number;
+                            bounced: number;
+                        };
+                        /** Format: date-time */
+                        paused_until: string | null;
+                        pause_reason: string | null;
+                        signature: string | null;
+                        connected_by_user_id: string | null;
+                        /** Format: date-time */
+                        connected_at: string;
+                        used_with: {
+                            accounts: {
+                                account_id?: string;
+                                emails?: number;
+                            }[];
+                            campaigns: {
+                                campaign_id?: string;
+                                emails?: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: `daily_cap` above 50 or below 1, `signature` above 2,000 characters, no field, or an unknown field. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: a Member changing a Mailbox they did not connect. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_NOT_FOUND: no Mailbox with this id in this team (another team's id answers the same), or RESOURCE_NOT_FOUND where Mailboxes are not available to this team. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1MailboxesIdPause: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Mailbox id (mbx_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The Mailbox, now `paused`. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Mailbox id (mbx_...), opaque. */
+                        id: string;
+                        address: string;
+                        display_name: string | null;
+                        /** @description The domain name of the address. */
+                        domain: string;
+                        /**
+                         * @description How the Mailbox is reached; `curviate` for a Mailbox bought from Curviate.
+                         * @enum {string}
+                         */
+                        connection: "google_app_password" | "google_sign_in" | "microsoft_sign_in" | "imap_smtp" | "curviate";
+                        /**
+                         * @description `ramping` means the daily cap is still being worked up to: it sends up to the cap a day and the limit rises each sending day.
+                         * @enum {string}
+                         */
+                        state: "connected" | "ramping" | "paused" | "paused_by_bounces" | "paused_by_provider" | "reconnect_needed";
+                        /** @description The Account this Mailbox sends for, `shared` (any Account may send from it), or null (it sends nothing until linked). */
+                        sends_for: {
+                            /** @enum {string} */
+                            kind: "account";
+                            account_id: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "shared";
+                        } | null;
+                        /** @description The link Curviate suggests; never applied until you confirm it. */
+                        sends_for_suggestion: Record<string, never> | null;
+                        /** @description Emails a day across all Campaigns and Accounts, at most 50. */
+                        daily_cap: number;
+                        /** @description The cap in force while it is lowered; null otherwise. */
+                        cap_lowered_to: number | null;
+                        sent_today: number;
+                        /** @description Emails sent and hard bounces over the last 7 days. */
+                        bounces_7d: {
+                            sent: number;
+                            bounced: number;
+                        };
+                        /** Format: date-time */
+                        paused_until: string | null;
+                        pause_reason: string | null;
+                        signature: string | null;
+                        connected_by_user_id: string | null;
+                        /** Format: date-time */
+                        connected_at: string;
+                        used_with: {
+                            accounts: {
+                                account_id?: string;
+                                emails?: number;
+                            }[];
+                            campaigns: {
+                                campaign_id?: string;
+                                emails?: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: a Member pausing a Mailbox they did not connect. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_NOT_FOUND: no Mailbox with this id in this team (another team's id answers the same), or RESOURCE_NOT_FOUND where Mailboxes are not available to this team. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_STATE_CONFLICT: the Mailbox is not `connected` or `ramping`. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1MailboxesIdResume: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Mailbox id (mbx_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The Mailbox, now `ramping` from 5 a day. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Mailbox id (mbx_...), opaque. */
+                        id: string;
+                        address: string;
+                        display_name: string | null;
+                        /** @description The domain name of the address. */
+                        domain: string;
+                        /**
+                         * @description How the Mailbox is reached; `curviate` for a Mailbox bought from Curviate.
+                         * @enum {string}
+                         */
+                        connection: "google_app_password" | "google_sign_in" | "microsoft_sign_in" | "imap_smtp" | "curviate";
+                        /**
+                         * @description `ramping` means the daily cap is still being worked up to: it sends up to the cap a day and the limit rises each sending day.
+                         * @enum {string}
+                         */
+                        state: "connected" | "ramping" | "paused" | "paused_by_bounces" | "paused_by_provider" | "reconnect_needed";
+                        /** @description The Account this Mailbox sends for, `shared` (any Account may send from it), or null (it sends nothing until linked). */
+                        sends_for: {
+                            /** @enum {string} */
+                            kind: "account";
+                            account_id: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "shared";
+                        } | null;
+                        /** @description The link Curviate suggests; never applied until you confirm it. */
+                        sends_for_suggestion: Record<string, never> | null;
+                        /** @description Emails a day across all Campaigns and Accounts, at most 50. */
+                        daily_cap: number;
+                        /** @description The cap in force while it is lowered; null otherwise. */
+                        cap_lowered_to: number | null;
+                        sent_today: number;
+                        /** @description Emails sent and hard bounces over the last 7 days. */
+                        bounces_7d: {
+                            sent: number;
+                            bounced: number;
+                        };
+                        /** Format: date-time */
+                        paused_until: string | null;
+                        pause_reason: string | null;
+                        signature: string | null;
+                        connected_by_user_id: string | null;
+                        /** Format: date-time */
+                        connected_at: string;
+                        used_with: {
+                            accounts: {
+                                account_id?: string;
+                                emails?: number;
+                            }[];
+                            campaigns: {
+                                campaign_id?: string;
+                                emails?: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: a Member resuming a Mailbox they did not connect. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_NOT_FOUND: no Mailbox with this id in this team (another team's id answers the same), or RESOURCE_NOT_FOUND where Mailboxes are not available to this team. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_STATE_CONFLICT: not paused, a provider pause before its `paused_until` (the message names the time), or one Curviate is fixing. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
