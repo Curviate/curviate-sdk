@@ -9,6 +9,12 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+### Tier answer loses `pending` and `early_access`
+
+- **BREAKING:** `tier.get()` (`GET /v1/billing/tier`) no longer answers `pending` (the Tier change due at the next renewal) or `early_access` (the Tiers announced and not yet sold). Both keys are gone from `TierResult`: no alias, no `null` stand-in. The server deleted the Tier change and early-access code, so a Team has no scheduled Tier change and nothing to ask early access for. Code that read `result.pending` or `result.early_access` fails to type-check; delete the read.
+- The Tier name type narrows: `TierName`, `bought_tier`, the trial and override `tier` lose `"enhance"` (no Team can hold it; an Enhance override became Automate). A `switch` over `TierName` with an `"enhance"` case no longer type-checks.
+- Regenerated `src/generated/types.ts` and `fixtures/openapi.json` from the server built from the Tier-code deletion, run locally; regenerate from the deployed document before publishing (`PROVENANCE.json`).
+
 ## [0.49.0] - 2026-11-09
 
 ### Forecast (regenerated from production 134827ce6)

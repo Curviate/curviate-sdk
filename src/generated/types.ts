@@ -42458,7 +42458,7 @@ export interface operations {
                              * @description The team's Tier, or the Tier of a seat lent to it; null with no subscription. Only with include=counts, on a team this credential may count (see the operation).
                              * @enum {string|null}
                              */
-                            tier?: "build" | "automate" | "enhance" | null;
+                            tier?: "build" | "automate" | null;
                             /** @description The trial, while it is all the team has; else null. Only with include=counts, on a team this credential may count (see the operation). */
                             trial?: {
                                 /** @description Whole days until the trial ends. */
@@ -56182,7 +56182,7 @@ export interface operations {
                          * @description The Tier the subscription buys, or null.
                          * @enum {string|null}
                          */
-                        bought_tier: "build" | "automate" | "enhance" | null;
+                        bought_tier: "build" | "automate" | null;
                         /** @description Seats counted, trial and lent-in seats included. */
                         seat_total: number;
                         /** @description Seats with an Account. */
@@ -56888,12 +56888,12 @@ export interface operations {
                          * @description The Tier the Team has now: the highest of the Tier it bought, its trial's Tier while the trial runs, and a Tier granted to it. Null when it has none.
                          * @enum {string|null}
                          */
-                        tier: "build" | "automate" | "enhance" | null;
+                        tier: "build" | "automate" | null;
                         /**
                          * @description The Tier of the Team's subscription. Null without a live subscription.
                          * @enum {string|null}
                          */
-                        bought_tier: "build" | "automate" | "enhance" | null;
+                        bought_tier: "build" | "automate" | null;
                         /**
                          * @description How often the subscription renews. Null without a subscription.
                          * @enum {string|null}
@@ -56905,7 +56905,7 @@ export interface operations {
                              * @description The Tier the trial carries.
                              * @enum {string}
                              */
-                            tier: "build" | "automate" | "enhance";
+                            tier: "build" | "automate";
                             /**
                              * Format: date-time
                              * @description When the trial ends.
@@ -56918,41 +56918,15 @@ export interface operations {
                              * @description The Tier granted.
                              * @enum {string}
                              */
-                            tier: "build" | "automate" | "enhance";
+                            tier: "build" | "automate";
                             /**
                              * Format: date-time
                              * @description When the grant ends. Null when it has no end.
                              */
                             expires_at: string | null;
                         } | null;
-                        /** @description A Tier change that takes effect at the next renewal. Null when none is scheduled. */
-                        pending: {
-                            /**
-                             * @description The Tier the subscription moves to.
-                             * @enum {string}
-                             */
-                            tier: "build" | "automate" | "enhance";
-                            /**
-                             * Format: date-time
-                             * @description When it takes effect.
-                             */
-                            effective_at: string;
-                        } | null;
                         /** @description The features the Team has now. Empty when it has no Tier, and for a Tier that adds none. */
                         features: ("drafts" | "contacts" | "motions" | "network" | "unibox" | "keep_connected")[];
-                        /** @description One entry per Tier that is announced and not yet sold. */
-                        early_access: {
-                            /**
-                             * @description The Tier.
-                             * @enum {string}
-                             */
-                            tier: "build" | "automate" | "enhance";
-                            /**
-                             * Format: date-time
-                             * @description When this Team asked for early access to it. Null when it has not.
-                             */
-                            requested_at: string | null;
-                        }[];
                     };
                 };
             };
