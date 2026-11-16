@@ -2685,7 +2685,7 @@ export interface paths {
         head?: never;
         /**
          * Update an account's metadata or connection location
-         * @description Updates metadata, external_id, whether its Connections are saved as Contacts, the connection location (country) or your own proxy (null plus a country returns to the Curviate proxy). Returns the account; connection_location is re-read after a location change.
+         * @description Updates metadata, external_id, whether its Connections are saved as Leads, the connection location (country) or your own proxy (null plus a country returns to the Curviate proxy). Returns the account; connection_location is re-read after a location change.
          */
         patch: operations["patchV1AccountsAccountId"];
         trace?: never;
@@ -2720,7 +2720,7 @@ export interface paths {
         get?: never;
         /**
          * Turn team access on or off for an account
-         * @description team_access: false opts the account out: nobody else can operate it, it leaves every Motion that held it, and its queued enrichment visits are dropped. true shares it again. Only the person who connected the account can do this, whatever its seat or the team's payment state.
+         * @description team_access: false opts the account out: nobody else can operate it, it leaves every Campaign that held it, and its queued enrichment visits are dropped. true shares it again. Only the person who connected the account can do this, whatever its seat or the team's payment state.
          */
         put: operations["putV1AccountsAccountIdTeamAccess"];
         post?: never;
@@ -3303,7 +3303,7 @@ export interface paths {
         };
         /**
          * List your teams
-         * @description The teams you are a member of, with your role in each. is_current marks the team this call acts in: a Team key's own team, or, with an All-Teams key, your default team (this call needs no team header; the calls that act in one team take X-Curviate-Team). include=counts adds tier, trial, accounts and active_motions, each what you would read in that team, and seats where you are an Owner: on every team for a dashboard session or an All-Teams credential, on its own team only for a Team key or a one-team token.
+         * @description The teams you are a member of, with your role in each. is_current marks the team this call acts in: a Team key's own team, or, with an All-Teams key, your default team (this call needs no team header; the calls that act in one team take X-Curviate-Team). include=counts adds tier, trial, accounts and active_campaigns, each what you would read in that team, and seats where you are an Owner: on every team for a dashboard session or an All-Teams credential, on its own team only for a Team key or a one-team token.
          */
         get: operations["getV1Teams"];
         put?: never;
@@ -4413,7 +4413,7 @@ export interface paths {
         put?: never;
         /**
          * Act on many enrollments
-         * @description Pauses, resumes, stops, retries, sends an event to or reassigns up to 1000 Enrollments, by ids or by a filter (the list filters, motion_id required). Each is decided alone, as its single call, with its own result; not atomic. List with the same filter to see the matches.
+         * @description Pauses, resumes, stops, retries, sends an event to or reassigns up to 1000 Enrollments, by ids or by a filter (the list filters, campaign_id required). Each is decided alone, as its single call, with its own result; not atomic. List with the same filter to see the matches.
          */
         post: operations["postV1EnrollmentsBulk"];
         delete?: never;
@@ -4803,17 +4803,17 @@ export interface components {
                 message: string;
             };
             /**
-             * @description Present on LEAD_NOT_ENROLLABLE: why the Contact was not enrolled (already_enrolled, do_not_contact, in_exclusion_list, in_other_campaign, known_chat, pending_invite or filtered_out; known_chat and pending_invite only on a move to another Motion). Present on BUDGET_EXHAUSTED: which rule refused. ceiling means the row's configured limit is spent, and you wait until reset_at or raise it. activity_window means the account is outside the hours it works in (never for a direct message: a send, new chat, edit, delete, reaction or read mark), and reset_at is when the window next opens. The two need different fixes, so branch on this rather than on the message; hint.parameter already names the right setting for each.
+             * @description Present on LEAD_NOT_ENROLLABLE: why the Lead was not enrolled (already_enrolled, do_not_contact, in_exclusion_list, in_other_campaign, known_chat, pending_invite or filtered_out; known_chat and pending_invite only on a move to another Campaign). Present on BUDGET_EXHAUSTED: which rule refused. ceiling means the row's configured limit is spent, and you wait until reset_at or raise it. activity_window means the account is outside the hours it works in (never for a direct message: a send, new chat, edit, delete, reaction or read mark), and reset_at is when the window next opens. The two need different fixes, so branch on this rather than on the message; hint.parameter already names the right setting for each.
              * @enum {string}
              */
             reason?: "ceiling" | "activity_window" | "already_enrolled" | "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered_out";
             /** @description Present on BUDGET_EXHAUSTED, always true: the action did not happen and spent nothing. Limits are always enforced; no success response carries a safety warning. */
             blocked?: boolean;
-            /** @description Present on RESOURCE_NOT_FOUND for a Contact id that was merged into another Contact (two records turned out to be one person): the id to use instead. */
+            /** @description Present on RESOURCE_NOT_FOUND for a Lead id that was merged into another Lead (two records turned out to be one person): the id to use instead. */
             merged_into?: string;
             /** @description Present alongside row: whole seconds until that row is usable again. This response carries no Retry-After header and no delay retry_hint, deliberately: a paused row can be paused for an hour, and a client that sleeps that inside the call hangs. Do not retry this row before the wait elapses; switch to other work instead. Seconds, not milliseconds. */
             retry_after?: number;
-            /** @description Present on SEQUENCE_INVALID: every failure of the refused Sequence document, not only the first (the first 100; the message counts them all), in step order, so one fix round covers them all, each compiler-style with code, message, pointer, hint and docs_url. Also on WEBHOOK_TEMPLATE_INVALID: every finding of the refused body_template, in template order, in the same shape plus line and col. Also on CAMPAIGN_NOT_STARTABLE: every gap that keeps the Motion from starting, as path and rule only. path is relative to the document (for example opener.variants.opener_named.text or invite.with.withdraw_after); rule says what to change. The message repeats the first entry. */
+            /** @description Present on SEQUENCE_INVALID: every failure of the refused Sequence document, not only the first (the first 100; the message counts them all), in step order, so one fix round covers them all, each compiler-style with code, message, pointer, hint and docs_url. Also on WEBHOOK_TEMPLATE_INVALID: every finding of the refused body_template, in template order, in the same shape plus line and col. Also on CAMPAIGN_NOT_STARTABLE: every gap that keeps the Campaign from starting, as path and rule only. path is relative to the document (for example opener.variants.opener_named.text or invite.with.withdraw_after); rule says what to change. The message repeats the first entry. */
             errors?: {
                 /** @description Where in the Sequence document: step id, then field. On WEBHOOK_TEMPLATE_INVALID: always body_template. */
                 path: string;
@@ -4841,7 +4841,7 @@ export interface components {
                 /** @description On WEBHOOK_TEMPLATE_INVALID: the column in that line, counting from 1. */
                 col?: number;
             }[];
-            /** @description Present on SEQUENCE_CONFLICT: the Motion's stored Sequence your PATCH was refused against, so you can merge or overwrite without a second read. To replace it with yours, send the PATCH again with if_sequence_revision set to current.sequence_revision. */
+            /** @description Present on SEQUENCE_CONFLICT: the Campaign's stored Sequence your PATCH was refused against, so you can merge or overwrite without a second read. To replace it with yours, send the PATCH again with if_sequence_revision set to current.sequence_revision. */
             current?: {
                 /** @description The stored revision. */
                 sequence_revision: number;
@@ -4851,7 +4851,7 @@ export interface components {
                 sequence: unknown;
                 /** @description Who saved that revision. */
                 sequence_updated_by_user_id: string | null;
-                /** @description ISO 8601: when the Motion last changed. */
+                /** @description ISO 8601: when the Campaign last changed. */
                 updated_at: string;
             };
             /** @description Present when a structured search filter value matched several filter options and one has to be picked (422 FILTER_CANDIDATES_REQUIRED). One entry per offending value, so a single retry can fix them all. A value that matched no option at all is not listed here and is not an error: it is sent on as an id and reported in notices[] on the 200. */
@@ -4870,7 +4870,7 @@ export interface components {
             }[];
             /** @description Present on PAYMENT_REQUIRED and ACCOUNT_DISPUTED: the self-service page where the tenant resolves the payment problem, so an agent can hand a human one link. Null when no portal session could be opened; fall back to the dashboard. */
             portal_url?: string | null;
-            /** @description Present on TIER_REQUIRED: the feature the team's Tier does not include (drafts, contacts, motions, network, unibox or keep_connected). */
+            /** @description Present on TIER_REQUIRED: the feature the team's Tier does not include (drafts, leads, campaigns, network, unibox or keep_connected). */
             feature?: string;
             /** @description Present on TIER_REQUIRED: the lowest Tier that includes the feature. Null when no Tier includes it. */
             required_tier?: string | null;
@@ -4999,10 +4999,10 @@ export interface components {
             /** @description True if the message was deleted. */
             is_deleted?: boolean;
             /**
-             * @description Who sent a message the connected account sent: a Motion, the Unibox, the API (any API key or MCP grant), or LinkedIn itself. Derived by Curviate, never set by a caller. Omitted when unknown, and on received messages.
+             * @description Who sent a message the connected account sent: a Campaign, the Unibox, the API (any API key or MCP grant), or LinkedIn itself. Derived by Curviate, never set by a caller. Omitted when unknown, and on received messages.
              * @enum {string}
              */
-            origin?: "motion" | "unibox" | "api" | "linkedin";
+            origin?: "campaign" | "unibox" | "api" | "linkedin";
             /** @description True if the account is mentioned in this message. */
             is_mentionned?: boolean;
             /** @description Per-type reaction breakdown on the message. */
@@ -14134,10 +14134,10 @@ export interface operations {
                             /** @description True if the message was deleted. */
                             is_deleted?: boolean;
                             /**
-                             * @description Who sent a message the connected account sent: a Motion, the Unibox, the API (any API key or MCP grant), or LinkedIn itself. Derived by Curviate, never set by a caller. Omitted when unknown, and on received messages.
+                             * @description Who sent a message the connected account sent: a Campaign, the Unibox, the API (any API key or MCP grant), or LinkedIn itself. Derived by Curviate, never set by a caller. Omitted when unknown, and on received messages.
                              * @enum {string}
                              */
-                            origin?: "motion" | "unibox" | "api" | "linkedin";
+                            origin?: "campaign" | "unibox" | "api" | "linkedin";
                             /** @description True if the account is mentioned in this message. */
                             is_mentionned?: boolean;
                             /** @description Per-type reaction breakdown on the message. */
@@ -14562,10 +14562,10 @@ export interface operations {
                         /** @description True if the message was deleted. */
                         is_deleted?: boolean;
                         /**
-                         * @description Who sent a message the connected account sent: a Motion, the Unibox, the API (any API key or MCP grant), or LinkedIn itself. Derived by Curviate, never set by a caller. Omitted when unknown, and on received messages.
+                         * @description Who sent a message the connected account sent: a Campaign, the Unibox, the API (any API key or MCP grant), or LinkedIn itself. Derived by Curviate, never set by a caller. Omitted when unknown, and on received messages.
                          * @enum {string}
                          */
-                        origin?: "motion" | "unibox" | "api" | "linkedin";
+                        origin?: "campaign" | "unibox" | "api" | "linkedin";
                         /** @description True if the account is mentioned in this message. */
                         is_mentionned?: boolean;
                         /** @description Per-type reaction breakdown on the message. */
@@ -20693,7 +20693,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description Tag names to add to the Contact (never removes). Up to 50 Tags per Contact; a new name creates the Tag. Omit for the Contact only. */
+                    /** @description Tag names to add to the Lead (never removes). Up to 50 Tags per Lead; a new name creates the Tag. Omit for the Lead only. */
                     tags?: string[];
                 };
             };
@@ -35277,7 +35277,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The updated account: the object GET /v1/accounts/{account_id} returns, without quotas and event_log (read those on GET). After a location change, connection_location is re-read from LinkedIn's side, so it shows where the account really connects from now. metadata, external_id and save_connections_as_contacts are stored by Curviate; a PATCH carrying only those makes no LinkedIn call. */
+            /** @description The updated account: the object GET /v1/accounts/{account_id} returns, without quotas and event_log (read those on GET). After a location change, connection_location is re-read from LinkedIn's side, so it shows where the account really connects from now. metadata, external_id and save_connections_as_leads are stored by Curviate; a PATCH carrying only those makes no LinkedIn call. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -35653,7 +35653,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description Whether your team may use this account. false opts it out: nobody else can operate it, it leaves every Motion that held it, and its queued profile enrichment visits are dropped. true shares it again (it does not rejoin a Motion). */
+                    /** @description Whether your team may use this account. false opts it out: nobody else can operate it, it leaves every Campaign that held it, and its queued profile enrichment visits are dropped. true shares it again (it does not rejoin a Campaign). */
                     team_access: boolean;
                 };
             };
@@ -40711,7 +40711,7 @@ export interface operations {
                         /** @description Read-only, ignored: the rung this row's hours come from. */
                         activity_window_source?: unknown;
                     }[];
-                    /** @description Motion pacing at this scope (an account, or the team default every account inherits), keyed by action type (`invite.send`, `post.comment`, `message.send`, `inmail.send`, `profile.follow`, `profile.unfollow`, `skill.endorse`, `invite.withdraw`, `post.react`), `read` and `global`: `{"invite.send": {"min_gap_seconds": 600, "jitter_seconds": 360}}`. Any subset; null clears a field or a type back to the default. Whole seconds from 0 to 86400, never clamped. A value below the default carries an `over_default` warning, the rows' own shape. Direct API calls are never paced. */
+                    /** @description Campaign pacing at this scope (an account, or the team default every account inherits), keyed by action type (`invite.send`, `post.comment`, `message.send`, `inmail.send`, `profile.follow`, `profile.unfollow`, `skill.endorse`, `invite.withdraw`, `post.react`), `read` and `global`: `{"invite.send": {"min_gap_seconds": 600, "jitter_seconds": 360}}`. Any subset; null clears a field or a type back to the default. Whole seconds from 0 to 86400, never clamped. A value below the default carries an `over_default` warning, the rows' own shape. Direct API calls are never paced. */
                     pacing?: {
                         [key: string]: {
                             /** @description Whole seconds, 0 to 86400. Null clears it. */
@@ -40760,7 +40760,7 @@ export interface operations {
                         /** @description Turn this account's warm-up on (true) or off (false, the default). On starts the ramp at week 1 (0.15) from now, rising to full limits over 5 weeks; off is full limits at once. Recovery after a LinkedIn restriction applies either way. */
                         enabled?: boolean;
                     };
-                    /** @description Automatic withdrawal of old invitations Curviate sent for this account's Motions, default true. While this account has more than 400 pending invitations, Curviate withdraws the Motion-sent ones older than 14 days, oldest first, a few a day (at most the larger of 25 and the day's invitation allowance), inside its working hours and one at a time with the usual gaps, after checking each is still pending. It never touches an invitation you sent by hand or through the API, and never invites a withdrawn person again. It keeps working while invitations are stopped at 650 pending, which is how the account comes back under. Set false to keep every old invitation pending; the level then falls only as people accept or you withdraw. */
+                    /** @description Automatic withdrawal of old invitations Curviate sent for this account's Campaigns, default true. While this account has more than 400 pending invitations, Curviate withdraws the Campaign-sent ones older than 14 days, oldest first, a few a day (at most the larger of 25 and the day's invitation allowance), inside its working hours and one at a time with the usual gaps, after checking each is still pending. It never touches an invitation you sent by hand or through the API, and never invites a withdrawn person again. It keeps working while invitations are stopped at 650 pending, which is how the account comes back under. Set false to keep every old invitation pending; the level then falls only as people accept or you withdraw. */
                     auto_withdraw?: boolean;
                     /** @description Read-only: the time zone the activity window is read in, from where this account connects. Accepted and ignored, so the read's object can be sent back unchanged. The window's settable inputs are per row: `activity_window_start`, `activity_window_end`, `activity_window_applies_to`. */
                     activity_window?: unknown;
@@ -41860,7 +41860,7 @@ export interface operations {
                             activity_window_source?: unknown;
                         }[];
                     }[];
-                    /** @description Motion pacing at this scope (an account, or the team default every account inherits), keyed by action type (`invite.send`, `post.comment`, `message.send`, `inmail.send`, `profile.follow`, `profile.unfollow`, `skill.endorse`, `invite.withdraw`, `post.react`), `read` and `global`: `{"invite.send": {"min_gap_seconds": 600, "jitter_seconds": 360}}`. Any subset; null clears a field or a type back to the default. Whole seconds from 0 to 86400, never clamped. A value below the default carries an `over_default` warning, the rows' own shape. Direct API calls are never paced. */
+                    /** @description Campaign pacing at this scope (an account, or the team default every account inherits), keyed by action type (`invite.send`, `post.comment`, `message.send`, `inmail.send`, `profile.follow`, `profile.unfollow`, `skill.endorse`, `invite.withdraw`, `post.react`), `read` and `global`: `{"invite.send": {"min_gap_seconds": 600, "jitter_seconds": 360}}`. Any subset; null clears a field or a type back to the default. Whole seconds from 0 to 86400, never clamped. A value below the default carries an `over_default` warning, the rows' own shape. Direct API calls are never paced. */
                     pacing?: {
                         [key: string]: {
                             /** @description Whole seconds, 0 to 86400. Null clears it. */
@@ -42493,8 +42493,8 @@ export interface operations {
                             } | null;
                             /** @description The accounts GET /v1/accounts lists for you in that team. Only with include=counts, on a team this credential may count (see the operation). */
                             accounts?: number;
-                            /** @description The Motions GET /v1/motions?status=active lists in that team. Only with include=counts, on a team this credential may count (see the operation). */
-                            active_motions?: number;
+                            /** @description The Campaigns GET /v1/campaigns?status=active lists in that team. Only with include=counts, on a team this credential may count (see the operation). */
+                            active_campaigns?: number;
                             /** @description Only where you are an Owner. Only with include=counts, on a team this credential may count (see the operation). */
                             seats?: {
                                 /** @description Seats an account occupies, lent-in seats included. */
@@ -45304,7 +45304,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -45635,7 +45635,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -45893,7 +45893,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: a Member named a teammate's account. ACCOUNT_NOT_SHARED: its person turned team access off. NO_ACTIVE_SEAT: the account has no seat. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description INSUFFICIENT_ROLE: a Member named a teammate's account. ACCOUNT_NOT_SHARED: its person turned team access off. NO_ACTIVE_SEAT: the account has no seat. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -46269,7 +46269,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -46902,7 +46902,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -47165,7 +47165,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -47394,7 +47394,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -47675,7 +47675,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -47967,7 +47967,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -48203,7 +48203,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -48506,7 +48506,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -51009,7 +51009,7 @@ export interface operations {
                                 enroll_days: number | null;
                                 /** @description The limit that set this account's pace: the pool whose share sets the start rate (invitations, views), pace for a Campaign with no invitation or profile view (about 60 new people a day), or a budget row such as messages_first_degree. */
                                 binding: string;
-                                /** @description The LinkedIn actions a day this Campaign is expected to make on this account. A draft: the mean daily invitations, messages and InMails of the first 7 days of its forecast, as if turned on now (the same simulation as include=forecast on GET /v1/analytics/motions/{motion_id}). A started Campaign: at that pace, every budgeted step of the costliest route counted. An estimate; 0 when the account carries no Lead. */
+                                /** @description The LinkedIn actions a day this Campaign is expected to make on this account. A draft: the mean daily invitations, messages and InMails of the first 7 days of its forecast, as if turned on now (the same simulation as include=forecast on GET /v1/analytics/campaigns/{campaign_id}). A started Campaign: at that pace, every budgeted step of the costliest route counted. An estimate; 0 when the account carries no Lead. */
                                 expected_actions_per_day: number;
                             }[];
                             /** @description Calendar days of waits and timeouts on the longest route, rounded up. null when the Campaign has no Sequence. */
@@ -56953,7 +56953,7 @@ export interface operations {
                             expires_at: string | null;
                         } | null;
                         /** @description The features the Team has now. Empty when it has no Tier, and for a Tier that adds none. */
-                        features: ("drafts" | "contacts" | "motions" | "network" | "unibox" | "keep_connected")[];
+                        features: ("drafts" | "leads" | "campaigns" | "network" | "unibox" | "keep_connected")[];
                     };
                 };
             };
