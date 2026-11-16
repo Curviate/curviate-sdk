@@ -2881,7 +2881,7 @@ export interface paths {
         put?: never;
         /**
          * Ask a person to connect or reconnect a LinkedIn account
-         * @description Credential-free connect: omit account_id for a new account, or name one to reconnect. Relay url to the person, who connects in their own Curviate dashboard. Never ask for a LinkedIn password, cookie or code. Read the request until status leaves pending. A retry makes a second request.
+         * @description Credential-free connect: omit account_id for a new account, or name one to reconnect. Relay url to the person, who connects in their own Curviate dashboard. Never ask for a LinkedIn password, cookie or code. Read the request until status leaves pending. A retry makes a second request. With mailbox, it asks for a Mailbox instead; for Google, a sealed app password in credentials is checked before the answer: completed with mailbox_id, or error_code says why and nothing is stored.
          */
         post: operations["postV1AuthConnectRequests"];
         delete?: never;
@@ -34587,7 +34587,7 @@ export interface operations {
                                  * @description The safety row. `search` counts result LINES, not queries issued; `content_poll` also debits `profile_views`. Two rows are not counters and say so in `kind`: `total_actions` is a tally of everything this account did in the window, and `pending_invites` is the outstanding invitation backlog read from the platform rather than something this account spends.
                                  * @enum {string}
                                  */
-                                budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
+                                budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "company_reads" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
                                 /**
                                  * @description Which arithmetic produced `used`. `debit`: actions this account spent, counted as they happen. `tally`: a sum across the debit rows in the window, which is why it has a warn threshold and no ceiling. `gauge`: a level read from the platform rather than counted here, so it falls on its own as invitations are accepted or withdrawn.
                                  * @enum {string}
@@ -34848,7 +34848,7 @@ export interface operations {
                              * @description The safety row. `search` counts result LINES, not queries issued; `content_poll` also debits `profile_views`. Two rows are not counters and say so in `kind`: `total_actions` is a tally of everything this account did in the window, and `pending_invites` is the outstanding invitation backlog read from the platform rather than something this account spends.
                              * @enum {string}
                              */
-                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
+                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "company_reads" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
                             /**
                              * @description Which arithmetic produced `used`. `debit`: actions this account spent, counted as they happen. `tally`: a sum across the debit rows in the window, which is why it has a warn threshold and no ceiling. `gauge`: a level read from the platform rather than counted here, so it falls on its own as invitations are accepted or withdrawn.
                              * @enum {string}
@@ -36037,7 +36037,7 @@ export interface operations {
                                  * @description The safety row. `search` counts result LINES, not queries issued; `content_poll` also debits `profile_views`. Two rows are not counters and say so in `kind`: `total_actions` is a tally of everything this account did in the window, and `pending_invites` is the outstanding invitation backlog read from the platform rather than something this account spends.
                                  * @enum {string}
                                  */
-                                budget_row?: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
+                                budget_row?: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "company_reads" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
                                 /**
                                  * @description Calendar grain this row is counted in. UTC, not account-local. `null` on the gauge, which has no window at all.
                                  * @enum {string|null}
@@ -37701,6 +37701,21 @@ export interface operations {
                     account_id?: string;
                     /** @description Optional, new connects only, default false (warm-up off: full limits from the start). true connects this account with warm-up on: its limits start at 15% and rise over 5 weeks, for a new account or one with few connections and little activity. Recovery after a LinkedIn restriction applies either way. Change it later with PATCH /v1/{account_id}/safety-policy and warm_up.enabled. */
                     warm_up?: boolean;
+                    /** @description Ask for a Mailbox instead of a LinkedIn account (kind mailbox_connect). */
+                    mailbox?: {
+                        /**
+                         * @description How the Mailbox connects: google_app_password (Gmail and Google Workspace), imap_smtp (any other host), microsoft_sign_in.
+                         * @enum {string}
+                         */
+                        connection: "google_app_password" | "imap_smtp" | "microsoft_sign_in";
+                        /** @description The Mailbox's email address. */
+                        address: string;
+                    };
+                    /** @description Only with mailbox, for google_app_password and imap_smtp: Curviate checks the password before answering and keeps it sealed. Pass it only when the person handed it to you for this. */
+                    credentials?: {
+                        /** @description The app password (Google) or the host's password. Never returned. */
+                        password: string;
+                    };
                 };
             };
         };
@@ -37722,10 +37737,10 @@ export interface operations {
                         /** @description The connect request id (creq_...). Opaque. */
                         id: string;
                         /**
-                         * @description connect asks for a new account; reconnect for the named one.
+                         * @description connect asks for a new account; reconnect for the named one; mailbox_connect for a new Mailbox.
                          * @enum {string}
                          */
-                        kind: "connect" | "reconnect";
+                        kind: "connect" | "reconnect" | "mailbox_connect";
                         /**
                          * @description pending until the person completes it in their dashboard. completed: account_id is the connected account. expired: not started within 15 minutes. failed: three failed sign-ins, or the account to reconnect is gone. cancelled: someone cancelled it.
                          * @enum {string}
@@ -37743,10 +37758,14 @@ export interface operations {
                         created_at: string;
                         /** @description ISO-8601 UTC completion time, else null. */
                         completed_at: string | null;
+                        /** @description Mailbox kinds only: the connected Mailbox (mbx_...) once completed, else null. */
+                        mailbox_id?: string | null;
+                        /** @description Mailbox kinds only: the link for the person's administrator where their provider needs one, else null. */
+                        admin_consent_url?: string | null;
                     };
                 };
             };
-            /** @description INVALID_REQUEST: an unknown body key (the error names it) or a malformed account_id. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: an unknown body key (the error names it), a malformed account_id or address, credentials on a connection that signs in, or a connection not available yet. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -37773,8 +37792,17 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ACCOUNT_NOT_FOUND: the account to reconnect is unknown, another team's, or disconnected. */
+            /** @description ACCOUNT_NOT_FOUND: the account to reconnect is unknown, another team's, or disconnected. RESOURCE_NOT_FOUND: Mailboxes are not available to this team. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_ALREADY_CONNECTED: the address is already a Mailbox of this team. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -37839,10 +37867,10 @@ export interface operations {
                         /** @description The connect request id (creq_...). Opaque. */
                         id: string;
                         /**
-                         * @description connect asks for a new account; reconnect for the named one.
+                         * @description connect asks for a new account; reconnect for the named one; mailbox_connect for a new Mailbox.
                          * @enum {string}
                          */
-                        kind: "connect" | "reconnect";
+                        kind: "connect" | "reconnect" | "mailbox_connect";
                         /**
                          * @description pending until the person completes it in their dashboard. completed: account_id is the connected account. expired: not started within 15 minutes. failed: three failed sign-ins, or the account to reconnect is gone. cancelled: someone cancelled it.
                          * @enum {string}
@@ -37860,6 +37888,10 @@ export interface operations {
                         created_at: string;
                         /** @description ISO-8601 UTC completion time, else null. */
                         completed_at: string | null;
+                        /** @description Mailbox kinds only: the connected Mailbox (mbx_...) once completed, else null. */
+                        mailbox_id?: string | null;
+                        /** @description Mailbox kinds only: the link for the person's administrator where their provider needs one, else null. */
+                        admin_consent_url?: string | null;
                     };
                 };
             };
@@ -37938,10 +37970,10 @@ export interface operations {
                         /** @description The connect request id (creq_...). Opaque. */
                         id: string;
                         /**
-                         * @description connect asks for a new account; reconnect for the named one.
+                         * @description connect asks for a new account; reconnect for the named one; mailbox_connect for a new Mailbox.
                          * @enum {string}
                          */
-                        kind: "connect" | "reconnect";
+                        kind: "connect" | "reconnect" | "mailbox_connect";
                         /**
                          * @description pending until the person completes it in their dashboard. completed: account_id is the connected account. expired: not started within 15 minutes. failed: three failed sign-ins, or the account to reconnect is gone. cancelled: someone cancelled it.
                          * @enum {string}
@@ -37959,6 +37991,10 @@ export interface operations {
                         created_at: string;
                         /** @description ISO-8601 UTC completion time, else null. */
                         completed_at: string | null;
+                        /** @description Mailbox kinds only: the connected Mailbox (mbx_...) once completed, else null. */
+                        mailbox_id?: string | null;
+                        /** @description Mailbox kinds only: the link for the person's administrator where their provider needs one, else null. */
+                        admin_consent_url?: string | null;
                     };
                 };
             };
@@ -40632,7 +40668,7 @@ export interface operations {
                      */
                     tenant_default_posture?: "warn" | "enforce" | null;
                     /** @description Lift the platform pause on these action types now, instead of waiting for it to expire. When the platform refuses a call on an account (a rate limit, a server error on a budgeted route, an invitation resend cooldown), Curviate pauses that action type for the platform's own retry-after or a seeded cooldown, and every later call on it is refused locally without reaching the platform. Naming an action type here clears that pause: the next call goes out. Read `quotas[].halt` on the account to see which action types are paused and for how long. A type with no active pause is accepted and does nothing, so this is safe to send for a set you have not checked. Clearing is recorded in the account's ledger with the expiry it cut short, who cleared it and when, and it appears on the safety-events surface. It does not disarm anything: if the platform refuses the account again, the pause comes straight back, longer than the one you cleared where the platform says so. Clear a pause when you have reason to believe the refusal was a transient upstream fault rather than the platform pushing back on this account; clearing one and calling straight back into a real rate limit is itself how accounts get restricted. */
-                    clear_halts?: ("connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot")[];
+                    clear_halts?: ("connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "company_reads" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot")[];
                     /**
                      * @description REMOVED: limits are always enforced; to send more, raise the limit. "enforce" (or null) is still accepted until 2027-02-01, changes nothing and earns a POSTURE_REMOVED notice; "warn", or any value after that day, is refused with INVALID_REQUEST.
                      * @enum {string|null}
@@ -40644,7 +40680,7 @@ export interface operations {
                          * @description The budget row this patch configures.
                          * @enum {string}
                          */
-                        budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
+                        budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "company_reads" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
                         /** @description What this row refuses at, in this row's own unit: limits are always enforced. Any value up to 9007199254740991 is accepted and stored verbatim; a value above the Curviate default is reported back, never clamped. */
                         ceiling?: number | null;
                         /** @description Routine band. Activity at or below it is unremarkable. */
@@ -41264,7 +41300,7 @@ export interface operations {
                 /** @description Pagination cursor from a previous response; decodable, pass it back verbatim. */
                 cursor?: string;
                 /** @description Return only events flagged against this budget row. Omit for every row. */
-                budget_row?: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
+                budget_row?: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "company_reads" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
                 /** @description Only events at or after this instant (ISO-8601, e.g. 2026-09-01T00:00:00Z). */
                 since?: string;
                 /** @description Only events strictly before this instant (ISO-8601). */
@@ -41313,7 +41349,7 @@ export interface operations {
                              * @description The budget row that breached. It is not always a row the call itself spends: an invitation refused because the outstanding backlog is at its ceiling reports `pending_invites`, which is the thing that breached. `*` means the event was not about a row at all: the activity window closing on an action that spends no budget of its own, such as editing a message or a Recruiter admin action. The `budget_row` filter accepts real row names only, so page without it to see those.
                              * @enum {string}
                              */
-                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites" | "*";
+                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "company_reads" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites" | "*";
                             /**
                              * @description Which rule flagged it, and each one calls for a different response. `budget_exhausted`: the account reached the ceiling configured for that row, which you can raise on the safety policy. `activity_window`: the account was acting outside its configured activity window, so no ceiling was the constraint. Wait for the window to open (`reset_at`), or change the setting `hint.parameter` names: `active_hours`, or a row's `activity_window_start` or `activity_window_end`. `rate_limited`: the platform itself refused this account on that row recently and Curviate is holding the row until the pause expires. No ceiling you raise lifts it; the one thing that does is `clear_halts` on the safety policy, which lifts it deliberately and records that it was lifted. `halt_cleared` is the odd one out and the only entry that is not a refusal: somebody lifted one of those platform pauses early through `clear_halts` on the safety policy, so the row was open again from that instant. It carries `blocked: false` and its `method` is `update_safety_policy` rather than the operation that breached. Read it beside the `rate_limited` entry it lifts: the pause and its lifting are one thread, and an entry list that showed only the first would report a row as still paused.
                              * @enum {string}
@@ -41812,7 +41848,7 @@ export interface operations {
                              * @description The budget row this patch configures.
                              * @enum {string}
                              */
-                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
+                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "company_reads" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
                             /** @description What this row refuses at, in this row's own unit: limits are always enforced. Any value up to 9007199254740991 is accepted and stored verbatim; a value above the Curviate default is reported back, never clamped. */
                             ceiling?: number | null;
                             /** @description Routine band. Activity at or below it is unremarkable. */
@@ -55398,10 +55434,10 @@ export interface operations {
                         /** @description One row per budget row with at least one counted call in the window, in the Safety row order. */
                         types: {
                             /**
-                             * @description The budget row. Units differ per row: connection_requests_with_note, one invitation sent with a note (also counted in Invitations); connection_requests_no_note, one invitation sent, with or without a note; connection_requests_day, one invitation sent today, with or without a note; messages_first_degree, one message to a 1st-degree connection; inmail, one InMail sent; open_profile_inmail, one free message to an Open Profile; profile_views, one profile read; search, one search result line, not one query; comments, one comment posted; post_likes, one reaction to a post, a comment or a message; follows, one follow; content_poll, one content read: a page of posts, a feed, a company page or its followers; job_poll, one read of job postings; posts, one post published; endorsements, one skill endorsed; invite_responses, one received invitation accepted or declined; withdrawal_sweep, one sent invitation withdrawn; connections_sync, one background read of the connection list; inbox_sync, one background read of the inbox; profile_snapshot, one attempt of the daily Account snapshot.
+                             * @description The budget row. Units differ per row: connection_requests_with_note, one invitation sent with a note (also counted in Invitations); connection_requests_no_note, one invitation sent, with or without a note; connection_requests_day, one invitation sent today, with or without a note; messages_first_degree, one message to a 1st-degree connection; inmail, one InMail sent; open_profile_inmail, one free message to an Open Profile; profile_views, one profile read; search, one search result line, not one query; comments, one comment posted; post_likes, one reaction to a post, a comment or a message; follows, one follow; content_poll, one content read: a page of posts, a feed, a company page or its followers; company_reads, one company page read; job_poll, one read of job postings; posts, one post published; endorsements, one skill endorsed; invite_responses, one received invitation accepted or declined; withdrawal_sweep, one sent invitation withdrawn; connections_sync, one background read of the connection list; inbox_sync, one background read of the inbox; profile_snapshot, one attempt of the daily Account snapshot.
                              * @enum {string}
                              */
-                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot";
+                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "company_reads" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot";
                             /** @description Units the row counted in the window: successful and failed calls, as its quotas counter holds them. */
                             used: number;
                             /** @description Of used, units of calls that failed. */
@@ -55425,10 +55461,10 @@ export interface operations {
                             account_name: string | null;
                             types: {
                                 /**
-                                 * @description The budget row. Units differ per row: connection_requests_with_note, one invitation sent with a note (also counted in Invitations); connection_requests_no_note, one invitation sent, with or without a note; connection_requests_day, one invitation sent today, with or without a note; messages_first_degree, one message to a 1st-degree connection; inmail, one InMail sent; open_profile_inmail, one free message to an Open Profile; profile_views, one profile read; search, one search result line, not one query; comments, one comment posted; post_likes, one reaction to a post, a comment or a message; follows, one follow; content_poll, one content read: a page of posts, a feed, a company page or its followers; job_poll, one read of job postings; posts, one post published; endorsements, one skill endorsed; invite_responses, one received invitation accepted or declined; withdrawal_sweep, one sent invitation withdrawn; connections_sync, one background read of the connection list; inbox_sync, one background read of the inbox; profile_snapshot, one attempt of the daily Account snapshot.
+                                 * @description The budget row. Units differ per row: connection_requests_with_note, one invitation sent with a note (also counted in Invitations); connection_requests_no_note, one invitation sent, with or without a note; connection_requests_day, one invitation sent today, with or without a note; messages_first_degree, one message to a 1st-degree connection; inmail, one InMail sent; open_profile_inmail, one free message to an Open Profile; profile_views, one profile read; search, one search result line, not one query; comments, one comment posted; post_likes, one reaction to a post, a comment or a message; follows, one follow; content_poll, one content read: a page of posts, a feed, a company page or its followers; company_reads, one company page read; job_poll, one read of job postings; posts, one post published; endorsements, one skill endorsed; invite_responses, one received invitation accepted or declined; withdrawal_sweep, one sent invitation withdrawn; connections_sync, one background read of the connection list; inbox_sync, one background read of the inbox; profile_snapshot, one attempt of the daily Account snapshot.
                                  * @enum {string}
                                  */
-                                budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot";
+                                budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "company_reads" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot";
                                 /** @description Units the row counted in the window: successful and failed calls, as its quotas counter holds them. */
                                 used: number;
                                 /** @description Of used, units of calls that failed. */
@@ -55442,7 +55478,7 @@ export interface operations {
                                  * @description The safety row. `search` counts result LINES, not queries issued; `content_poll` also debits `profile_views`. Two rows are not counters and say so in `kind`: `total_actions` is a tally of everything this account did in the window, and `pending_invites` is the outstanding invitation backlog read from the platform rather than something this account spends.
                                  * @enum {string}
                                  */
-                                budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
+                                budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "company_reads" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
                                 /**
                                  * @description Which arithmetic produced `used`. `debit`: actions this account spent, counted as they happen. `tally`: a sum across the debit rows in the window, which is why it has a warn threshold and no ceiling. `gauge`: a level read from the platform rather than counted here, so it falls on its own as invitations are accepted or withdrawn.
                                  * @enum {string}
