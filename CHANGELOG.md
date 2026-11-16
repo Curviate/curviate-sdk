@@ -7,6 +7,20 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [Unreleased]
+
+### Breaking: Contacts become Leads, Motions become Campaigns
+
+The old names are removed, not aliased: there is no deprecation window. Rename on upgrade; the shapes, statuses and behaviour are unchanged.
+
+- **Resources:** `contacts` is `leads` (`leads.imports.*`), `contactLists` is `leadLists`, `motions` is `campaigns` (`campaigns.voiceClips.*`), `analytics.motions` is `analytics.campaigns`. `campaigns.addContacts` and `removeContacts` are `addLeads` and `removeLeads`; `unibox.tagContact` is `tagLead` (`POST /v1/unibox/chats/{account_id}/{chat_id}/lead`). The exported types follow (`Contact` is `Lead`, `Motion` is `Campaign`, `ContactImport` is `LeadImport`, ...). `doNotContact` and `DO_NOT_CONTACT` keep their names.
+- **Paths:** `/v1/contacts...` is `/v1/leads...`, `/v1/contact-lists` is `/v1/lead-lists`, `/v1/motions...` is `/v1/campaigns...` (`.../{id}/leads`, `.../voice-clips`), `/v1/analytics/motions...` is `/v1/analytics/campaigns...`.
+- **Keys:** `contact_id` is `lead_id`, `contact_ids` is `lead_ids`, `contact_list_ids` is `lead_list_ids`, `motion_id` is `campaign_id`, `motion_ids` is `campaign_ids` (including the webhook filter), `accounts_per_contact` is `accounts_per_lead`, `exclude.other_motions` is `exclude.other_campaigns`, `motion_name` is `campaign_name`, and `contact` on webhook payloads, Enrollments and events is `lead`. Id prefixes (`con_`, `cl_`, `mot_`) are unchanged.
+- **Errors:** `CONTACT_LIMIT_REACHED`, `CONTACT_NOT_ENROLLABLE`, `MOTION_NOT_STARTABLE` and `MOTION_STATUS_CONFLICT` are `LEAD_LIMIT_REACHED`, `LEAD_NOT_ENROLLABLE`, `CAMPAIGN_NOT_STARTABLE` and `CAMPAIGN_STATUS_CONFLICT`. `ACCOUNT_NOT_IN_CAMPAIGN` is exported (it decoded to `INTERNAL` before). A `switch (err.code)` on an old name stops matching.
+- **Webhooks:** source `motion` is `campaign`; events `motion.status_changed` and `motion.custom_event` are `campaign.status_changed` and `campaign.custom_event`; `motion.signal` is removed; `MotionPayload` is `CampaignPayload` (`campaign_id`, `campaign_name`, `lead`).
+- **Docs:** README, JSDoc and `@example` blocks use the new names (the Sequence builder example reads `curviate.campaigns.get`).
+- **Regenerated** `fixtures/openapi.json` and the generated types from the rename branch's served document, so the types also carry what that document serves beyond the rename.
+
 ## [0.50.1] - 2026-11-16
 
 ### Removes the Mailbox endpoints published by mistake in 0.50.0
@@ -21,18 +35,6 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 - **BREAKING:** `tier.get()` (`GET /v1/billing/tier`) no longer answers `pending` (the Tier change due at the next renewal) or `early_access` (the Tiers announced and not yet sold). Both keys are gone from `TierResult`: no alias, no `null` stand-in. The server deleted the Tier change and early-access code, so a Team has no scheduled Tier change and nothing to ask early access for. Code that read `result.pending` or `result.early_access` fails to type-check; delete the read.
 - The Tier name type narrows: `TierName`, `bought_tier`, the trial and override `tier` lose `"enhance"` (no Team can hold it; an Enhance override became Automate). A `switch` over `TierName` with an `"enhance"` case no longer type-checks.
 - Regenerated `src/generated/types.ts` and `fixtures/openapi.json` from the deployed staging document (`5f8e10405f79`, see `fixtures/PROVENANCE.json`). The regeneration also picks up what staging served since the last fixture: the Mailbox endpoints (`GET /v1/mailboxes`, `GET`/`PATCH`/`DELETE /v1/mailboxes/{id}`, `POST /v1/mailboxes/{id}/pause` and `/resume`) and the notification card fields `kind`, `actors` and `object_ids`, all additive.
-
-### Breaking: Contacts become Leads, Motions become Campaigns
-
-The old names are removed, not aliased: there is no deprecation window. Rename on upgrade; the shapes, statuses and behaviour are unchanged.
-
-- **Resources:** `contacts` is `leads` (`leads.imports.*`), `contactLists` is `leadLists`, `motions` is `campaigns` (`campaigns.voiceClips.*`), `analytics.motions` is `analytics.campaigns`. `campaigns.addContacts` and `removeContacts` are `addLeads` and `removeLeads`; `unibox.tagContact` is `tagLead` (`POST /v1/unibox/chats/{account_id}/{chat_id}/lead`). The exported types follow (`Contact` is `Lead`, `Motion` is `Campaign`, `ContactImport` is `LeadImport`, ...). `doNotContact` and `DO_NOT_CONTACT` keep their names.
-- **Paths:** `/v1/contacts...` is `/v1/leads...`, `/v1/contact-lists` is `/v1/lead-lists`, `/v1/motions...` is `/v1/campaigns...` (`.../{id}/leads`, `.../voice-clips`), `/v1/analytics/motions...` is `/v1/analytics/campaigns...`.
-- **Keys:** `contact_id` is `lead_id`, `contact_ids` is `lead_ids`, `contact_list_ids` is `lead_list_ids`, `motion_id` is `campaign_id`, `motion_ids` is `campaign_ids` (including the webhook filter), `accounts_per_contact` is `accounts_per_lead`, `exclude.other_motions` is `exclude.other_campaigns`, `motion_name` is `campaign_name`, and `contact` on webhook payloads, Enrollments and events is `lead`. Id prefixes (`con_`, `cl_`, `mot_`) are unchanged.
-- **Errors:** `CONTACT_LIMIT_REACHED`, `CONTACT_NOT_ENROLLABLE`, `MOTION_NOT_STARTABLE` and `MOTION_STATUS_CONFLICT` are `LEAD_LIMIT_REACHED`, `LEAD_NOT_ENROLLABLE`, `CAMPAIGN_NOT_STARTABLE` and `CAMPAIGN_STATUS_CONFLICT`. `ACCOUNT_NOT_IN_CAMPAIGN` is exported (it decoded to `INTERNAL` before). A `switch (err.code)` on an old name stops matching.
-- **Webhooks:** source `motion` is `campaign`; events `motion.status_changed` and `motion.custom_event` are `campaign.status_changed` and `campaign.custom_event`; `motion.signal` is removed; `MotionPayload` is `CampaignPayload` (`campaign_id`, `campaign_name`, `lead`).
-- **Docs:** README, JSDoc and `@example` blocks use the new names (the Sequence builder example reads `curviate.campaigns.get`).
-- **Regenerated** `fixtures/openapi.json` and the generated types from the rename branch's served document, so the types also carry what that document serves beyond the rename.
 
 ## [0.49.0] - 2026-11-09
 
@@ -1856,7 +1858,6 @@ becoming visible, not a new one.
   `quoted`.
 - Wording only: "Provider-enriched detail about the sender" is now
   "Platform-enriched detail about the sender" (5 occurrences).
-
 
 ## [0.24.2] - 2026-08-24
 
