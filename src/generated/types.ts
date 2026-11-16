@@ -34618,6 +34618,12 @@ export interface operations {
                                 remaining: number | null;
                                 /** @description `interface_ceiling` with the account's warm-up ramp applied, and null wherever `interface_ceiling` is null. Read THIS to know where an elevated-interface call stops, for the same reason `effective_ceiling` rather than `ceiling` answers that for a standard one. */
                                 effective_interface_ceiling?: number | null;
+                                /** @description The highest `ceiling` a standard-interface call on this row is held to, whatever is configured: a stored value above it is kept and held to it (`effective_ceiling` shows the held figure). Null on a row with no maximum. Read-only. */
+                                hard_maximum?: number | null;
+                                /** @description The highest figure a call through this plan's own interface (the Sales Navigator or Recruiter operations) is held to on this row. Null where the plan has none. Read-only. */
+                                interface_hard_maximum?: number | null;
+                                /** @description True when the stored `ceiling` is above the highest maximum this Account's plan allows on this row; it is kept and held to the maximum, and a write above the maximum is refused. Read-only. */
+                                above_hard_maximum?: boolean;
                                 /**
                                  * @description Where `used` sits against this row's own bands. `green` routine, `amber` at or past the routine band, `hard` at or past the warn-louder band, `over` at or past the ceiling, where the action is refused: limits are always enforced. A row with no figures reports `green` at every value, because there is nothing to be past.
                                  * @enum {string}
@@ -34879,6 +34885,12 @@ export interface operations {
                             remaining: number | null;
                             /** @description `interface_ceiling` with the account's warm-up ramp applied, and null wherever `interface_ceiling` is null. Read THIS to know where an elevated-interface call stops, for the same reason `effective_ceiling` rather than `ceiling` answers that for a standard one. */
                             effective_interface_ceiling?: number | null;
+                            /** @description The highest `ceiling` a standard-interface call on this row is held to, whatever is configured: a stored value above it is kept and held to it (`effective_ceiling` shows the held figure). Null on a row with no maximum. Read-only. */
+                            hard_maximum?: number | null;
+                            /** @description The highest figure a call through this plan's own interface (the Sales Navigator or Recruiter operations) is held to on this row. Null where the plan has none. Read-only. */
+                            interface_hard_maximum?: number | null;
+                            /** @description True when the stored `ceiling` is above the highest maximum this Account's plan allows on this row; it is kept and held to the maximum, and a write above the maximum is refused. Read-only. */
+                            above_hard_maximum?: boolean;
                             /**
                              * @description Where `used` sits against this row's own bands. `green` routine, `amber` at or past the routine band, `hard` at or past the warn-louder band, `over` at or past the ceiling, where the action is refused: limits are always enforced. A row with no figures reports `green` at every value, because there is nothing to be past.
                              * @enum {string}
@@ -40313,6 +40325,12 @@ export interface operations {
                             interface_ceiling?: number | null;
                             /** @description `interface_ceiling` with the account's warm-up ramp applied, and null wherever `interface_ceiling` is null. Read THIS to know where an elevated-interface call stops, for the same reason `effective_ceiling` rather than `ceiling` answers that for a standard one. */
                             effective_interface_ceiling?: number | null;
+                            /** @description The highest `ceiling` a standard-interface call on this row is held to, whatever is configured: a stored value above it is kept and held to it (`effective_ceiling` shows the held figure). Null on a row with no maximum. Read-only. */
+                            hard_maximum?: number | null;
+                            /** @description The highest figure a call through this plan's own interface (the Sales Navigator or Recruiter operations) is held to on this row. Null where the plan has none. Read-only. */
+                            interface_hard_maximum?: number | null;
+                            /** @description True when the stored `ceiling` is above the highest maximum this Account's plan allows on this row; it is kept and held to the maximum, and a write above the maximum is refused. Read-only. */
+                            above_hard_maximum?: boolean;
                             /** @description Empty when nothing on this row is above default. Computed against the STANDARD-interface default, like `band` and for the same reason. */
                             over_default?: {
                                 /**
@@ -40740,6 +40758,12 @@ export interface operations {
                         interface_ceiling?: unknown;
                         /** @description READ-ONLY. `interface_ceiling` with the account's warm-up ramp applied. Read THIS to know where an elevated-interface call stops, for the same reason `effective_ceiling` and not `ceiling` answers that for a standard one. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                         effective_interface_ceiling?: unknown;
+                        /** @description READ-ONLY. The highest `ceiling` a standard-interface call on this row is held to, whatever is configured: a stored value above it is kept and held to it (`effective_ceiling` shows the held figure). Null on a row with no maximum. Read-only. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                        hard_maximum?: unknown;
+                        /** @description READ-ONLY. The highest figure a call through this plan's own interface (the Sales Navigator or Recruiter operations) is held to on this row. Null where the plan has none. Read-only. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                        interface_hard_maximum?: unknown;
+                        /** @description READ-ONLY. True when the stored `ceiling` is above the highest maximum this Account's plan allows on this row; it is kept and held to the maximum, and a write above the maximum is refused. Read-only. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                        above_hard_maximum?: unknown;
                         /** @description REMOVED from the read (SF-04). Accepted and ignored until 2027-02-01 so an older document round-trips; refused after. */
                         posture_source?: unknown;
                         /** @description READ-ONLY. The fields on this row configured above the Curviate default. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
@@ -40961,6 +40985,12 @@ export interface operations {
                             interface_ceiling?: number | null;
                             /** @description `interface_ceiling` with the account's warm-up ramp applied, and null wherever `interface_ceiling` is null. Read THIS to know where an elevated-interface call stops, for the same reason `effective_ceiling` rather than `ceiling` answers that for a standard one. */
                             effective_interface_ceiling?: number | null;
+                            /** @description The highest `ceiling` a standard-interface call on this row is held to, whatever is configured: a stored value above it is kept and held to it (`effective_ceiling` shows the held figure). Null on a row with no maximum. Read-only. */
+                            hard_maximum?: number | null;
+                            /** @description The highest figure a call through this plan's own interface (the Sales Navigator or Recruiter operations) is held to on this row. Null where the plan has none. Read-only. */
+                            interface_hard_maximum?: number | null;
+                            /** @description True when the stored `ceiling` is above the highest maximum this Account's plan allows on this row; it is kept and held to the maximum, and a write above the maximum is refused. Read-only. */
+                            above_hard_maximum?: boolean;
                             /** @description Empty when nothing on this row is above default. Computed against the STANDARD-interface default, like `band` and for the same reason. */
                             over_default?: {
                                 /**
@@ -55509,6 +55539,12 @@ export interface operations {
                                 remaining: number | null;
                                 /** @description `interface_ceiling` with the account's warm-up ramp applied, and null wherever `interface_ceiling` is null. Read THIS to know where an elevated-interface call stops, for the same reason `effective_ceiling` rather than `ceiling` answers that for a standard one. */
                                 effective_interface_ceiling?: number | null;
+                                /** @description The highest `ceiling` a standard-interface call on this row is held to, whatever is configured: a stored value above it is kept and held to it (`effective_ceiling` shows the held figure). Null on a row with no maximum. Read-only. */
+                                hard_maximum?: number | null;
+                                /** @description The highest figure a call through this plan's own interface (the Sales Navigator or Recruiter operations) is held to on this row. Null where the plan has none. Read-only. */
+                                interface_hard_maximum?: number | null;
+                                /** @description True when the stored `ceiling` is above the highest maximum this Account's plan allows on this row; it is kept and held to the maximum, and a write above the maximum is refused. Read-only. */
+                                above_hard_maximum?: boolean;
                                 /**
                                  * @description Where `used` sits against this row's own bands. `green` routine, `amber` at or past the routine band, `hard` at or past the warn-louder band, `over` at or past the ceiling, where the action is refused: limits are always enforced. A row with no figures reports `green` at every value, because there is nothing to be past.
                                  * @enum {string}
