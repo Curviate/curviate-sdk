@@ -32,10 +32,10 @@ import {
   type ConnectRequestsResource,
   type TeamsResource,
   type NotificationsResource,
-  type ContactsResource,
-  type ContactListsResource,
+  type LeadsResource,
+  type LeadListsResource,
   type TagsResource,
-  type MotionsResource,
+  type CampaignsResource,
   type EnrollmentsResource,
   type TierResource,
   type NetworkResource,
@@ -66,13 +66,13 @@ export class Curviate {
    * are `curviate.account(id).notifications`.
    */
   readonly notifications: NotificationsResource;
-  /** Your team's Contacts; `contacts.imports` for bulk imports. */
-  readonly contacts: ContactsResource;
-  readonly contactLists: ContactListsResource;
+  /** Your team's Leads; `leads.imports` for bulk imports. */
+  readonly leads: LeadsResource;
+  readonly leadLists: LeadListsResource;
   readonly tags: TagsResource;
-  /** Motions: a Sequence run for Contacts; accepts a `Sequence` builder. */
-  readonly motions: MotionsResource;
-  /** One Contact x Motion x account run of a Motion. */
+  /** Campaigns: a Sequence run for Leads; accepts a `Sequence` builder. */
+  readonly campaigns: CampaignsResource;
+  /** One Lead x Campaign x account run of a Campaign. */
   readonly enrollments: EnrollmentsResource;
   /** The Team's Tier and its features; `TIER_REQUIRED` explained. */
   readonly tier: TierResource;
@@ -80,11 +80,11 @@ export class Curviate {
   readonly network: NetworkResource;
   /** One inbox over every account you can operate; full-inbox sync per account. */
   readonly unibox: UniboxResource;
-  /** Read-only Motion results, activity in budget units, the Motion events feed. */
+  /** Read-only Campaign results, activity in budget units, the Campaign events feed. */
   readonly analytics: AnalyticsResource;
   /** Seat lending between your Teams, and the Team's invoices. */
   readonly billing: BillingResource;
-  /** The Team-wide do-not-contact list every Motion and write respects. */
+  /** The Team-wide do-not-contact list every Campaign and write respects. */
   readonly doNotContact: DoNotContactResource;
   /** Background exports and their files. */
   readonly exports: ExportsResource;
@@ -104,10 +104,10 @@ export class Curviate {
     this.connectRequests = ns.connectRequests;
     this.teams = ns.teams;
     this.notifications = ns.notifications;
-    this.contacts = ns.contacts;
-    this.contactLists = ns.contactLists;
+    this.leads = ns.leads;
+    this.leadLists = ns.leadLists;
     this.tags = ns.tags;
-    this.motions = ns.motions;
+    this.campaigns = ns.campaigns;
     this.enrollments = ns.enrollments;
     this.tier = ns.tier;
     this.network = ns.network;
@@ -156,7 +156,7 @@ export class Curviate {
    *
    * @example
    * for (const team of (await curviate.teams.list()).items) {
-   *   const { items } = await curviate.withTeam(team.id).motions.list({ status: ["active"] });
+   *   const { items } = await curviate.withTeam(team.id).campaigns.list({ status: ["active"] });
    * }
    */
   withTeam(team: string): Curviate {

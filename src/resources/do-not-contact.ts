@@ -1,11 +1,11 @@
 /**
  * Do-not-contact list (root-scoped): `curviate.doNotContact` (7 methods).
  *
- * One list for the whole Team. No Motion contacts a person on it, and every
+ * One list for the whole Team. No Campaign contacts a person on it, and every
  * write toward them is refused with `DO_NOT_CONTACT` (an invitation, a chat
  * start or send, InMail, follow, endorse, a reaction or comment, a live
  * profile read). A reply in a conversation they wrote in stays allowed. An
- * entry whose Contact was deleted still applies (`contact` reads `null`).
+ * entry whose Lead was deleted still applies (`lead` reads `null`).
  */
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
@@ -28,7 +28,7 @@ export class DoNotContactResource {
   constructor(private readonly ctx: RequestContext) {}
 
   /**
-   * The Team's do-not-contact list, newest first. `q` matches the Contact's
+   * The Team's do-not-contact list, newest first. `q` matches the Lead's
    * name. `await` it for one page; `for await` it for every entry across
    * pages.
    * `GET /v1/do-not-contact`
@@ -56,8 +56,8 @@ export class DoNotContactResource {
   }
 
   /**
-   * Add one person by `contact_id` or `linkedin_url` (someone who is not a
-   * Contact yet becomes one first, from stored data only), with an optional
+   * Add one person by `lead_id` or `linkedin_url` (someone who is not a
+   * Lead yet becomes one first, from stored data only), with an optional
    * `reason`. A person already on the list resolves with their existing entry,
    * unchanged. Any team member may add. For many people use {@link DoNotContactResource.import}. Needs
    * Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
@@ -86,7 +86,7 @@ export class DoNotContactResource {
    * Export the whole list in one download, no paging, oldest first.
    * `format: "json"` resolves with the entry array; `csv` (UTF-8 with a BOM) and
    * `ndjson` (the default) resolve with the raw bytes. Each entry has
-   * `linkedin_url` (`null` once the Contact was deleted), `reason`, `added_by`,
+   * `linkedin_url` (`null` once the Lead was deleted), `reason`, `added_by`,
    * `via`, `created_at` and `id`. The file re-imports with {@link DoNotContactResource.import}.
    * Owners and Managers only (`INSUFFICIENT_ROLE`).
    * `GET /v1/do-not-contact/export`
@@ -124,7 +124,7 @@ export class DoNotContactResource {
   }
 
   /**
-   * Remove the entry (bodyless, 204): Motions and writes may reach the person
+   * Remove the entry (bodyless, 204): Campaigns and writes may reach the person
    * again. Owners and Managers only (`INSUFFICIENT_ROLE`).
    * `DELETE /v1/do-not-contact/{id}`
    *

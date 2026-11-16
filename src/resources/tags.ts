@@ -1,9 +1,9 @@
 /**
  * Tags resource: 3 methods (root-scoped), `curviate.tags`.
  *
- * Tags label your team's Contacts (up to 50 per Contact, 1,000 per team).
+ * Tags label your team's Leads (up to 50 per Lead, 1,000 per team).
  * There is no create call: a Tag is created the first time a write names it
- * (`contacts.upsert`, `contacts.updateMany`, an import). Names are 1 to 64
+ * (`leads.upsert`, `leads.updateMany`, an import). Names are 1 to 64
  * characters without `,` or `;`, unique in the team in any casing; a rename to
  * a taken name is refused with `NAME_TAKEN`.
  */
@@ -24,7 +24,7 @@ export class TagsResource {
   constructor(private readonly ctx: RequestContext) {}
 
   /**
-   * List your team's Tags by name, with their `contact_count`. Pages with an opaque
+   * List your team's Tags by name, with their `lead_count`. Pages with an opaque
    * `cursor` until it is `null`.
    * `GET /v1/tags`
    *
@@ -40,8 +40,8 @@ export class TagsResource {
   }
 
   /**
-   * Rename a Tag; every Contact carrying it shows the new name. A case-only
-   * rename is allowed; a Tag a live Motion uses (not `completed` or
+   * Rename a Tag; every Lead carrying it shows the new name. A case-only
+   * rename is allowed; a Tag a live Campaign uses (not `completed` or
    * `archived`) is refused with `RESOURCE_IN_USE`.
    * `PATCH /v1/tags/{id}`
    *
@@ -59,7 +59,7 @@ export class TagsResource {
   }
 
   /**
-   * Delete a Tag from every Contact (bodyless, 204). A Tag a live Motion
+   * Delete a Tag from every Lead (bodyless, 204). A Tag a live Campaign
    * or a running import uses is refused with `RESOURCE_IN_USE`. Owners and
    * Managers only.
    * `DELETE /v1/tags/{id}`

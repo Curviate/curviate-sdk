@@ -14,7 +14,7 @@ describe("voice clips", () => {
   it("upload sends the bytes raw, the filename and a type from the extension; get reads one", async () => {
     let seen: { type: string | null; filename: string | null; bytes: number[] } | undefined;
     server.use(
-      http.post(`${BASE}/v1/motions/voice-clips`, async ({ request }) => {
+      http.post(`${BASE}/v1/campaigns/voice-clips`, async ({ request }) => {
         seen = {
           type: request.headers.get("content-type"),
           filename: new URL(request.url).searchParams.get("filename"),
@@ -22,20 +22,20 @@ describe("voice clips", () => {
         };
         return HttpResponse.json(clip, { status: 201 });
       }),
-      http.get(`${BASE}/v1/motions/voice-clips/${CLIP}`, () => HttpResponse.json(clip)),
+      http.get(`${BASE}/v1/campaigns/voice-clips/${CLIP}`, () => HttpResponse.json(clip)),
     );
-    expect(await client.motions.voiceClips.upload(new Uint8Array([1, 2, 3]), { filename: "intro.mp3" })).toEqual(clip);
+    expect(await client.campaigns.voiceClips.upload(new Uint8Array([1, 2, 3]), { filename: "intro.mp3" })).toEqual(clip);
     expect(seen).toEqual({ type: "audio/mpeg", filename: "intro.mp3", bytes: [1, 2, 3] });
-    expect(await client.motions.voiceClips.get(CLIP)).toEqual(clip);
+    expect(await client.campaigns.voiceClips.get(CLIP)).toEqual(clip);
   });
 
   it("the API's refusal decodes to VOICE_CLIP_INVALID, not INTERNAL", async () => {
     server.use(
-      http.post(`${BASE}/v1/motions/voice-clips`, () =>
+      http.post(`${BASE}/v1/campaigns/voice-clips`, () =>
         HttpResponse.json({ code: "VOICE_CLIP_INVALID", message: "The clip is 121.0 s; the limit is 120 s.", user_fixable: true, retry_likely_to_succeed: false }, { status: 422 }),
       ),
     );
-    const err = await client.motions.voiceClips.upload(new Uint8Array([1]), { filename: "long.wav" }).catch((e: unknown) => e);
+    const err = await client.campaigns.voiceClips.upload(new Uint8Array([1]), { filename: "long.wav" }).catch((e: unknown) => e);
     expect(isCurviateError(err) && err.code).toBe("VOICE_CLIP_INVALID");
   });
 });

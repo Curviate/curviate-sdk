@@ -68,23 +68,23 @@ const ROOT_SURFACE: Record<string, readonly string[]> = {
   // Curviate's own Notifications. Same key as the account-scoped LinkedIn
   // notifications below, different class.
   notifications: ["list", "unreadCount", "update", "markAllRead"],
-  contacts: ["list", "get", "upsert", "update", "delete", "deleteMany", "updateMany", "enrich", "export"],
-  "contacts.imports": ["create", "get", "list", "rows"],
-  contactLists: ["create", "list", "get", "update", "delete"],
+  leads: ["list", "get", "upsert", "update", "delete", "deleteMany", "updateMany", "enrich", "export"],
+  "leads.imports": ["create", "get", "list", "rows"],
+  leadLists: ["create", "list", "get", "update", "delete"],
   tags: ["list", "update", "delete"],
-  motions: [
+  campaigns: [
     "create", "list", "get", "update", "delete", "start", "pause", "resume", "archive",
-    "preview", "getSequenceVersion", "addContacts", "removeContacts",
+    "preview", "getSequenceVersion", "addLeads", "removeLeads",
   ],
-  "motions.voiceClips": ["upload", "get"],
+  "campaigns.voiceClips": ["upload", "get"],
   enrollments: ["list", "get", "stop", "pause", "resume", "events", "reassign", "bulk", "retry", "signal"],
   tier: ["get"],
   network: ["syncStatus", "resync"],
   "network.connections": ["list"],
-  unibox: ["list", "get", "unreadCount", "refresh", "tagContact", "enroll"],
+  unibox: ["list", "get", "unreadCount", "refresh", "tagLead", "enroll"],
   "unibox.accounts": ["list", "update"],
   analytics: ["activity", "export"],
-  "analytics.motions": ["list", "get"],
+  "analytics.campaigns": ["list", "get"],
   "analytics.events": ["list"],
   "billing.seats": ["lend", "return"],
   "billing.invoices": ["list", "pdf"],
@@ -254,12 +254,12 @@ const rootInstances: Record<string, object> = {
   connectRequests: client.connectRequests,
   teams: client.teams,
   notifications: client.notifications,
-  contacts: client.contacts,
-  "contacts.imports": client.contacts.imports,
-  contactLists: client.contactLists,
+  leads: client.leads,
+  "leads.imports": client.leads.imports,
+  leadLists: client.leadLists,
   tags: client.tags,
-  motions: client.motions,
-  "motions.voiceClips": client.motions.voiceClips,
+  campaigns: client.campaigns,
+  "campaigns.voiceClips": client.campaigns.voiceClips,
   enrollments: client.enrollments,
   tier: client.tier,
   network: client.network,
@@ -267,7 +267,7 @@ const rootInstances: Record<string, object> = {
   unibox: client.unibox,
   "unibox.accounts": client.unibox.accounts,
   analytics: client.analytics,
-  "analytics.motions": client.analytics.motions,
+  "analytics.campaigns": client.analytics.campaigns,
   "analytics.events": client.analytics.events,
   "billing.seats": client.billing.seats,
   "billing.invoices": client.billing.invoices,
@@ -307,12 +307,15 @@ describe("namespace mounting", () => {
     }
     // The old profiles name is gone at the root too.
     expect(client).not.toHaveProperty("profiles");
+    // The old Contact and Motion names are removed, not aliased.
+    for (const old of ["contacts", "contactLists", "motions"]) expect(client, `${old} was renamed`).not.toHaveProperty(old);
+    expect(client.analytics).not.toHaveProperty("motions");
   });
 
   it("account(id) exposes exactly the 15 account-scoped namespaces", () => {
     expect(new Set(Object.keys(acc))).toEqual(new Set(Object.keys(ACCOUNT_SURFACE)));
     // Root-only namespaces and the retired profiles name are absent.
-    for (const ns of ["accounts", "auth", "connectRequests", "webhooks", "drafts", "teams", "contacts", "contactLists", "tags", "motions", "enrollments", "tier", "network", "unibox", "analytics", "profiles"]) {
+    for (const ns of ["accounts", "auth", "connectRequests", "webhooks", "drafts", "teams", "leads", "leadLists", "tags", "campaigns", "enrollments", "tier", "network", "unibox", "analytics", "profiles"]) {
       expect(acc, `${ns} must not be account-mounted`).not.toHaveProperty(ns);
     }
   });
@@ -372,6 +375,9 @@ describe("removed methods are gone", () => {
       [acc.salesNavigator, "syncMessages"],
       [acc.users, "getCompany"],
       [acc.invites, "respond"],
+      [client.campaigns, "addContacts"],
+      [client.campaigns, "removeContacts"],
+      [client.unibox, "tagContact"],
     ];
     for (const [instance, method] of absent) {
       expect(
@@ -412,6 +418,12 @@ describe("removed methods are gone", () => {
     void acc.invites.respond;
     // @ts-expect-error the profiles namespace was renamed to users
     void acc.profiles;
+    // @ts-expect-error contacts became leads
+    void client.contacts;
+    // @ts-expect-error contactLists became leadLists
+    void client.contactLists;
+    // @ts-expect-error motions became campaigns
+    void client.motions;
     expect(true).toBe(true);
   });
 });

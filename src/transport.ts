@@ -84,7 +84,7 @@ interface WireErrorEnvelope {
   blocked?: boolean;
   /** `CONNECTION_LOCATION_UNAVAILABLE` after an applied change: where the account connects from now. */
   connection_location?: unknown;
-  /** `SEQUENCE_INVALID`, `MOTION_NOT_STARTABLE`: every failure as `{path, rule}`. */
+  /** `SEQUENCE_INVALID`, `CAMPAIGN_NOT_STARTABLE`: every failure as `{path, rule}`. */
   errors?: unknown;
   /** `SEQUENCE_CONFLICT`: the stored Sequence. */
   current?: unknown;
