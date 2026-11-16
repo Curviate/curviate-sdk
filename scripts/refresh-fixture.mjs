@@ -102,6 +102,17 @@ if (forbiddenVendorPattern().test(serialized)) {
 
 const reordered = canonicalizeServers(doc);
 
+// Optional filter: CURVIATE_FIXTURE_EXCLUDE="/v1/mailboxes,/v1/x" drops every
+// path starting with a listed prefix, for a feature the deployed server serves
+// but a release must not publish yet (flag off). Components are not pruned:
+// check the dropped paths reference only shared ones.
+const excluded = (process.env["CURVIATE_FIXTURE_EXCLUDE"] ?? "").split(",").filter(Boolean);
+let droppedPaths = [];
+if (excluded.length > 0) {
+  droppedPaths = Object.keys(doc.paths ?? {}).filter((p) => excluded.some((x) => p.startsWith(x)));
+  for (const p of droppedPaths) delete doc.paths[p];
+}
+
 await writeFile(FIXTURE, JSON.stringify(doc, null, 2) + "\n", "utf8");
 
 // Provenance. /healthz is best-effort: a server that does not expose it still
@@ -123,6 +134,7 @@ await writeFile(
       fetched_at: new Date().toISOString(),
       paths: Object.keys(doc.paths ?? {}).length,
       servers_canonicalized: reordered,
+      ...(excluded.length > 0 ? { excluded_path_prefixes: excluded, excluded_paths: droppedPaths } : {}),
       note: "Written by scripts/refresh-fixture.mjs (pnpm gen:fixture). Do not hand-edit; refresh instead.",
     },
     null,

@@ -7,7 +7,20 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
-## [Unreleased]
+## [0.50.1] - 2026-11-16
+
+### Removes the Mailbox endpoints published by mistake in 0.50.0
+
+- **Removed:** `GET /v1/mailboxes`, `GET`/`PATCH`/`DELETE /v1/mailboxes/{id}` and `POST /v1/mailboxes/{id}/pause` and `/resume` are gone from the generated types. 0.50.0 included them from the staging document although they are not available yet (flag off); no server serves them to customers. Use 0.50.1; 0.50.0 is deprecated.
+- Fixture and types regenerated from the deployed staging document (`5f8e10405f79`) with those paths filtered out (`fixtures/PROVENANCE.json` records the filter). Everything else in 0.50.0 is unchanged: the Tier answer without `pending` and `early_access`, the notification card fields.
+
+## [0.50.0] - 2026-11-16
+
+### Tier answer loses `pending` and `early_access`
+
+- **BREAKING:** `tier.get()` (`GET /v1/billing/tier`) no longer answers `pending` (the Tier change due at the next renewal) or `early_access` (the Tiers announced and not yet sold). Both keys are gone from `TierResult`: no alias, no `null` stand-in. The server deleted the Tier change and early-access code, so a Team has no scheduled Tier change and nothing to ask early access for. Code that read `result.pending` or `result.early_access` fails to type-check; delete the read.
+- The Tier name type narrows: `TierName`, `bought_tier`, the trial and override `tier` lose `"enhance"` (no Team can hold it; an Enhance override became Automate). A `switch` over `TierName` with an `"enhance"` case no longer type-checks.
+- Regenerated `src/generated/types.ts` and `fixtures/openapi.json` from the deployed staging document (`5f8e10405f79`, see `fixtures/PROVENANCE.json`). The regeneration also picks up what staging served since the last fixture: the Mailbox endpoints (`GET /v1/mailboxes`, `GET`/`PATCH`/`DELETE /v1/mailboxes/{id}`, `POST /v1/mailboxes/{id}/pause` and `/resume`) and the notification card fields `kind`, `actors` and `object_ids`, all additive.
 
 ### Breaking: Contacts become Leads, Motions become Campaigns
 
