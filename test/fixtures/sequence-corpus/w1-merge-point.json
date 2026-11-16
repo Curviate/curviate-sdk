@@ -10,7 +10,7 @@
       {
         "id": "a",
         "if": {
-          "contact.premium": true
+          "lead.premium": true
         },
         "then": "c",
         "else": "b"

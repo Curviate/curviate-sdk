@@ -3,7 +3,7 @@
   "rules": [
     "T8"
   ],
-  "source": "motion",
+  "source": "campaign",
   "template": "{\"name\": \"{{first_name | default: \\\"there\\\"}}\"}",
   "errors": [
     {

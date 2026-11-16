@@ -15,7 +15,7 @@
           "score": "lead..score",
           "stage": 7
         },
-        "save_to_contact": {
+        "save_to_lead": {
           "crm_stage": ""
         },
         "then": "msg",
@@ -54,11 +54,11 @@
       "severity": "error"
     },
     {
-      "path": "booked.save_to_contact.crm_stage",
+      "path": "booked.save_to_lead.crm_stage",
       "rule": "not a field path; use dots, items[0] and [\"a.b\"], at most 256 characters, like lead.score",
       "code": "R26",
       "message": "not a field path; use dots, items[0] and [\"a.b\"], at most 256 characters, like lead.score",
-      "pointer": "/steps/0/save_to_contact/crm_stage",
+      "pointer": "/steps/0/save_to_lead/crm_stage",
       "hint": "Write the path with dots, items[0] and [\"a.b\"], like lead.score, at most 256 characters.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r26",
       "severity": "error"

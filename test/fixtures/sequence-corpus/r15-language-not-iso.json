@@ -1,0 +1,58 @@
+{
+  "about": "r15 lead.language compares ISO 639-1 codes: a language name or an unknown code is refused",
+  "rules": [
+    "R15"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "c",
+        "if": {
+          "lead.language": {
+            "in": [
+              "de",
+              "German"
+            ]
+          }
+        },
+        "then": "d",
+        "else": "end"
+      },
+      {
+        "id": "d",
+        "if": {
+          "lead.language": {
+            "eq": "xx"
+          }
+        },
+        "then": "end",
+        "else": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "c.if",
+      "rule": "lead.language compares ISO 639-1 language codes, like {\"eq\": \"de\"}",
+      "code": "R15",
+      "message": "lead.language compares ISO 639-1 language codes, like {\"eq\": \"de\"}",
+      "pointer": "/steps/0/if",
+      "hint": "Use one predicate key per object with its typed operand; chain if steps instead of all or any. account.premium and message.seen work in if steps only.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r15",
+      "severity": "error"
+    },
+    {
+      "path": "d.if",
+      "rule": "lead.language compares ISO 639-1 language codes, like {\"eq\": \"de\"}",
+      "code": "R15",
+      "message": "lead.language compares ISO 639-1 language codes, like {\"eq\": \"de\"}",
+      "pointer": "/steps/1/if",
+      "hint": "Use one predicate key per object with its typed operand; chain if steps instead of all or any. account.premium and message.seen work in if steps only.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r15",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

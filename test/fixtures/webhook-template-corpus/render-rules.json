@@ -3,8 +3,8 @@
   "rules": [
     "TP-02"
   ],
-  "source": "motion",
-  "template": "{\n  \"score\": \"{{enrollment.score}}\",\n  \"hot\": \"{{enrollment.hot}}\",\n  \"headline\": \"{{headline}}\",\n  \"phone\": \"{{contact.extra.phone}}\",\n  \"greeting\": \"Hi {{first_name}}, from {{contact.extra.city}}!\",\n  \"literal\": \"\\\\{{first_name}}\",\n  \"list\": [\"{{contact.extra.phone}}\", \"{{first_name}}\", 3],\n  \"nested\": {\"empty\": \"{{contact.extra.blank}}\", \"obj\": \"{{contact.extra.obj}}\"},\n  \"fixed\": \"as written\"\n}",
+  "source": "campaign",
+  "template": "{\n  \"score\": \"{{enrollment.score}}\",\n  \"hot\": \"{{enrollment.hot}}\",\n  \"headline\": \"{{headline}}\",\n  \"phone\": \"{{lead.extra.phone}}\",\n  \"greeting\": \"Hi {{first_name}}, from {{lead.extra.city}}!\",\n  \"literal\": \"\\\\{{first_name}}\",\n  \"list\": [\"{{lead.extra.phone}}\", \"{{first_name}}\", 3],\n  \"nested\": {\"empty\": \"{{lead.extra.blank}}\", \"obj\": \"{{lead.extra.obj}}\"},\n  \"fixed\": \"as written\"\n}",
   "context": {
     "event": "enrollment.finished",
     "occurred_at": "2026-01-15T09:30:00.000Z",
@@ -13,7 +13,7 @@
       "last_name": "Rivera",
       "full_name": "Sam Rivera"
     },
-    "contact": {
+    "lead": {
       "full_name": "Alex Jordan",
       "first_name": "Alex",
       "last_name": "Jordan",
@@ -31,7 +31,7 @@
         }
       }
     },
-    "motion": {
+    "campaign": {
       "id": "mot_01J8Z3K9P0Q1R2S3T4V5W6X7Y8",
       "name": "Q4 founders outreach"
     },

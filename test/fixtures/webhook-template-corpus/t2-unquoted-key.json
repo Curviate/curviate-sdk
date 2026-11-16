@@ -4,7 +4,7 @@
     "T2"
   ],
   "source": "user",
-  "template": "{email: \"{{contact.email}}\"}",
+  "template": "{email: \"{{lead.email}}\"}",
   "errors": [
     {
       "path": "body_template",

@@ -27,7 +27,7 @@ const RULES: Record<TemplateRuleCode, {
         title: "Not valid JSON",
         hint: (t) => (t ? `Remove the trailing comma before ${t}.` : "Write the template as JSON: double-quoted keys and strings, commas between members, nothing after the last value."),
     },
-    T3: { title: "Variable never closed", hint: () => "Close the variable with }}, like {{contact.email}}." },
+    T3: { title: "Variable never closed", hint: () => "Close the variable with }}, like {{lead.email}}." },
     T4: { title: "Variable outside a string", hint: (t) => `Put the variable inside a JSON string: "${t}" keeps the value's type.` },
     T5: { title: "Variable in a key", hint: (t) => `Use a fixed key and put the variable in the value, like ${t}.` },
     T6: { title: "Unknown variable", hint: (t) => (t ? `Use ${t}.` : "Use a variable this source carries: GET /v1/webhooks/variables?source=<source> lists them.") },
@@ -45,11 +45,11 @@ export function webhookTemplateRuleDocs(): {
 }[] {
     return WEBHOOK_TEMPLATE_RULE_CODES.map((code) => ({ code, anchor: code.toLowerCase(), title: RULES[code].title }));
 }
-export type TemplateScope = "event" | "account" | "contact" | "motion" | "enrollment";
+export type TemplateScope = "event" | "account" | "lead" | "campaign" | "enrollment";
 const SCOPES_BY_SOURCE: Record<string, readonly TemplateScope[]> = {
-    motion: ["event", "account", "contact", "motion", "enrollment"],
-    messaging: ["event", "account", "contact", "motion"],
-    user: ["event", "account", "contact", "motion"],
+    campaign: ["event", "account", "lead", "campaign", "enrollment"],
+    messaging: ["event", "account", "lead", "campaign"],
+    user: ["event", "account", "lead", "campaign"],
     account_status: ["event", "account"],
     post: ["event", "account"],
 };
@@ -63,14 +63,14 @@ const FIXED: ReadonlyArray<readonly [
     ["event", "event"],
     ["occurred_at", "event"],
     ...ACCOUNT_PARTS.map((p) => [`account.${p}`, "account"] as const),
-    ...STANDARD_FIELDS.map((f) => [`contact.${f}`, "contact"] as const),
-    ["motion.id", "motion"],
-    ["motion.name", "motion"],
-    ["enrollment_id", "motion"],
+    ...STANDARD_FIELDS.map((f) => [`lead.${f}`, "lead"] as const),
+    ["campaign.id", "campaign"],
+    ["campaign.name", "campaign"],
+    ["enrollment_id", "campaign"],
     ["step_id", "enrollment"],
 ];
 const SCOPE_OF = new Map<string, TemplateScope>(FIXED);
-const SHORT = new Map<string, string>([...STANDARD_FIELDS.map((f) => [f, `contact.${f}`] as const), ...ACCOUNT_PARTS.map((p) => [`my_${p}`, `account.${p}`] as const)]);
+const SHORT = new Map<string, string>([...STANDARD_FIELDS.map((f) => [f, `lead.${f}`] as const), ...ACCOUNT_PARTS.map((p) => [`my_${p}`, `account.${p}`] as const)]);
 type Resolved = {
     ok: true;
     name: string;
@@ -92,8 +92,8 @@ function resolve(inner: string): Resolved {
     const fixed = SCOPE_OF.get(name);
     if (fixed)
         return { ok: true, name, scope: fixed };
-    if (name.startsWith("contact.extra.") && EXTRA_KEY.test(name.slice(14)))
-        return { ok: true, name, scope: "contact" };
+    if (name.startsWith("lead.extra.") && EXTRA_KEY.test(name.slice(11)))
+        return { ok: true, name, scope: "lead" };
     if (name.startsWith("enrollment.") && VALUE_KEY.test(name.slice(11)))
         return { ok: true, name, scope: "enrollment" };
     return { ok: false, code: "T6", rule: `unknown variable {{${raw}}}` };
@@ -295,7 +295,7 @@ export function lintWebhookTemplate(template: string, opts: {
         if (!r.ok) {
             const raw = inner.trim();
             const dotless = r.code === "T6" && !raw.includes(".") && /^[A-Za-z0-9_]+$/.test(raw);
-            const extra = dotless && (SCOPES_BY_SOURCE[opts.source] ?? []).includes("contact") ? `{{contact.extra.${raw}}}` : undefined;
+            const extra = dotless && (SCOPES_BY_SOURCE[opts.source] ?? []).includes("lead") ? `{{lead.extra.${raw}}}` : undefined;
             const near = r.code === "T6" ? candidatesFor(opts.source, raw) : (r.candidates ?? []);
             const candidates = extra ? [extra, ...near.filter((c) => c !== extra)] : near;
             found.push({ at, code: r.code, rule: r.rule, ...(r.token ?? extra ?? candidates[0] ? { token: r.token ?? extra ?? candidates[0] } : {}), ...(candidates.length ? { candidates } : {}) });
@@ -390,8 +390,8 @@ export interface TemplateContext {
     event: string;
     occurred_at?: unknown;
     account?: Partial<Record<(typeof ACCOUNT_PARTS)[number], unknown>> | null;
-    contact?: Record<string, unknown> | null;
-    motion?: {
+    lead?: Record<string, unknown> | null;
+    campaign?: {
         id?: unknown;
         name?: unknown;
     } | null;
@@ -406,10 +406,10 @@ function valueOf(name: string, ctx: TemplateContext): string | number | boolean 
     let v: unknown;
     if (a === undefined)
         v = own(ctx, ns!);
-    else if (ns === "contact" && a === "extra")
-        v = own(own(ctx.contact, "extra"), rest.join("."));
+    else if (ns === "lead" && a === "extra")
+        v = own(own(ctx.lead, "extra"), rest.join("."));
     else if (rest.length === 0)
-        v = own(ns === "contact" ? ctx.contact : ns === "account" ? ctx.account : ns === "motion" ? ctx.motion : ns === "enrollment" ? ctx.enrollment : undefined, a);
+        v = own(ns === "lead" ? ctx.lead : ns === "account" ? ctx.account : ns === "campaign" ? ctx.campaign : ns === "enrollment" ? ctx.enrollment : undefined, a);
     if (typeof v === "string")
         return v.trim() === "" ? undefined : v;
     if (typeof v === "number")
@@ -449,7 +449,7 @@ export function renderWebhookTemplate(template: string, ctx: TemplateContext): s
 export const TEMPLATE_SAMPLE: Omit<TemplateContext, "event"> = {
     occurred_at: "2026-01-15T09:30:00.000Z",
     account: { first_name: "Sam", last_name: "Rivera", full_name: "Sam Rivera" },
-    contact: {
+    lead: {
         full_name: "Alex Jordan",
         first_name: "Alex",
         last_name: "Jordan",
@@ -460,14 +460,15 @@ export const TEMPLATE_SAMPLE: Omit<TemplateContext, "event"> = {
         location: "Berlin, Germany",
         linkedin_url: "https://www.linkedin.com/in/alexjordan",
         about: "Operations lead building calm, repeatable processes.",
+        language: "en",
         extra: {},
     },
-    motion: { id: "mot_01J8Z3K9P0Q1R2S3T4V5W6X7Y8", name: "Q4 founders outreach" },
+    campaign: { id: "mot_01J8Z3K9P0Q1R2S3T4V5W6X7Y8", name: "Q4 founders outreach" },
     enrollment_id: "enr_01J8Z3K9P0Q1R2S3T4V5W6X7Y8",
     step_id: "wait_reply",
     enrollment: {},
 };
-const SAMPLE_EVENT: Record<string, string> = { motion: "enrollment.finished", messaging: "message.received", user: "connection.accepted", account_status: "account.disconnected", post: "post.published" };
+const SAMPLE_EVENT: Record<string, string> = { campaign: "enrollment.finished", messaging: "message.received", user: "connection.accepted", account_status: "account.disconnected", post: "post.published" };
 export interface TemplateVariable {
     name: string;
     scope: TemplateScope;
@@ -477,9 +478,9 @@ export interface TemplateVariable {
 export function webhookTemplateVariables(source: string): TemplateVariable[] {
     const rows: TemplateVariable[] = FIXED.filter(([n, s]) => scopeOk(source, { name: n, scope: s })).map(([name, scope]) => {
         const v = valueOf(name, { event: SAMPLE_EVENT[source] ?? "", ...TEMPLATE_SAMPLE });
-        return { name, scope: scope === "enrollment" ? "motion" : scope, type: "string", example: v === undefined ? null : String(v) };
+        return { name, scope: scope === "enrollment" ? "campaign" : scope, type: "string", example: v === undefined ? null : String(v) };
     });
-    if (scopeOk(source, { name: "contact.extra.<key>", scope: "contact" }))
-        rows.push({ name: "contact.extra.<key>", scope: "contact", type: "string|number|boolean", example: null });
+    if (scopeOk(source, { name: "lead.extra.<key>", scope: "lead" }))
+        rows.push({ name: "lead.extra.<key>", scope: "lead", type: "string|number|boolean", example: null });
     return rows;
 }

@@ -1,5 +1,5 @@
 {
-  "about": "{{score}} where score is a save name reads a Contact field (W16)",
+  "about": "{{score}} where score is a save name reads a Lead field (W16)",
   "rules": [
     "W16"
   ],
@@ -32,9 +32,9 @@
   "warnings": [
     {
       "path": "msg.with.text",
-      "rule": "{{score}} is read as a Contact field; did you mean {{enrollment.score}}?",
+      "rule": "{{score}} is read as a Lead field; did you mean {{enrollment.score}}?",
       "code": "W16",
-      "message": "{{score}} is read as a Contact field; did you mean {{enrollment.score}}?",
+      "message": "{{score}} is read as a Lead field; did you mean {{enrollment.score}}?",
       "pointer": "/steps/1/with/text",
       "hint": "Use {{enrollment.score}} to read the saved value.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#w16",

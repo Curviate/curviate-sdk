@@ -5,8 +5,8 @@
     "T7",
     "T9"
   ],
-  "source": "motion",
-  "template": "{\n  \"id\": \"{{enrollment.id}}\",\n  \"greeting\": \"Hello {first_name}\",\n  \"who\": \"{{contact.fullname}}\"\n}",
+  "source": "campaign",
+  "template": "{\n  \"id\": \"{{enrollment.id}}\",\n  \"greeting\": \"Hello {first_name}\",\n  \"who\": \"{{lead.fullname}}\"\n}",
   "errors": [
     {
       "path": "body_template",
@@ -37,17 +37,17 @@
     },
     {
       "path": "body_template",
-      "rule": "unknown variable {{contact.fullname}}",
+      "rule": "unknown variable {{lead.fullname}}",
       "code": "T6",
-      "message": "unknown variable {{contact.fullname}}",
+      "message": "unknown variable {{lead.fullname}}",
       "pointer": "/body_template",
       "line": 4,
       "col": 11,
-      "hint": "Use {{contact.full_name}}.",
+      "hint": "Use {{lead.full_name}}.",
       "docs_url": "https://docs.curviate.com/reference/webhooks/body-templates#t6",
       "severity": "error",
       "candidates": [
-        "{{contact.full_name}}"
+        "{{lead.full_name}}"
       ]
     }
   ],

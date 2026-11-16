@@ -5038,7 +5038,7 @@ export interface components {
         };
         /**
          * Sequence document v1
-         * @description A Motion's Sequence: a flat steps array run from the first step, ending explicitly in "end". Served documents use this key order: $schema, on_reply, steps; in a step id, the kind key, timeout, save, save_to_contact, variants, with, event, then, else, next, note; in with post, newer_than, reaction, subject, text, note, note_fallback, fallback, withdraw_after; in a variant id, subject, text. A text holds at most 50 variables. Variables: `{{first_name}}` (any standard Contact field), `{{my_first_name}}`, `{{my_last_name}}`, `{{my_full_name}}` (the sending Account), any other `{{<key>}}` is the custom field `contact.extra.<key>`; the long forms `{{contact.<field>}}`, `{{contact.extra.<key>}}` and `{{account.<name>}}` stay valid; `{{enrollment.<name>}}` is a value a save of this Sequence writes. Delays are about their duration: every wait and until timeout gets a small random spread that only ever adds time.
+         * @description A Campaign's Sequence: a flat steps array run from the first step, ending explicitly in "end". Served documents use this key order: $schema, on_reply, steps; in a step id, the kind key, timeout, save, save_to_lead, variants, with, event, then, else, next, note; in with post, newer_than, reaction, subject, text, note, note_fallback, fallback, withdraw_after; in a variant id, subject, text. A text holds at most 50 variables. Variables: `{{first_name}}` (any standard Lead field), `{{my_first_name}}`, `{{my_last_name}}`, `{{my_full_name}}` (the sending Account), any other `{{<key>}}` is the custom field `lead.extra.<key>`; the long forms `{{lead.<field>}}`, `{{lead.extra.<key>}}` and `{{account.<name>}}` stay valid; `{{enrollment.<name>}}` is a value a save of this Sequence writes. Delays are about their duration: every wait and until timeout gets a small random spread that only ever adds time.
          */
         SequenceDocument: {
             /** @constant */
@@ -5190,7 +5190,7 @@ export interface components {
                 /** @constant */
                 do: "voice.send";
                 with?: {
-                    /** @description A Voice clip of this Team: the id from POST /v1/motions/voice-clips. */
+                    /** @description A Voice clip of this Team: the id from POST /v1/campaigns/voice-clips. */
                     clip_id?: string;
                     /** @description Required. Variable-free text sent instead when the audio cannot go: the clip cannot be read, or the platform states it was not sent and retries are spent. */
                     fallback: string;
@@ -5199,7 +5199,7 @@ export interface components {
                 variants?: {
                     /** @description Step id, unique in the document. "end" is reserved. */
                     id: string;
-                    /** @description A Voice clip of this Team: the id from POST /v1/motions/voice-clips. */
+                    /** @description A Voice clip of this Team: the id from POST /v1/campaigns/voice-clips. */
                     clip_id: string;
                 }[];
                 /** @description Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent. */
@@ -5300,8 +5300,8 @@ export interface components {
                 save?: {
                     [key: string]: string;
                 };
-                /** @description until event.<name> only: Contact custom fields (contact.extra.<key>) saved from the incoming event, key to path (at most 20); email fills only an empty email. */
-                save_to_contact?: {
+                /** @description until event.<name> only: Lead custom fields (lead.extra.<key>) saved from the incoming event, key to path (at most 20); email fills only an empty email. */
+                save_to_lead?: {
                     [key: string]: string;
                 };
                 /** @description A step id, or "end". */
@@ -5315,30 +5315,30 @@ export interface components {
                 id: string;
                 /** @description One key per predicate. No all/any: chain if steps. A predicate nests at most 10 levels. */
                 if: {
-                    "contact.connected": boolean;
+                    "lead.connected": boolean;
                 } | {
-                    "contact.open_profile": boolean;
+                    "lead.open_profile": boolean;
                 } | {
-                    "contact.premium": boolean;
+                    "lead.premium": boolean;
                 } | {
-                    "contact.has_photo": boolean;
+                    "lead.has_photo": boolean;
                 } | {
-                    "contact.degree": {
+                    "lead.degree": {
                         /** @enum {integer} */
                         eq: 1 | 2 | 3;
                     } | {
                         in: (1 | 2 | 3)[];
                     };
                 } | {
-                    "contact.connections_gte": number;
+                    "lead.connections_gte": number;
                 } | {
                     /** @description Posted within this long. */
-                    "contact.posted_within": string;
+                    "lead.posted_within": string;
                 } | {
-                    "contact.tag": string;
+                    "lead.tag": string;
                 } | {
                     /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                    "contact.full_name"?: {
+                    "lead.full_name"?: {
                         eq?: string | number | boolean;
                         neq?: string | number | boolean;
                         in?: (string | number | boolean)[];
@@ -5346,7 +5346,7 @@ export interface components {
                         exists?: boolean;
                     };
                     /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                    "contact.first_name"?: {
+                    "lead.first_name"?: {
                         eq?: string | number | boolean;
                         neq?: string | number | boolean;
                         in?: (string | number | boolean)[];
@@ -5354,7 +5354,7 @@ export interface components {
                         exists?: boolean;
                     };
                     /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                    "contact.last_name"?: {
+                    "lead.last_name"?: {
                         eq?: string | number | boolean;
                         neq?: string | number | boolean;
                         in?: (string | number | boolean)[];
@@ -5362,7 +5362,7 @@ export interface components {
                         exists?: boolean;
                     };
                     /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                    "contact.headline"?: {
+                    "lead.headline"?: {
                         eq?: string | number | boolean;
                         neq?: string | number | boolean;
                         in?: (string | number | boolean)[];
@@ -5370,7 +5370,7 @@ export interface components {
                         exists?: boolean;
                     };
                     /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                    "contact.job_title"?: {
+                    "lead.job_title"?: {
                         eq?: string | number | boolean;
                         neq?: string | number | boolean;
                         in?: (string | number | boolean)[];
@@ -5378,7 +5378,7 @@ export interface components {
                         exists?: boolean;
                     };
                     /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                    "contact.company"?: {
+                    "lead.company"?: {
                         eq?: string | number | boolean;
                         neq?: string | number | boolean;
                         in?: (string | number | boolean)[];
@@ -5386,7 +5386,7 @@ export interface components {
                         exists?: boolean;
                     };
                     /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                    "contact.email"?: {
+                    "lead.email"?: {
                         eq?: string | number | boolean;
                         neq?: string | number | boolean;
                         in?: (string | number | boolean)[];
@@ -5394,7 +5394,7 @@ export interface components {
                         exists?: boolean;
                     };
                     /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                    "contact.location"?: {
+                    "lead.location"?: {
                         eq?: string | number | boolean;
                         neq?: string | number | boolean;
                         in?: (string | number | boolean)[];
@@ -5402,7 +5402,7 @@ export interface components {
                         exists?: boolean;
                     };
                     /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                    "contact.linkedin_url"?: {
+                    "lead.linkedin_url"?: {
                         eq?: string | number | boolean;
                         neq?: string | number | boolean;
                         in?: (string | number | boolean)[];
@@ -5410,7 +5410,7 @@ export interface components {
                         exists?: boolean;
                     };
                     /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                    "contact.about"?: {
+                    "lead.about"?: {
                         eq?: string | number | boolean;
                         neq?: string | number | boolean;
                         in?: (string | number | boolean)[];
@@ -5418,7 +5418,7 @@ export interface components {
                         exists?: boolean;
                     };
                     /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                    "contact.language"?: {
+                    "lead.language"?: {
                         eq?: string | number | boolean;
                         neq?: string | number | boolean;
                         in?: (string | number | boolean)[];
@@ -5452,30 +5452,30 @@ export interface components {
                     "message.seen": boolean;
                 } | {
                     not: {
-                        "contact.connected": boolean;
+                        "lead.connected": boolean;
                     } | {
-                        "contact.open_profile": boolean;
+                        "lead.open_profile": boolean;
                     } | {
-                        "contact.premium": boolean;
+                        "lead.premium": boolean;
                     } | {
-                        "contact.has_photo": boolean;
+                        "lead.has_photo": boolean;
                     } | {
-                        "contact.degree": {
+                        "lead.degree": {
                             /** @enum {integer} */
                             eq: 1 | 2 | 3;
                         } | {
                             in: (1 | 2 | 3)[];
                         };
                     } | {
-                        "contact.connections_gte": number;
+                        "lead.connections_gte": number;
                     } | {
                         /** @description Posted within this long. */
-                        "contact.posted_within": string;
+                        "lead.posted_within": string;
                     } | {
-                        "contact.tag": string;
+                        "lead.tag": string;
                     } | {
                         /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                        "contact.full_name"?: {
+                        "lead.full_name"?: {
                             eq?: string | number | boolean;
                             neq?: string | number | boolean;
                             in?: (string | number | boolean)[];
@@ -5483,7 +5483,7 @@ export interface components {
                             exists?: boolean;
                         };
                         /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                        "contact.first_name"?: {
+                        "lead.first_name"?: {
                             eq?: string | number | boolean;
                             neq?: string | number | boolean;
                             in?: (string | number | boolean)[];
@@ -5491,7 +5491,7 @@ export interface components {
                             exists?: boolean;
                         };
                         /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                        "contact.last_name"?: {
+                        "lead.last_name"?: {
                             eq?: string | number | boolean;
                             neq?: string | number | boolean;
                             in?: (string | number | boolean)[];
@@ -5499,7 +5499,7 @@ export interface components {
                             exists?: boolean;
                         };
                         /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                        "contact.headline"?: {
+                        "lead.headline"?: {
                             eq?: string | number | boolean;
                             neq?: string | number | boolean;
                             in?: (string | number | boolean)[];
@@ -5507,7 +5507,7 @@ export interface components {
                             exists?: boolean;
                         };
                         /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                        "contact.job_title"?: {
+                        "lead.job_title"?: {
                             eq?: string | number | boolean;
                             neq?: string | number | boolean;
                             in?: (string | number | boolean)[];
@@ -5515,7 +5515,7 @@ export interface components {
                             exists?: boolean;
                         };
                         /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                        "contact.company"?: {
+                        "lead.company"?: {
                             eq?: string | number | boolean;
                             neq?: string | number | boolean;
                             in?: (string | number | boolean)[];
@@ -5523,7 +5523,7 @@ export interface components {
                             exists?: boolean;
                         };
                         /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                        "contact.email"?: {
+                        "lead.email"?: {
                             eq?: string | number | boolean;
                             neq?: string | number | boolean;
                             in?: (string | number | boolean)[];
@@ -5531,7 +5531,7 @@ export interface components {
                             exists?: boolean;
                         };
                         /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                        "contact.location"?: {
+                        "lead.location"?: {
                             eq?: string | number | boolean;
                             neq?: string | number | boolean;
                             in?: (string | number | boolean)[];
@@ -5539,7 +5539,7 @@ export interface components {
                             exists?: boolean;
                         };
                         /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                        "contact.linkedin_url"?: {
+                        "lead.linkedin_url"?: {
                             eq?: string | number | boolean;
                             neq?: string | number | boolean;
                             in?: (string | number | boolean)[];
@@ -5547,7 +5547,7 @@ export interface components {
                             exists?: boolean;
                         };
                         /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                        "contact.about"?: {
+                        "lead.about"?: {
                             eq?: string | number | boolean;
                             neq?: string | number | boolean;
                             in?: (string | number | boolean)[];
@@ -5555,7 +5555,7 @@ export interface components {
                             exists?: boolean;
                         };
                         /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                        "contact.language"?: {
+                        "lead.language"?: {
                             eq?: string | number | boolean;
                             neq?: string | number | boolean;
                             in?: (string | number | boolean)[];
@@ -5598,7 +5598,7 @@ export interface components {
             } | {
                 /** @description Step id, unique in the document. "end" is reserved. */
                 id: string;
-                /** @description Send event: the custom event name this step sends (motion.custom_event). */
+                /** @description Send event: the custom event name this step sends (campaign.custom_event). */
                 emit: string;
                 /** @description A step id, or "end". */
                 next?: string;
@@ -5607,7 +5607,7 @@ export interface components {
             } | {
                 /** @description Step id, unique in the document. "end" is reserved. */
                 id: string;
-                /** @description Tag added to the Contact. */
+                /** @description Tag added to the Lead. */
                 tag: string;
                 /** @description Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent. */
                 event?: string;

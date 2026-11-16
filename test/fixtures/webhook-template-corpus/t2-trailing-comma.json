@@ -3,8 +3,8 @@
   "rules": [
     "T2"
   ],
-  "source": "motion",
-  "template": "{\n  \"email\": \"{{contact.email}}\",\n}",
+  "source": "campaign",
+  "template": "{\n  \"email\": \"{{lead.email}}\",\n}",
   "errors": [
     {
       "path": "body_template",

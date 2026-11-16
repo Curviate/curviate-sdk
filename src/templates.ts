@@ -12,7 +12,7 @@ import {
 } from "./shared/webhook-template.js";
 
 export type { TemplateContext as WebhookTemplateContext, TemplateFinding as WebhookTemplateFinding };
-export type WebhookTemplateSource = "messaging" | "user" | "account_status" | "post" | "motion";
+export type WebhookTemplateSource = "messaging" | "user" | "account_status" | "post" | "campaign";
 
 /**
  * Lint a webhook `body_template` for a source: every finding at once, in
@@ -25,7 +25,7 @@ export type WebhookTemplateSource = "messaging" | "user" | "account_status" | "p
  * @example
  * import { validateWebhookTemplate } from "@curviate/sdk";
  *
- * const { errors } = validateWebhookTemplate('{"email": "{{contact.email}}"}', { source: "motion" });
+ * const { errors } = validateWebhookTemplate('{"email": "{{lead.email}}"}', { source: "campaign" });
  * for (const e of errors) console.error(`${e.line}:${e.col} ${e.code} ${e.rule} (${e.hint})`);
  */
 export function validateWebhookTemplate(template: string, opts: { source: WebhookTemplateSource }): TemplateLintResult {
@@ -42,7 +42,7 @@ export function validateWebhookTemplate(template: string, opts: { source: Webhoo
  * @example
  * import { renderWebhookTemplate } from "@curviate/sdk";
  *
- * const body = renderWebhookTemplate('{"to": "{{contact.email}}"}', { event: "enrollment.finished", contact: { email: "alex@example.com" } });
+ * const body = renderWebhookTemplate('{"to": "{{lead.email}}"}', { event: "enrollment.finished", lead: { email: "alex@example.com" } });
  */
 export function renderWebhookTemplate(template: string, context: TemplateContext): string {
   return render(template, context);
