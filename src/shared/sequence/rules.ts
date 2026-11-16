@@ -46,7 +46,7 @@ const HINTS: Record<string, (token: string) => string> = {
     W13: (t) => `Use ${t} instead.`,
     W14: () => "Use the value in a message or an if step, or remove it from save if no webhook template sends it.",
     W16: (t) => `Use ${t} to read the saved value.`,
-    W17: () => "Set settings.assign to auto, the default: it prefers an Account already connected and invites everyone else. Keep already_connected only for a Motion that writes to existing Connections.",
+    W17: () => "Set settings.assign to auto, the default: it prefers an Account already connected and invites everyone else. Keep already_connected only for a Campaign that writes to existing Connections.",
 };
 const TITLES: Record<string, string> = {
     R1: "Top-level keys and $schema",
