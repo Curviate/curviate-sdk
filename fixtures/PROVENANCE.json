@@ -1,8 +1,17 @@
 {
   "source_base_url": "https://api.staging.curviate.com",
   "server_git_sha": "5f8e10405f7956301f6506d6445b94dc33b7f17a",
-  "fetched_at": "2026-11-16T16:56:54.333Z",
-  "paths": 231,
+  "fetched_at": "2026-11-16T17:03:18.897Z",
+  "paths": 227,
   "servers_canonicalized": true,
+  "excluded_path_prefixes": [
+    "/v1/mailboxes"
+  ],
+  "excluded_paths": [
+    "/v1/mailboxes",
+    "/v1/mailboxes/{id}",
+    "/v1/mailboxes/{id}/pause",
+    "/v1/mailboxes/{id}/resume"
+  ],
   "note": "Written by scripts/refresh-fixture.mjs (pnpm gen:fixture). Do not hand-edit; refresh instead."
 }
