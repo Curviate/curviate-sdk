@@ -1,7 +1,7 @@
 /**
  * Tier resource: 1 method (root-scoped), `curviate.tier`.
  *
- * A Team's Tier decides which features it has: Drafts, Contacts, Motions,
+ * A Team's Tier decides which features it has: Drafts, Leads, Campaigns,
  * Network and Unibox need Automate. A write in one of those groups on a Team
  * below the Tier is refused with `TIER_REQUIRED` (see {@link CurviateError}'s
  * `feature`, `requiredTier`, `currentTier`, `upgradeUrl`); reads, exports,
@@ -31,7 +31,7 @@ export class TierResource {
    *
    * @example
    * const { tier, features } = await curviate.tier.get();
-   * if (!features.includes("motions")) console.log(`Motions need Automate; you are on ${tier ?? "no Tier"}.`);
+   * if (!features.includes("campaigns")) console.log(`Campaigns need Automate; you are on ${tier ?? "no Tier"}.`);
    */
   get(): Promise<TierResult> {
     return this.ctx.request<TierResult>({ method: "GET", path: "/v1/billing/tier" });

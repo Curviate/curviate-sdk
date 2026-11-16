@@ -120,8 +120,8 @@ export class Sequence<S = never, R extends string = never, O extends boolean = f
    * never mutated.
    *
    * @example
-   * const motion = await curviate.motions.get("mot_123");
-   * const edited = Sequence.fromDocument(motion.sequence).remove("bump");
+   * const campaign = await curviate.campaigns.get("mot_123");
+   * const edited = Sequence.fromDocument(campaign.sequence).remove("bump");
    */
   static fromDocument(value: unknown): Sequence<{ id: string; t: never }, never, true> {
     const { errors } = verdict(value);

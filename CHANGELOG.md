@@ -9,6 +9,18 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [Unreleased]
 
+### Breaking: Contacts become Leads, Motions become Campaigns
+
+The old names are removed, not aliased: there is no deprecation window. Rename on upgrade; the shapes, statuses and behaviour are unchanged.
+
+- **Resources:** `contacts` is `leads` (`leads.imports.*`), `contactLists` is `leadLists`, `motions` is `campaigns` (`campaigns.voiceClips.*`), `analytics.motions` is `analytics.campaigns`. `campaigns.addContacts` and `removeContacts` are `addLeads` and `removeLeads`; `unibox.tagContact` is `tagLead` (`POST /v1/unibox/chats/{account_id}/{chat_id}/lead`). The exported types follow (`Contact` is `Lead`, `Motion` is `Campaign`, `ContactImport` is `LeadImport`, ...). `doNotContact` and `DO_NOT_CONTACT` keep their names.
+- **Paths:** `/v1/contacts...` is `/v1/leads...`, `/v1/contact-lists` is `/v1/lead-lists`, `/v1/motions...` is `/v1/campaigns...` (`.../{id}/leads`, `.../voice-clips`), `/v1/analytics/motions...` is `/v1/analytics/campaigns...`.
+- **Keys:** `contact_id` is `lead_id`, `contact_ids` is `lead_ids`, `contact_list_ids` is `lead_list_ids`, `motion_id` is `campaign_id`, `motion_ids` is `campaign_ids` (including the webhook filter), `accounts_per_contact` is `accounts_per_lead`, `exclude.other_motions` is `exclude.other_campaigns`, `motion_name` is `campaign_name`, and `contact` on webhook payloads, Enrollments and events is `lead`. Id prefixes (`con_`, `cl_`, `mot_`) are unchanged.
+- **Errors:** `CONTACT_LIMIT_REACHED`, `CONTACT_NOT_ENROLLABLE`, `MOTION_NOT_STARTABLE` and `MOTION_STATUS_CONFLICT` are `LEAD_LIMIT_REACHED`, `LEAD_NOT_ENROLLABLE`, `CAMPAIGN_NOT_STARTABLE` and `CAMPAIGN_STATUS_CONFLICT`. `ACCOUNT_NOT_IN_CAMPAIGN` is exported (it decoded to `INTERNAL` before). A `switch (err.code)` on an old name stops matching.
+- **Webhooks:** source `motion` is `campaign`; events `motion.status_changed` and `motion.custom_event` are `campaign.status_changed` and `campaign.custom_event`; `motion.signal` is removed; `MotionPayload` is `CampaignPayload` (`campaign_id`, `campaign_name`, `lead`).
+- **Docs:** README, JSDoc and `@example` blocks use the new names (the Sequence builder example reads `curviate.campaigns.get`).
+- **Regenerated** `fixtures/openapi.json` and the generated types from the rename branch's served document, so the types also carry what that document serves beyond the rename.
+
 ## [0.49.0] - 2026-11-09
 
 ### Forecast (regenerated from production 134827ce6)

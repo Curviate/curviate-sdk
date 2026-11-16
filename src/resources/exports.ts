@@ -1,7 +1,7 @@
 /**
  * Exports (root-scoped): `curviate.exports` (3 methods).
  *
- * A background export of Analytics tables, Motion or Account activity or an
+ * A background export of Analytics tables, Campaign or Account activity or an
  * Account's daily metrics, for sets too large to wait on. One export per Team
  * at a time. Owners and Managers. Create it, poll it until `status` is
  * `ready`, then download the file within 24 hours. The file is never behind a
@@ -22,9 +22,9 @@ export class ExportsResource {
   /**
    * Start an export; it runs in the background and this resolves at once with
    * `status: "queued"`. `entity` is what to export (`analytics`,
-   * `motion_activity`, `account_activity` or `account_metrics`), `format`
+   * `campaign_activity`, `account_activity` or `account_metrics`), `format`
    * `csv`, `json` or `ndjson` (one table only), `tables` picks the Analytics
-   * tables (`daily`, `accounts`, `motions`, `enrollments`; several make one
+   * tables (`daily`, `accounts`, `campaigns`, `enrollments`; several make one
    * ZIP), `filters` are the Analytics overview's filters (default: the last
    * 30 days). Your team has one export at a time: a second is refused with
    * `EXPORT_IN_PROGRESS`, and `details.export_id` names the running one (it
@@ -44,8 +44,8 @@ export class ExportsResource {
    * One export of yours and its `status`: `queued`, `running`, `ready`
    * (download it), `failed` (read `error`: `EXPORT_TOO_LARGE` means narrow the
    * filters or tables), `expired` (24 hours after `ready_at`, the file is
-   * deleted) or `removed` (a Contact was deleted, which removes the Team's
-   * exports that hold Contacts). Accept statuses you do not know. There is no
+   * deleted) or `removed` (a Lead was deleted, which removes the Team's
+   * exports that hold Leads). Accept statuses you do not know. There is no
    * link to the file.
    * `GET /v1/exports/{export_id}`
    *
@@ -60,7 +60,7 @@ export class ExportsResource {
    * Download a ready export's file as bytes (CSV with a BOM, JSON, NDJSON, or
    * a ZIP when several tables were asked). A queued, running or failed export
    * throws `EXPORT_NOT_READY`, an expired one `EXPORT_EXPIRED` and one removed
-   * by a Contact delete `EXPORT_REMOVED` (run it again).
+   * by a Lead delete `EXPORT_REMOVED` (run it again).
    * `GET /v1/exports/{export_id}/file`
    *
    * @example

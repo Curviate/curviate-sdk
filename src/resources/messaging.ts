@@ -32,7 +32,7 @@
  * A send through the API (this SDK included) marks the chat read: the Unibox
  * chat reads `unread: false` with `marked_unread: null`, and a `chat.updated`
  * webhook with `unread` and `origin` reports the change. This holds for
- * `startChat`, `sendMessage` and `sendInMail`; a Motion send leaves the read
+ * `startChat`, `sendMessage` and `sendInMail`; a Campaign send leaves the read
  * state as it is. On a disconnected Account every write here throws
  * `REAUTH_REQUIRED` (409) and changes nothing; reconnect the Account first.
  */
@@ -215,7 +215,7 @@ export class MessagingResource {
    * It is derived by Curviate, omitted when unknown, absent on a received
    * message and never on a chat's `last_message`. `is_deleted` is `true` for a
    * deleted message. For an API key or MCP grant, a message's `quoted` is
-   * omitted when the quoted message is from before the Motion chat's visible
+   * omitted when the quoted message is from before the Campaign chat's visible
    * start, the same line the message list stops at.
    *
    * On a disconnected Account the page comes from Curviate's stored copy

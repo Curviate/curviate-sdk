@@ -1,7 +1,7 @@
 /**
  * Notifications resource: 4 methods (root-scoped), `curviate.notifications`.
  *
- * What Curviate needs you to know: an account needs reconnecting, a Motion
+ * What Curviate needs you to know: an account needs reconnecting, a Campaign
  * paused, an import finished, someone joined or left the team. Each person has
  * their own list and read state, per team. Check `unreadCount()` at session
  * start.

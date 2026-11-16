@@ -1,6 +1,6 @@
 /**
  * Offline Sequence validator: rules R1-R28 and warnings W1, W5-W9, W11-W14,
- * W16, the same verdict the API and `curviate motion lint` give. Every entry
+ * W16, the same verdict the API and `curviate campaign lint` give. Every entry
  * is compiler-style: `path`, `rule`, `code`, `message` (= `rule`), `pointer`
  * (RFC 6901 into the document; a missing key points at the object that lacks
  * it), `hint`, `docs_url`, `severity` and, for a did-you-mean, `candidates`.

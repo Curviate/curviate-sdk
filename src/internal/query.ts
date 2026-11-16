@@ -1,6 +1,6 @@
 /**
  * Query filters the API reads as one comma list (OpenAPI `style: form,
- * explode: false`: `status`, `enrollment_status`, `contact_ids`): the typed
+ * explode: false`: `status`, `enrollment_status`, `lead_ids`): the typed
  * array is joined, never sent as repeated keys, and an empty array means "no
  * filter", so the key is left out rather than sent as `k=`. Key order kept.
  */

@@ -166,34 +166,32 @@ export interface PostPublishFailedPayload extends EventPayloadBase {
 }
 
 /**
- * Payload of the eleven `motion` events (`motion.status_changed`,
+ * Payload of the eleven `campaign` events (`campaign.status_changed`,
  * `enrollment.started`, `enrollment.accepted`, `enrollment.replied`,
  * `enrollment.seen`, `enrollment.reassigned`, `enrollment.skipped`,
  * `enrollment.finished`, `step.executed`, `step.failed`,
- * `motion.custom_event`). Each carries `motion_id` and is self-contained:
- * `motion_name`, `account_name`, the step keys (`step_id`, `action`,
+ * `campaign.custom_event`). Each carries `campaign_id` and is self-contained:
+ * `campaign_name`, `account_name`, the step keys (`step_id`, `action`,
  * `variant_id`, `step_event`: the step's custom event name, while `event` stays
  * the event type) and `reason_message` beside every `reason`. The rest varies
  * by event, with a full example per event at
- * https://docs.curviate.com/reference/webhooks/catalogue (`contact` is the
- * Contact record, `null` once deleted). No payload carries the text Curviate
+ * https://docs.curviate.com/reference/webhooks/catalogue (`lead` is the
+ * Lead record, `null` once deleted). No payload carries the text Curviate
  * sent.
  *
- * `motion.custom_event` fires once when a step carrying an `event` ran or an
- * `emit` step is reached. `motion.signal` is its deprecated name: a
- * webhook subscribed to it receives the same `data` under that name until
- * 2027-01-19.
+ * `campaign.custom_event` fires once when a step carrying an `event` ran or an
+ * `emit` step is reached.
  *
- * `motion.status_changed` carries `reason`, which is `tier_required` when the
- * Team lost the Tier that includes Motions: the Motion reads `paused` with
+ * `campaign.status_changed` carries `reason`, which is `tier_required` when the
+ * Team lost the Tier that includes Campaigns: the Campaign reads `paused` with
  * `pause_reason: "tier_required"` until the Tier returns and you `resume` it.
  *
- * `account_id` is `null` on an event of no single account (`motion.status_changed`,
+ * `account_id` is `null` on an event of no single account (`campaign.status_changed`,
  * and an `enrollment.skipped` with none assigned yet), which is why this does
  * not extend {@link EventPayloadBase}.
  */
-export interface MotionPayload {
-  motion_id: string;
+export interface CampaignPayload {
+  campaign_id: string;
   account_id: string | null;
   event: string;
   occurred_at: string;
@@ -292,19 +290,17 @@ export type CurviateEvent = CurviateEventEnvelope &
     | { event: "account.initial_sync.failed"; data: AccountPayload }
     | { event: "post.published"; data: PostPublishedPayload }
     | { event: "post.publish_failed"; data: PostPublishFailedPayload }
-    | { event: "motion.status_changed"; data: MotionPayload }
-    | { event: "enrollment.started"; data: MotionPayload }
-    | { event: "enrollment.accepted"; data: MotionPayload }
-    | { event: "enrollment.replied"; data: MotionPayload }
-    | { event: "enrollment.seen"; data: MotionPayload }
-    | { event: "enrollment.reassigned"; data: MotionPayload }
-    | { event: "enrollment.skipped"; data: MotionPayload }
-    | { event: "enrollment.finished"; data: MotionPayload }
-    | { event: "step.executed"; data: MotionPayload }
-    | { event: "step.failed"; data: MotionPayload }
-    | { event: "motion.custom_event"; data: MotionPayload }
-    /** @deprecated Renamed `motion.custom_event`; delivered under this name until 2027-01-19. */
-    | { event: "motion.signal"; data: MotionPayload }
+    | { event: "campaign.status_changed"; data: CampaignPayload }
+    | { event: "enrollment.started"; data: CampaignPayload }
+    | { event: "enrollment.accepted"; data: CampaignPayload }
+    | { event: "enrollment.replied"; data: CampaignPayload }
+    | { event: "enrollment.seen"; data: CampaignPayload }
+    | { event: "enrollment.reassigned"; data: CampaignPayload }
+    | { event: "enrollment.skipped"; data: CampaignPayload }
+    | { event: "enrollment.finished"; data: CampaignPayload }
+    | { event: "step.executed"; data: CampaignPayload }
+    | { event: "step.failed"; data: CampaignPayload }
+    | { event: "campaign.custom_event"; data: CampaignPayload }
   );
 
 // ─── Header parsing ──────────────────────────────────────────────────────────

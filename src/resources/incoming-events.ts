@@ -2,7 +2,7 @@
  * Incoming events (root-scoped): `curviate.incomingEvents` (8 methods).
  *
  * An incoming event is a private URL any tool can post JSON to. Curviate finds
- * the Contact by the `match` paths and moves the Enrollments waiting for the
+ * the Lead by the `match` paths and moves the Enrollments waiting for the
  * event (`until: "event.<name>"`), keeping no part of the post. It starts
  * switched off: the first post is the sample (its paths and types only), then
  * switch it on with `update`. The `url` is in full only in the `create` and
