@@ -42,6 +42,9 @@ export type {
   AccountMetricList,
   AccountOverviewParams,
   AccountOverview,
+  TeamSafetyPolicy,
+  TeamSafetyPolicyUpdateBody,
+  TeamSafetyPolicyUpdateResult,
 } from "./resources/accounts.js";
 
 export type {
@@ -175,6 +178,15 @@ export type {
 } from "./resources/campaigns.js";
 
 export type { TierResult, TierName, TierFeature } from "./resources/tier.js";
+export type {
+  Mailbox,
+  MailboxListParams,
+  MailboxListPage,
+  MailboxUpdateBody,
+  MailboxRemoveResult,
+  MailboxDiscoverResult,
+} from "./resources/mailboxes.js";
+export type { DomainChecks } from "./resources/domains.js";
 
 export type {
   Connection,

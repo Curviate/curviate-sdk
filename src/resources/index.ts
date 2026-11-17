@@ -4,7 +4,7 @@
  * The surface is split in two:
  * - **Root-scoped** (`accounts`, `auth`, `connectRequests`, `webhooks`, `drafts`,
  *   `teams`, `notifications`, `leads`, `leadLists`, `tags`, `campaigns`,
- *   `enrollments`, `tier`) hang off the
+ *   `enrollments`, `tier`, `mailboxes`, `domains`) hang off the
  *   root client only. Connected-account management, connect/reconnect, webhook
  *   registration, Drafts (a Draft's account is optional), teams, Curviate's own
  *   Notifications and the team's Leads, lists, Tags, Campaigns and Enrollments are
@@ -42,6 +42,8 @@ import { LeadListsResource } from "./lead-lists.js";
 import { TagsResource } from "./tags.js";
 import { CampaignsResource, EnrollmentsResource } from "./campaigns.js";
 import { TierResource } from "./tier.js";
+import { MailboxesResource } from "./mailboxes.js";
+import { DomainsResource } from "./domains.js";
 import { NetworkResource } from "./network.js";
 import { UniboxResource } from "./unibox.js";
 import { AnalyticsResource } from "./analytics.js";
@@ -78,6 +80,8 @@ export { LeadListsResource } from "./lead-lists.js";
 export { TagsResource } from "./tags.js";
 export { CampaignsResource, EnrollmentsResource } from "./campaigns.js";
 export { TierResource } from "./tier.js";
+export { MailboxesResource } from "./mailboxes.js";
+export { DomainsResource } from "./domains.js";
 export { NetworkResource, NetworkConnectionsResource } from "./network.js";
 export { UniboxResource, UniboxAccountsResource } from "./unibox.js";
 export { AnalyticsResource, AnalyticsCampaignsResource, AnalyticsEventsResource } from "./analytics.js";
@@ -160,6 +164,8 @@ export interface RootNamespaces
   campaigns: CampaignsResource;
   enrollments: EnrollmentsResource;
   tier: TierResource;
+  mailboxes: MailboxesResource;
+  domains: DomainsResource;
   network: NetworkResource;
   unibox: UniboxResource;
   analytics: AnalyticsResource;
@@ -186,6 +192,8 @@ export function buildRootNamespaces(ctx: RequestContext): RootNamespaces {
     campaigns: new CampaignsResource(ctx),
     enrollments: new EnrollmentsResource(ctx),
     tier: new TierResource(ctx),
+    mailboxes: new MailboxesResource(ctx),
+    domains: new DomainsResource(ctx),
     network: new NetworkResource(ctx),
     unibox: new UniboxResource(ctx),
     analytics: new AnalyticsResource(ctx),

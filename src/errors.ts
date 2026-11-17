@@ -348,6 +348,55 @@ export const ERROR_CODES = [
   "CONNECT_REQUEST_IN_USE",
   "LINKEDIN_ACCOUNT_MISMATCH",
 
+  // Mailboxes and sending domains (`mailboxes`, `domains`, and a Mailbox
+  // Connect request). Each is user_fixable and never retryable as sent. The
+  // codes below can also arrive as a Connect request's `error_code`.
+  //
+  // - `MAILBOX_NOT_FOUND` (404): no Mailbox with this id in your Team; another
+  //   Team's id answers the same.
+  // - `DOMAIN_NOT_FOUND` (404): none of your Team's Mailboxes is on this domain.
+  // - `MAILBOX_STATE_CONFLICT` (409): the state does not allow it: a pause of a
+  //   Mailbox that is not `connected` or `ramping`, a resume of one that is not
+  //   paused, a provider pause before its `paused_until`, or one Curviate is
+  //   fixing.
+  // - `MAILBOX_LIMIT_REACHED` (422): connecting would take your Team past the
+  //   Mailboxes it may hold (100 per paid seat, pooled; 20 in the trial).
+  // - `MAILBOX_ALREADY_CONNECTED` (409): the address is already a Mailbox of
+  //   your Team.
+  // - `MAILBOX_APP_PASSWORD_REQUIRED` (422): `google_sign_in` for a private
+  //   Gmail address (gmail.com, googlemail.com); connect it with
+  //   `google_app_password`.
+  // - `MAILBOX_CREDENTIAL_REJECTED`: the provider refused the sign-in or the
+  //   password sent in `credentials`. Never says which part.
+  // - `MAILBOX_TLS_FAILED`: the host did not offer the encryption the
+  //   settings ask for. Mail never goes in cleartext; fix the settings.
+  // - `MAILBOX_ADMIN_APPROVAL_REQUIRED`: the person's administrator has to
+  //   approve Curviate first; forward the request's `admin_consent_url`.
+  // - `MAILBOX_ADDRESS_MISMATCH`: the person signed in as another address than
+  //   the one being connected or reconnected.
+  "MAILBOX_NOT_FOUND",
+  "DOMAIN_NOT_FOUND",
+  "MAILBOX_STATE_CONFLICT",
+  "MAILBOX_LIMIT_REACHED",
+  "MAILBOX_ALREADY_CONNECTED",
+  "MAILBOX_APP_PASSWORD_REQUIRED",
+  "MAILBOX_CREDENTIAL_REJECTED",
+  "MAILBOX_TLS_FAILED",
+  "MAILBOX_ADMIN_APPROVAL_REQUIRED",
+  "MAILBOX_ADDRESS_MISMATCH",
+
+  // Seats and the Team's spending cap, from an agent's seat call.
+  //
+  // - `SPENDING_CAP_REACHED` (403): `billing` seat add (or a seat's
+  //   cancellation revert) that would take the Team past its spending cap,
+  //   lent seats included. Nothing was bought. Only an Owner raises the cap, in
+  //   the dashboard.
+  // - `CANCEL_IN_DASHBOARD` (409): removing the Team's last paid seat would
+  //   cancel the subscription, so it is not done through the API. An Owner
+  //   cancels in the dashboard.
+  "SPENDING_CAP_REACHED",
+  "CANCEL_IN_DASHBOARD",
+
   // Leads, Lead lists and Tags (`leads`, `leadLists`, `tags`).
   //
   // - `NAME_TAKEN` (409): another Lead list or Tag already has this name in

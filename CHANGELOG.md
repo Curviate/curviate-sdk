@@ -21,6 +21,17 @@ The old names are removed, not aliased: there is no deprecation window. Rename o
 - **Docs:** README, JSDoc and `@example` blocks use the new names (the Sequence builder example reads `curviate.campaigns.get`).
 - **Regenerated** `fixtures/openapi.json` and the generated types from the rename branch's served document, so the types also carry what that document serves beyond the rename.
 
+### Mailboxes, domains and the Mailbox Connect request
+
+Proposed bump: 0.51.0 (additive). Not applied, not published: the Mailbox surface stays off the registry until the Mailboxes rollout is on.
+
+- **`curviate.mailboxes`**: `list` (one HTTP call per page; filters `state`, `sends_for`, `domain`), `get`, `update` (`daily_cap`, `signature`, `sends_for`: `{ kind: "account", account_id }`, `{ kind: "shared" }` or `null`), `pause`, `resume`, `remove` and `discover(address)` (the IMAP and SMTP settings for an address, to confirm before connecting).
+- **`curviate.domains.check(domain, { now? })`**: a sending domain's MX, SPF, DKIM, DMARC and tracking checks as last run (`GET`), or run now (`{ now: true }`, `POST`).
+- **`connectRequests.create`** connects or reconnects a Mailbox: `mailbox` (`connection` `google_app_password`, `google_sign_in`, `microsoft_sign_in` or `imap_smtp`, `address`, `imap`, `smtp`) or `mailbox_id`, with the sealed `credentials: { password }`. The request's `kind` gains `mailbox_connect` and `mailbox_reconnect`; the answer gains `mailbox_id` and `admin_consent_url`. The password belongs only in this request body; no response returns it.
+- **`accounts.getTeamSafetyPolicy()` and `accounts.updateTeamSafetyPolicy(body)`** (`GET`/`PATCH /v1/safety-policy`): the Team's defaults, now with `email` (`default_daily_cap`, `opt_out_scope`, `opt_out_text`, `opt_out_link_text`, `opt_out_link_word`).
+- **Error codes** exported: `MAILBOX_NOT_FOUND`, `DOMAIN_NOT_FOUND`, `MAILBOX_STATE_CONFLICT`, `MAILBOX_LIMIT_REACHED`, `MAILBOX_ALREADY_CONNECTED`, `MAILBOX_APP_PASSWORD_REQUIRED`, `MAILBOX_CREDENTIAL_REJECTED`, `MAILBOX_TLS_FAILED`, `MAILBOX_ADMIN_APPROVAL_REQUIRED`, `MAILBOX_ADDRESS_MISMATCH`, plus `SPENDING_CAP_REACHED` and `CANCEL_IN_DASHBOARD` (seat calls), which the document already names.
+- Types and `fixtures/openapi.json` regenerated from a document built with the Mailboxes rollout on (`fixtures/PROVENANCE.json`), so they also carry what staging served since 0.50.1, all additive: the notification `kind` `billing.spending_cap_reached` and the actor and object `type` values `export` and `team`; more safety budget rows (`connection_requests_day`, `company_reads`, `limit_probes`, `notification_reads`, `viewer_reads`, `other_reads`, `search_parameters`) with `hard_maximum`, `interface_hard_maximum`, `above_hard_maximum` and `used_by_cause`; the warm-up `preset`, `start`, `step`, `every` and `day`; and the spending-cap descriptions on the seat operations.
+
 ## [0.50.1] - 2026-11-16
 
 ### Removes the Mailbox endpoints published by mistake in 0.50.0

@@ -91,6 +91,17 @@ export type SafetyPolicyUpdateBody =
 export type SafetyPolicyUpdateResult =
   paths["/v1/{account_id}/safety-policy"]["patch"]["responses"]["200"]["content"]["application/json"];
 
+/** `GET /v1/safety-policy` 200 body: the Team's defaults per limit profile and budget row, and the Team's `email` settings. */
+export type TeamSafetyPolicy = paths["/v1/safety-policy"]["get"]["responses"]["200"]["content"]["application/json"];
+
+/** `PATCH /v1/safety-policy` request body: only the fields you are changing. */
+export type TeamSafetyPolicyUpdateBody =
+  paths["/v1/safety-policy"]["patch"]["requestBody"]["content"]["application/json"];
+
+/** `PATCH /v1/safety-policy` 200 body: the Team policy after the write. */
+export type TeamSafetyPolicyUpdateResult =
+  paths["/v1/safety-policy"]["patch"]["responses"]["200"]["content"]["application/json"];
+
 /** `GET /v1/accounts/{account_id}/overview` query. `campaign_id`, `origin`, `include`, `fields` and `sort` take a comma list or an array. */
 export type AccountOverviewParams = WithLists<
   NonNullable<paths["/v1/accounts/{account_id}/overview"]["get"]["parameters"]["query"]>,
@@ -517,5 +528,40 @@ export class AccountsResource {
       path: apiPath`/v1/${accountId}/safety-policy`,
       body,
     });
+  }
+
+  /**
+   * Read the Team's safety defaults: per limit profile and budget row, what
+   * every Account inherits unless it overrides it. Works with no Account
+   * connected. `email` holds the Team's email settings in force: `default_daily_cap`
+   * (a new Mailbox's starting cap, at most 50, default 30), `opt_out_scope`
+   * (`everything` or `email_only`) and the three opt-out texts
+   * (`opt_out_text`, `opt_out_link_text`, `opt_out_link_word`), each the Team's
+   * own or the shipped English default.
+   * `GET /v1/safety-policy`
+   *
+   * @example
+   * const { email } = await curviate.accounts.getTeamSafetyPolicy();
+   */
+  getTeamSafetyPolicy(): Promise<TeamSafetyPolicy> {
+    return this.ctx.request<TeamSafetyPolicy>({ method: "GET", path: "/v1/safety-policy" });
+  }
+
+  /**
+   * Update the Team's safety defaults; every Account that has not overridden
+   * the field follows at once. Send only the fields you are changing. `email`
+   * takes `default_daily_cap` (at most 50; applies to Mailboxes connected
+   * afterwards), `opt_out_scope` (`everything` or `email_only`) and the opt-out
+   * texts (`opt_out_text` up to 200 characters, `opt_out_link_text` up to 100,
+   * `opt_out_link_word` up to 30; one plain line, no variables; `null` or `""`
+   * restores the shipped default). Email settings are not valid on an Account's
+   * policy: `updateSafetyPolicy` refuses them with `400 INVALID_REQUEST`.
+   * `PATCH /v1/safety-policy`
+   *
+   * @example
+   * await curviate.accounts.updateTeamSafetyPolicy({ email: { opt_out_link_word: "Unsubscribe" } });
+   */
+  updateTeamSafetyPolicy(body: TeamSafetyPolicyUpdateBody): Promise<TeamSafetyPolicyUpdateResult> {
+    return this.ctx.request<TeamSafetyPolicyUpdateResult>({ method: "PATCH", path: "/v1/safety-policy", body });
   }
 }
