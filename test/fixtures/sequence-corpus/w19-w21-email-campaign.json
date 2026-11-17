@@ -1,5 +1,5 @@
 {
-  "about": "server-only email Campaign warnings: on_reply_ignored (core/033 FR-004), email_gap_low (api/049 FR-023), no_mailbox (FR-016)",
+  "about": "server-only email Campaign warnings: on_reply_ignored, email_gap_low, no_mailbox",
   "rules": [
     "W19",
     "W20",

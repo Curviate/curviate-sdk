@@ -1,5 +1,5 @@
 {
-  "about": "r17 per-variable fallbacks: empty, doubled, and | where the step takes none (api/049 FR-007)",
+  "about": "r17 per-variable fallbacks: empty, doubled, and | where the step takes none",
   "rules": [
     "R17"
   ],

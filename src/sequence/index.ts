@@ -7,6 +7,7 @@ export { SEQUENCE_SCHEMA_URL, SEQUENCE_SCHEMA_V1, type JsonSchema } from "./sche
 export type {
   Action,
   Duration,
+  WaitDuration,
   FieldOperand,
   OnMissing,
   Predicate,

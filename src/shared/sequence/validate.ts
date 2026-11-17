@@ -1,8 +1,8 @@
 // Vendored from the API by scripts/vendor-shared.mjs. Do not edit: change the API and re-run.
-import { durationMinutes } from "./paths.js";
+import { businessDays, durationMinutes } from "./paths.js";
 import { normalizePath } from "../field-paths.js";
 import { awaitedEventName } from "./references.js";
-import { ACCOUNT_FIELDS, ACTION_PARAMS, ACTIONS, VOICE_CLIP_ID_RE, VOICE_CLIP_RULE, BOOLEAN_PREDICATES, DURATION_BOUNDS, DEPRECATED_ACCEPTED_UNTIL, DURATION_PATTERN, EMAIL_OPT_OUT_FORMS, EMAIL_REFUSED_KEYS, EMAIL_THREADS, END, hasEmailStep, EVENT_NAME_PATTERN, EVENTS, EXTRA_KEY_PATTERN, FIELD_OPERATORS, ID_PATTERN, MAX_PREDICATE_DEPTH, MAX_QUOTED_TOKEN_CHARS, MAX_SAVE_ENTRIES, MAX_SEQUENCE_BYTES, MAX_STEP_NOTE_CHARS, MAX_STEPS, MAX_VARIABLE_REFS_PER_TEXT, MAX_TAG_CHARS, MAX_VARIANTS, MAX_VARIANT_WEIGHT, MIN_VARIANT_WEIGHT, MESSAGING_ACTIONS, MY_FIELDS, MIN_VARIANTS, NAME_FIELDS, NUMBER_OPERATORS, ON_MISSING, OPT_OUT_MAX, OPT_OUT_TEXTS, REACTIONS, SAVE_NAME_PATTERN, SEQUENCE_SCHEMA_URL, STANDARD_FIELDS, languageCode, STEP_KEYS, STEP_KINDS, TAG_PATTERN, TEXT_LIMITS, type Action, type StepKind, fallbackKeyword, isObject, longVariable, } from "./limits.js";
+import { ACCOUNT_FIELDS, ACTION_PARAMS, ACTIONS, VOICE_CLIP_ID_RE, VOICE_CLIP_RULE, BOOLEAN_PREDICATES, DURATION_BOUNDS, DEPRECATED_ACCEPTED_UNTIL, DURATION_PATTERN, BUSINESS_DAYS, EMAIL_OPT_OUT_FORMS, EMAIL_REFUSED_KEYS, EMAIL_THREADS, END, hasEmailStep, EVENT_NAME_PATTERN, EVENTS, EXTRA_KEY_PATTERN, FIELD_OPERATORS, ID_PATTERN, MAX_PREDICATE_DEPTH, MAX_QUOTED_TOKEN_CHARS, MAX_SAVE_ENTRIES, MAX_SEQUENCE_BYTES, MAX_STEP_NOTE_CHARS, MAX_STEPS, MAX_VARIABLE_REFS_PER_TEXT, MAX_TAG_CHARS, MAX_VARIANTS, MAX_VARIANT_WEIGHT, MIN_VARIANT_WEIGHT, MESSAGING_ACTIONS, MY_FIELDS, MIN_VARIANTS, NAME_FIELDS, NUMBER_OPERATORS, ON_MISSING, OPT_OUT_MAX, OPT_OUT_TEXTS, REACTIONS, SAVE_NAME_PATTERN, SEQUENCE_SCHEMA_URL, STANDARD_FIELDS, languageCode, STEP_KEYS, STEP_KINDS, TAG_PATTERN, TEXT_LIMITS, type Action, type StepKind, fallbackKeyword, isObject, longVariable, } from "./limits.js";
 import { isMessageSend } from "./message-actions.js";
 import { ruleHelp } from "./rules.js";
 export interface PathRule {
@@ -196,14 +196,17 @@ type Bounds = {
     label: string;
     example: string;
 };
-function durationRule(bounds: Bounds): string {
-    return `must be a duration between ${bounds.label}: a number then m, h or d, like 30d`;
+function durationRule(bounds: Bounds, bd = false): string {
+    return `must be a duration between ${bounds.label}: a number then m, h or d, like 30d${bd ? `, or business days from ${BUSINESS_DAYS.min}bd to ${BUSINESS_DAYS.max}bd` : ""}`;
 }
 const durationHint = (bounds: Bounds) => `${bounds.label}, for example ${bounds.example}`;
 function durationOk(v: unknown, bounds: {
     min: number;
     max: number;
-}): boolean {
+}, bd = false): boolean {
+    const n = bd ? businessDays(v) : null;
+    if (n !== null)
+        return n >= BUSINESS_DAYS.min && n <= BUSINESS_DAYS.max;
     if (typeof v !== "string" || !DURATION_RE.test(v))
         return false;
     const m = durationMinutes(v);
@@ -585,8 +588,8 @@ function run(doc: unknown, mode: Mode): SequenceValidationResult {
                 checkDo(ctx, order, p, ptr, raw, usedIds);
                 break;
             case "wait":
-                if (!durationOk(raw["wait"], DURATION_BOUNDS.wait)) {
-                    issue(ctx, { order, code: "R12", path: `${p}.wait`, pointer: `${ptr}/wait`, rule: durationRule(DURATION_BOUNDS.wait), token: durationHint(DURATION_BOUNDS.wait) });
+                if (!durationOk(raw["wait"], DURATION_BOUNDS.wait, true)) {
+                    issue(ctx, { order, code: "R12", path: `${p}.wait`, pointer: `${ptr}/wait`, rule: durationRule(DURATION_BOUNDS.wait, true), token: durationHint(DURATION_BOUNDS.wait) });
                 }
                 break;
             case "until":
@@ -669,13 +672,13 @@ function checkUntil(ctx: Ctx, order: number, p: string, ptr: string, raw: Record
     if (!has(raw, "timeout")) {
         issue(ctx, { order, code: "R14", path: `${p}.timeout`, pointer: ptr, rule: "required on an until step" });
     }
-    else if (!durationOk(raw["timeout"], DURATION_BOUNDS.timeout)) {
+    else if (!durationOk(raw["timeout"], DURATION_BOUNDS.timeout, true)) {
         issue(ctx, {
             order,
             code: "R12",
             path: `${p}.timeout`,
             pointer: `${ptr}/timeout`,
-            rule: durationRule(DURATION_BOUNDS.timeout),
+            rule: durationRule(DURATION_BOUNDS.timeout, true),
             token: durationHint(DURATION_BOUNDS.timeout),
         });
     }

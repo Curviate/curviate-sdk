@@ -45,6 +45,8 @@ export type BooleanPredicate = GenSingle extends infer P ? (P extends unknown ? 
 
 /** `<number><m|h|d>`, like `30d`. */
 export type Duration = `${number}${"m" | "h" | "d"}`;
+/** A `wait` or an `until` timeout also takes business days, `<n>bd` (1 to 250): the sending account's schedule days. */
+export type WaitDuration = Duration | `${number}bd`;
 type Scalar = string | number | boolean;
 type Degree = 1 | 2 | 3;
 
@@ -205,6 +207,10 @@ type CheckVars<S> = IsLiteral<S> extends true
 type CheckFallback<S> = HasVar<S> extends true ? SequenceTypeError<"a fallback must not contain a variable"> : CheckVars<S>;
 /** G11: a literal duration is `<number><m|h|d>`. */
 export type CheckDuration<S> = IsLiteral<S> extends true ? (S extends Duration ? unknown : SequenceTypeError<"a duration is a number then m, h or d, like 30d">) : unknown;
+/** G11 for a `wait` and an `until` timeout: also `<number>bd`, business days. */
+export type CheckWaitDuration<S> = IsLiteral<S> extends true
+  ? (S extends WaitDuration ? unknown : SequenceTypeError<"a duration is a number then m, h, d or bd (business days), like 30d or 5bd">)
+  : unknown;
 /** G12: a literal step id is not `"end"`. */
 export type CheckId<S> = S extends "end" ? SequenceTypeError<'"end" is reserved'> : unknown;
 

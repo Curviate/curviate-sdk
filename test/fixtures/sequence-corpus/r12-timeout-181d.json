@@ -19,9 +19,9 @@
   "errors": [
     {
       "path": "u.timeout",
-      "rule": "must be a duration between 1h and 180d: a number then m, h or d, like 30d",
+      "rule": "must be a duration between 1h and 180d: a number then m, h or d, like 30d, or business days from 1bd to 250bd",
       "code": "R12",
-      "message": "must be a duration between 1h and 180d: a number then m, h or d, like 30d",
+      "message": "must be a duration between 1h and 180d: a number then m, h or d, like 30d, or business days from 1bd to 250bd",
       "pointer": "/steps/0/timeout",
       "hint": "Use a duration between 1h and 180d, for example 21d.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r12",

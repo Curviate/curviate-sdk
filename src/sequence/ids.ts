@@ -17,6 +17,7 @@ const ID_BASE: Record<StepIdKind, string> = {
   "message.send": "message",
   "inmail.send": "inmail",
   "voice.send": "voice",
+  "email.send": "email",
   "post.react": "like",
   "post.comment": "comment",
   "skill.endorse": "endorse",

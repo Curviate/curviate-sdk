@@ -7,6 +7,45 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [Unreleased]
+
+Proposed as 0.52.0. Regenerated `fixtures/openapi.json` and the generated types from the served document of the server tree that merges staging with the email Campaign bundle (`fixtures/PROVENANCE.json`, server commit `8c675b5b8`); the Sequence validator, its corpus and the webhook template corpus re-vendored from the same tree.
+
+### Breaking
+
+- **`warm_up.week` and `warm_up.steps` leave the types** (the safety policy, the Account read and list, the overview profile). The ramp counts days: read `preset` and `day`. The API still sends both keys (`week` always `null`, `steps` always 5) until a later server release removes them; nothing reads them.
+- **`campaigns.preview()`** answers a page: `paths`, `projection` and `warnings` are optional (first page only) and `next_cursor` is new. Read them with `?.` or page from the first.
+- **Wider unions** an exhaustive `switch` must handle: the Sequence `Action` gains `email.send`; `CurviateEvent` gains `enrollment.email_bounced`, `enrollment.out_of_office` and `enrollment.opted_out`; Enrollment `waiting.kind` gains `no_mailbox`, `mailbox_cap` and `email_unavailable`, `skip_reason` gains `no_email_address`; Lead import `status` gains `paused` and `stopped`, `format` gains `source`, row `reason` gains `invalid_email`; Do-not-contact `reason` gains `unsubscribed`.
+- **Validator messages** (`validateSequence`, the same rules as the API): R17 and R19 read differently now that a variable may carry its own fallback, and R12 names business days; code matching on the message text changes with them.
+
+### Email in Campaigns
+
+- **`email.send`** step: `with` takes `subject`, `text`, `body_html`, `thread` (`same` or `new`), `on_missing`, `opt_out` (`link`, `line`, `none`) with `opt_out_text`, `opt_out_link_text`, `opt_out_link_word`, and `track_opens`; `{{mailbox.signature}}` is the Mailbox's signature. Built with `step.do(id, "email.send", { with: {...} })`; the step id series is `email`.
+- **Per-variable fallbacks** on message, InMail and email texts: `{{lead.first_name|there}}`. `with.on_missing` (`fallback`, `skip`, `hold`) on every messaging step; with `skip` or `hold` no fallback is needed. The builder's compile-time checks accept both (`OnMissing` exported as `SequenceOnMissing`).
+- **`campaigns.check(id)`** (`POST /v1/campaigns/{id}/check`): the Lead check, also served as `lead_check` on the Campaign. **`campaigns.start(id, { skip_missing_email })`** and `resume` take the optional body (`CampaignStartBody`).
+- Campaign `shared_mailbox_ids`, `schedule.min_email_gap_minutes` (warning W20 below 2), `settings.reply_scope` (`both`, `own_channel`); warnings W19 to W21.
+- **Webhooks:** `enrollment.replied` carries `channel` (`linkedin`, `email`); new payload types `EnrollmentRepliedPayload`, `EnrollmentEmailBouncedPayload`, `EnrollmentOutOfOfficePayload`, `EnrollmentOptedOutPayload`.
+
+### Campaign parity
+
+- **Variants:** 2 to 5, each with an optional `weight` (1 to 100, on all or none); 3 to 5 variants are no longer deprecated.
+- **Business days:** a `wait` and an `until` timeout take `<n>bd` (1 to 250), typed as `SequenceWaitDuration`; `newer_than` and `withdraw_after` stay calendar time.
+- **Preview paging:** `limit` (1 to 20), `cursor`, `next_cursor`.
+- **`next_action`** on Enrollments: `{ step_id, action, at, why, text }`.
+
+### Leads and Do-not-contact
+
+- Do-not-contact entries carry `scope` (`everything`, `email_only`) and `how` (`person`, `unsubscribe_link`, `email_header`, `reply_model`); `add` and `import` take `scope`. The Lead read carries `do_not_contact: { scope, reason, how, at } | null` (`scope: "email_only"` is "No email").
+- Lead imports from a LinkedIn source (`source` on `leads.imports.create`): `found`, `do_not_contact`, `no_email` counts, `waiting`, `estimate`, `finish_reason`, `can_continue`.
+
+### Billing
+
+- **`billing.quote({ seats, period })`**, **`billing.spendingCap()`** (read only), **`billing.changes()`** (paged), **`billing.switchPeriod()`** (monthly to yearly at renewal). Owners only.
+
+### Limits
+
+- JSDoc describes the day ramp (Gradual: 30% on day 1 to 100% on day 14; Custom: `start`, `step`, `every`) instead of the 5-week ladder.
+
 ## [0.51.0] - 2026-11-17
 
 ### Breaking: Contacts become Leads, Motions become Campaigns

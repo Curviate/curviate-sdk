@@ -1,5 +1,5 @@
 {
-  "about": "per-variable fallbacks render on message.send, inmail.send and email.send; on_missing skip needs none (api/049 FR-007, FR-008)",
+  "about": "per-variable fallbacks render on message.send, inmail.send and email.send; on_missing skip needs none",
   "rules": [],
   "schema_valid": true,
   "document": {

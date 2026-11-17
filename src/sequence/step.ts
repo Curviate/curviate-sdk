@@ -13,8 +13,8 @@
 import type {
   Action,
   CheckDo,
-  CheckDuration,
   CheckId,
+  CheckWaitDuration,
   DoFields,
   Exact,
   Predicate,
@@ -66,14 +66,16 @@ export const step: {
     fields?: F & CheckDo<A, F>,
   ): { id: Id; do: A } & F;
   /**
-   * A `wait` step: calendar time, `<number><m|h|d>`, 1m to 365d.
+   * A `wait` step: calendar time, `<number><m|h|d>`, 1m to 365d, or business
+   * days, `<n>bd` (1 to 250): days of the sending account's schedule.
    *
    * @example
    * step.wait("pause", "2d");
+   * step.wait("pause", "3bd");
    */
   wait<const Id extends string, const D extends string, const F extends Flow = {}>(
     id: Id & CheckId<Id>,
-    duration: D & CheckDuration<D>,
+    duration: D & CheckWaitDuration<D>,
     fields?: F & Exact<F, keyof Flow>,
   ): { id: Id; wait: D } & F;
   /**
@@ -93,7 +95,7 @@ export const step: {
   until<const Id extends string, const E extends SequenceEvent, const F extends Timed>(
     id: Id & CheckId<Id>,
     event: E,
-    fields: F & Exact<F, keyof Timed> & { timeout: CheckDuration<TimeoutOf<F>> },
+    fields: F & Exact<F, keyof Timed> & { timeout: CheckWaitDuration<TimeoutOf<F>> },
   ): { id: Id; until: E } & F;
   /**
    * An `if` step: branch on one predicate about the Lead, the sending

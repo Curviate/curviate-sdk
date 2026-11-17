@@ -114,7 +114,7 @@ export function sequenceTypegenFixups(doc) {
  * Fields the server still serves for compatibility but the SDK no longer
  * types: `warm_up.week` (always null) and `warm_up.steps` (always 5), left
  * over from the week ramp. Dropped from every warm-up object schema (one
- * carrying `factor`, `triggers`, `week` and `steps`) before type generation.
+ * carrying `factor`, `week` and `steps`) before type generation.
  * Remove this once the served document no longer has them.
  * @param {any} doc the OpenAPI document, mutated
  * @returns {number} schemas rewritten
@@ -125,7 +125,7 @@ export function dropRetiredFields(doc) {
     if (!n || typeof n !== "object") return;
     if (Array.isArray(n)) return void n.forEach(visit);
     const p = n.properties;
-    if (p && typeof p === "object" && "week" in p && "steps" in p && "factor" in p && "triggers" in p) {
+    if (p && typeof p === "object" && "week" in p && "steps" in p && "factor" in p) {
       delete p.week;
       delete p.steps;
       if (Array.isArray(n.required)) n.required = n.required.filter((k) => k !== "week" && k !== "steps");

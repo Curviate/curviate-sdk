@@ -295,6 +295,7 @@ export {
   type StepIdKind,
   type Action as SequenceAction,
   type Duration as SequenceDuration,
+  type WaitDuration as SequenceWaitDuration,
   type FieldOperand as SequenceFieldOperand,
   type Predicate as SequencePredicate,
   type Reaction as SequenceReaction,
