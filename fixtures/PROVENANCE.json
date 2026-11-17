@@ -1,8 +1,8 @@
 {
-  "source_base_url": "http://localhost:3100",
-  "server_git_sha": "local",
-  "fetched_at": "2026-11-16T23:36:36.256Z",
-  "paths": 227,
+  "source_base_url": "http://localhost:3999",
+  "server_git_sha": "2935d7852d054ffbcae1af9192412cf79a2f8fa3",
+  "fetched_at": "2026-11-17T07:48:19.573Z",
+  "paths": 233,
   "servers_canonicalized": true,
   "note": "Written by scripts/refresh-fixture.mjs (pnpm gen:fixture). Do not hand-edit; refresh instead."
 }
