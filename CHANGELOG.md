@@ -7,9 +7,9 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
-## [Unreleased]
+## [0.52.0] - 2026-11-17
 
-Proposed as 0.52.0. Regenerated `fixtures/openapi.json` and the generated types from the served document of the server tree that merges staging with the email Campaign bundle (`fixtures/PROVENANCE.json`, server commit `8c675b5b8`); the Sequence validator, its corpus and the webhook template corpus re-vendored from the same tree.
+Regenerated `fixtures/openapi.json` and the generated types from the served document of the server tree that merges staging with the email Campaign bundle (`fixtures/PROVENANCE.json`, server commit `8c675b5b8`); the Sequence validator, its corpus and the webhook template corpus re-vendored from the same tree.
 
 ### Breaking
 
