@@ -1,0 +1,57 @@
+{
+  "about": "email.send: first email with its subject, a same-thread follow-up without one, variants, every option, the opt-out texts at their limits, the signature",
+  "rules": [
+    "R13"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "intro",
+        "do": "email.send",
+        "with": {
+          "subject": "Quick question, {{first_name}}",
+          "text": "Hi {{first_name}},\n\n{{mailbox.signature}}",
+          "body_html": "<p>Hi {{first_name}},</p><p>{{mailbox.signature}}</p>",
+          "thread": "new",
+          "on_missing": "skip",
+          "opt_out": "line",
+          "opt_out_text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "opt_out_link_text": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+          "opt_out_link_word": "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
+          "track_opens": false
+        },
+        "next": "w"
+      },
+      {
+        "id": "w",
+        "wait": "3d",
+        "next": "follow"
+      },
+      {
+        "id": "follow",
+        "do": "email.send",
+        "variants": [
+          {
+            "id": "a",
+            "text": "Any thoughts?"
+          },
+          {
+            "id": "b",
+            "text": "Bumping this.",
+            "body_html": "<p>Bumping this.</p>"
+          }
+        ],
+        "with": {
+          "opt_out": "link",
+          "opt_out_text": "",
+          "opt_out_link_word": null
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": []
+}

@@ -1,0 +1,80 @@
+{
+  "about": "server-only email Campaign warnings: on_reply_ignored (core/033 FR-004), email_gap_low (api/049 FR-023), no_mailbox (FR-016)",
+  "rules": [
+    "W19",
+    "W20",
+    "W21"
+  ],
+  "only": "server",
+  "context": {
+    "account_profiles": [
+      "basic"
+    ],
+    "min_email_gap_minutes": 1,
+    "no_mailbox": [
+      "acc_x"
+    ]
+  },
+  "schema_valid": true,
+  "document": {
+    "on_reply": "thanks",
+    "steps": [
+      {
+        "id": "e",
+        "do": "email.send",
+        "with": {
+          "subject": "Hi",
+          "text": "Hello",
+          "opt_out": "line"
+        },
+        "next": "inv"
+      },
+      {
+        "id": "inv",
+        "do": "invite.send",
+        "next": "end"
+      },
+      {
+        "id": "thanks",
+        "do": "message.send",
+        "with": {
+          "text": "Thanks"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "path": "on_reply",
+      "rule": "on_reply_ignored: A reply ends this Campaign because it has an email step; this reply route is not taken.",
+      "code": "W19",
+      "message": "on_reply_ignored: A reply ends this Campaign because it has an email step; this reply route is not taken.",
+      "pointer": "/on_reply",
+      "hint": "Remove on_reply, or set it to end: in a Campaign with an email step a reply ends the Enrollment by settings.reply_scope.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w19",
+      "severity": "warning"
+    },
+    {
+      "path": "schedule.min_email_gap_minutes",
+      "rule": "email_gap_low: 1 minute between two emails from one Mailbox reads as automation; 5 or more is safer",
+      "code": "W20",
+      "message": "email_gap_low: 1 minute between two emails from one Mailbox reads as automation; 5 or more is safer",
+      "pointer": "",
+      "hint": "Set schedule.min_email_gap_minutes to 5 or more, the default.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w20",
+      "severity": "warning"
+    },
+    {
+      "path": "account_ids",
+      "rule": "no_mailbox: acc_x has no Mailbox that can send, so its Leads wait at their email steps; connect one, or choose a shared Mailbox",
+      "code": "W21",
+      "message": "no_mailbox: acc_x has no Mailbox that can send, so its Leads wait at their email steps; connect one, or choose a shared Mailbox",
+      "pointer": "",
+      "hint": "Connect a Mailbox for the Account, or add a shared Mailbox to the Campaign's shared_mailbox_ids.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w21",
+      "severity": "warning"
+    }
+  ]
+}

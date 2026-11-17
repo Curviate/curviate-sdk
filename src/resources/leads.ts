@@ -189,7 +189,9 @@ export class LeadsResource {
   }
 
   /**
-   * Read one Lead.
+   * Read one Lead. `do_not_contact` is the Lead's Do-not-contact entry as
+   * `{ scope, reason, how, at }`, or `null`: `scope: "email_only"` is the
+   * "No email" mark (email steps skip the Lead, LinkedIn still reaches them).
    * `GET /v1/leads/{id}`
    *
    * @example

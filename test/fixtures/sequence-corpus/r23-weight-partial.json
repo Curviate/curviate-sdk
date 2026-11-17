@@ -1,0 +1,46 @@
+{
+  "about": "weights on two of three variants: the third is named",
+  "rules": [
+    "R23"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "variants": [
+          {
+            "id": "v0",
+            "text": "Hi",
+            "weight": 60
+          },
+          {
+            "id": "v1",
+            "text": "Hi",
+            "weight": 40
+          },
+          {
+            "id": "v2",
+            "text": "Hi"
+          }
+        ],
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "m.variants.v2.weight",
+      "rule": "weights on all of a step's variants or none",
+      "code": "R23",
+      "message": "weights on all of a step's variants or none",
+      "pointer": "/steps/0/variants/2",
+      "hint": "Give the step 2 to 5 variants with ids unique in the document (weights on all or none, each 1 to 100), or one text in with.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r23",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

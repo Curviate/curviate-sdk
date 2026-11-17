@@ -1,0 +1,125 @@
+{
+  "about": "email.send: no text, to, cc, bcc and inline attachments, a thread and an opt-out form outside their lists",
+  "rules": [
+    "R13"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "mail",
+        "do": "email.send",
+        "with": {
+          "subject": "Hi",
+          "to": "a@b.co",
+          "cc": "c@d.co",
+          "bcc": "e@f.co",
+          "attachments": [
+            {
+              "filename": "x.pdf"
+            }
+          ],
+          "thread": "both",
+          "opt_out": "both",
+          "track_opens": "yes",
+          "on_missing": "later"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "mail.with.to",
+      "rule": "the recipient is always the Lead's email address; a step names no to",
+      "code": "R13",
+      "message": "the recipient is always the Lead's email address; a step names no to",
+      "pointer": "/steps/0/with/to",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",
+      "severity": "error"
+    },
+    {
+      "path": "mail.with.cc",
+      "rule": "Cc is not sent from a Campaign step",
+      "code": "R13",
+      "message": "Cc is not sent from a Campaign step",
+      "pointer": "/steps/0/with/cc",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",
+      "severity": "error"
+    },
+    {
+      "path": "mail.with.bcc",
+      "rule": "Bcc is not sent from a Campaign step",
+      "code": "R13",
+      "message": "Bcc is not sent from a Campaign step",
+      "pointer": "/steps/0/with/bcc",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",
+      "severity": "error"
+    },
+    {
+      "path": "mail.with.attachments",
+      "rule": "inline attachments are not supported on a Campaign email",
+      "code": "R13",
+      "message": "inline attachments are not supported on a Campaign email",
+      "pointer": "/steps/0/with/attachments",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",
+      "severity": "error"
+    },
+    {
+      "path": "mail.with.thread",
+      "rule": "must be one of same, new",
+      "code": "R13",
+      "message": "must be one of same, new",
+      "pointer": "/steps/0/with/thread",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",
+      "severity": "error"
+    },
+    {
+      "path": "mail.with.opt_out",
+      "rule": "must be one of link, line, none",
+      "code": "R13",
+      "message": "must be one of link, line, none",
+      "pointer": "/steps/0/with/opt_out",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",
+      "severity": "error"
+    },
+    {
+      "path": "mail.with.on_missing",
+      "rule": "must be one of fallback, skip, hold",
+      "code": "R13",
+      "message": "must be one of fallback, skip, hold",
+      "pointer": "/steps/0/with/on_missing",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",
+      "severity": "error"
+    },
+    {
+      "path": "mail.with.track_opens",
+      "rule": "must be true or false",
+      "code": "R13",
+      "message": "must be true or false",
+      "pointer": "/steps/0/with/track_opens",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",
+      "severity": "error"
+    },
+    {
+      "path": "mail.with.text",
+      "rule": "required, or use variants",
+      "code": "R13",
+      "message": "required, or use variants",
+      "pointer": "/steps/0/with",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

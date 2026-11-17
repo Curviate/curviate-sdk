@@ -1,5 +1,5 @@
 {
-  "about": "r17 variable default",
+  "about": "r17 per-variable fallbacks: empty, doubled, and | where the step takes none (api/049 FR-007)",
   "rules": [
     "R17"
   ],
@@ -8,11 +8,27 @@
     "on_reply": "end",
     "steps": [
       {
+        "id": "inv",
+        "do": "invite.send",
+        "with": {
+          "note": "Hi {{lead.first_name|there}}",
+          "note_fallback": "Hi"
+        },
+        "next": "m"
+      },
+      {
         "id": "m",
         "do": "message.send",
         "with": {
-          "text": "Hi {{lead.first_name | default:'there'}}",
-          "fallback": "Hi"
+          "text": "Hi {{lead.first_name|}}"
+        },
+        "next": "m2"
+      },
+      {
+        "id": "m2",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{lead.first_name|a|b}}"
         },
         "next": "end"
       }
@@ -20,12 +36,32 @@
   },
   "errors": [
     {
-      "path": "m.with.text",
-      "rule": "variable defaults are not supported; add a fallback",
+      "path": "inv.with.note",
+      "rule": "{{lead.first_name|there}}: a fallback after | works only in message.send, inmail.send and email.send; use the step's fallback here",
       "code": "R17",
-      "message": "variable defaults are not supported; add a fallback",
-      "pointer": "/steps/0/with/text",
-      "hint": "Remove the part after | and add a variable-free fallback on the step instead.",
+      "message": "{{lead.first_name|there}}: a fallback after | works only in message.send, inmail.send and email.send; use the step's fallback here",
+      "pointer": "/steps/0/with/note",
+      "hint": "Write one fallback after | in a message, InMail or email, as {{lead.first_name|there}}; in an invitation note or a comment use the step's fallback instead.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r17",
+      "severity": "error"
+    },
+    {
+      "path": "m.with.text",
+      "rule": "{{lead.first_name|}}: write one non-empty fallback after |, as {{lead.first_name|there}}",
+      "code": "R17",
+      "message": "{{lead.first_name|}}: write one non-empty fallback after |, as {{lead.first_name|there}}",
+      "pointer": "/steps/1/with/text",
+      "hint": "Write one fallback after | in a message, InMail or email, as {{lead.first_name|there}}; in an invitation note or a comment use the step's fallback instead.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r17",
+      "severity": "error"
+    },
+    {
+      "path": "m2.with.text",
+      "rule": "{{lead.first_name|a|b}}: write one non-empty fallback after |, as {{lead.first_name|there}}",
+      "code": "R17",
+      "message": "{{lead.first_name|a|b}}: write one non-empty fallback after |, as {{lead.first_name|there}}",
+      "pointer": "/steps/2/with/text",
+      "hint": "Write one fallback after | in a message, InMail or email, as {{lead.first_name|there}}; in an invitation note or a comment use the step's fallback instead.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r17",
       "severity": "error"
     }

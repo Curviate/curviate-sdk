@@ -4,7 +4,6 @@
     "R5",
     "R11",
     "R16",
-    "R17",
     "R18",
     "R19",
     "R20",
@@ -100,22 +99,12 @@
     },
     {
       "path": "msg.with.fallback",
-      "rule": "required because the text uses a variable",
+      "rule": "{{firstName}} has no fallback: write {{firstName|...}}, add the step's fallback, or set on_missing to skip",
       "code": "R19",
-      "message": "required because the text uses a variable",
+      "message": "{{firstName}} has no fallback: write {{firstName|...}}, add the step's fallback, or set on_missing to skip",
       "pointer": "/steps/1/with",
-      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "hint": "Give each variable its own fallback ({{lead.first_name|there}}), or add a variable-free one on the step: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment; or set on_missing to skip.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19",
-      "severity": "error"
-    },
-    {
-      "path": "msg2.with.text",
-      "rule": "variable defaults are not supported; add a fallback",
-      "code": "R17",
-      "message": "variable defaults are not supported; add a fallback",
-      "pointer": "/steps/2/with/text",
-      "hint": "Remove the part after | and add a variable-free fallback on the step instead.",
-      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r17",
       "severity": "error"
     },
     {

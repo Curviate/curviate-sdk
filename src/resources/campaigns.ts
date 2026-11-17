@@ -34,6 +34,10 @@ export type CampaignListParams = NonNullable<paths["/v1/campaigns"]["get"]["para
 export type CampaignListPage = paths["/v1/campaigns"]["get"]["responses"]["200"]["content"]["application/json"];
 export type CampaignPreviewParams = NonNullable<paths["/v1/campaigns/{id}/preview"]["get"]["parameters"]["query"]>;
 export type CampaignPreview = paths["/v1/campaigns/{id}/preview"]["get"]["responses"]["200"]["content"]["application/json"];
+/** `start` and `resume` body: `skip_missing_email` alone. */
+export type CampaignStartBody = NonNullable<paths["/v1/campaigns/{id}/start"]["post"]["requestBody"]>["content"]["application/json"];
+/** The Lead check (`check`), also served as `lead_check` on the Campaign. */
+export type CampaignLeadCheck = paths["/v1/campaigns/{id}/check"]["post"]["responses"]["200"]["content"]["application/json"];
 export type SequenceVersionParams = NonNullable<paths["/v1/campaigns/{id}/sequence"]["get"]["parameters"]["query"]>;
 export type SequenceVersion = paths["/v1/campaigns/{id}/sequence"]["get"]["responses"]["200"]["content"]["application/json"];
 export type CampaignAddLeadsBody = NonNullable<paths["/v1/campaigns/{id}/leads"]["post"]["requestBody"]>["content"]["application/json"];
@@ -236,6 +240,11 @@ export class CampaignsResource {
    * saved, the stored document in `err.current`. Omitted: the last write wins.
    * `PATCH /v1/campaigns/{id}`
    *
+   * Email: `shared_mailbox_ids` (Mailboxes shared in the Team, used once a
+   * sending account's own are at today's limit), `schedule.min_email_gap_minutes`
+   * (default 5; below 2 warns W20) and `settings.reply_scope` (`both`, the
+   * default, or `own_channel`).
+   *
    * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
    *
    * @example
@@ -266,15 +275,37 @@ export class CampaignsResource {
    * Start a `draft`: `scheduled` when `schedule.start_at` is ahead, else
    * `active`. Freezes Sequence version 1. A Campaign missing what it needs to
    * run is refused with `CAMPAIGN_NOT_STARTABLE`, every gap in `err.errors`.
+   * With an email step it needs a Lead check (`check`) at the current
+   * `sequence_revision`, and is refused while Leads have no email address
+   * unless `{ skip_missing_email: true }`: those Leads are never enrolled
+   * either way. `warnings[]` carries W21 for a sending account no Mailbox can
+   * send for.
    * `POST /v1/campaigns/{id}/start`
    *
    * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
    *
    * @example
-   * const campaign = await curviate.campaigns.start("mot_123");
+   * await curviate.campaigns.check("mot_123");
+   * const campaign = await curviate.campaigns.start("mot_123", { skip_missing_email: true });
    */
-  start(campaignId: string): Promise<Campaign> {
-    return this.ctx.request<Campaign>({ method: "POST", path: apiPath`/v1/campaigns/${campaignId}/start` });
+  start(campaignId: string, body?: CampaignStartBody): Promise<Campaign> {
+    return this.ctx.request<Campaign>({ method: "POST", path: apiPath`/v1/campaigns/${campaignId}/start`, ...(body ? { body } : {}) });
+  }
+
+  /**
+   * The Lead check: one count over every Lead the Campaign would enroll (no
+   * usable email address, a bounced one, on the Do-not-contact list for email
+   * only) and the Lead variables without a fallback they lack. Stored and
+   * served as `lead_check` on the Campaign; starting a Campaign with an email
+   * step needs one at the current `sequence_revision`. Any status; sends
+   * nothing.
+   * `POST /v1/campaigns/{id}/check`
+   *
+   * @example
+   * const { without_email, fields } = await curviate.campaigns.check("mot_123");
+   */
+  check(campaignId: string): Promise<CampaignLeadCheck> {
+    return this.ctx.request<CampaignLeadCheck>({ method: "POST", path: apiPath`/v1/campaigns/${campaignId}/check` });
   }
 
   /**
@@ -290,7 +321,8 @@ export class CampaignsResource {
 
   /**
    * Resume a `paused` Campaign. Runs `start`'s checks again
-   * (`CAMPAIGN_NOT_STARTABLE`).
+   * (`CAMPAIGN_NOT_STARTABLE`), the Lead check and `skip_missing_email`
+   * included.
    * `POST /v1/campaigns/{id}/resume`
    *
    * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
@@ -298,8 +330,8 @@ export class CampaignsResource {
    * @example
    * await curviate.campaigns.resume("mot_123");
    */
-  resume(campaignId: string): Promise<Campaign> {
-    return this.ctx.request<Campaign>({ method: "POST", path: apiPath`/v1/campaigns/${campaignId}/resume` });
+  resume(campaignId: string, body?: CampaignStartBody): Promise<Campaign> {
+    return this.ctx.request<Campaign>({ method: "POST", path: apiPath`/v1/campaigns/${campaignId}/resume`, ...(body ? { body } : {}) });
   }
 
   /**
@@ -319,6 +351,10 @@ export class CampaignsResource {
    * Sequence, rendered messages for `sample` Leads (1 to 20, default 5) or
    * the `lead_ids` you name (up to 20, not with `sample`), and the budget
    * projection. A read: never reaches LinkedIn, spends nothing.
+   *
+   * Paged over every Lead: `limit` Leads a page and the `cursor` of the
+   * previous page's `next_cursor` (`null` on the last). `paths`, `projection`
+   * and `warnings` come on the first page only.
    *
    * `projection.audience` is `{ total, skipped, to_enroll }`, `skipped`
    * counted per reason (`do_not_contact`, `excluded`, `other_campaign`,

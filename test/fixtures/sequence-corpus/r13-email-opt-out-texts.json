@@ -1,0 +1,98 @@
+{
+  "about": "email.send: the three opt-out texts one over their limits, with a line break, with a variable",
+  "rules": [
+    "R13"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "long",
+        "do": "email.send",
+        "with": {
+          "subject": "Hi",
+          "text": "Hi",
+          "opt_out_text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "opt_out_link_text": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+          "opt_out_link_word": "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
+        },
+        "next": "broken"
+      },
+      {
+        "id": "broken",
+        "do": "email.send",
+        "with": {
+          "text": "Hi",
+          "opt_out_text": "No more?\nReply no",
+          "opt_out_link_text": "Bye {{lead.first_name}}",
+          "opt_out_link_word": "}}"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "long.with.opt_out_text",
+      "rule": "must be one plain line of at most 200 characters, without a line break, a variable, {{ or }}; empty uses the Team's text",
+      "code": "R13",
+      "message": "must be one plain line of at most 200 characters, without a line break, a variable, {{ or }}; empty uses the Team's text",
+      "pointer": "/steps/0/with/opt_out_text",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",
+      "severity": "error"
+    },
+    {
+      "path": "long.with.opt_out_link_text",
+      "rule": "must be one plain line of at most 100 characters, without a line break, a variable, {{ or }}; empty uses the Team's text",
+      "code": "R13",
+      "message": "must be one plain line of at most 100 characters, without a line break, a variable, {{ or }}; empty uses the Team's text",
+      "pointer": "/steps/0/with/opt_out_link_text",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",
+      "severity": "error"
+    },
+    {
+      "path": "long.with.opt_out_link_word",
+      "rule": "must be one plain line of at most 30 characters, without a line break, a variable, {{ or }}; empty uses the Team's text",
+      "code": "R13",
+      "message": "must be one plain line of at most 30 characters, without a line break, a variable, {{ or }}; empty uses the Team's text",
+      "pointer": "/steps/0/with/opt_out_link_word",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",
+      "severity": "error"
+    },
+    {
+      "path": "broken.with.opt_out_text",
+      "rule": "must be one plain line of at most 200 characters, without a line break, a variable, {{ or }}; empty uses the Team's text",
+      "code": "R13",
+      "message": "must be one plain line of at most 200 characters, without a line break, a variable, {{ or }}; empty uses the Team's text",
+      "pointer": "/steps/1/with/opt_out_text",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",
+      "severity": "error"
+    },
+    {
+      "path": "broken.with.opt_out_link_text",
+      "rule": "must be one plain line of at most 100 characters, without a line break, a variable, {{ or }}; empty uses the Team's text",
+      "code": "R13",
+      "message": "must be one plain line of at most 100 characters, without a line break, a variable, {{ or }}; empty uses the Team's text",
+      "pointer": "/steps/1/with/opt_out_link_text",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",
+      "severity": "error"
+    },
+    {
+      "path": "broken.with.opt_out_link_word",
+      "rule": "must be one plain line of at most 30 characters, without a line break, a variable, {{ or }}; empty uses the Team's text",
+      "code": "R13",
+      "message": "must be one plain line of at most 30 characters, without a line break, a variable, {{ or }}; empty uses the Team's text",
+      "pointer": "/steps/1/with/opt_out_link_word",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

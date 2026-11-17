@@ -5,7 +5,7 @@
 // table (namespace -> exact method set), enumerates the real prototype methods
 // on a constructed client, and asserts set-equality per namespace. A phantom
 // (extra) public method fails by name; a missing method fails by name; the
-// total must be 284 methods across 46 namespaces. A separate compile-time block
+// total must be 289 methods across 47 namespaces. A separate compile-time block
 // proves every removed method is gone at the type level.
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
@@ -76,7 +76,7 @@ const ROOT_SURFACE: Record<string, readonly string[]> = {
   tags: ["list", "update", "delete"],
   campaigns: [
     "create", "list", "get", "update", "delete", "start", "pause", "resume", "archive",
-    "preview", "getSequenceVersion", "addLeads", "removeLeads",
+    "check", "preview", "getSequenceVersion", "addLeads", "removeLeads",
   ],
   "campaigns.voiceClips": ["upload", "get"],
   enrollments: ["list", "get", "stop", "pause", "resume", "events", "reassign", "bulk", "retry", "signal"],
@@ -90,6 +90,7 @@ const ROOT_SURFACE: Record<string, readonly string[]> = {
   analytics: ["activity", "export"],
   "analytics.campaigns": ["list", "get"],
   "analytics.events": ["list"],
+  billing: ["quote", "spendingCap", "changes", "switchPeriod"],
   "billing.seats": ["lend", "return"],
   "billing.invoices": ["list", "pdf"],
   doNotContact: ["list", "get", "add", "update", "remove", "export", "import"],
@@ -275,6 +276,7 @@ const rootInstances: Record<string, object> = {
   analytics: client.analytics,
   "analytics.campaigns": client.analytics.campaigns,
   "analytics.events": client.analytics.events,
+  billing: client.billing,
   "billing.seats": client.billing.seats,
   "billing.invoices": client.billing.invoices,
   doNotContact: client.doNotContact,
@@ -341,17 +343,17 @@ describe("per-namespace method bijection", () => {
 });
 
 describe("total mapped surface", () => {
-  it("the intended table sums to 284 methods across 46 namespaces", () => {
+  it("the intended table sums to 289 methods across 47 namespaces", () => {
     const namespaces = [
       ...Object.values(ROOT_SURFACE),
       ...Object.values(ACCOUNT_SURFACE),
     ];
-    expect(namespaces.length).toBe(46);
+    expect(namespaces.length).toBe(47);
     const total = namespaces.reduce((n, methods) => n + methods.length, 0);
-    expect(total).toBe(284);
+    expect(total).toBe(289);
   });
 
-  it("the real runtime surface also sums to exactly 284", () => {
+  it("the real runtime surface also sums to exactly 289", () => {
     const roots = Object.values(rootInstances).reduce(
       (n, inst) => n + ownMethods(inst).size,
       0,
@@ -360,7 +362,7 @@ describe("total mapped surface", () => {
       (n, inst) => n + ownMethods(inst).size,
       0,
     );
-    expect(roots + accounts).toBe(284);
+    expect(roots + accounts).toBe(289);
   });
 });
 

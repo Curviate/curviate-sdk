@@ -8,6 +8,7 @@ export type {
   Action,
   Duration,
   FieldOperand,
+  OnMissing,
   Predicate,
   Reaction,
   SequenceDocument,

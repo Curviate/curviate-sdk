@@ -155,6 +155,8 @@ export type {
   CampaignListPage,
   CampaignPreviewParams,
   CampaignPreview,
+  CampaignStartBody,
+  CampaignLeadCheck,
   SequenceVersionParams,
   SequenceVersion,
   CampaignAddLeadsBody,
@@ -297,6 +299,7 @@ export {
   type Predicate as SequencePredicate,
   type Reaction as SequenceReaction,
   type Variant as SequenceVariant,
+  type OnMissing as SequenceOnMissing,
   type JsonSchema,
 } from "./sequence/index.js";
 
@@ -314,6 +317,10 @@ export {
   type ConnectionPayload,
   type AccountPayload,
   type CampaignPayload,
+  type EnrollmentRepliedPayload,
+  type EnrollmentEmailBouncedPayload,
+  type EnrollmentOutOfOfficePayload,
+  type EnrollmentOptedOutPayload,
   type PostPublishedPayload,
   type PostPublishFailedPayload,
   type ConstructEventOptions,

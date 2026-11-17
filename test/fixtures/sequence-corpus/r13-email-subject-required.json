@@ -1,0 +1,68 @@
+{
+  "about": "email.send: subject required where no earlier email reaches the step and on thread new; a same follow-up after an email needs none",
+  "rules": [
+    "R13"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "first",
+        "do": "email.send",
+        "variants": [
+          {
+            "id": "va",
+            "text": "A",
+            "subject": "S"
+          },
+          {
+            "id": "vb",
+            "text": "B"
+          }
+        ],
+        "next": "same_ok"
+      },
+      {
+        "id": "same_ok",
+        "do": "email.send",
+        "with": {
+          "text": "Following up"
+        },
+        "next": "fresh"
+      },
+      {
+        "id": "fresh",
+        "do": "email.send",
+        "with": {
+          "text": "New topic",
+          "thread": "new"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "first.variants.vb.subject",
+      "rule": "required: a path reaches this step with no earlier email",
+      "code": "R13",
+      "message": "required: a path reaches this step with no earlier email",
+      "pointer": "/steps/0/variants/1",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",
+      "severity": "error"
+    },
+    {
+      "path": "fresh.with.subject",
+      "rule": "required: thread new starts its own thread",
+      "code": "R13",
+      "message": "required: thread new starts its own thread",
+      "pointer": "/steps/2/with",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

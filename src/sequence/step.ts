@@ -36,15 +36,22 @@ function build(id: string, kind: string, value: unknown, fields: object | undefi
 export const step: {
   /**
    * A `do` step: run one action. `fields.with` takes the action's parameters,
-   * `fields.variants` (messaging actions) exactly 2 A/B texts, `fields.event`
-   * a custom event sent each time the step runs, `else` the step taken when
-   * the action cannot run. A literal text using a variable needs its
-   * fallback; a comment always needs one.
+   * `fields.variants` (messaging actions) 2 to 5 variants, each with an
+   * optional `weight` (1 to 100, on all or none), `fields.event` a custom event
+   * sent each time the step runs, `else` the step taken when the action cannot
+   * run. A variable needs a fallback: its own after `|` (message, InMail and
+   * email: `{{lead.first_name|there}}`) or the step's (`fallback`,
+   * `note_fallback`), unless `with.on_missing` is `skip` or `hold`. A comment
+   * always needs its fallback.
    *
    * @example
    * step.do("opener", "message.send", {
    *   with: { text: "Hi {{first_name}}, thanks for connecting.", fallback: "Hi, thanks for connecting." },
    *   event: "opener_sent",
+   *   next: "end",
+   * });
+   * step.do("email_1", "email.send", {
+   *   with: { subject: "Quick question", text: "Hi {{lead.first_name|there}},\n\n...\n\n{{mailbox.signature}}" },
    *   next: "end",
    * });
    */

@@ -13,6 +13,7 @@ import openapiTS, { astToString } from "openapi-typescript";
 import {
   stripLocalDiscriminatorMappings,
   sequenceTypegenFixups,
+  dropRetiredFields,
   sequenceSchemaJson,
   forbiddenVendorPattern,
   GENERATED_HEADER as HEADER,
@@ -38,6 +39,7 @@ if (committedSchema !== freshSchema) {
   process.exit(1);
 }
 sequenceTypegenFixups(doc);
+dropRetiredFields(doc);
 stripLocalDiscriminatorMappings(doc);
 const ast = await openapiTS(doc);
 const fresh = HEADER + astToString(ast);

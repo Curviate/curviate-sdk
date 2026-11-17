@@ -1,0 +1,44 @@
+{
+  "about": "email.send: weight 0",
+  "rules": [
+    "R23"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "e",
+        "do": "email.send",
+        "variants": [
+          {
+            "id": "v0",
+            "subject": "S",
+            "text": "Hi",
+            "weight": 60
+          },
+          {
+            "id": "v1",
+            "subject": "S",
+            "text": "Hi",
+            "weight": 0
+          }
+        ],
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "e.variants.v1.weight",
+      "rule": "weight is an integer 1 to 100",
+      "code": "R23",
+      "message": "weight is an integer 1 to 100",
+      "pointer": "/steps/0/variants/1/weight",
+      "hint": "Give the step 2 to 5 variants with ids unique in the document (weights on all or none, each 1 to 100), or one text in with.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r23",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}
