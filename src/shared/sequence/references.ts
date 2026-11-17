@@ -9,7 +9,7 @@ function predicateTag(pred: unknown): string | null {
     if (!isObject(pred))
         return null;
     const inner = isObject(pred["not"]) ? pred["not"] : pred;
-    const tag = inner["contact.tag"];
+    const tag = inner["lead.tag"];
     return typeof tag === "string" ? tag : null;
 }
 export function referencedTags(doc: unknown, where: unknown): string[] {

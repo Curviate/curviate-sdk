@@ -3,18 +3,18 @@
   "rules": [
     "T5"
   ],
-  "source": "motion",
-  "template": "{\"{{contact.email}}\": true}",
+  "source": "campaign",
+  "template": "{\"{{lead.email}}\": true}",
   "errors": [
     {
       "path": "body_template",
-      "rule": "{{contact.email}} is in an object key",
+      "rule": "{{lead.email}} is in an object key",
       "code": "T5",
-      "message": "{{contact.email}} is in an object key",
+      "message": "{{lead.email}} is in an object key",
       "pointer": "/body_template",
       "line": 1,
       "col": 3,
-      "hint": "Use a fixed key and put the variable in the value, like \"email\": \"{{contact.email}}\".",
+      "hint": "Use a fixed key and put the variable in the value, like \"email\": \"{{lead.email}}\".",
       "docs_url": "https://docs.curviate.com/reference/webhooks/body-templates#t5",
       "severity": "error"
     }

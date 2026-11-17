@@ -9,7 +9,7 @@
         "id": "c",
         "do": "post.comment",
         "with": {
-          "text": "{{contact.extra.comment}}",
+          "text": "{{lead.extra.comment}}",
           "fallback": "skip"
         },
         "next": "end"

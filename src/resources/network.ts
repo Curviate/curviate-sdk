@@ -36,9 +36,9 @@ export class NetworkConnectionsResource {
    * By default an item is one account and one person (`object: "connection"`),
    * so someone connected to three of your accounts appears three times.
    * `group: "person"` lists one item per person (`object: "connection_person"`)
-   * with `accounts`, each of your accounts they are connected to, and `contact`,
-   * their Contact summary (`id`, `list_count`, up to 10 `lists`; `null` when
-   * they are not a Contact); `account_id` then picks which people are
+   * with `accounts`, each of your accounts they are connected to, and `lead`,
+   * their Lead summary (`id`, `list_count`, up to 10 `lists`; `null` when
+   * they are not a Lead); `account_id` then picks which people are
    * listed. `include_total: true` (only with `group: "person"`) adds `total`,
    * the number of people that match across all pages. Branch on `object`.
    * `GET /v1/network/connections`

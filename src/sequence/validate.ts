@@ -1,6 +1,6 @@
 /**
  * Offline Sequence validator: rules R1-R28 and warnings W1, W5-W9, W11-W14,
- * W16, the same verdict the API and `curviate motion lint` give. Every entry
+ * W16, the same verdict the API and `curviate campaign lint` give. Every entry
  * is compiler-style: `path`, `rule`, `code`, `message` (= `rule`), `pointer`
  * (RFC 6901 into the document; a missing key points at the object that lacks
  * it), `hint`, `docs_url`, `severity` and, for a did-you-mean, `candidates`.
@@ -11,7 +11,7 @@
  * (`test/fixtures/sequence-corpus/`): every entry's `errors` and `warnings`
  * come out exactly.
  *
- * Server-only: W2-W4 (the Motion's sending Accounts), the `{{motion.<key>}}`
+ * Server-only: W2-W4 (the Campaign's sending Accounts), the `{{campaign.<key>}}`
  * check against `settings.variables` (offline that is W9), and R29 (the
  * Team's incoming-event samples).
  */
@@ -53,8 +53,8 @@ export interface SequenceValidationResult {
  * anywhere.
  *
  * A deprecated form (3 to 5 variants, `until signal.<name>`,
- * `{{motion.<key>}}`) is accepted with warning W13 until 2027-01-19.
- * `{{motion.<key>}}` also yields W9 (only the server knows the Motion's
+ * `{{campaign.<key>}}`) is accepted with warning W13 until 2027-01-19.
+ * `{{campaign.<key>}}` also yields W9 (only the server knows the Campaign's
  * `settings.variables`).
  *
  * @example

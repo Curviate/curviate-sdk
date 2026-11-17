@@ -363,24 +363,24 @@ describe("constructEvent — post.* events narrow to their payloads", () => {
   });
 });
 
-// ─── motion source ───────────────────────────────────────────────────────────
+// ─── campaign source ───────────────────────────────────────────────────────────
 
-describe("constructEvent — motion events narrow to MotionPayload", () => {
-  it("motion.status_changed exposes motion_id and a null account_id", async () => {
+describe("constructEvent — campaign events narrow to CampaignPayload", () => {
+  it("campaign.status_changed exposes campaign_id and a null account_id", async () => {
     const body = JSON.stringify({
-      event: "motion.status_changed",
+      event: "campaign.status_changed",
       data: {
-        motion_id: "mot_1",
+        campaign_id: "mot_1",
         account_id: null,
-        event: "motion.status_changed",
+        event: "campaign.status_changed",
         occurred_at: "2026-10-12T07:00:10Z",
         from: "draft",
         to: "running",
       },
     });
     const e = await constructEvent(body, makeHeader(body, SECRET, nowSecs()), SECRET);
-    if (e.event !== "motion.status_changed") throw new Error("expected motion.status_changed");
-    expect(e.data.motion_id).toBe("mot_1");
+    if (e.event !== "campaign.status_changed") throw new Error("expected campaign.status_changed");
+    expect(e.data.campaign_id).toBe("mot_1");
     expect(e.data.account_id).toBeNull();
     expect(e.data["to"]).toBe("running");
   });

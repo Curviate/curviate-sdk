@@ -55,7 +55,7 @@
       "code": "R25",
       "message": "21 entries; the limit is 20",
       "pointer": "/steps/0/save",
-      "hint": "Put save and save_to_contact on an until event.<name> step, 1 to 20 entries each: save names are lowercase (not id), save_to_contact keys are custom fields or email.",
+      "hint": "Put save and save_to_lead on an until event.<name> step, 1 to 20 entries each: save names are lowercase (not id), save_to_lead keys are custom fields or email.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r25",
       "severity": "error"
     }

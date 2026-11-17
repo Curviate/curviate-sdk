@@ -36,8 +36,8 @@ export type SequenceEvent = "invite.accepted" | "message.replied" | "message.rea
 
 /** Single-key predicate members of the generated union (the standard-field and extra members excluded). */
 type GenSingle = GenIf extends infer P ? (P extends unknown ? (string extends keyof P ? never : keyof P extends "not" ? never : P) : never) : never;
-/** The standard Contact fields a predicate or a variable may name. */
-export type StandardField = Extract<keyof Extract<GenSingle, { "contact.first_name"?: unknown }>, `contact.${string}`> extends `contact.${infer F}`
+/** The standard Lead fields a predicate or a variable may name. */
+export type StandardField = Extract<keyof Extract<GenSingle, { "lead.first_name"?: unknown }>, `lead.${string}`> extends `lead.${infer F}`
   ? F
   : never;
 /** Predicates whose operand is `true` or `false`. */
@@ -48,19 +48,19 @@ export type Duration = `${number}${"m" | "h" | "d"}`;
 type Scalar = string | number | boolean;
 type Degree = 1 | 2 | 3;
 
-/** One operator on a Contact field. */
+/** One operator on a Lead field. */
 export type FieldOperand = { eq: Scalar } | { neq: Scalar } | { in: readonly Scalar[] } | { contains: string } | { exists: boolean };
 type BasePredicate =
   | { [K in BooleanPredicate]: { [P in K]: boolean } }[BooleanPredicate]
-  | { "contact.degree": { eq: Degree } | { in: readonly Degree[] } }
-  | { "contact.connections_gte": number }
-  | { "contact.posted_within": string }
-  | { "contact.tag": string }
-  | { [F in StandardField]: { [P in `contact.${F}`]: FieldOperand } }[StandardField]
-  | { [key: `contact.extra.${string}`]: FieldOperand }
+  | { "lead.degree": { eq: Degree } | { in: readonly Degree[] } }
+  | { "lead.connections_gte": number }
+  | { "lead.posted_within": string }
+  | { "lead.tag": string }
+  | { [F in StandardField]: { [P in `lead.${F}`]: FieldOperand } }[StandardField]
+  | { [key: `lead.extra.${string}`]: FieldOperand }
   /** An Enrollment value a `save` of this Sequence writes; numbers also take `gte` and `lte`. */
   | { [key: `enrollment.${string}`]: FieldOperand | { gte: number } | { lte: number } };
-/** An `if` predicate: one key, `contact.*`, `account.*`, `enrollment.*` or `message.seen`, optionally wrapped in one `not`. */
+/** An `if` predicate: one key, `lead.*`, `account.*`, `enrollment.*` or `message.seen`, optionally wrapped in one `not`. */
 export type Predicate = BasePredicate | { not: BasePredicate };
 
 /** `with` of each action, keys as the document writes them. */
@@ -111,7 +111,7 @@ type DoStepOf<A extends Action> = {
 export type SequenceStep =
   | { [A in Action]: DoStepOf<A> }[Action]
   | ({ id: string; wait: string; next?: string; note?: string } & Only<"wait">)
-  | ({ id: string; until: SequenceEvent; timeout: string; save?: Record<string, string>; save_to_contact?: Record<string, string>; then: string; else?: string; note?: string } & Only<"until">)
+  | ({ id: string; until: SequenceEvent; timeout: string; save?: Record<string, string>; save_to_lead?: Record<string, string>; then: string; else?: string; note?: string } & Only<"until">)
   | ({ id: string; if: Predicate; then: string; else?: string; note?: string } & Only<"if">)
   | ({ id: string; emit: string; next?: string; note?: string } & Only<"emit">)
   | ({ id: string; tag: string; event?: string; next?: string; note?: string } & Only<"tag">);
@@ -157,13 +157,13 @@ type ShortOk<S extends string> = S extends `${Lower}${infer R}`
   : false;
 type VarOk<I extends string> = I extends `${string}|${string}`
   ? false
-  : Trim<I> extends `contact.extra.${infer K}`
+  : Trim<I> extends `lead.extra.${infer K}`
     ? K extends "" ? false : true
-    : Trim<I> extends `contact.${infer F}`
+    : Trim<I> extends `lead.${infer F}`
       ? F extends StandardField ? true : false
       : Trim<I> extends `account.${"first_name" | "last_name" | "full_name"}`
         ? true
-        : Trim<I> extends `motion.${infer K}`
+        : Trim<I> extends `campaign.${infer K}`
           ? K extends "" ? false : true
           : Trim<I> extends `${string}.${string}`
             ? false
@@ -173,7 +173,7 @@ type BadVar<S extends string> = Inners<S> extends infer I ? (I extends string ? 
 type CheckVars<S> = IsLiteral<S> extends true
   ? [BadVar<S & string>] extends [never]
     ? unknown
-    : SequenceTypeError<`{{${BadVar<S & string>}}} is not a v1 variable; use {{first_name}}, {{my_first_name}}, a custom field {{opener}}, or contact.<field>, contact.extra.<key>, account.first_name|last_name|full_name, without a default`>
+    : SequenceTypeError<`{{${BadVar<S & string>}}} is not a v1 variable; use {{first_name}}, {{my_first_name}}, a custom field {{opener}}, or lead.<field>, lead.extra.<key>, account.first_name|last_name|full_name, without a default`>
   : unknown;
 /** G8: a literal fallback holds no variable. */
 type CheckFallback<S> = HasVar<S> extends true ? SequenceTypeError<"a fallback must not contain a variable"> : CheckVars<S>;
@@ -211,7 +211,7 @@ type CheckWith<A extends Action, F, W> = {
         : K extends TextFields
           ? (Get<F, "variants"> extends undefined ? unknown : W[K] extends null ? unknown : SequenceTypeError<"use either variants or the text in with, not both">) &
             CheckVars<W[K]> &
-            (A extends "post.comment" ? (IsLiteral<W[K]> extends true ? (W[K] extends `${string}{{${string}` ? unknown : SequenceTypeError<"a comment must use a contact variable">) : unknown) : unknown)
+            (A extends "post.comment" ? (IsLiteral<W[K]> extends true ? (W[K] extends `${string}{{${string}` ? unknown : SequenceTypeError<"a comment must use a lead variable">) : unknown) : unknown)
           : unknown;
 };
 

@@ -37,11 +37,32 @@ describe("request shapes", () => {
     expect(seen).toEqual({ method: "PUT", type: "image/png", bytes: [0x89, 0x50, 0x4e, 0x47] });
   });
 
-  it("contacts.list joins list_id and not_list_id arrays into comma lists", async () => {
+  it("leads.list joins list_id and not_list_id arrays into comma lists", async () => {
     let url: URL | undefined;
-    server.use(http.get(`${BASE}/v1/contacts`, ({ request }) => { url = new URL(request.url); return HttpResponse.json({ object: "contact_page", items: [], cursor: null, total: 0 }); }));
-    await client.contacts.list({ list_id: ["cl_1", "cl_2"], not_list_id: ["cl_3"], list_match: "all", has_email: true, include_total: true });
+    server.use(http.get(`${BASE}/v1/leads`, ({ request }) => { url = new URL(request.url); return HttpResponse.json({ object: "lead_page", items: [], cursor: null, total: 0 }); }));
+    await client.leads.list({ list_id: ["cl_1", "cl_2"], not_list_id: ["cl_3"], list_match: "all", has_email: true, include_total: true });
     expect(Object.fromEntries(url!.searchParams)).toEqual({ list_id: "cl_1,cl_2", not_list_id: "cl_3", list_match: "all", has_email: "true", include_total: "true" });
+  });
+
+  it("each renamed method makes one HTTP call, at the renamed path", async () => {
+    const calls: string[] = [];
+    const ok = ({ request }: { request: Request }) => { calls.push(`${request.method} ${new URL(request.url).pathname}`); return HttpResponse.json({}); };
+    server.use(
+      http.get(`${BASE}/v1/leads/imports`, ok), http.get(`${BASE}/v1/lead-lists/cl_1`, ok), http.get(`${BASE}/v1/campaigns/mot_1`, ok),
+      http.post(`${BASE}/v1/campaigns/mot_1/leads`, ok), http.post(`${BASE}/v1/campaigns/mot_1/leads/remove`, ok),
+      http.get(`${BASE}/v1/analytics/campaigns/mot_1`, ok), http.post(`${BASE}/v1/unibox/chats/acc_1/c_1/lead`, ok),
+    );
+    await client.leads.imports.list();
+    await client.leadLists.get("cl_1");
+    await client.campaigns.get("mot_1");
+    await client.campaigns.addLeads("mot_1", { lead_ids: ["con_1"] });
+    await client.campaigns.removeLeads("mot_1", { lead_ids: ["con_1"] });
+    await client.analytics.campaigns.get("mot_1");
+    await client.unibox.tagLead("acc_1", "c_1");
+    expect(calls).toEqual([
+      "GET /v1/leads/imports", "GET /v1/lead-lists/cl_1", "GET /v1/campaigns/mot_1", "POST /v1/campaigns/mot_1/leads",
+      "POST /v1/campaigns/mot_1/leads/remove", "GET /v1/analytics/campaigns/mot_1", "POST /v1/unibox/chats/acc_1/c_1/lead",
+    ]);
   });
 
   it("network.resync() with no argument still sends a JSON body (Resync all)", async () => {
@@ -78,7 +99,7 @@ describe("served error details", () => {
         ),
       ),
     );
-    const err = await client.doNotContact.add({ contact_id: "con_1" }).catch((e: unknown) => e);
+    const err = await client.doNotContact.add({ lead_id: "con_1" }).catch((e: unknown) => e);
     expect(isCurviateError(err) && err.details).toEqual({ account_id: "acc_9" });
   });
 });

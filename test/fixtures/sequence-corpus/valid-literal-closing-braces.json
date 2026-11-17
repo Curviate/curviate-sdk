@@ -9,7 +9,7 @@
         "id": "m",
         "do": "message.send",
         "with": {
-          "text": "set x }} y and {{{contact.first_name}}}",
+          "text": "set x }} y and {{{lead.first_name}}}",
           "fallback": "Hi"
         },
         "next": "end"

@@ -11,7 +11,7 @@
         "id": "inv",
         "do": "invite.send",
         "with": {
-          "note": "Hi {{contact.first_name}}"
+          "note": "Hi {{lead.first_name}}"
         },
         "next": "end"
       }

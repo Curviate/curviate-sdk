@@ -1369,7 +1369,7 @@ export interface paths {
         head?: never;
         /**
          * Set full-inbox sync for an account
-         * @description Turns copying an account's whole inbox into the Unibox on or off. Only the person who connected the account can do this. On starts a paced listing that takes hours. Off hides the account's non-Motion chats at once and deletes them within 15 minutes.
+         * @description Turns copying an account's whole inbox into the Unibox on or off. Only the person who connected the account can do this. On starts a paced listing that takes hours. Off hides the account's non-Campaign chats at once and deletes them within 15 minutes.
          */
         patch: operations["patchV1UniboxAccountsAccountId"];
         trace?: never;
@@ -1383,7 +1383,7 @@ export interface paths {
         };
         /**
          * List Unibox chats
-         * @description Lists the stored chats you may read on your team's accounts, newest first; no LinkedIn call, no limit. Without full-inbox sync an account shows only Motion chats. A disconnected account's chats stay, read-only. Messages: GET /v1/{account_id}/chats/{chat_id}/messages.
+         * @description Lists the stored chats you may read on your team's accounts, newest first; no LinkedIn call, no limit. Without full-inbox sync an account shows only Campaign chats. A disconnected account's chats stay, read-only. Messages: GET /v1/{account_id}/chats/{chat_id}/messages.
          */
         get: operations["getV1UniboxChats"];
         put?: never;
@@ -1445,7 +1445,7 @@ export interface paths {
         put?: never;
         /**
          * Refresh Unibox chats
-         * @description Re-reads each account's newest conversations past any cache (each inbox's top, then unread chats below it). Accounts with full-inbox sync, a Motion chat or Motion outreach; without sync only Motion chats are kept. Runs within minutes, once per account per 2 minutes. Needs Automate.
+         * @description Re-reads each account's newest conversations past any cache (each inbox's top, then unread chats below it). Accounts with full-inbox sync, a Campaign chat or Campaign outreach; without sync only Campaign chats are kept. Runs within minutes, once per account per 2 minutes. Needs Automate.
          */
         post: operations["postV1UniboxRefresh"];
         delete?: never;
@@ -1454,7 +1454,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/unibox/chats/{account_id}/{chat_id}/contact": {
+    "/v1/unibox/chats/{account_id}/{chat_id}/lead": {
         parameters: {
             query?: never;
             header?: never;
@@ -1464,10 +1464,10 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Save a chat's person as a Contact
-         * @description Saves the other person of a one-to-one chat as a Contact (or finds the one you hold) and adds Tags, never removing any. Name and headline come from LinkedIn and keep updating. Reads the chat once only when Curviate holds nothing about the person yet. Needs Automate.
+         * Save a chat's person as a Lead
+         * @description Saves the other person of a one-to-one chat as a Lead (or finds the one you hold) and adds Tags, never removing any. Name and headline come from LinkedIn and keep updating. Reads the chat once only when Curviate holds nothing about the person yet. Needs Automate.
          */
-        post: operations["postV1UniboxChatsAccountIdChatIdContact"];
+        post: operations["postV1UniboxChatsAccountIdChatIdLead"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1484,8 +1484,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Add a chat's person to a Motion
-         * @description Saves the other person of a one-to-one chat as a Contact, then enrolls them in the Motion through this chat's account. A direct add: the rule that skips people you already chat with does not apply; every other rule does. Needs Automate.
+         * Add a chat's person to a Campaign
+         * @description Saves the other person of a one-to-one chat as a Lead, then enrolls them in the Campaign through this chat's account. A direct add: the rule that skips people you already chat with does not apply; every other rule does. Needs Automate.
          */
         post: operations["postV1UniboxChatsAccountIdChatIdEnrollments"];
         delete?: never;
@@ -1919,7 +1919,7 @@ export interface paths {
         };
         /**
          * List your notifications
-         * @description What Curviate needs you to know: an account needs reconnecting, a Motion paused, an import finished. Each person has their own list and read state, per team. Check unread at session start. Not an account's LinkedIn notifications (/v1/{account_id}/notifications), and not webhook events.
+         * @description What Curviate needs you to know: an account needs reconnecting, a Campaign paused, an import finished. Each person has their own list and read state, per team. Check unread at session start. Not an account's LinkedIn notifications (/v1/{account_id}/notifications), and not webhook events.
          */
         get: operations["getV1Notifications"];
         put?: never;
@@ -2685,7 +2685,7 @@ export interface paths {
         head?: never;
         /**
          * Update an account's metadata or connection location
-         * @description Updates metadata, external_id, whether its Connections are saved as Contacts, the connection location (country) or your own proxy (null plus a country returns to the Curviate proxy). Returns the account; connection_location is re-read after a location change.
+         * @description Updates metadata, external_id, whether its Connections are saved as Leads, the connection location (country) or your own proxy (null plus a country returns to the Curviate proxy). Returns the account; connection_location is re-read after a location change.
          */
         patch: operations["patchV1AccountsAccountId"];
         trace?: never;
@@ -2720,7 +2720,7 @@ export interface paths {
         get?: never;
         /**
          * Turn team access on or off for an account
-         * @description team_access: false opts the account out: nobody else can operate it, it leaves every Motion that held it, and its queued enrichment visits are dropped. true shares it again. Only the person who connected the account can do this, whatever its seat or the team's payment state.
+         * @description team_access: false opts the account out: nobody else can operate it, it leaves every Campaign that held it, and its queued enrichment visits are dropped. true shares it again. Only the person who connected the account can do this, whatever its seat or the team's payment state.
          */
         put: operations["putV1AccountsAccountIdTeamAccess"];
         post?: never;
@@ -2759,7 +2759,7 @@ export interface paths {
         };
         /**
          * Get an account's overview
-         * @description One account at a glance, no LinkedIn call: profile, its daily numbers, limits, latest activity (its last 10 actions within the last 12 months), and its results in the window (rates, daily, its Motions) with flags. include, fields, sort, limit and compare trim it as on GET /v1/analytics/motions.
+         * @description One account at a glance, no LinkedIn call: profile, its daily numbers, limits, latest activity (its last 10 actions within the last 12 months), and its results in the window (rates, daily, its Campaigns) with flags. include, fields, sort, limit and compare trim it as on GET /v1/analytics/campaigns.
          */
         get: operations["getV1AccountsAccountIdOverview"];
         put?: never;
@@ -3043,7 +3043,7 @@ export interface paths {
         };
         /**
          * List webhook event types
-         * @description Returns the complete canonical event catalogue (37 events) grouped by source: messaging (7), user (2), account_status (12), post (2), motion (11), plus 3 recruiter/sales_nav events. A local catalogue read: no platform call is made.
+         * @description Returns the complete canonical event catalogue (37 events) grouped by source: messaging (7), user (2), account_status (12), post (2), campaign (11), plus 3 recruiter/sales_nav events. A local catalogue read: no platform call is made.
          */
         get: operations["getV1WebhooksEvents"];
         put?: never;
@@ -3063,7 +3063,7 @@ export interface paths {
         };
         /**
          * List body template variables
-         * @description Returns the variables a body template of this source may use, each with its scope, type and an example from the synthetic sample. On the motion source it also lists every Enrollment value your Team's current Sequences save ({{enrollment.<key>}}), with saved_by naming the Motion and step.
+         * @description Returns the variables a body template of this source may use, each with its scope, type and an example from the synthetic sample. On the campaign source it also lists every Enrollment value your Team's current Sequences save ({{enrollment.<key>}}), with saved_by naming the Campaign and step.
          */
         get: operations["getV1WebhooksVariables"];
         put?: never;
@@ -3303,7 +3303,7 @@ export interface paths {
         };
         /**
          * List your teams
-         * @description The teams you are a member of, with your role in each. is_current marks the team this call acts in: a Team key's own team, or, with an All-Teams key, your default team (this call needs no team header; the calls that act in one team take X-Curviate-Team). include=counts adds tier, trial, accounts and active_motions, each what you would read in that team, and seats where you are an Owner: on every team for a dashboard session or an All-Teams credential, on its own team only for a Team key or a one-team token.
+         * @description The teams you are a member of, with your role in each. is_current marks the team this call acts in: a Team key's own team, or, with an All-Teams key, your default team (this call needs no team header; the calls that act in one team take X-Curviate-Team). include=counts adds tier, trial, accounts and active_campaigns, each what you would read in that team, and seats where you are an Owner: on every team for a dashboard session or an All-Teams credential, on its own team only for a Team key or a one-team token.
          */
         get: operations["getV1Teams"];
         put?: never;
@@ -3489,7 +3489,7 @@ export interface paths {
         put?: never;
         /**
          * Create an incoming event
-         * @description A private URL any tool can post JSON to. Curviate finds the Contact by the match paths and moves the Enrollments waiting for the event (until event.<name>), keeping no part of the post. It starts switched off: the first post is the sample (its paths and types only); then switch it on. The url is in full in this response only: treat it like a password. Needs Automate.
+         * @description A private URL any tool can post JSON to. Curviate finds the Lead by the match paths and moves the Enrollments waiting for the event (until event.<name>), keeping no part of the post. It starts switched off: the first post is the sample (its paths and types only); then switch it on. The url is in full in this response only: treat it like a password. Needs Automate.
          */
         post: operations["postV1IncomingEvents"];
         delete?: never;
@@ -3529,7 +3529,7 @@ export interface paths {
         put?: never;
         /**
          * Capture a new sample
-         * @description The next post replaces the sample (paths and types only) and still moves Motions when switched on. Only the creator. Needs Automate.
+         * @description The next post replaces the sample (paths and types only) and still moves Campaigns when switched on. Only the creator. Needs Automate.
          */
         post: operations["postV1IncomingEventsIdCapture"];
         delete?: never;
@@ -3567,7 +3567,7 @@ export interface paths {
         };
         /**
          * Get an incoming event
-         * @description One incoming event, its url masked, with its sample shape, arrivals of the last 7 days and the Motion steps waiting for it.
+         * @description One incoming event, its url masked, with its sample shape, arrivals of the last 7 days and the Campaign steps waiting for it.
          */
         get: operations["getV1IncomingEventsId"];
         put?: never;
@@ -3718,7 +3718,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/contacts": {
+    "/v1/leads": {
         parameters: {
             query?: never;
             header?: never;
@@ -3726,23 +3726,23 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List contacts
-         * @description Lists your team's Contacts. Filters combine with AND; each parameter at most once. list_id takes several lists: Contacts in any of them, or in all with list_match=all; not_list_id leaves out Contacts in any of those. include_total=true adds total, the whole match count: with limit=1 it is the count before a bulk call or a new list. Cursor-paginated.
+         * List leads
+         * @description Lists your team's Leads. Filters combine with AND; each parameter at most once. list_id takes several lists: Leads in any of them, or in all with list_match=all; not_list_id leaves out Leads in any of those. include_total=true adds total, the whole match count: with limit=1 it is the count before a bulk call or a new list. Cursor-paginated.
          */
-        get: operations["getV1Contacts"];
+        get: operations["getV1Leads"];
         put?: never;
         /**
-         * Create or update a contact
-         * @description Upserts the Contact for one person, keyed on LinkedIn identity: any spelling of the same profile URL updates the same Contact. An empty or null value never erases a stored one; tags and list_id/list_name only add. 201 when created, 200 otherwise, with outcome. Needs Automate.
+         * Create or update a lead
+         * @description Upserts the Lead for one person, keyed on LinkedIn identity: any spelling of the same profile URL updates the same Lead. An empty or null value never erases a stored one; tags and list_id/list_name only add. 201 when created, 200 otherwise, with outcome. Needs Automate.
          */
-        post: operations["postV1Contacts"];
+        post: operations["postV1Leads"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/contacts/export": {
+    "/v1/leads/export": {
         parameters: {
             query?: never;
             header?: never;
@@ -3750,10 +3750,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Export contacts
-         * @description Streams every Contact matching the listing's filters (list_id, list_match, not_list_id, has_email and the rest) in one download, as CSV, JSON or NDJSON (default). No cursor. fields picks and orders the columns. A CSV export re-imports unchanged: a cell starting with =, +, -, @, a tab, CR or ' gets a leading ' (formula guard), removed on import.
+         * Export leads
+         * @description Streams every Lead matching the listing's filters (list_id, list_match, not_list_id, has_email and the rest) in one download, as CSV, JSON or NDJSON (default). No cursor. fields picks and orders the columns. A CSV export re-imports unchanged: a cell starting with =, +, -, @, a tab, CR or ' gets a leading ' (formula guard), removed on import.
          */
-        get: operations["getV1ContactsExport"];
+        get: operations["getV1LeadsExport"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3762,7 +3762,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/contacts/update": {
+    "/v1/leads/update": {
         parameters: {
             query?: never;
             header?: never;
@@ -3772,17 +3772,17 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Tag or move contacts in bulk
-         * @description Adds and removes Tags and list memberships on up to 1000 Contacts by contact_ids, or on every Contact a filter matches (up to 10000). Send exactly one of contact_ids or filter; filter takes the listing's filters as JSON, comma lists as arrays. A filter over the cap is refused and nothing changes. Adding what is present or removing what is absent is a no-op. A new Tag name or add_list_name creates it. Needs Automate.
+         * Tag or move leads in bulk
+         * @description Adds and removes Tags and list memberships on up to 1000 Leads by lead_ids, or on every Lead a filter matches (up to 10000). Send exactly one of lead_ids or filter; filter takes the listing's filters as JSON, comma lists as arrays. A filter over the cap is refused and nothing changes. Adding what is present or removing what is absent is a no-op. A new Tag name or add_list_name creates it. Needs Automate.
          */
-        post: operations["postV1ContactsUpdate"];
+        post: operations["postV1LeadsUpdate"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/contacts/delete": {
+    "/v1/leads/delete": {
         parameters: {
             query?: never;
             header?: never;
@@ -3792,17 +3792,17 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Delete contacts in bulk
-         * @description Deletes up to 1000 Contacts by contact_ids, or every Contact a filter matches (up to 10000), with their Tags and list memberships. Send exactly one of contact_ids or filter. Owner and Manager only.
+         * Delete leads in bulk
+         * @description Deletes up to 1000 Leads by lead_ids, or every Lead a filter matches (up to 10000), with their Tags and list memberships. Send exactly one of lead_ids or filter. Owner and Manager only.
          */
-        post: operations["postV1ContactsDelete"];
+        post: operations["postV1LeadsDelete"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/contacts/enrich": {
+    "/v1/leads/enrich": {
         parameters: {
             query?: never;
             header?: never;
@@ -3812,17 +3812,17 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Enrich contacts
-         * @description Fills up to 1000 Contacts from LinkedIn data. Stored data is used first, free; the rest is queued as a paced live profile visit from account_id (profile_views budget). A live visit is a real profile view the person may see; cache_only never visits. Needs Automate.
+         * Enrich leads
+         * @description Fills up to 1000 Leads from LinkedIn data. Stored data is used first, free; the rest is queued as a paced live profile visit from account_id (profile_views budget). A live visit is a real profile view the person may see; cache_only never visits. Needs Automate.
          */
-        post: operations["postV1ContactsEnrich"];
+        post: operations["postV1LeadsEnrich"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/contacts/imports": {
+    "/v1/leads/imports": {
         parameters: {
             query?: never;
             header?: never;
@@ -3830,23 +3830,23 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List contact imports
+         * List lead imports
          * @description Lists your team's imports, newest first. Imports and their reports are kept 30 days after they finish.
          */
-        get: operations["getV1ContactsImports"];
+        get: operations["getV1LeadsImports"];
         put?: never;
         /**
-         * Import contacts
-         * @description Imports Contacts from rows or CSV text, keyed on LinkedIn identity as POST /v1/contacts; re-importing merges. Up to 10000 rows. 500 rows or fewer run in the request (201, per-row report inline); more run in the background (202). A bad value skips its row, a bad structure refuses all. apply_lists: true adds each row's Contact to the Contact lists named in its lists (created by name), so an export re-imports with its lists; the Team's list limit skips the row (list_limit_reached). Needs Automate.
+         * Import leads
+         * @description Imports Leads from rows or CSV text, keyed on LinkedIn identity as POST /v1/leads; re-importing merges. Up to 10000 rows. 500 rows or fewer run in the request (201, per-row report inline); more run in the background (202). A bad value skips its row, a bad structure refuses all. apply_lists: true adds each row's Lead to the Lead lists named in its lists (created by name), so an export re-imports with its lists; the Team's list limit skips the row (list_limit_reached). Needs Automate.
          */
-        post: operations["postV1ContactsImports"];
+        post: operations["postV1LeadsImports"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/contacts/imports/{id}": {
+    "/v1/leads/imports/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -3854,10 +3854,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Retrieve a contact import
-         * @description Returns one import: status, counts and, once failed, why. The per-row report is GET /v1/contacts/imports/{id}/rows.
+         * Retrieve a lead import
+         * @description Returns one import: status, counts and, once failed, why. The per-row report is GET /v1/leads/imports/{id}/rows.
          */
-        get: operations["getV1ContactsImportsId"];
+        get: operations["getV1LeadsImportsId"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3866,7 +3866,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/contacts/imports/{id}/rows": {
+    "/v1/leads/imports/{id}/rows": {
         parameters: {
             query?: never;
             header?: never;
@@ -3874,10 +3874,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List a contact import's rows
+         * List a lead import's rows
          * @description The per-row report in row order. outcome keeps only the listed outcomes (comma list), e.g. skipped to see what to fix. Reports hold no field values.
          */
-        get: operations["getV1ContactsImportsIdRows"];
+        get: operations["getV1LeadsImportsIdRows"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3886,7 +3886,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/contacts/{id}": {
+    "/v1/leads/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -3894,24 +3894,24 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Retrieve a contact
-         * @description Returns one Contact.
+         * Retrieve a lead
+         * @description Returns one Lead.
          */
-        get: operations["getV1ContactsId"];
+        get: operations["getV1LeadsId"];
         put?: never;
         post?: never;
         /**
-         * Delete a contact
-         * @description Deletes the Contact, its Tags and list memberships. This deletes your record only; it is not erasure of the person elsewhere.
+         * Delete a lead
+         * @description Deletes the Lead, its Tags and list memberships. This deletes your record only; it is not erasure of the person elsewhere.
          */
-        delete: operations["deleteV1ContactsId"];
+        delete: operations["deleteV1LeadsId"];
         options?: never;
         head?: never;
         /**
-         * Update a contact
+         * Update a lead
          * @description Partial update: an omitted field is left as is, null clears it (Curviate may fill it again from LinkedIn). In extra, null removes that key. linkedin_url cannot change. Needs Automate.
          */
-        patch: operations["patchV1ContactsId"];
+        patch: operations["patchV1LeadsId"];
         trace?: never;
     };
     "/v1/tags": {
@@ -3923,7 +3923,7 @@ export interface paths {
         };
         /**
          * List tags
-         * @description Lists your team's Tags by name, each with its Contact count. Tags are created by using a new name.
+         * @description Lists your team's Tags by name, each with its Lead count. Tags are created by using a new name.
          */
         get: operations["getV1Tags"];
         put?: never;
@@ -3946,19 +3946,19 @@ export interface paths {
         post?: never;
         /**
          * Delete a tag
-         * @description Deletes the Tag and removes it from every Contact.
+         * @description Deletes the Tag and removes it from every Lead.
          */
         delete: operations["deleteV1TagsId"];
         options?: never;
         head?: never;
         /**
          * Rename a tag
-         * @description Renames the Tag on every Contact. Names are unique in any casing. Needs Automate.
+         * @description Renames the Tag on every Lead. Names are unique in any casing. Needs Automate.
          */
         patch: operations["patchV1TagsId"];
         trace?: never;
     };
-    "/v1/contact-lists": {
+    "/v1/lead-lists": {
         parameters: {
             query?: never;
             header?: never;
@@ -3966,23 +3966,23 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List contact lists
-         * @description Lists your team's Contact lists by name, each with its Contact count.
+         * List lead lists
+         * @description Lists your team's Lead lists by name, each with its Lead count.
          */
-        get: operations["getV1ContactLists"];
+        get: operations["getV1LeadLists"];
         put?: never;
         /**
-         * Create a contact list
-         * @description Creates a static Contact list. With from, a filter as in POST /v1/contacts/update, it starts with every Contact the filter matches now (up to 10000): from.list_id of two lists combines them, a Contact in both counted once; list_match all keeps those in both; not_list_id leaves some out. The lists named in from are not changed. Add Contacts later with POST /v1/contacts/update or list_name on create and import. Needs Automate.
+         * Create a lead list
+         * @description Creates a static Lead list. With from, a filter as in POST /v1/leads/update, it starts with every Lead the filter matches now (up to 10000): from.list_id of two lists combines them, a Lead in both counted once; list_match all keeps those in both; not_list_id leaves some out. The lists named in from are not changed. Add Leads later with POST /v1/leads/update or list_name on create and import. Needs Automate.
          */
-        post: operations["postV1ContactLists"];
+        post: operations["postV1LeadLists"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/contact-lists/{id}": {
+    "/v1/lead-lists/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -3990,24 +3990,24 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Retrieve a contact list
-         * @description Returns one Contact list. Its Contacts: GET /v1/contacts?list_id= with this id.
+         * Retrieve a lead list
+         * @description Returns one Lead list. Its Leads: GET /v1/leads?list_id= with this id.
          */
-        get: operations["getV1ContactListsId"];
+        get: operations["getV1LeadListsId"];
         put?: never;
         post?: never;
         /**
-         * Delete a contact list
-         * @description Deletes the list and its memberships. The Contacts are kept.
+         * Delete a lead list
+         * @description Deletes the list and its memberships. The Leads are kept.
          */
-        delete: operations["deleteV1ContactListsId"];
+        delete: operations["deleteV1LeadListsId"];
         options?: never;
         head?: never;
         /**
-         * Update a contact list
+         * Update a lead list
          * @description Renames the list or changes its description. Needs Automate.
          */
-        patch: operations["patchV1ContactListsId"];
+        patch: operations["patchV1LeadListsId"];
         trace?: never;
     };
     "/v1/do-not-contact": {
@@ -4019,13 +4019,13 @@ export interface paths {
         };
         /**
          * List the do-not-contact list
-         * @description Lists your team's do-not-contact list, newest first. No Motion contacts a person on it, and writes toward them are refused; a reply in a conversation they wrote in stays allowed. q matches the Contact's name. An entry whose Contact was deleted reads contact null and still applies. Cursor-paginated.
+         * @description Lists your team's do-not-contact list, newest first. No Campaign reaches a person on it, and writes toward them are refused; a reply in a conversation they wrote in stays allowed. q matches the Lead's name. An entry whose Lead was deleted reads lead null and still applies. Cursor-paginated.
          */
         get: operations["getV1DoNotContact"];
         put?: never;
         /**
          * Add a person to the do-not-contact list
-         * @description Adds one person by contact_id or linkedin_url; a URL of someone who is not a Contact yet creates the Contact first, from stored data only. 201 when added; a person already on the list answers 200 with their entry. Any team member may add. For many people, POST /v1/do-not-contact/import takes a file. Needs Automate.
+         * @description Adds one person by lead_id or linkedin_url; a URL of someone who is not a Lead yet creates the Lead first, from stored data only. 201 when added; a person already on the list answers 200 with their entry. Any team member may add. For many people, POST /v1/do-not-contact/import takes a file. Needs Automate.
          */
         post: operations["postV1DoNotContact"];
         delete?: never;
@@ -4043,7 +4043,7 @@ export interface paths {
         };
         /**
          * Export the do-not-contact list
-         * @description Streams your team's whole do-not-contact list in one download, oldest first, as CSV, JSON or NDJSON (default). No cursor. Each entry has linkedin_url, reason, added_by, via, created_at, id; linkedin_url is empty once the person's Contact was deleted. The file re-imports as it is (POST /v1/do-not-contact/import). Owner and Manager only.
+         * @description Streams your team's whole do-not-contact list in one download, oldest first, as CSV, JSON or NDJSON (default). No cursor. Each entry has linkedin_url, reason, added_by, via, created_at, id; linkedin_url is empty once the person's Lead was deleted. The file re-imports as it is (POST /v1/do-not-contact/import). Owner and Manager only.
          */
         get: operations["getV1DoNotContactExport"];
         put?: never;
@@ -4065,7 +4065,7 @@ export interface paths {
         put?: never;
         /**
          * Import a do-not-contact file
-         * @description Adds the people of a file to the do-not-contact list: rows of linkedin_url and an optional reason, as JSON rows or CSV text, up to 10000 rows. Each row works as POST /v1/do-not-contact: a URL of someone who is not a Contact yet creates the Contact from stored data, and a person already on the list is reported unchanged (their entry and reason stay). The answer is the per-row report. A bad URL or reason skips its row and the others apply; a bad structure refuses the file. A do-not-contact export re-imports as it is. Any team member may import. Needs Automate.
+         * @description Adds the people of a file to the do-not-contact list: rows of linkedin_url and an optional reason, as JSON rows or CSV text, up to 10000 rows. Each row works as POST /v1/do-not-contact: a URL of someone who is not a Lead yet creates the Lead from stored data, and a person already on the list is reported unchanged (their entry and reason stay). The answer is the per-row report. A bad URL or reason skips its row and the others apply; a bad structure refuses the file. A do-not-contact export re-imports as it is. Any team member may import. Needs Automate.
          */
         post: operations["postV1DoNotContactImport"];
         delete?: never;
@@ -4090,7 +4090,7 @@ export interface paths {
         post?: never;
         /**
          * Remove a person from the do-not-contact list
-         * @description Removes the entry: Motions and writes may reach the person again. Owner and Manager only.
+         * @description Removes the entry: Campaigns and writes may reach the person again. Owner and Manager only.
          */
         delete: operations["deleteV1DoNotContactId"];
         options?: never;
@@ -4102,7 +4102,7 @@ export interface paths {
         patch: operations["patchV1DoNotContactId"];
         trace?: never;
     };
-    "/v1/motions/voice-clips": {
+    "/v1/campaigns/voice-clips": {
         parameters: {
             query?: never;
             header?: never;
@@ -4115,14 +4115,14 @@ export interface paths {
          * Upload a voice clip
          * @description Uploads one audio file (MP3, WAV, M4A, WebM or Ogg) as the raw request body and returns a clip id for a voice note step. Content-Length is required; the filename query names the file. The audio is converted once and the original is discarded. 1 to 120 seconds, up to 20 MiB, 100 uploads per team per 24 hours. A retry stores a second clip. A clip no Sequence uses is deleted 30 days after its upload. Needs Automate.
          */
-        post: operations["postV1MotionsVoiceClips"];
+        post: operations["postV1CampaignsVoiceClips"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/motions/voice-clips/{id}": {
+    "/v1/campaigns/voice-clips/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -4133,7 +4133,7 @@ export interface paths {
          * Retrieve a voice clip
          * @description Returns the clip's id, duration, size, file name and upload time. There is no download link.
          */
-        get: operations["getV1MotionsVoiceClipsId"];
+        get: operations["getV1CampaignsVoiceClipsId"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4142,7 +4142,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/motions": {
+    "/v1/campaigns": {
         parameters: {
             query?: never;
             header?: never;
@@ -4150,23 +4150,23 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List motions
-         * @description Lists your team's Motions, most recently updated first (sort=activity: latest step record first), without their Sequence documents. Filter by one or several sending accounts. Each item carries last_activity_at. Archived Motions are left out unless status names them. Cursor-paginated.
+         * List campaigns
+         * @description Lists your team's Campaigns, most recently updated first (sort=activity: latest step record first), without their Sequence documents. Filter by one or several sending accounts. Each item carries last_activity_at. Archived Campaigns are left out unless status names them. Cursor-paginated.
          */
-        get: operations["getV1Motions"];
+        get: operations["getV1Campaigns"];
         put?: never;
         /**
-         * Create a motion
-         * @description Creates a Motion as a draft: nothing is sent until you start it. Only name is required; the rest has defaults and can be set later. A sequence, when given, is validated whole against the Sequence document schema (GET /schemas/sequence/v1.json) and refused with every error at once. Needs Automate.
+         * Create a campaign
+         * @description Creates a Campaign as a draft: nothing is sent until you start it. Only name is required; the rest has defaults and can be set later. A sequence, when given, is validated whole against the Sequence document schema (GET /schemas/sequence/v1.json) and refused with every error at once. Needs Automate.
          */
-        post: operations["postV1Motions"];
+        post: operations["postV1Campaigns"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/motions/{id}": {
+    "/v1/campaigns/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -4174,27 +4174,27 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Retrieve a motion
-         * @description Returns one Motion with its current Sequence and lint warnings. The writable fields can be sent back to create or update a Motion.
+         * Retrieve a campaign
+         * @description Returns one Campaign with its current Sequence and lint warnings. The writable fields can be sent back to create or update a Campaign.
          */
-        get: operations["getV1MotionsId"];
+        get: operations["getV1CampaignsId"];
         put?: never;
         post?: never;
         /**
-         * Delete a draft motion
-         * @description Deletes a draft Motion with its Sequence. A Motion that was started cannot be deleted: archive it instead.
+         * Delete a draft campaign
+         * @description Deletes a draft Campaign with its Sequence. A Campaign that was started cannot be deleted: archive it instead.
          */
-        delete: operations["deleteV1MotionsId"];
+        delete: operations["deleteV1CampaignsId"];
         options?: never;
         head?: never;
         /**
-         * Update a motion
+         * Update a campaign
          * @description Partial update in every status but archived. schedule and settings merge key by key; lists, accounts, where and sequence are replaced whole. After start, a sequence edit to text, waits or notes applies in place (sequence_change copy); any other is a new Sequence version (structural). Needs Automate.
          */
-        patch: operations["patchV1MotionsId"];
+        patch: operations["patchV1CampaignsId"];
         trace?: never;
     };
-    "/v1/motions/{id}/start": {
+    "/v1/campaigns/{id}/start": {
         parameters: {
             query?: never;
             header?: never;
@@ -4204,17 +4204,17 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Start a motion
-         * @description Starts a draft: active, or scheduled while schedule.start_at is in the future. Needs a Contact list, a sending account that is active with a seat and a Sequence; every gap comes back at once in errors[]. Nothing reaches LinkedIn before this call. Needs Automate.
+         * Start a campaign
+         * @description Starts a draft: active, or scheduled while schedule.start_at is in the future. Needs a Lead list, a sending account that is active with a seat and a Sequence; every gap comes back at once in errors[]. Nothing reaches LinkedIn before this call. Needs Automate.
          */
-        post: operations["postV1MotionsIdStart"];
+        post: operations["postV1CampaignsIdStart"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/motions/{id}/pause": {
+    "/v1/campaigns/{id}/pause": {
         parameters: {
             query?: never;
             header?: never;
@@ -4224,17 +4224,17 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Pause a motion
-         * @description Pauses a scheduled or active Motion (pause_reason user). No Step runs while it is paused.
+         * Pause a campaign
+         * @description Pauses a scheduled or active Campaign (pause_reason user). No Step runs while it is paused.
          */
-        post: operations["postV1MotionsIdPause"];
+        post: operations["postV1CampaignsIdPause"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/motions/{id}/resume": {
+    "/v1/campaigns/{id}/resume": {
         parameters: {
             query?: never;
             header?: never;
@@ -4244,17 +4244,17 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Resume a motion
-         * @description Resumes a paused Motion: active, or scheduled before schedule.start_at. Checks what start checks; every gap comes back at once in errors[]. Needs Automate.
+         * Resume a campaign
+         * @description Resumes a paused Campaign: active, or scheduled before schedule.start_at. Checks what start checks; every gap comes back at once in errors[]. Needs Automate.
          */
-        post: operations["postV1MotionsIdResume"];
+        post: operations["postV1CampaignsIdResume"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/motions/{id}/archive": {
+    "/v1/campaigns/{id}/archive": {
         parameters: {
             query?: never;
             header?: never;
@@ -4264,17 +4264,17 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Archive a motion
-         * @description Archives the Motion. This cannot be undone: it becomes read-only and its open Enrollments end. Its Sequence versions and history are kept.
+         * Archive a campaign
+         * @description Archives the Campaign. This cannot be undone: it becomes read-only and its open Enrollments end. Its Sequence versions and history are kept.
          */
-        post: operations["postV1MotionsIdArchive"];
+        post: operations["postV1CampaignsIdArchive"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/motions/{id}/sequence": {
+    "/v1/campaigns/{id}/sequence": {
         parameters: {
             query?: never;
             header?: never;
@@ -4283,9 +4283,9 @@ export interface paths {
         };
         /**
          * Retrieve a sequence version
-         * @description Returns one version of the Motion's Sequence document: the current one, or the one version names. Earlier versions are kept while the Motion exists.
+         * @description Returns one version of the Campaign's Sequence document: the current one, or the one version names. Earlier versions are kept while the Campaign exists.
          */
-        get: operations["getV1MotionsIdSequence"];
+        get: operations["getV1CampaignsIdSequence"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4294,7 +4294,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/motions/{id}/preview": {
+    "/v1/campaigns/{id}/preview": {
         parameters: {
             query?: never;
             header?: never;
@@ -4302,10 +4302,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Preview a motion
-         * @description Renders the Sequence for sample Contacts and projects how long the list takes, in any status. A read: nothing is sent, saved or spent; what only LinkedIn can answer is unknown. The projection is an estimate.
+         * Preview a campaign
+         * @description Renders the Sequence for sample Leads and projects how long the list takes, in any status. A read: nothing is sent, saved or spent; what only LinkedIn can answer is unknown. The projection is an estimate.
          */
-        get: operations["getV1MotionsIdPreview"];
+        get: operations["getV1CampaignsIdPreview"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4314,7 +4314,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/motions/{id}/contacts": {
+    "/v1/campaigns/{id}/leads": {
         parameters: {
             query?: never;
             header?: never;
@@ -4324,17 +4324,17 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Add contacts to a motion
-         * @description Enrolls up to 1000 Contacts directly, without a Contact list. Exclusions still apply; the answer says per Contact what happened, and a repeat answers already_enrolled. Works in every status but archived; adding to a completed Motion reactivates it. Needs Automate.
+         * Add leads to a campaign
+         * @description Enrolls up to 1000 Leads directly, without a Lead list. Exclusions still apply; the answer says per Lead what happened, and a repeat answers already_enrolled. Works in every status but archived; adding to a completed Campaign reactivates it. Needs Automate.
          */
-        post: operations["postV1MotionsIdContacts"];
+        post: operations["postV1CampaignsIdLeads"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/motions/{id}/contacts/remove": {
+    "/v1/campaigns/{id}/leads/remove": {
         parameters: {
             query?: never;
             header?: never;
@@ -4344,10 +4344,10 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Remove contacts from a motion
-         * @description Ends the queued and running Enrollments of up to 1000 Contacts in this Motion (finish_reason removed). No further Step runs for them. The Contacts themselves are kept.
+         * Remove leads from a campaign
+         * @description Ends the queued and running Enrollments of up to 1000 Leads in this Campaign (finish_reason removed). No further Step runs for them. The Leads themselves are kept.
          */
-        post: operations["postV1MotionsIdContactsRemove"];
+        post: operations["postV1CampaignsIdLeadsRemove"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4363,7 +4363,7 @@ export interface paths {
         };
         /**
          * List enrollments
-         * @description Lists your team's Enrollments, newest first. Filter by Motion, Contact, one or several accounts, state or the Step they are at. Cursor-paginated. status=pending, the retired spelling of queued, is answered with a Deprecation header until 2027-01-21.
+         * @description Lists your team's Enrollments, newest first. Filter by Campaign, Lead, one or several accounts, state or the Step they are at. Cursor-paginated. status=pending, the retired spelling of queued, is answered with a Deprecation header until 2027-01-21.
          */
         get: operations["getV1Enrollments"];
         put?: never;
@@ -4465,7 +4465,7 @@ export interface paths {
         put?: never;
         /**
          * Send a custom event to an enrollment
-         * @description Sends a custom event to an active or paused Enrollment whose Sequence waits for it (`until event.<name>`), e.g. after you wrote the researched text to the Contact's extra fields. Input only: it fires no webhook. Needs Automate.
+         * @description Sends a custom event to an active or paused Enrollment whose Sequence waits for it (`until event.<name>`), e.g. after you wrote the researched text to the Lead's extra fields. Input only: it fires no webhook. Needs Automate.
          */
         post: operations["postV1EnrollmentsIdEvents"];
         delete?: never;
@@ -4505,7 +4505,7 @@ export interface paths {
         put?: never;
         /**
          * Move an enrollment to another account
-         * @description Moves an Enrollment to another sending account of its Motion and restarts it there at the first Step of its Sequence version (variants kept). Refused, nothing changed, once its account contacted the person beyond a profile view. warnings names a Step that will be skipped. Needs Automate.
+         * @description Moves an Enrollment to another sending account of its Campaign and restarts it there at the first Step of its Sequence version (variants kept). Refused, nothing changed, once its account contacted the person beyond a profile view. warnings names a Step that will be skipped. Needs Automate.
          */
         post: operations["postV1EnrollmentsIdReassign"];
         delete?: never;
@@ -4524,8 +4524,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Move an enrollment to another motion
-         * @description Ends the Enrollment (finish_reason moved) and enrolls its Contact in another Motion on the same account, to start at that Motion's first Step. Being in the first Motion never refuses it; every other rule of the new Motion applies (do-not-contact, exclusion lists, filters). Moving back later is allowed. Refused, nothing changed, when that Motion is archived or does not send from the account. Needs Automate.
+         * Move an enrollment to another campaign
+         * @description Ends the Enrollment (finish_reason moved) and enrolls its Lead in another Campaign on the same account, to start at that Campaign's first Step. Being in the first Campaign never refuses it; every other rule of the new Campaign applies (do-not-contact, exclusion lists, filters). Moving back later is allowed. Refused, nothing changed, when that Campaign is archived or does not send from the account. Needs Automate.
          */
         post: operations["postV1EnrollmentsIdMove"];
         delete?: never;
@@ -4545,7 +4545,7 @@ export interface paths {
         put?: never;
         /**
          * Act on many enrollments
-         * @description Pauses, resumes, stops, retries, sends an event to or reassigns up to 1000 Enrollments, by ids or by a filter (the list filters, motion_id required). Each is decided alone, as its single call, with its own result; not atomic. List with the same filter to see the matches.
+         * @description Pauses, resumes, stops, retries, sends an event to or reassigns up to 1000 Enrollments, by ids or by a filter (the list filters, campaign_id required). Each is decided alone, as its single call, with its own result; not atomic. List with the same filter to see the matches.
          */
         post: operations["postV1EnrollmentsBulk"];
         delete?: never;
@@ -4554,7 +4554,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/analytics/motions": {
+    "/v1/analytics/campaigns": {
         parameters: {
             query?: never;
             header?: never;
@@ -4562,10 +4562,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Motion analytics overview
-         * @description Results of your Motions and direct actions, in total, per Motion and per account: Enrollments by state, invitations, messages, InMails, replies, engagement, daily. Filter by Motion, account, origin, window. include, fields, sort, limit and compare trim it; flags say what to read next. Read-only.
+         * Campaign analytics overview
+         * @description Results of your Campaigns and direct actions, in total, per Campaign and per account: Enrollments by state, invitations, messages, InMails, replies, engagement, daily. Filter by Campaign, account, origin, window. include, fields, sort, limit and compare trim it; flags say what to read next. Read-only.
          */
-        get: operations["getV1AnalyticsMotions"];
+        get: operations["getV1AnalyticsCampaigns"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4574,7 +4574,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/analytics/motions/{motion_id}": {
+    "/v1/analytics/campaigns/{campaign_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -4582,10 +4582,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Motion analytics for one motion
-         * @description One Motion's results with a row per step and per variant: queued, executed, skipped, failed, then and else counts, and each messaging step's rate. Variants in document order, never ranked. The overview's include, fields, compare and flags apply. Read-only, no LinkedIn call.
+         * Campaign analytics for one Campaign
+         * @description One Campaign's results with a row per step and per variant: queued, executed, skipped, failed, then and else counts, and each messaging step's rate. Variants in document order, never ranked. The overview's include, fields, compare and flags apply. Read-only, no LinkedIn call.
          */
-        get: operations["getV1AnalyticsMotionsMotionId"];
+        get: operations["getV1AnalyticsCampaignsCampaignId"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4622,8 +4622,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Motion events feed
-         * @description Recent Motion events, newest first: steps executed, skipped or failed, invitations accepted and replies, with the person's name. Messages and replies only from chats you may read. Reaches back 12 months (the raw reach); older activity is in the daily counts of GET /v1/analytics/motions. Keyset paging: events recorded after your first page never shift later pages. Read-only, no LinkedIn call.
+         * Campaign events feed
+         * @description Recent Campaign events, newest first: steps executed, skipped or failed, invitations accepted and replies, with the person's name. Messages and replies only from chats you may read. Reaches back 12 months (the raw reach); older activity is in the daily counts of GET /v1/analytics/campaigns. Keyset paging: events recorded after your first page never shift later pages. Read-only, no LinkedIn call.
          */
         get: operations["getV1AnalyticsEvents"];
         put?: never;
@@ -4643,7 +4643,7 @@ export interface paths {
         };
         /**
          * Export analytics tables
-         * @description Streams daily, accounts, motions and enrollments rows under the overview's filters as CSV, JSON or NDJSON; several tables as one ZIP. Any size, no row limit, never message text. Owners and Managers. For a file to fetch later, POST /v1/exports.
+         * @description Streams daily, accounts, campaigns and enrollments rows under the overview's filters as CSV, JSON or NDJSON; several tables as one ZIP. Any size, no row limit, never message text. Owners and Managers. For a file to fetch later, POST /v1/exports.
          */
         get: operations["getV1AnalyticsExport"];
         put?: never;
@@ -4703,7 +4703,7 @@ export interface paths {
         };
         /**
          * Download an export
-         * @description Streams a ready export's file with your own credentials. An expired export (24 hours after ready) or one removed by a Contact delete answers 410: run it again.
+         * @description Streams a ready export's file with your own credentials. An expired export (24 hours after ready) or one removed by a Lead delete answers 410: run it again.
          */
         get: operations["getV1ExportsExportIdFile"];
         put?: never;
@@ -4935,17 +4935,17 @@ export interface components {
                 message: string;
             };
             /**
-             * @description Present on CONTACT_NOT_ENROLLABLE: why the Contact was not enrolled (already_enrolled, do_not_contact, in_exclusion_list, in_other_motion, known_chat, pending_invite or filtered_out; known_chat and pending_invite only on a move to another Motion). Present on BUDGET_EXHAUSTED: which rule refused. ceiling means the row's configured limit is spent, and you wait until reset_at or raise it. activity_window means the account is outside the hours it works in (never for a direct message: a send, new chat, edit, delete, reaction or read mark), and reset_at is when the window next opens. The two need different fixes, so branch on this rather than on the message; hint.parameter already names the right setting for each.
+             * @description Present on LEAD_NOT_ENROLLABLE: why the Lead was not enrolled (already_enrolled, do_not_contact, in_exclusion_list, in_other_campaign, known_chat, pending_invite or filtered_out; known_chat and pending_invite only on a move to another Campaign). Present on BUDGET_EXHAUSTED: which rule refused. ceiling means the row's configured limit is spent, and you wait until reset_at or raise it. activity_window means the account is outside the hours it works in (never for a direct message: a send, new chat, edit, delete, reaction or read mark), and reset_at is when the window next opens. The two need different fixes, so branch on this rather than on the message; hint.parameter already names the right setting for each.
              * @enum {string}
              */
-            reason?: "ceiling" | "activity_window" | "already_enrolled" | "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered_out";
+            reason?: "ceiling" | "activity_window" | "already_enrolled" | "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered_out";
             /** @description Present on BUDGET_EXHAUSTED, always true: the action did not happen and spent nothing. Limits are always enforced; no success response carries a safety warning. */
             blocked?: boolean;
-            /** @description Present on RESOURCE_NOT_FOUND for a Contact id that was merged into another Contact (two records turned out to be one person): the id to use instead. */
+            /** @description Present on RESOURCE_NOT_FOUND for a Lead id that was merged into another Lead (two records turned out to be one person): the id to use instead. */
             merged_into?: string;
             /** @description Present alongside row: whole seconds until that row is usable again. This response carries no Retry-After header and no delay retry_hint, deliberately: a paused row can be paused for an hour, and a client that sleeps that inside the call hangs. Do not retry this row before the wait elapses; switch to other work instead. Seconds, not milliseconds. */
             retry_after?: number;
-            /** @description Present on SEQUENCE_INVALID: every failure of the refused Sequence document, not only the first (the first 100; the message counts them all), in step order, so one fix round covers them all, each compiler-style with code, message, pointer, hint and docs_url. Also on WEBHOOK_TEMPLATE_INVALID: every finding of the refused body_template, in template order, in the same shape plus line and col. Also on MOTION_NOT_STARTABLE: every gap that keeps the Motion from starting, as path and rule only. path is relative to the document (for example opener.variants.opener_named.text or invite.with.withdraw_after); rule says what to change. The message repeats the first entry. */
+            /** @description Present on SEQUENCE_INVALID: every failure of the refused Sequence document, not only the first (the first 100; the message counts them all), in step order, so one fix round covers them all, each compiler-style with code, message, pointer, hint and docs_url. Also on WEBHOOK_TEMPLATE_INVALID: every finding of the refused body_template, in template order, in the same shape plus line and col. Also on CAMPAIGN_NOT_STARTABLE: every gap that keeps the Campaign from starting, as path and rule only. path is relative to the document (for example opener.variants.opener_named.text or invite.with.withdraw_after); rule says what to change. The message repeats the first entry. */
             errors?: {
                 /** @description Where in the Sequence document: step id, then field. On WEBHOOK_TEMPLATE_INVALID: always body_template. */
                 path: string;
@@ -4973,7 +4973,7 @@ export interface components {
                 /** @description On WEBHOOK_TEMPLATE_INVALID: the column in that line, counting from 1. */
                 col?: number;
             }[];
-            /** @description Present on SEQUENCE_CONFLICT: the Motion's stored Sequence your PATCH was refused against, so you can merge or overwrite without a second read. To replace it with yours, send the PATCH again with if_sequence_revision set to current.sequence_revision. */
+            /** @description Present on SEQUENCE_CONFLICT: the Campaign's stored Sequence your PATCH was refused against, so you can merge or overwrite without a second read. To replace it with yours, send the PATCH again with if_sequence_revision set to current.sequence_revision. */
             current?: {
                 /** @description The stored revision. */
                 sequence_revision: number;
@@ -4983,7 +4983,7 @@ export interface components {
                 sequence: unknown;
                 /** @description Who saved that revision. */
                 sequence_updated_by_user_id: string | null;
-                /** @description ISO 8601: when the Motion last changed. */
+                /** @description ISO 8601: when the Campaign last changed. */
                 updated_at: string;
             };
             /** @description Present when a structured search filter value matched several filter options and one has to be picked (422 FILTER_CANDIDATES_REQUIRED). One entry per offending value, so a single retry can fix them all. A value that matched no option at all is not listed here and is not an error: it is sent on as an id and reported in notices[] on the 200. */
@@ -5002,7 +5002,7 @@ export interface components {
             }[];
             /** @description Present on PAYMENT_REQUIRED and ACCOUNT_DISPUTED: the self-service page where the tenant resolves the payment problem, so an agent can hand a human one link. Null when no portal session could be opened; fall back to the dashboard. */
             portal_url?: string | null;
-            /** @description Present on TIER_REQUIRED: the feature the team's Tier does not include (drafts, contacts, motions, network, unibox or keep_connected). */
+            /** @description Present on TIER_REQUIRED: the feature the team's Tier does not include (drafts, leads, campaigns, network, unibox or keep_connected). */
             feature?: string;
             /** @description Present on TIER_REQUIRED: the lowest Tier that includes the feature. Null when no Tier includes it. */
             required_tier?: string | null;
@@ -5030,7 +5030,7 @@ export interface components {
                 /** @description true: never connects from another country. */
                 strict?: boolean | null;
             };
-            /** @description Present on INVALID_REQUEST, CONNECTION_LOCATION_REQUIRED and PLATFORM_ERROR when an account PATCH's location change was refused (your own proxy, a country, clearing the proxy): account says where the account stands now, re-read after the attempt. Never any proxy field. Present on RATE_LIMIT_TENANT when an import of your team holds the team's Contact write lock: import_id and started_at name it. Read it with GET /v1/contacts/imports/{id} (404 while an import of up to 500 rows is still being applied in its request: its record commits with its rows), then retry. Present on EXPORT_IN_PROGRESS: export_id names the export your team already has queued or running. It may be a teammate's, which GET /v1/exports/{id} answers 404; it finishes or fails within the hour, then start yours. Present on INVALID_REQUEST when a safety-policy write sent a removed key: removed_key names it. Drop that key from the request; limits are always enforced. Present on TIER_REQUIRED when one account lacks the feature while the team has it (an account on a seat another team lent this one carries that seat's Tier): account_id names it. Leave that account out, or ask the Owner who lent the seat. */
+            /** @description Present on INVALID_REQUEST, CONNECTION_LOCATION_REQUIRED and PLATFORM_ERROR when an account PATCH's location change was refused (your own proxy, a country, clearing the proxy): account says where the account stands now, re-read after the attempt. Never any proxy field. Present on RATE_LIMIT_TENANT when an import of your team holds the team's Lead write lock: import_id and started_at name it. Read it with GET /v1/leads/imports/{id} (404 while an import of up to 500 rows is still being applied in its request: its record commits with its rows), then retry. Present on EXPORT_IN_PROGRESS: export_id names the export your team already has queued or running. It may be a teammate's, which GET /v1/exports/{id} answers 404; it finishes or fails within the hour, then start yours. Present on INVALID_REQUEST when a safety-policy write sent a removed key: removed_key names it. Drop that key from the request; limits are always enforced. Present on TIER_REQUIRED when one account lacks the feature while the team has it (an account on a seat another team lent this one carries that seat's Tier): account_id names it. Leave that account out, or ask the Owner who lent the seat. */
             details?: {
                 export_id?: string;
                 import_id?: string;
@@ -5131,10 +5131,10 @@ export interface components {
             /** @description True if the message was deleted. */
             is_deleted?: boolean;
             /**
-             * @description Who sent a message the connected account sent: a Motion, the Unibox, the API (any API key or MCP grant), or LinkedIn itself. Derived by Curviate, never set by a caller. Omitted when unknown, and on received messages.
+             * @description Who sent a message the connected account sent: a Campaign, the Unibox, the API (any API key or MCP grant), or LinkedIn itself. Derived by Curviate, never set by a caller. Omitted when unknown, and on received messages.
              * @enum {string}
              */
-            origin?: "motion" | "unibox" | "api" | "linkedin";
+            origin?: "campaign" | "unibox" | "api" | "linkedin";
             /** @description True if the account is mentioned in this message. */
             is_mentionned?: boolean;
             /** @description Per-type reaction breakdown on the message. */
@@ -5170,7 +5170,7 @@ export interface components {
         };
         /**
          * Sequence document v1
-         * @description A Motion's Sequence: a flat steps array run from the first step, ending explicitly in "end". Served documents use this key order: $schema, on_reply, steps; in a step id, the kind key, timeout, save, save_to_contact, variants, with, event, then, else, next, note; in with post, newer_than, reaction, subject, text, note, note_fallback, fallback, withdraw_after; in a variant id, subject, text. A text holds at most 50 variables. Variables: `{{first_name}}` (any standard Contact field), `{{my_first_name}}`, `{{my_last_name}}`, `{{my_full_name}}` (the sending Account), any other `{{<key>}}` is the custom field `contact.extra.<key>`; the long forms `{{contact.<field>}}`, `{{contact.extra.<key>}}` and `{{account.<name>}}` stay valid; `{{enrollment.<name>}}` is a value a save of this Sequence writes. Delays are about their duration: every wait and until timeout gets a small random spread that only ever adds time.
+         * @description A Campaign's Sequence: a flat steps array run from the first step, ending explicitly in "end". Served documents use this key order: $schema, on_reply, steps; in a step id, the kind key, timeout, save, save_to_lead, variants, with, event, then, else, next, note; in with post, newer_than, reaction, subject, text, note, note_fallback, fallback, withdraw_after; in a variant id, subject, text. A text holds at most 50 variables. Variables: `{{first_name}}` (any standard Lead field), `{{my_first_name}}`, `{{my_last_name}}`, `{{my_full_name}}` (the sending Account), any other `{{<key>}}` is the custom field `lead.extra.<key>`; the long forms `{{lead.<field>}}`, `{{lead.extra.<key>}}` and `{{account.<name>}}` stay valid; `{{enrollment.<name>}}` is a value a save of this Sequence writes. Delays are about their duration: every wait and until timeout gets a small random spread that only ever adds time.
          */
         SequenceDocument: {
             /** @constant */
@@ -5322,7 +5322,7 @@ export interface components {
                 /** @constant */
                 do: "voice.send";
                 with?: {
-                    /** @description A Voice clip of this Team: the id from POST /v1/motions/voice-clips. */
+                    /** @description A Voice clip of this Team: the id from POST /v1/campaigns/voice-clips. */
                     clip_id?: string;
                     /** @description Required. Variable-free text sent instead when the audio cannot go: the clip cannot be read, or the platform states it was not sent and retries are spent. */
                     fallback: string;
@@ -5331,7 +5331,7 @@ export interface components {
                 variants?: {
                     /** @description Step id, unique in the document. "end" is reserved. */
                     id: string;
-                    /** @description A Voice clip of this Team: the id from POST /v1/motions/voice-clips. */
+                    /** @description A Voice clip of this Team: the id from POST /v1/campaigns/voice-clips. */
                     clip_id: string;
                 }[];
                 /** @description Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent. */
@@ -5432,8 +5432,8 @@ export interface components {
                 save?: {
                     [key: string]: string;
                 };
-                /** @description until event.<name> only: Contact custom fields (contact.extra.<key>) saved from the incoming event, key to path (at most 20); email fills only an empty email. */
-                save_to_contact?: {
+                /** @description until event.<name> only: Lead custom fields (lead.extra.<key>) saved from the incoming event, key to path (at most 20); email fills only an empty email. */
+                save_to_lead?: {
                     [key: string]: string;
                 };
                 /** @description A step id, or "end". */
@@ -5447,30 +5447,30 @@ export interface components {
                 id: string;
                 /** @description One key per predicate. No all/any: chain if steps. A predicate nests at most 10 levels. */
                 if: {
-                    "contact.connected": boolean;
+                    "lead.connected": boolean;
                 } | {
-                    "contact.open_profile": boolean;
+                    "lead.open_profile": boolean;
                 } | {
-                    "contact.premium": boolean;
+                    "lead.premium": boolean;
                 } | {
-                    "contact.has_photo": boolean;
+                    "lead.has_photo": boolean;
                 } | {
-                    "contact.degree": {
+                    "lead.degree": {
                         /** @enum {integer} */
                         eq: 1 | 2 | 3;
                     } | {
                         in: (1 | 2 | 3)[];
                     };
                 } | {
-                    "contact.connections_gte": number;
+                    "lead.connections_gte": number;
                 } | {
                     /** @description Posted within this long. */
-                    "contact.posted_within": string;
+                    "lead.posted_within": string;
                 } | {
-                    "contact.tag": string;
+                    "lead.tag": string;
                 } | {
                     /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                    "contact.full_name"?: {
+                    "lead.full_name"?: {
                         eq?: string | number | boolean;
                         neq?: string | number | boolean;
                         in?: (string | number | boolean)[];
@@ -5478,7 +5478,7 @@ export interface components {
                         exists?: boolean;
                     };
                     /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                    "contact.first_name"?: {
+                    "lead.first_name"?: {
                         eq?: string | number | boolean;
                         neq?: string | number | boolean;
                         in?: (string | number | boolean)[];
@@ -5486,7 +5486,7 @@ export interface components {
                         exists?: boolean;
                     };
                     /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                    "contact.last_name"?: {
+                    "lead.last_name"?: {
                         eq?: string | number | boolean;
                         neq?: string | number | boolean;
                         in?: (string | number | boolean)[];
@@ -5494,7 +5494,7 @@ export interface components {
                         exists?: boolean;
                     };
                     /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                    "contact.headline"?: {
+                    "lead.headline"?: {
                         eq?: string | number | boolean;
                         neq?: string | number | boolean;
                         in?: (string | number | boolean)[];
@@ -5502,7 +5502,7 @@ export interface components {
                         exists?: boolean;
                     };
                     /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                    "contact.job_title"?: {
+                    "lead.job_title"?: {
                         eq?: string | number | boolean;
                         neq?: string | number | boolean;
                         in?: (string | number | boolean)[];
@@ -5510,7 +5510,7 @@ export interface components {
                         exists?: boolean;
                     };
                     /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                    "contact.company"?: {
+                    "lead.company"?: {
                         eq?: string | number | boolean;
                         neq?: string | number | boolean;
                         in?: (string | number | boolean)[];
@@ -5518,7 +5518,7 @@ export interface components {
                         exists?: boolean;
                     };
                     /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                    "contact.email"?: {
+                    "lead.email"?: {
                         eq?: string | number | boolean;
                         neq?: string | number | boolean;
                         in?: (string | number | boolean)[];
@@ -5526,7 +5526,7 @@ export interface components {
                         exists?: boolean;
                     };
                     /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                    "contact.location"?: {
+                    "lead.location"?: {
                         eq?: string | number | boolean;
                         neq?: string | number | boolean;
                         in?: (string | number | boolean)[];
@@ -5534,7 +5534,7 @@ export interface components {
                         exists?: boolean;
                     };
                     /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                    "contact.linkedin_url"?: {
+                    "lead.linkedin_url"?: {
                         eq?: string | number | boolean;
                         neq?: string | number | boolean;
                         in?: (string | number | boolean)[];
@@ -5542,7 +5542,7 @@ export interface components {
                         exists?: boolean;
                     };
                     /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                    "contact.about"?: {
+                    "lead.about"?: {
                         eq?: string | number | boolean;
                         neq?: string | number | boolean;
                         in?: (string | number | boolean)[];
@@ -5550,7 +5550,7 @@ export interface components {
                         exists?: boolean;
                     };
                     /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                    "contact.language"?: {
+                    "lead.language"?: {
                         eq?: string | number | boolean;
                         neq?: string | number | boolean;
                         in?: (string | number | boolean)[];
@@ -5584,30 +5584,30 @@ export interface components {
                     "message.seen": boolean;
                 } | {
                     not: {
-                        "contact.connected": boolean;
+                        "lead.connected": boolean;
                     } | {
-                        "contact.open_profile": boolean;
+                        "lead.open_profile": boolean;
                     } | {
-                        "contact.premium": boolean;
+                        "lead.premium": boolean;
                     } | {
-                        "contact.has_photo": boolean;
+                        "lead.has_photo": boolean;
                     } | {
-                        "contact.degree": {
+                        "lead.degree": {
                             /** @enum {integer} */
                             eq: 1 | 2 | 3;
                         } | {
                             in: (1 | 2 | 3)[];
                         };
                     } | {
-                        "contact.connections_gte": number;
+                        "lead.connections_gte": number;
                     } | {
                         /** @description Posted within this long. */
-                        "contact.posted_within": string;
+                        "lead.posted_within": string;
                     } | {
-                        "contact.tag": string;
+                        "lead.tag": string;
                     } | {
                         /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                        "contact.full_name"?: {
+                        "lead.full_name"?: {
                             eq?: string | number | boolean;
                             neq?: string | number | boolean;
                             in?: (string | number | boolean)[];
@@ -5615,7 +5615,7 @@ export interface components {
                             exists?: boolean;
                         };
                         /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                        "contact.first_name"?: {
+                        "lead.first_name"?: {
                             eq?: string | number | boolean;
                             neq?: string | number | boolean;
                             in?: (string | number | boolean)[];
@@ -5623,7 +5623,7 @@ export interface components {
                             exists?: boolean;
                         };
                         /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                        "contact.last_name"?: {
+                        "lead.last_name"?: {
                             eq?: string | number | boolean;
                             neq?: string | number | boolean;
                             in?: (string | number | boolean)[];
@@ -5631,7 +5631,7 @@ export interface components {
                             exists?: boolean;
                         };
                         /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                        "contact.headline"?: {
+                        "lead.headline"?: {
                             eq?: string | number | boolean;
                             neq?: string | number | boolean;
                             in?: (string | number | boolean)[];
@@ -5639,7 +5639,7 @@ export interface components {
                             exists?: boolean;
                         };
                         /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                        "contact.job_title"?: {
+                        "lead.job_title"?: {
                             eq?: string | number | boolean;
                             neq?: string | number | boolean;
                             in?: (string | number | boolean)[];
@@ -5647,7 +5647,7 @@ export interface components {
                             exists?: boolean;
                         };
                         /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                        "contact.company"?: {
+                        "lead.company"?: {
                             eq?: string | number | boolean;
                             neq?: string | number | boolean;
                             in?: (string | number | boolean)[];
@@ -5655,7 +5655,7 @@ export interface components {
                             exists?: boolean;
                         };
                         /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                        "contact.email"?: {
+                        "lead.email"?: {
                             eq?: string | number | boolean;
                             neq?: string | number | boolean;
                             in?: (string | number | boolean)[];
@@ -5663,7 +5663,7 @@ export interface components {
                             exists?: boolean;
                         };
                         /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                        "contact.location"?: {
+                        "lead.location"?: {
                             eq?: string | number | boolean;
                             neq?: string | number | boolean;
                             in?: (string | number | boolean)[];
@@ -5671,7 +5671,7 @@ export interface components {
                             exists?: boolean;
                         };
                         /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                        "contact.linkedin_url"?: {
+                        "lead.linkedin_url"?: {
                             eq?: string | number | boolean;
                             neq?: string | number | boolean;
                             in?: (string | number | boolean)[];
@@ -5679,7 +5679,7 @@ export interface components {
                             exists?: boolean;
                         };
                         /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                        "contact.about"?: {
+                        "lead.about"?: {
                             eq?: string | number | boolean;
                             neq?: string | number | boolean;
                             in?: (string | number | boolean)[];
@@ -5687,7 +5687,7 @@ export interface components {
                             exists?: boolean;
                         };
                         /** @description Exactly one operator. Strings compare trimmed, case-insensitive. */
-                        "contact.language"?: {
+                        "lead.language"?: {
                             eq?: string | number | boolean;
                             neq?: string | number | boolean;
                             in?: (string | number | boolean)[];
@@ -5730,7 +5730,7 @@ export interface components {
             } | {
                 /** @description Step id, unique in the document. "end" is reserved. */
                 id: string;
-                /** @description Send event: the custom event name this step sends (motion.custom_event). */
+                /** @description Send event: the custom event name this step sends (campaign.custom_event). */
                 emit: string;
                 /** @description A step id, or "end". */
                 next?: string;
@@ -5739,7 +5739,7 @@ export interface components {
             } | {
                 /** @description Step id, unique in the document. "end" is reserved. */
                 id: string;
-                /** @description Tag added to the Contact. */
+                /** @description Tag added to the Lead. */
                 tag: string;
                 /** @description Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent. */
                 event?: string;
@@ -14266,10 +14266,10 @@ export interface operations {
                             /** @description True if the message was deleted. */
                             is_deleted?: boolean;
                             /**
-                             * @description Who sent a message the connected account sent: a Motion, the Unibox, the API (any API key or MCP grant), or LinkedIn itself. Derived by Curviate, never set by a caller. Omitted when unknown, and on received messages.
+                             * @description Who sent a message the connected account sent: a Campaign, the Unibox, the API (any API key or MCP grant), or LinkedIn itself. Derived by Curviate, never set by a caller. Omitted when unknown, and on received messages.
                              * @enum {string}
                              */
-                            origin?: "motion" | "unibox" | "api" | "linkedin";
+                            origin?: "campaign" | "unibox" | "api" | "linkedin";
                             /** @description True if the account is mentioned in this message. */
                             is_mentionned?: boolean;
                             /** @description Per-type reaction breakdown on the message. */
@@ -14694,10 +14694,10 @@ export interface operations {
                         /** @description True if the message was deleted. */
                         is_deleted?: boolean;
                         /**
-                         * @description Who sent a message the connected account sent: a Motion, the Unibox, the API (any API key or MCP grant), or LinkedIn itself. Derived by Curviate, never set by a caller. Omitted when unknown, and on received messages.
+                         * @description Who sent a message the connected account sent: a Campaign, the Unibox, the API (any API key or MCP grant), or LinkedIn itself. Derived by Curviate, never set by a caller. Omitted when unknown, and on received messages.
                          * @enum {string}
                          */
-                        origin?: "motion" | "unibox" | "api" | "linkedin";
+                        origin?: "campaign" | "unibox" | "api" | "linkedin";
                         /** @description True if the account is mentioned in this message. */
                         is_mentionned?: boolean;
                         /** @description Per-type reaction breakdown on the message. */
@@ -19574,11 +19574,11 @@ export interface operations {
                                 /** @description When LinkedIn says this account connected with them, or null when it did not say. */
                                 connected_at: string | null;
                             }[];
-                            /** @description The Contact this person is in your team, or null when they are not one. */
-                            contact: {
-                                /** @description The Contact's id. */
+                            /** @description The Lead this person is in your team, or null when they are not one. */
+                            lead: {
+                                /** @description The Lead's id. */
                                 id: string;
-                                /** @description How many Contact lists they are in. */
+                                /** @description How many Lead lists they are in. */
                                 list_count: number;
                                 /** @description Up to 10 of those lists, by name. */
                                 lists: {
@@ -19990,7 +19990,7 @@ export interface operations {
                             account_id: string;
                             /** @description The account's connection status. */
                             account_status: string;
-                            /** @description Whether this account's whole inbox is copied into the Unibox. Off by default; only the person who connected the account can change it. While off, the Unibox holds only this account's Motion chats. */
+                            /** @description Whether this account's whole inbox is copied into the Unibox. Off by default; only the person who connected the account can change it. While off, the Unibox holds only this account's Campaign chats. */
                             sync_full_inbox: boolean;
                             /** @description The user who turned full-inbox sync on. Null while it is off. */
                             granted_by: string | null;
@@ -20025,7 +20025,7 @@ export interface operations {
                                     chats_synced: number;
                                 }[];
                             };
-                            /** @description When the newest conversations were last re-read past any cache, by a poll or a refresh, also for an account polled only for its Motion chats. */
+                            /** @description When the newest conversations were last re-read past any cache, by a poll or a refresh, also for an account polled only for its Campaign chats. */
                             last_refresh_at: string | null;
                             /** @description When a manual refresh is allowed again. Null when one is allowed now. */
                             next_manual_refresh_at: string | null;
@@ -20083,7 +20083,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description true copies this account's whole inbox into the Unibox; false stops that and removes the copied conversations that are not Motion chats. */
+                    /** @description true copies this account's whole inbox into the Unibox; false stops that and removes the copied conversations that are not Campaign chats. */
                     sync_full_inbox: boolean;
                 };
             };
@@ -20107,7 +20107,7 @@ export interface operations {
                         account_id: string;
                         /** @description The account's connection status. */
                         account_status: string;
-                        /** @description Whether this account's whole inbox is copied into the Unibox. Off by default; only the person who connected the account can change it. While off, the Unibox holds only this account's Motion chats. */
+                        /** @description Whether this account's whole inbox is copied into the Unibox. Off by default; only the person who connected the account can change it. While off, the Unibox holds only this account's Campaign chats. */
                         sync_full_inbox: boolean;
                         /** @description The user who turned full-inbox sync on. Null while it is off. */
                         granted_by: string | null;
@@ -20142,7 +20142,7 @@ export interface operations {
                                 chats_synced: number;
                             }[];
                         };
-                        /** @description When the newest conversations were last re-read past any cache, by a poll or a refresh, also for an account polled only for its Motion chats. */
+                        /** @description When the newest conversations were last re-read past any cache, by a poll or a refresh, also for an account polled only for its Campaign chats. */
                         last_refresh_at: string | null;
                         /** @description When a manual refresh is allowed again. Null when one is allowed now. */
                         next_manual_refresh_at: string | null;
@@ -20213,11 +20213,11 @@ export interface operations {
             query?: {
                 /** @description Only these accounts: 1 to 50 ids (acc_...); omitted, every account. Only chats you may read. Repeat the key, comma-separate or mix; empties ignored. */
                 account_ids?: string[];
-                /** @description Only chats linked to any of these Motions (Motion ids). none: also (or alone) the chats no Motion links. Repeat the key, comma-separate or mix; empties ignored. */
-                motion_ids?: string[];
-                /** @description Only chats with this person: one Contact id (con_...) or LinkedIn id (ACo...). Only chats you may read; an unknown id matches nothing. */
+                /** @description Only chats linked to any of these Campaigns (Campaign ids). none: also (or alone) the chats no Campaign links. Repeat the key, comma-separate or mix; empties ignored. */
+                campaign_ids?: string[];
+                /** @description Only chats with this person: one Lead id (con_...) or LinkedIn id (ACo...). Only chats you may read; an unknown id matches nothing. */
                 person?: string;
-                /** @description Only chats whose Contact has any of these Tags (names, case-insensitive). Repeat the key, comma-separate or mix; empties ignored. */
+                /** @description Only chats whose Lead has any of these Tags (names, case-insensitive). Repeat the key, comma-separate or mix; empties ignored. */
                 tags?: string[];
                 /** @description true: only unread chats. false: only read chats. Omitted: both. */
                 unread?: boolean;
@@ -20316,9 +20316,9 @@ export interface operations {
                                 /** @description Who wrote preview, when someone other than this account did and Curviate knows who. */
                                 preview_sender: string | null;
                             } | null;
-                            /** @description The Contact this person is, when you hold one (matched on their LinkedIn ids). */
-                            contact_id: string | null;
-                            /** @description That Contact's Tags; empty without a Contact. */
+                            /** @description The Lead this person is, when you hold one (matched on their LinkedIn ids). */
+                            lead_id: string | null;
+                            /** @description That Lead's Tags; empty without a Lead. */
                             tags: string[];
                             /** @description Whether the chat is unread on LinkedIn. One value per account, the same for every viewer. */
                             unread: boolean;
@@ -20346,13 +20346,13 @@ export interface operations {
                                 /** @description When it was sent. */
                                 at?: string;
                             } | null;
-                            /** @description The Motion this chat belongs to: the most recently started Enrollment linked to it. Null for a chat no Motion links. An Enrollment that finished with finish_reason messaged_manually stopped because you messaged this person; replied, because they replied; engaged_elsewhere, because they replied to or were messaged from another Account of the Motion. */
-                            motion_context: {
-                                /** @description The Motion. */
-                                motion_id: string;
+                            /** @description The Campaign this chat belongs to: the most recently started Enrollment linked to it. Null for a chat no Campaign links. An Enrollment that finished with finish_reason messaged_manually stopped because you messaged this person; replied, because they replied; engaged_elsewhere, because they replied to or were messaged from another Account of the Campaign. */
+                            campaign_context: {
+                                /** @description The Campaign. */
+                                campaign_id: string;
                                 /** @description Its name. */
-                                motion_name: string;
-                                /** @description The Enrollment of this person in that Motion. */
+                                campaign_name: string;
+                                /** @description The Enrollment of this person in that Campaign. */
                                 enrollment_id: string;
                                 /**
                                  * @description The Enrollment's state, as its status.
@@ -20509,9 +20509,9 @@ export interface operations {
                             /** @description Who wrote preview, when someone other than this account did and Curviate knows who. */
                             preview_sender: string | null;
                         } | null;
-                        /** @description The Contact this person is, when you hold one (matched on their LinkedIn ids). */
-                        contact_id: string | null;
-                        /** @description That Contact's Tags; empty without a Contact. */
+                        /** @description The Lead this person is, when you hold one (matched on their LinkedIn ids). */
+                        lead_id: string | null;
+                        /** @description That Lead's Tags; empty without a Lead. */
                         tags: string[];
                         /** @description Whether the chat is unread on LinkedIn. One value per account, the same for every viewer. */
                         unread: boolean;
@@ -20539,13 +20539,13 @@ export interface operations {
                             /** @description When it was sent. */
                             at?: string;
                         } | null;
-                        /** @description The Motion this chat belongs to: the most recently started Enrollment linked to it. Null for a chat no Motion links. An Enrollment that finished with finish_reason messaged_manually stopped because you messaged this person; replied, because they replied; engaged_elsewhere, because they replied to or were messaged from another Account of the Motion. */
-                        motion_context: {
-                            /** @description The Motion. */
-                            motion_id: string;
+                        /** @description The Campaign this chat belongs to: the most recently started Enrollment linked to it. Null for a chat no Campaign links. An Enrollment that finished with finish_reason messaged_manually stopped because you messaged this person; replied, because they replied; engaged_elsewhere, because they replied to or were messaged from another Account of the Campaign. */
+                        campaign_context: {
+                            /** @description The Campaign. */
+                            campaign_id: string;
                             /** @description Its name. */
-                            motion_name: string;
-                            /** @description The Enrollment of this person in that Motion. */
+                            campaign_name: string;
+                            /** @description The Enrollment of this person in that Campaign. */
                             enrollment_id: string;
                             /**
                              * @description The Enrollment's state, as its status.
@@ -20731,7 +20731,7 @@ export interface operations {
                             /** @description The account. */
                             account_id: string;
                             /**
-                             * @description queued: the refresh runs within minutes. cooldown: one ran in the last 2 minutes. not_synced: no full-inbox sync, Motion chat or Motion outreach on the account (or its first sync is still running), so nothing to refresh. paused: it runs when the pause ends, paused_reason says why.
+                             * @description queued: the refresh runs within minutes. cooldown: one ran in the last 2 minutes. not_synced: no full-inbox sync, Campaign chat or Campaign outreach on the account (or its first sync is still running), so nothing to refresh. paused: it runs when the pause ends, paused_reason says why.
                              * @enum {string}
                              */
                             status: "queued" | "cooldown" | "not_synced" | "paused";
@@ -20805,7 +20805,7 @@ export interface operations {
             };
         };
     };
-    postV1UniboxChatsAccountIdChatIdContact: {
+    postV1UniboxChatsAccountIdChatIdLead: {
         parameters: {
             query?: never;
             header?: {
@@ -20825,13 +20825,13 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description Tag names to add to the Contact (never removes). Up to 50 Tags per Contact; a new name creates the Tag. Omit for the Contact only. */
+                    /** @description Tag names to add to the Lead (never removes). Up to 50 Tags per Lead; a new name creates the Tag. Omit for the Lead only. */
                     tags?: string[];
                 };
             };
         };
         responses: {
-            /** @description The Contact and all its Tags. */
+            /** @description The Lead and all its Tags. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -20844,12 +20844,12 @@ export interface operations {
                          * @description Response type discriminator.
                          * @enum {string}
                          */
-                        object: "unibox_contact";
-                        /** @description The Contact (con_...). Read it with GET /v1/contacts/{id}. */
-                        contact_id: string;
-                        /** @description true when this call created the Contact; false when you already held it. */
+                        object: "unibox_lead";
+                        /** @description The Lead (con_...). Read it with GET /v1/leads/{id}. */
+                        lead_id: string;
+                        /** @description true when this call created the Lead; false when you already held it. */
                         created: boolean;
-                        /** @description Every Tag the Contact holds now, by name. */
+                        /** @description Every Tag the Lead holds now, by name. */
                         tags: string[];
                     };
                 };
@@ -20899,7 +20899,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description CHAT_NOT_ONE_TO_ONE: a group chat, or a chat with a company page, has no one person to save. CONTACT_LIMIT_REACHED: a new Contact would pass your team's Contact limit, or a Tag would pass 50 Tags on the Contact or your team's Tag limit; nothing was saved. */
+            /** @description CHAT_NOT_ONE_TO_ONE: a group chat, or a chat with a company page, has no one person to save. LEAD_LIMIT_REACHED: a new Lead would pass your team's Lead limit, or a Tag would pass 50 Tags on the Lead or your team's Tag limit; nothing was saved. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -20932,7 +20932,7 @@ export interface operations {
                 "Curviate-Client"?: string;
             };
             path: {
-                /** @description The account the chat belongs to (acc_...). It must be a sending account of the Motion. */
+                /** @description The account the chat belongs to (acc_...). It must be a sending account of the Campaign. */
                 account_id: string;
                 /** @description The chat. */
                 chat_id: string;
@@ -20942,13 +20942,13 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description The Motion to add the chat's person to (mot_...). This chat's account must be one of its sending accounts. */
-                    motion_id: string;
+                    /** @description The Campaign to add the chat's person to (mot_...). This chat's account must be one of its sending accounts. */
+                    campaign_id: string;
                 };
             };
         };
         responses: {
-            /** @description The Enrollment, queued until the Motion starts it. */
+            /** @description The Enrollment, queued until the Campaign starts it. */
             201: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -20964,11 +20964,11 @@ export interface operations {
                         object: "enrollment";
                         /** @description Enrollment id (enr_...). */
                         id: string;
-                        /** @description The Motion (mot_...). */
-                        motion_id: string;
-                        /** @description The Contact (con_...); null once the Contact is deleted. */
-                        contact_id: string | null;
-                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Motion takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
+                        /** @description The Campaign (mot_...). */
+                        campaign_id: string;
+                        /** @description The Lead (con_...); null once the Lead is deleted. */
+                        lead_id: string | null;
+                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Campaign takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
                         account_id: string | null;
                         /** @description The Sequence version this Enrollment runs on. */
                         sequence_version: number;
@@ -20979,10 +20979,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -20992,26 +20992,26 @@ export interface operations {
                          * @description Why it finished; null unless status is finished.
                          * @enum {string|null}
                          */
-                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
                         /**
-                         * @description Why the Contact was not enrolled; null unless status is skipped.
+                         * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
-                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
-                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
+                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
                         skip_message: string | null;
                         /** @description More on the skip, for example the index of the where filter that failed. */
                         skip_detail: string | null;
-                        /** @description True once the Contact replied. */
+                        /** @description True once the Lead replied. */
                         replied: boolean;
                         /** @description The variant chosen per Step: step id to variant id. */
                         variants: {
                             [key: string]: string;
                         };
                         /**
-                         * @description The Contact's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
+                         * @description The Lead's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
                          * @enum {string|null}
                          */
                         relationship_at_enrollment: "connected" | "not_connected" | "invite_pending" | "unknown" | null;
@@ -21028,7 +21028,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST: motion_id is missing, or this chat's account is not a sending account of the Motion. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: campaign_id is missing, or this chat's account is not a sending account of the Campaign. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -21055,7 +21055,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ACCOUNT_NOT_FOUND: the account is not one of your team's accounts. RESOURCE_NOT_FOUND: no such Motion, or no such chat in your Unibox (the same answer for a chat that does not exist and for one you cannot see). Nothing was saved. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
+            /** @description ACCOUNT_NOT_FOUND: the account is not one of your team's accounts. RESOURCE_NOT_FOUND: no such Campaign, or no such chat in your Unibox (the same answer for a chat that does not exist and for one you cannot see). Nothing was saved. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -21064,7 +21064,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description MOTION_STATUS_CONFLICT: the Motion is archived or its schedule has ended, so it takes no Contacts. Nothing was saved. */
+            /** @description CAMPAIGN_STATUS_CONFLICT: the Campaign is archived or its schedule has ended, so it takes no Leads. Nothing was saved. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -21082,7 +21082,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description CHAT_NOT_ONE_TO_ONE: a group chat, or a chat with a company page, has no one person to add. CONTACT_LIMIT_REACHED: a new Contact would pass your team's Contact limit. CONTACT_NOT_ENROLLABLE: reason already_enrolled, do_not_contact (on the Team's do-not-contact list), in_exclusion_list, in_other_motion or filtered_out (the person does not pass the Motion's filters); no Contact or Enrollment was made. */
+            /** @description CHAT_NOT_ONE_TO_ONE: a group chat, or a chat with a company page, has no one person to add. LEAD_LIMIT_REACHED: a new Lead would pass your team's Lead limit. LEAD_NOT_ENROLLABLE: reason already_enrolled, do_not_contact (on the Team's do-not-contact list), in_exclusion_list, in_other_campaign or filtered_out (the person does not pass the Campaign's filters); no Lead or Enrollment was made. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -25980,7 +25980,7 @@ export interface operations {
                             object: "curviate_notification";
                             /** @description Notification id (ntf_...). Valid for you only. */
                             id: string;
-                            /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, account.motion_work_paused, account.health_worsened, account.activity_level_fallback, motion.auto_paused, motion.no_sending_account, motion.completed, contacts.import_finished, export.finished, billing.spending_cap_reached, team.invite_accepted, team.member_left. */
+                            /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, account.campaign_work_paused, account.health_worsened, account.activity_level_fallback, campaign.auto_paused, campaign.no_sending_account, campaign.completed, leads.import_finished, export.finished, billing.spending_cap_reached, team.invite_accepted, team.member_left. */
                             type: string;
                             /** @description What the Notification is about. */
                             subject: {
@@ -25988,7 +25988,7 @@ export interface operations {
                                  * @description The kind of subject.
                                  * @enum {string}
                                  */
-                                type: "account" | "motion" | "contact_import" | "team_member" | "export" | "team";
+                                type: "account" | "campaign" | "lead_import" | "team_member" | "export" | "team";
                                 /** @description The subject's id. */
                                 id: string;
                                 /** @description Whether you can open the subject now. false when it is gone or you no longer have access to it. */
@@ -26242,7 +26242,7 @@ export interface operations {
                         object: "curviate_notification";
                         /** @description Notification id (ntf_...). Valid for you only. */
                         id: string;
-                        /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, account.motion_work_paused, account.health_worsened, account.activity_level_fallback, motion.auto_paused, motion.no_sending_account, motion.completed, contacts.import_finished, export.finished, billing.spending_cap_reached, team.invite_accepted, team.member_left. */
+                        /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, account.campaign_work_paused, account.health_worsened, account.activity_level_fallback, campaign.auto_paused, campaign.no_sending_account, campaign.completed, leads.import_finished, export.finished, billing.spending_cap_reached, team.invite_accepted, team.member_left. */
                         type: string;
                         /** @description What the Notification is about. */
                         subject: {
@@ -26250,7 +26250,7 @@ export interface operations {
                              * @description The kind of subject.
                              * @enum {string}
                              */
-                            type: "account" | "motion" | "contact_import" | "team_member" | "export" | "team";
+                            type: "account" | "campaign" | "lead_import" | "team_member" | "export" | "team";
                             /** @description The subject's id. */
                             id: string;
                             /** @description Whether you can open the subject now. false when it is gone or you no longer have access to it. */
@@ -34770,7 +34770,7 @@ export interface operations {
                                 band: "green" | "amber" | "hard" | "over";
                                 /** @description Whether something on this row is configured above Curviate's own default. The safety policy carries the detail: which field, the value, the default and how well calibrated that default is. */
                                 over_default: boolean;
-                                /** @description An active pause on this row because the platform refused a recent request on it, or `null`. Motion work on other rows keeps running. A Motion also waits longer than this pause after LinkedIn refuses invitations or views for going too fast: 6 hours, then 24, then 72, at most 7 days on each repeat, resetting after 7 clean days; `health` on the account shows it. A halt is not a ceiling: no limit you raise lifts it, and it clears itself when it expires. To lift one before it expires, send this row in `clear_halts` on `PATCH /v1/{account_id}/safety-policy`; that is recorded, and the pause returns if the platform refuses the account again. */
+                                /** @description An active pause on this row because the platform refused a recent request on it, or `null`. Campaign work on other rows keeps running. A Campaign also waits longer than this pause after LinkedIn refuses invitations or views for going too fast: 6 hours, then 24, then 72, at most 7 days on each repeat, resetting after 7 clean days; `health` on the account shows it. A halt is not a ceiling: no limit you raise lifts it, and it clears itself when it expires. To lift one before it expires, send this row in `clear_halts` on `PATCH /v1/{account_id}/safety-policy`; that is recorded, and the pause returns if the platform refuses the account again. */
                                 halt: {
                                     /** @description What the platform did: `rate_limited`, `platform_fault`, or `resend_cooldown` (the same invitation was sent too recently). */
                                     reason?: string;
@@ -34789,7 +34789,7 @@ export interface operations {
                                 source: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
                             }[];
                             /**
-                             * @description Why the account is disconnected or needs a reconnect, when known. trial_ended: the free trial ended without a plan; the account and its Motions are kept, and signing it back in after choosing a plan keeps its id. proxy: your own proxy stopped working; replace it with PATCH proxy, or reconnect. Null otherwise.
+                             * @description Why the account is disconnected or needs a reconnect, when known. trial_ended: the free trial ended without a plan; the account and its Campaigns are kept, and signing it back in after choosing a plan keeps its id. proxy: your own proxy stopped working; replace it with PATCH proxy, or reconnect. Null otherwise.
                              * @enum {string|null}
                              */
                             status_reason?: "trial_ended" | "proxy" | null;
@@ -34832,10 +34832,10 @@ export interface operations {
                                 /** @description ISO-8601 UTC time of that reading. */
                                 as_of?: string;
                             } | null;
-                            /** @description How many Motions (not archived) send from this account. */
-                            motions_count?: number;
-                            /** @description The first 20 of those Motions by name: `id` and `name`. Read GET /v1/motions?account_id= for all of them. */
-                            motion_refs?: {
+                            /** @description How many Campaigns (not archived) send from this account. */
+                            campaigns_count?: number;
+                            /** @description The first 20 of those Campaigns by name: `id` and `name`. Read GET /v1/campaigns?account_id= for all of them. */
+                            campaign_refs?: {
                                 id?: string;
                                 name?: string;
                             }[];
@@ -34850,7 +34850,7 @@ export interface operations {
                         }[];
                         /** @description Next-page cursor; null on the last page. */
                         cursor?: string | null;
-                        /** @description How many accounts the whole list holds per status, whatever the page: every account you would page through, not only these items. warming: warm-up still below full limits. in_motion: in at least one Motion. */
+                        /** @description How many accounts the whole list holds per status, whatever the page: every account you would page through, not only these items. warming: warm-up still below full limits. in_campaign: in at least one Campaign. */
                         status_counts?: {
                             active: number;
                             connecting: number;
@@ -34858,7 +34858,7 @@ export interface operations {
                             restricted: number;
                             disconnected: number;
                             warming: number;
-                            in_motion: number;
+                            in_campaign: number;
                         };
                     };
                 };
@@ -35057,7 +35057,7 @@ export interface operations {
                             band: "green" | "amber" | "hard" | "over";
                             /** @description Whether something on this row is configured above Curviate's own default. The safety policy carries the detail: which field, the value, the default and how well calibrated that default is. */
                             over_default: boolean;
-                            /** @description An active pause on this row because the platform refused a recent request on it, or `null`. Motion work on other rows keeps running. A Motion also waits longer than this pause after LinkedIn refuses invitations or views for going too fast: 6 hours, then 24, then 72, at most 7 days on each repeat, resetting after 7 clean days; `health` on the account shows it. A halt is not a ceiling: no limit you raise lifts it, and it clears itself when it expires. To lift one before it expires, send this row in `clear_halts` on `PATCH /v1/{account_id}/safety-policy`; that is recorded, and the pause returns if the platform refuses the account again. */
+                            /** @description An active pause on this row because the platform refused a recent request on it, or `null`. Campaign work on other rows keeps running. A Campaign also waits longer than this pause after LinkedIn refuses invitations or views for going too fast: 6 hours, then 24, then 72, at most 7 days on each repeat, resetting after 7 clean days; `health` on the account shows it. A halt is not a ceiling: no limit you raise lifts it, and it clears itself when it expires. To lift one before it expires, send this row in `clear_halts` on `PATCH /v1/{account_id}/safety-policy`; that is recorded, and the pause returns if the platform refuses the account again. */
                             halt: {
                                 /** @description What the platform did: `rate_limited`, `platform_fault`, or `resend_cooldown` (the same invitation was sent too recently). */
                                 reason?: string;
@@ -35076,7 +35076,7 @@ export interface operations {
                             source: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
                         }[];
                         /**
-                         * @description Why the account is disconnected or needs a reconnect, when known. trial_ended: the free trial ended without a plan; the account and its Motions are kept, and signing it back in after choosing a plan keeps its id. proxy: your own proxy stopped working; replace it with PATCH proxy, or reconnect. Null otherwise.
+                         * @description Why the account is disconnected or needs a reconnect, when known. trial_ended: the free trial ended without a plan; the account and its Campaigns are kept, and signing it back in after choosing a plan keeps its id. proxy: your own proxy stopped working; replace it with PATCH proxy, or reconnect. Null otherwise.
                          * @enum {string|null}
                          */
                         status_reason?: "trial_ended" | "proxy" | null;
@@ -35119,10 +35119,10 @@ export interface operations {
                             /** @description ISO-8601 UTC time of that reading. */
                             as_of?: string;
                         } | null;
-                        /** @description How many Motions (not archived) send from this account. */
-                        motions_count?: number;
-                        /** @description The first 20 of those Motions by name: `id` and `name`. Read GET /v1/motions?account_id= for all of them. */
-                        motion_refs?: {
+                        /** @description How many Campaigns (not archived) send from this account. */
+                        campaigns_count?: number;
+                        /** @description The first 20 of those Campaigns by name: `id` and `name`. Read GET /v1/campaigns?account_id= for all of them. */
+                        campaign_refs?: {
                             id?: string;
                             name?: string;
                         }[];
@@ -35136,7 +35136,7 @@ export interface operations {
                         location?: string | null;
                         /** @description Platform conditions this LinkedIn account is currently in, additive to `status` and independent of it. `recruiter_session_evicted`: the account is signed in somewhere else and LinkedIn allows one session at a time for it, so a person has to close the other session; reconnecting will not help. `commercial_use_limited`: LinkedIn's commercial-use limit has tripped, so people search returns only a handful of results per query. It is a paywall, not a penalty, and nothing else about the account is affected. `profile_view_limited`: profile views outside this account's own network are being blocked; first-degree views still work. The two limits are detected from their symptom: LinkedIn publishes no threshold for either, exposes no counter, and lifts neither on request, so no number is reported. `commercial_use_limited` is a present-tense reading and a genuinely narrow search can also produce the shape it looks for, so treat it as a reason to check rather than a certainty; the next people search that returns a full page clears it. An account in none of these reports an empty array. */
                         account_states?: ("recruiter_session_evicted" | "commercial_use_limited" | "profile_view_limited")[];
-                        /** @description Curviate's inference of how LinkedIn sees this account; LinkedIn publishes no score. `state`: `healthy`; `watch` (a sign to look at, nothing slowed); `slowed` (fewer invitations and views, or one action paused, while other work keeps running); `stopped` (a restriction stops all Motion work, or 650 or more waiting invitations stop new invitations while withdrawals still run). It is per account, and nothing moves work between Motions by itself. One Notification announces each worsening, none an improvement. */
+                        /** @description Curviate's inference of how LinkedIn sees this account; LinkedIn publishes no score. `state`: `healthy`; `watch` (a sign to look at, nothing slowed); `slowed` (fewer invitations and views, or one action paused, while other work keeps running); `stopped` (a restriction stops all Campaign work, or 650 or more waiting invitations stop new invitations while withdrawals still run). It is per account, and nothing moves work between Campaigns by itself. One Notification announces each worsening, none an improvement. */
                         health?: {
                             /** @enum {string} */
                             state: "healthy" | "watch" | "slowed" | "stopped";
@@ -35173,13 +35173,13 @@ export interface operations {
                             /** @description True while the cap is biting and incoming events are not being retained. Delivery to a registered webhook is unaffected. */
                             at_row_cap?: boolean;
                         };
-                        /** @description Whether Curviate saves this account's Connections as Contacts: each person becomes one Contact in your team, an existing Contact is only filled in, do-not-contact people are skipped. On by default. Absent when the account's plan has no Automate: nothing is saved then. Change it with PATCH. */
-                        save_connections_as_contacts?: boolean;
+                        /** @description Whether Curviate saves this account's Connections as Leads: each person becomes one Lead in your team, an existing Lead is only filled in, do-not-contact people are skipped. On by default. Absent when the account's plan has no Automate: nothing is saved then. Change it with PATCH. */
+                        save_connections_as_leads?: boolean;
                         /**
-                         * @description Why saving is stopped while save_connections_as_contacts is true: contact_limit_reached, your team holds its 100,000 Contacts. Delete Contacts you no longer need and saving resumes with the next synced Connections. null while saving. Absent with save_connections_as_contacts.
+                         * @description Why saving is stopped while save_connections_as_leads is true: lead_limit_reached, your team holds its 100,000 Leads. Delete Leads you no longer need and saving resumes with the next synced Connections. null while saving. Absent with save_connections_as_leads.
                          * @enum {string|null}
                          */
-                        save_connections_paused_reason?: "contact_limit_reached" | null;
+                        save_connections_paused_reason?: "lead_limit_reached" | null;
                         /** @description The latest daily snapshot of the account's own numbers, read once a day inside its activity window and stored, never read live on this request. null before the first snapshot. The history is GET /v1/accounts/{account_id}/metrics. */
                         metrics?: {
                             /** @description ISO-8601 UTC time the snapshot was read. */
@@ -35455,13 +35455,13 @@ export interface operations {
                     country?: "AE" | "AO" | "AR" | "AT" | "AU" | "BD" | "BE" | "BG" | "BR" | "CA" | "CH" | "CL" | "CN" | "CO" | "CY" | "CZ" | "DE" | "DK" | "EE" | "EG" | "ES" | "FI" | "FR" | "GB" | "GT" | "HK" | "ID" | "IE" | "IL" | "IN" | "IT" | "JP" | "KR" | "KZ" | "MA" | "MX" | "MY" | "NL" | "NO" | "PA" | "PH" | "PK" | "PL" | "PR" | "PT" | "RO" | "SA" | "SE" | "SG" | "TH" | "TN" | "TR" | "UA" | "US" | "VN" | "ZA";
                     /** @description Optional. false (the default with country or ip): only ever connect from that country; a connect fails when no connection is free there. true: a connection from another country may be used when none is free in the chosen one. Not accepted with proxy. */
                     allow_country_fallback?: boolean;
-                    /** @description Save this account's Connections as Contacts (Automate; on by default): each person becomes one Contact in your team, an existing Contact is only filled in, do-not-contact people are skipped. true also saves the Connections already synced; false keeps the Contacts saved so far. */
-                    save_connections_as_contacts?: boolean;
+                    /** @description Save this account's Connections as Leads (Automate; on by default): each person becomes one Lead in your team, an existing Lead is only filled in, do-not-contact people are skipped. true also saves the Connections already synced; false keeps the Leads saved so far. */
+                    save_connections_as_leads?: boolean;
                 };
             };
         };
         responses: {
-            /** @description The updated account: the object GET /v1/accounts/{account_id} returns, without quotas and event_log (read those on GET). After a location change, connection_location is re-read from LinkedIn's side, so it shows where the account really connects from now. metadata, external_id and save_connections_as_contacts are stored by Curviate; a PATCH carrying only those makes no LinkedIn call. */
+            /** @description The updated account: the object GET /v1/accounts/{account_id} returns, without quotas and event_log (read those on GET). After a location change, connection_location is re-read from LinkedIn's side, so it shows where the account really connects from now. metadata, external_id and save_connections_as_leads are stored by Curviate; a PATCH carrying only those makes no LinkedIn call. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -35523,7 +35523,7 @@ export interface operations {
                         /** @description ISO-8601 UTC creation timestamp of the underlying LinkedIn account, distinct from connected_at. Null until the first background enrichment lands. */
                         substrate_created_at?: string | null;
                         /**
-                         * @description Why the account is disconnected or needs a reconnect, when known. trial_ended: the free trial ended without a plan; the account and its Motions are kept, and signing it back in after choosing a plan keeps its id. proxy: your own proxy stopped working; replace it with PATCH proxy, or reconnect. Null otherwise.
+                         * @description Why the account is disconnected or needs a reconnect, when known. trial_ended: the free trial ended without a plan; the account and its Campaigns are kept, and signing it back in after choosing a plan keeps its id. proxy: your own proxy stopped working; replace it with PATCH proxy, or reconnect. Null otherwise.
                          * @enum {string|null}
                          */
                         status_reason?: "trial_ended" | "proxy" | null;
@@ -35566,10 +35566,10 @@ export interface operations {
                             /** @description ISO-8601 UTC time of that reading. */
                             as_of?: string;
                         } | null;
-                        /** @description How many Motions (not archived) send from this account. */
-                        motions_count?: number;
-                        /** @description The first 20 of those Motions by name: `id` and `name`. Read GET /v1/motions?account_id= for all of them. */
-                        motion_refs?: {
+                        /** @description How many Campaigns (not archived) send from this account. */
+                        campaigns_count?: number;
+                        /** @description The first 20 of those Campaigns by name: `id` and `name`. Read GET /v1/campaigns?account_id= for all of them. */
+                        campaign_refs?: {
                             id?: string;
                             name?: string;
                         }[];
@@ -35583,7 +35583,7 @@ export interface operations {
                         location?: string | null;
                         /** @description Platform conditions this LinkedIn account is currently in, additive to `status` and independent of it. `recruiter_session_evicted`: the account is signed in somewhere else and LinkedIn allows one session at a time for it, so a person has to close the other session; reconnecting will not help. `commercial_use_limited`: LinkedIn's commercial-use limit has tripped, so people search returns only a handful of results per query. It is a paywall, not a penalty, and nothing else about the account is affected. `profile_view_limited`: profile views outside this account's own network are being blocked; first-degree views still work. The two limits are detected from their symptom: LinkedIn publishes no threshold for either, exposes no counter, and lifts neither on request, so no number is reported. `commercial_use_limited` is a present-tense reading and a genuinely narrow search can also produce the shape it looks for, so treat it as a reason to check rather than a certainty; the next people search that returns a full page clears it. An account in none of these reports an empty array. */
                         account_states?: ("recruiter_session_evicted" | "commercial_use_limited" | "profile_view_limited")[];
-                        /** @description Curviate's inference of how LinkedIn sees this account; LinkedIn publishes no score. `state`: `healthy`; `watch` (a sign to look at, nothing slowed); `slowed` (fewer invitations and views, or one action paused, while other work keeps running); `stopped` (a restriction stops all Motion work, or 650 or more waiting invitations stop new invitations while withdrawals still run). It is per account, and nothing moves work between Motions by itself. One Notification announces each worsening, none an improvement. */
+                        /** @description Curviate's inference of how LinkedIn sees this account; LinkedIn publishes no score. `state`: `healthy`; `watch` (a sign to look at, nothing slowed); `slowed` (fewer invitations and views, or one action paused, while other work keeps running); `stopped` (a restriction stops all Campaign work, or 650 or more waiting invitations stop new invitations while withdrawals still run). It is per account, and nothing moves work between Campaigns by itself. One Notification announces each worsening, none an improvement. */
                         health?: {
                             /** @enum {string} */
                             state: "healthy" | "watch" | "slowed" | "stopped";
@@ -35611,13 +35611,13 @@ export interface operations {
                             /** @description The candidate zones while zone_state is unknown, empty otherwise. Empty while unknown means the window is closed. */
                             fallback_timezones?: string[];
                         };
-                        /** @description Whether Curviate saves this account's Connections as Contacts: each person becomes one Contact in your team, an existing Contact is only filled in, do-not-contact people are skipped. On by default. Absent when the account's plan has no Automate: nothing is saved then. Change it with PATCH. */
-                        save_connections_as_contacts?: boolean;
+                        /** @description Whether Curviate saves this account's Connections as Leads: each person becomes one Lead in your team, an existing Lead is only filled in, do-not-contact people are skipped. On by default. Absent when the account's plan has no Automate: nothing is saved then. Change it with PATCH. */
+                        save_connections_as_leads?: boolean;
                         /**
-                         * @description Why saving is stopped while save_connections_as_contacts is true: contact_limit_reached, your team holds its 100,000 Contacts. Delete Contacts you no longer need and saving resumes with the next synced Connections. null while saving. Absent with save_connections_as_contacts.
+                         * @description Why saving is stopped while save_connections_as_leads is true: lead_limit_reached, your team holds its 100,000 Leads. Delete Leads you no longer need and saving resumes with the next synced Connections. null while saving. Absent with save_connections_as_leads.
                          * @enum {string|null}
                          */
-                        save_connections_paused_reason?: "contact_limit_reached" | null;
+                        save_connections_paused_reason?: "lead_limit_reached" | null;
                     };
                 };
             };
@@ -35630,7 +35630,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: save_connections_as_contacts on an account without Automate (details.account_id names it). INSUFFICIENT_ROLE or ACCOUNT_NOT_SHARED: only the account's person, Owners and Managers change it. */
+            /** @description TIER_REQUIRED: save_connections_as_leads on an account without Automate (details.account_id names it). INSUFFICIENT_ROLE or ACCOUNT_NOT_SHARED: only the account's person, Owners and Managers change it. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -35850,7 +35850,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description Whether your team may use this account. false opts it out: nobody else can operate it, it leaves every Motion that held it, and its queued profile enrichment visits are dropped. true shares it again (it does not rejoin a Motion). */
+                    /** @description Whether your team may use this account. false opts it out: nobody else can operate it, it leaves every Campaign that held it, and its queued profile enrichment visits are dropped. true shares it again (it does not rejoin a Campaign). */
                     team_access: boolean;
                 };
             };
@@ -36075,17 +36075,17 @@ export interface operations {
                 bucket?: "auto" | "day" | "week" | "month";
                 /** @description IANA zone the days are read in, e.g. Europe/Berlin. Default: UTC. */
                 timezone?: string;
-                /** @description Only these Motions (mot_...). Default: every Motion. Repeat the key, comma-separate or mix; empties ignored. */
-                motion_id?: string;
-                /** @description motion, unibox (the Unibox), api (any API key or MCP grant), direct (unibox and api). Default: all. Repeat the key, comma-separate or mix; empties ignored. */
+                /** @description Only these Campaigns (mot_...). Default: every Campaign. Repeat the key, comma-separate or mix; empties ignored. */
+                campaign_id?: string;
+                /** @description campaign, unibox (the Unibox), api (any API key or MCP grant), direct (unibox and api). Default: all. Repeat the key, comma-separate or mix; empties ignored. */
                 origin?: string;
-                /** @description Sections: profile, metrics, performance, daily, limits, motions, activity, flags, forecast. Omitted: the summary, which never holds forecast. Repeat the key, comma-separate or mix; empties ignored. */
+                /** @description Sections: profile, metrics, performance, daily, limits, campaigns, activity, flags, forecast. Omitted: the summary, which never holds forecast. Repeat the key, comma-separate or mix; empties ignored. */
                 include?: string;
                 /** @description Dotted paths kept in the sections, e.g. performance.reply.rate. A requested path always appears. Repeat the key, comma-separate or mix; empties ignored. */
                 fields?: string;
                 /** @description Orders lists: sent, acceptance.rate, reply.rate, inmail_reply.rate, last_activity_at, name. -key: desc. Repeat the key, comma-separate or mix; empties ignored. */
                 sort?: string;
-                /** @description Items per list section (motions, accounts), 1-100. Default: 5 in the summary, else every item. */
+                /** @description Items per list section (campaigns, accounts), 1-100. Default: 5 in the summary, else every item. */
                 limit?: number;
                 /** @description previous_period: each rate gains previous (the same number of days just before from) and delta (rate - previous rate). */
                 compare?: "previous_period";
@@ -36106,7 +36106,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description One account's overview: who it is (profile), its own numbers (metrics, the daily snapshot), its limits and latest activity, and its results in the window as the team overview reads them scoped to it (performance, daily, its Motions). Each Contact counts once per Account and source. profile, metrics, limits and activity do not follow the window. No LinkedIn call. Default (no include, no fields), trimmed: profile (name, status, status_reason, warm_up.state, limit_profile), metrics (the four attention numbers, change_30d, as_of), performance (its rates and sends), limits (each row's used, effective_ceiling, remaining), the top 5 Motions by sent with each rate's numerator, denominator and rate, flags without values. include, fields, sort, limit and compare as on the team overview; account_attention and limit_reached flag this account. */
+            /** @description One account's overview: who it is (profile), its own numbers (metrics, the daily snapshot), its limits and latest activity, and its results in the window as the team overview reads them scoped to it (performance, daily, its Campaigns). Each Lead counts once per Account and source. profile, metrics, limits and activity do not follow the window. No LinkedIn call. Default (no include, no fields), trimmed: profile (name, status, status_reason, warm_up.state, limit_profile), metrics (the four attention numbers, change_30d, as_of), performance (its rates and sends), limits (each row's used, effective_ceiling, remaining), the top 5 Campaigns by sent with each rate's numerator, denominator and rate, flags without values. include, fields, sort, limit and compare as on the team overview; account_attention and limit_reached flag this account. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -36122,10 +36122,10 @@ export interface operations {
                             account_id: string | null;
                             /** @description The account_id filter; [] when every visible account counts. */
                             account_ids: string[];
-                            /** @description The motion_id filter of the overview; [] when every Motion counts. */
-                            motion_ids: string[];
+                            /** @description The campaign_id filter of the overview; [] when every Campaign counts. */
+                            campaign_ids: string[];
                             /** @description The origins counted (direct is unibox and api); null for every origin. */
-                            origin: ("motion" | "unibox" | "api")[] | null;
+                            origin: ("campaign" | "unibox" | "api")[] | null;
                         };
                         /** @description The window as applied. */
                         window: {
@@ -36163,7 +36163,7 @@ export interface operations {
                             /** @enum {string} */
                             status?: "active" | "reconnect_needed" | "restricted" | "connecting" | "disconnected";
                             /**
-                             * @description Why the account is disconnected or needs a reconnect, when known. trial_ended: the free trial ended without a plan; the account and its Motions are kept, and signing it back in after choosing a plan keeps its id. proxy: your own proxy stopped working; replace it with PATCH proxy, or reconnect. Null otherwise.
+                             * @description Why the account is disconnected or needs a reconnect, when known. trial_ended: the free trial ended without a plan; the account and its Campaigns are kept, and signing it back in after choosing a plan keeps its id. proxy: your own proxy stopped working; replace it with PATCH proxy, or reconnect. Null otherwise.
                              * @enum {string|null}
                              */
                             status_reason?: "trial_ended" | "proxy" | null;
@@ -36261,7 +36261,7 @@ export interface operations {
                                 as_of?: string;
                             } | null;
                         } | null;
-                        /** @description The account's latest 10 actions and their outcomes, newest first, whatever the window, within the last 12 months (the raw reach): invitations, messages and InMails sent, invitations accepted, replies. Source: origin, and the Motion for origin motion. Metadata only, never message text. The full feed: GET /v1/analytics/events?account_id=. */
+                        /** @description The account's latest 10 actions and their outcomes, newest first, whatever the window, within the last 12 months (the raw reach): invitations, messages and InMails sent, invitations accepted, replies. Source: origin, and the Campaign for origin campaign. Metadata only, never message text. The full feed: GET /v1/analytics/events?account_id=. */
                         activity?: {
                             /** @description Event id (ane_...). */
                             id: string;
@@ -36270,31 +36270,31 @@ export interface operations {
                             /** @description UTC instant. */
                             occurred_at: string;
                             /**
-                             * @description Who sent it: a Motion, the Unibox, or an API key or MCP grant (REST, CLI, MCP, SDK).
+                             * @description Who sent it: a Campaign, the Unibox, or an API key or MCP grant (REST, CLI, MCP, SDK).
                              * @enum {string}
                              */
-                            origin: "motion" | "unibox" | "api";
+                            origin: "campaign" | "unibox" | "api";
                             /** @description The step's action, e.g. invite.send; null for a reply. */
                             action: string | null;
-                            /** @description The Motion; null for a direct action. */
-                            motion: {
+                            /** @description The Campaign; null for a direct action. */
+                            campaign: {
                                 id?: string;
                                 name?: string | null;
                             } | null;
-                            /** @description The person, read live; null for a direct action or once the Contact is deleted. */
-                            contact: {
+                            /** @description The person, read live; null for a direct action or once the Lead is deleted. */
+                            lead: {
                                 id?: string;
                                 /** @description Full name. */
                                 full_name?: string | null;
                                 /** @description LinkedIn profile URL. */
                                 linkedin_url?: string | null;
                             } | null;
-                            /** @description A direct action's person, name only (they may not be a Contact); null for a Motion action or a person LinkedIn never named. */
+                            /** @description A direct action's person, name only (they may not be a Lead); null for a Campaign action or a person LinkedIn never named. */
                             person_name: string | null;
                         }[];
                         /** @description The account's results in the window: the team overview's totals scoped to it. The summary keeps its rates and sends. */
                         performance?: {
-                            /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Contact counts once per Account. */
+                            /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Lead counts once per Account. */
                             enrollments?: {
                                 /** @description Waiting to start. */
                                 queued?: number;
@@ -36365,7 +36365,7 @@ export interface operations {
                                 /** @description Of those, first messaged less than 7 days ago. */
                                 maturing?: number;
                             };
-                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Contact, first messaged in the window (InMail excluded), with no reply before that message, the share who replied at or after it so far. */
+                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Lead, first messaged in the window (InMail excluded), with no reply before that message, the share who replied at or after it so far. */
                             reply?: {
                                 /** @description Numerator: the replied part of messaged, so far. */
                                 replied?: number;
@@ -36375,7 +36375,7 @@ export interface operations {
                                 rate?: number | null;
                                 /** @description True when messaged is below 30. The rate is still returned. */
                                 low_sample?: boolean;
-                                /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                 pending?: number;
                                 /** @description Of messaged, sent less than 7 days before generated_at. Still in the rate. */
                                 maturing?: number;
@@ -36402,7 +36402,7 @@ export interface operations {
                                 /** @description Of those, first InMailed less than 7 days ago. */
                                 maturing?: number;
                             };
-                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Contact, first InMailed in the window, with no reply before that InMail, the share who replied at or after it so far. A message is never counted here. */
+                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Lead, first InMailed in the window, with no reply before that InMail, the share who replied at or after it so far. A message is never counted here. */
                             inmail_reply?: {
                                 /** @description Numerator: the replied part of inmailed, so far. */
                                 replied?: number;
@@ -36412,7 +36412,7 @@ export interface operations {
                                 rate?: number | null;
                                 /** @description True when inmailed is below 30. The rate is still returned. */
                                 low_sample?: boolean;
-                                /** @description Of inmailed, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                /** @description Of inmailed, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                 pending?: number;
                                 /** @description Of inmailed, sent less than 7 days before generated_at. Still in the rate. */
                                 maturing?: number;
@@ -36447,11 +36447,11 @@ export interface operations {
                             };
                             /** @description Right now, like enrollments: why Enrollments were skipped or failed. Each map sums to its count. */
                             enrollment_reasons?: {
-                                /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                 skipped?: {
                                     [key: string]: number;
                                 };
-                                /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                 failed?: {
                                     [key: string]: number;
                                 };
@@ -36499,16 +36499,16 @@ export interface operations {
                                 inmail_replied: number;
                             };
                         }[];
-                        /** @description The Motions the account sends in, and any with its records in the window; figures are the account's share. The summary keeps each rate's numerator, denominator and rate. */
-                        motions?: {
-                            motion_id?: string;
+                        /** @description The Campaigns the account sends in, and any with its records in the window; figures are the account's share. The summary keeps each rate's numerator, denominator and rate. */
+                        campaigns?: {
+                            campaign_id?: string;
                             name?: string;
                             status?: string;
                             /** @description Why it is paused; null unless paused. */
                             pause_reason?: string | null;
-                            /** @description The Motion's latest visible record; null when it has none. */
+                            /** @description The Campaign's latest visible record; null when it has none. */
                             last_activity_at?: string | null;
-                            /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Contact counts once per Account. */
+                            /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Lead counts once per Account. */
                             enrollments?: {
                                 /** @description Waiting to start. */
                                 queued?: number;
@@ -36579,7 +36579,7 @@ export interface operations {
                                 /** @description Of those, first messaged less than 7 days ago. */
                                 maturing?: number;
                             };
-                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Contact, first messaged in the window (InMail excluded), with no reply before that message, the share who replied at or after it so far. */
+                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Lead, first messaged in the window (InMail excluded), with no reply before that message, the share who replied at or after it so far. */
                             reply?: {
                                 /** @description Numerator: the replied part of messaged, so far. */
                                 replied?: number;
@@ -36589,7 +36589,7 @@ export interface operations {
                                 rate?: number | null;
                                 /** @description True when messaged is below 30. The rate is still returned. */
                                 low_sample?: boolean;
-                                /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                 pending?: number;
                                 /** @description Of messaged, sent less than 7 days before generated_at. Still in the rate. */
                                 maturing?: number;
@@ -36616,7 +36616,7 @@ export interface operations {
                                 /** @description Of those, first InMailed less than 7 days ago. */
                                 maturing?: number;
                             };
-                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Contact, first InMailed in the window, with no reply before that InMail, the share who replied at or after it so far. A message is never counted here. */
+                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Lead, first InMailed in the window, with no reply before that InMail, the share who replied at or after it so far. A message is never counted here. */
                             inmail_reply?: {
                                 /** @description Numerator: the replied part of inmailed, so far. */
                                 replied?: number;
@@ -36626,7 +36626,7 @@ export interface operations {
                                 rate?: number | null;
                                 /** @description True when inmailed is below 30. The rate is still returned. */
                                 low_sample?: boolean;
-                                /** @description Of inmailed, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                /** @description Of inmailed, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                 pending?: number;
                                 /** @description Of inmailed, sent less than 7 days before generated_at. Still in the rate. */
                                 maturing?: number;
@@ -36661,11 +36661,11 @@ export interface operations {
                             };
                             /** @description Right now, like enrollments: why Enrollments were skipped or failed. Each map sums to its count. */
                             enrollment_reasons?: {
-                                /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                 skipped?: {
                                     [key: string]: number;
                                 };
-                                /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                 failed?: {
                                     [key: string]: number;
                                 };
@@ -36673,15 +36673,15 @@ export interface operations {
                             /** @description The exact CLI call that reads this item next. Only when a grammar parameter is given. */
                             next?: string;
                         }[];
-                        motions_truncated?: boolean;
-                        /** @description What to look at next, from this closed set, in this order. small_sample: a headline rate of performance (acceptance, reply, inmail_reply) rests on 1 to 29 sends, one flag per rate. still_maturing: more than a third of a headline rate's denominator went out under 7 days ago (maturing x 3 > denominator). rate_moved: with compare, both denominators at least 30, the previous rate above 0, and the rate moved by 25% of the previous rate or more, on the raw rates. limit_reached: an Account in scope was refused for a budget row's ceiling on 3 or more days of the window, one flag per Account and row. account_attention: an Account in scope needs reconnecting (reconnect_needed) or is restricted. biggest_drop_off (one Motion): the step with the largest share of skipped, failed and else among at least 30 entries; a tie goes to the earlier step. ab_leader (one Motion): a step whose every arm, the fallback row included, has a denominator of at least 30, and one arm has the strictly highest rate; it lists every arm's rate and denominator, never a significance figure. A tie: no flag. */
+                        campaigns_truncated?: boolean;
+                        /** @description What to look at next, from this closed set, in this order. small_sample: a headline rate of performance (acceptance, reply, inmail_reply) rests on 1 to 29 sends, one flag per rate. still_maturing: more than a third of a headline rate's denominator went out under 7 days ago (maturing x 3 > denominator). rate_moved: with compare, both denominators at least 30, the previous rate above 0, and the rate moved by 25% of the previous rate or more, on the raw rates. limit_reached: an Account in scope was refused for a budget row's ceiling on 3 or more days of the window, one flag per Account and row. account_attention: an Account in scope needs reconnecting (reconnect_needed) or is restricted. biggest_drop_off (one Campaign): the step with the largest share of skipped, failed and else among at least 30 entries; a tie goes to the earlier step. ab_leader (one Campaign): a step whose every arm, the fallback row included, has a denominator of at least 30, and one arm has the strictly highest rate; it lists every arm's rate and denominator, never a significance figure. A tie: no flag. */
                         flags?: {
                             /** @enum {string} */
                             code: "small_sample" | "still_maturing" | "rate_moved" | "limit_reached" | "account_attention" | "biggest_drop_off" | "ab_leader";
                             /** @description What the flag is about. */
                             subject: {
                                 /** @enum {string} */
-                                type: "team" | "motion" | "account" | "step";
+                                type: "team" | "campaign" | "account" | "step";
                                 /** @description tnt_, mot_, acc_ or the step id. */
                                 id: string;
                             };
@@ -36694,10 +36694,10 @@ export interface operations {
                             /** @description The exact CLI call that looks into it. */
                             next: string;
                         }[];
-                        /** @description Only with include=forecast. forecast: what your Motions are expected to send and get per day, from today (its whole expected day) through forecast_days (1-365, default 30) or the last day with activity, whichever comes first. A simulation of each Motion's Sequence, limits, warm-up, schedule and accounts with its observed acceptance and reply rates. Motions only, no direct actions; the configuration is frozen as it is now: no new Enrollments, no edits. A draft Motion: as if turned on now with its picked accounts; null when none is picked. Whole actions: each day's expected values summed over the scope, then rounded. */
+                        /** @description Only with include=forecast. forecast: what your Campaigns are expected to send and get per day, from today (its whole expected day) through forecast_days (1-365, default 30) or the last day with activity, whichever comes first. A simulation of each Campaign's Sequence, limits, warm-up, schedule and accounts with its observed acceptance and reply rates. Campaigns only, no direct actions; the configuration is frozen as it is now: no new Enrollments, no edits. A draft Campaign: as if turned on now with its picked accounts; null when none is picked. Whole actions: each day's expected values summed over the scope, then rounded. */
                         forecast?: {
                             /**
-                             * @description computing: an account of the scope has had no simulation yet, so daily is today's zeros and is not a forecast; read again in a few minutes. computed otherwise (always for a draft Motion).
+                             * @description computing: an account of the scope has had no simulation yet, so daily is today's zeros and is not a forecast; read again in a few minutes. computed otherwise (always for a draft Campaign).
                              * @enum {string}
                              */
                             status: "computed" | "computing";
@@ -36754,7 +36754,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ACCOUNT_NOT_FOUND: not one of your accounts, or removed. RESOURCE_NOT_FOUND: a motion_id is not one of your Motions. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
+            /** @description ACCOUNT_NOT_FOUND: not one of your accounts, or removed. RESOURCE_NOT_FOUND: a campaign_id is not one of your Campaigns. An id whose connection was replaced or removed also stops resolving here, and it is already absent from the list, so re-read `GET /v1/accounts` for the current id. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -38825,7 +38825,7 @@ export interface operations {
                              * @description The event source this webhook subscribes to.
                              * @enum {string}
                              */
-                            source?: "messaging" | "user" | "account_status" | "post" | "motion";
+                            source?: "messaging" | "user" | "account_status" | "post" | "campaign";
                             /** @description The URL that receives delivery POST requests, read back masked: the host, then •••, never the path or query (they often carry a secret). PATCHing this masked value keeps the stored URL. */
                             request_url?: string;
                             /** @description Keyed fingerprint of the full URL. Changes when the URL does; equal on two of your webhooks with the same URL. */
@@ -38837,11 +38837,11 @@ export interface operations {
                             } | null;
                             name?: string | null;
                             account_ids?: string[] | null;
-                            /** @description When set, only events whose data.motion_id is one of these Motions (mot_ ids) are delivered. null: no Motion filter. */
-                            motion_ids?: string[] | null;
+                            /** @description When set, only events whose data.campaign_id is one of these Campaigns (mot_ ids) are delivered. null: no Campaign filter. */
+                            campaign_ids?: string[] | null;
                             /** @description The body template as written (a JSON text with {{variables}}); null: the standard payload. See https://docs.curviate.com/reference/webhooks/body-templates */
                             body_template?: string | null;
-                            /** @description motion source: the motion.custom_event names delivered; null: every one. */
+                            /** @description campaign source: the campaign.custom_event names delivered; null: every one. */
                             custom_event_names?: string[] | null;
                             enabled?: boolean;
                             /** @description Custom headers added to each delivery POST, with a fingerprint in place of the value. */
@@ -38955,8 +38955,8 @@ export interface operations {
                         key: string;
                         value: string;
                     }[];
-                    /** @description Only deliver events whose data.motion_id is one of these Motions (mot_ ids you own, up to 100). Events that carry no Motion are then not delivered. Default: no filter. */
-                    motion_ids?: string[];
+                    /** @description Only deliver events whose data.campaign_id is one of these Campaigns (mot_ ids you own, up to 100). Events that carry no Campaign are then not delivered. Default: no filter. */
+                    campaign_ids?: string[];
                     /** @description Messaging events to subscribe to (default: [message.received]) */
                     events?: ("message.received" | "message.read" | "message.reaction" | "message.edited" | "message.deleted" | "chat.updated" | "chat.deleted")[];
                     /**
@@ -38988,8 +38988,8 @@ export interface operations {
                         key: string;
                         value: string;
                     }[];
-                    /** @description Only deliver events whose data.motion_id is one of these Motions (mot_ ids you own, up to 100). Events that carry no Motion are then not delivered. Default: no filter. */
-                    motion_ids?: string[];
+                    /** @description Only deliver events whose data.campaign_id is one of these Campaigns (mot_ ids you own, up to 100). Events that carry no Campaign are then not delivered. Default: no filter. */
+                    campaign_ids?: string[];
                     /** @description User/relation events to subscribe to (default: [connection.accepted]) */
                     events?: ("connection.accepted" | "connection.new")[];
                     /**
@@ -39021,8 +39021,8 @@ export interface operations {
                         key: string;
                         value: string;
                     }[];
-                    /** @description Only deliver events whose data.motion_id is one of these Motions (mot_ ids you own, up to 100). Events that carry no Motion are then not delivered. Default: no filter. */
-                    motion_ids?: string[];
+                    /** @description Only deliver events whose data.campaign_id is one of these Campaigns (mot_ ids you own, up to 100). Events that carry no Campaign are then not delivered. Default: no filter. */
+                    campaign_ids?: string[];
                     /** @description Account-status events to subscribe to (default: all 12 lifecycle events) */
                     events?: ("account.created" | "account.connected" | "account.synced" | "account.reconnected" | "account.reconnect_needed" | "account.restricted" | "account.creation_failed" | "account.disconnected" | "account.error" | "account.paused" | "account.connecting" | "account.permission_revoked" | "account.initial_sync.running" | "account.initial_sync.completed" | "account.initial_sync.failed")[];
                 } | {
@@ -39049,13 +39049,13 @@ export interface operations {
                         key: string;
                         value: string;
                     }[];
-                    /** @description Only deliver events whose data.motion_id is one of these Motions (mot_ ids you own, up to 100). Events that carry no Motion are then not delivered. Default: no filter. */
-                    motion_ids?: string[];
+                    /** @description Only deliver events whose data.campaign_id is one of these Campaigns (mot_ ids you own, up to 100). Events that carry no Campaign are then not delivered. Default: no filter. */
+                    campaign_ids?: string[];
                     /** @description Post events to subscribe to (default: both post.published and post.publish_failed) */
                     events?: ("post.published" | "post.publish_failed")[];
                 } | {
                     /** @constant */
-                    source: "motion";
+                    source: "campaign";
                     /** @description The delivery body as a JSON text with {{variables}} inside its strings (GET /v1/webhooks/variables lists them per source); null (the default) sends the standard payload. Signed over the rendered bytes, sent as application/json, at most 16,384 bytes and 200 variables, read back as written. Excludes data remapping. A template that fails the lint answers 422 WEBHOOK_TEMPLATE_INVALID with every finding in errors[]. See https://docs.curviate.com/reference/webhooks/body-templates */
                     body_template?: string | null;
                     /** @description HTTPS URL that receives webhook deliveries. Must be a publicly reachable host on the default https port; private, loopback and link-local addresses are rejected. Stored encrypted and read back masked (https://host/•••); PATCHing the masked value keeps the stored URL. */
@@ -39077,11 +39077,11 @@ export interface operations {
                         key: string;
                         value: string;
                     }[];
-                    /** @description Only deliver events whose data.motion_id is one of these Motions (mot_ ids you own, up to 100). Events that carry no Motion are then not delivered. Default: no filter. */
-                    motion_ids?: string[];
-                    /** @description Motion events to subscribe to (default: all but the opt-ins step.executed, enrollment.seen and enrollment.reassigned). motion.signal is the old name of motion.custom_event, accepted until 2027-01-19. */
-                    events?: ("motion.status_changed" | "enrollment.started" | "enrollment.accepted" | "enrollment.replied" | "enrollment.seen" | "enrollment.reassigned" | "enrollment.skipped" | "enrollment.finished" | "step.executed" | "step.failed" | "motion.custom_event" | "motion.signal")[];
-                    /** @description With motion.custom_event in events: null (the default) delivers every custom event, a list only those names (up to 50). GET /v1/webhooks/events lists the names your Sequences send under custom_events. */
+                    /** @description Only deliver events whose data.campaign_id is one of these Campaigns (mot_ ids you own, up to 100). Events that carry no Campaign are then not delivered. Default: no filter. */
+                    campaign_ids?: string[];
+                    /** @description Campaign events to subscribe to (default: all but the opt-ins step.executed, enrollment.seen and enrollment.reassigned). */
+                    events?: ("campaign.status_changed" | "enrollment.started" | "enrollment.accepted" | "enrollment.replied" | "enrollment.seen" | "enrollment.reassigned" | "enrollment.skipped" | "enrollment.finished" | "step.executed" | "step.failed" | "campaign.custom_event")[];
+                    /** @description With campaign.custom_event in events: null (the default) delivers every custom event, a list only those names (up to 50). GET /v1/webhooks/events lists the names your Sequences send under custom_events. */
                     custom_event_names?: string[] | null;
                 };
             };
@@ -39107,7 +39107,7 @@ export interface operations {
                          * @description The event source this webhook subscribes to.
                          * @enum {string}
                          */
-                        source?: "messaging" | "user" | "account_status" | "post" | "motion";
+                        source?: "messaging" | "user" | "account_status" | "post" | "campaign";
                         /** @description The URL that receives delivery POST requests, read back masked: the host, then •••, never the path or query (they often carry a secret). PATCHing this masked value keeps the stored URL. */
                         request_url?: string;
                         /** @description Keyed fingerprint of the full URL. Changes when the URL does; equal on two of your webhooks with the same URL. */
@@ -39121,11 +39121,11 @@ export interface operations {
                         name?: string | null;
                         /** @description Accounts targeted by this webhook (acc_ ids you own), or null when it covers every account its creator can operate, now and later (any source). */
                         account_ids?: string[] | null;
-                        /** @description When set, only events whose data.motion_id is one of these Motions (mot_ ids) are delivered. null: no Motion filter. */
-                        motion_ids?: string[] | null;
+                        /** @description When set, only events whose data.campaign_id is one of these Campaigns (mot_ ids) are delivered. null: no Campaign filter. */
+                        campaign_ids?: string[] | null;
                         /** @description The body template as written (a JSON text with {{variables}}); null: the standard payload. See https://docs.curviate.com/reference/webhooks/body-templates */
                         body_template?: string | null;
-                        /** @description motion source: the motion.custom_event names delivered; null: every one. */
+                        /** @description campaign source: the campaign.custom_event names delivered; null: every one. */
                         custom_event_names?: string[] | null;
                         /** @description A disabled webhook is created but delivers nothing. */
                         enabled?: boolean;
@@ -39212,7 +39212,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description WEBHOOK_TEMPLATE_INVALID: the body_template fails the lint; nothing is saved. errors[] holds every finding at once: code (T1-T10), message, pointer, line, col, hint, docs_url, and candidates for a likely typo. 400 INVALID_REQUEST instead for a body_template with data remapping, or custom_event_names without motion.custom_event. */
+            /** @description WEBHOOK_TEMPLATE_INVALID: the body_template fails the lint; nothing is saved. errors[] holds every finding at once: code (T1-T10), message, pointer, line, col, hint, docs_url, and candidates for a likely typo. 400 INVALID_REQUEST instead for a body_template with data remapping, or custom_event_names without campaign.custom_event. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -39282,11 +39282,11 @@ export interface operations {
                                 availability?: "realtime" | "no_longer_realtime" | "not_realtime";
                             }[];
                         }[];
-                        /** @description The names motion.custom_event carries in your Team's current Sequences (a step's event, or a Send event step), each with the Motions and steps that send it. Name them in a motion webhook's custom_event_names. */
+                        /** @description The names campaign.custom_event carries in your Team's current Sequences (a step's event, or a Send event step), each with the Campaigns and steps that send it. Name them in a campaign webhook's custom_event_names. */
                         custom_events?: {
                             name?: string;
                             used_by?: {
-                                motion_id?: string;
+                                campaign_id?: string;
                                 step_id?: string;
                             }[];
                         }[];
@@ -39329,7 +39329,7 @@ export interface operations {
         parameters: {
             query: {
                 /** @description The webhook source whose template variables to list. */
-                source: "messaging" | "user" | "account_status" | "post" | "motion";
+                source: "messaging" | "user" | "account_status" | "post" | "campaign";
             };
             header?: {
                 /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
@@ -39358,24 +39358,24 @@ export interface operations {
                         object?: "webhook_variables";
                         source?: string;
                         variables?: {
-                            /** @description Write it as {{name}} inside a JSON string of the template. contact.extra.<key> stands for any custom field. */
+                            /** @description Write it as {{name}} inside a JSON string of the template. lead.extra.<key> stands for any custom field. */
                             name?: string;
                             /** @enum {string} */
-                            scope?: "event" | "account" | "contact" | "motion" | "enrollment";
+                            scope?: "event" | "account" | "lead" | "campaign" | "enrollment";
                             /** @description string, or string|number|boolean for a custom field or an Enrollment value (a whole-string variable keeps the value's type). */
                             type?: string;
-                            /** @description From the synthetic sample (an @example.com Contact); null when it has none. */
+                            /** @description From the synthetic sample (an @example.com Lead); null when it has none. */
                             example?: string | null;
-                            /** @description Enrollment values: the Motions and steps whose save writes it; [] otherwise. */
+                            /** @description Enrollment values: the Campaigns and steps whose save writes it; [] otherwise. */
                             saved_by?: {
-                                motion_id?: string;
+                                campaign_id?: string;
                                 step_id?: string;
                             }[];
                         }[];
                     };
                 };
             };
-            /** @description source missing or not one of messaging, user, account_status, post, motion. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description source missing or not one of messaging, user, account_status, post, campaign. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -39996,7 +39996,7 @@ export interface operations {
                          * @description The event source this webhook subscribes to (immutable).
                          * @enum {string}
                          */
-                        source?: "messaging" | "user" | "account_status" | "post" | "motion";
+                        source?: "messaging" | "user" | "account_status" | "post" | "campaign";
                         /** @description The URL that receives delivery POST requests, read back masked: the host, then •••, never the path or query (they often carry a secret). PATCHing this masked value keeps the stored URL. */
                         request_url?: string;
                         /** @description Keyed fingerprint of the full URL. Changes when the URL does; equal on two of your webhooks with the same URL. */
@@ -40010,11 +40010,11 @@ export interface operations {
                         name?: string | null;
                         /** @description Accounts targeted by this webhook (acc_ ids you own), or null when it covers every account its creator can operate, now and later (any source). */
                         account_ids?: string[] | null;
-                        /** @description When set, only events whose data.motion_id is one of these Motions (mot_ ids) are delivered. null: no Motion filter. */
-                        motion_ids?: string[] | null;
+                        /** @description When set, only events whose data.campaign_id is one of these Campaigns (mot_ ids) are delivered. null: no Campaign filter. */
+                        campaign_ids?: string[] | null;
                         /** @description The body template as written (a JSON text with {{variables}}); null: the standard payload. See https://docs.curviate.com/reference/webhooks/body-templates */
                         body_template?: string | null;
-                        /** @description motion source: the motion.custom_event names delivered; null: every one. */
+                        /** @description campaign source: the campaign.custom_event names delivered; null: every one. */
                         custom_event_names?: string[] | null;
                         /** @description A disabled webhook is kept but delivers nothing. Disabling takes effect immediately, including for retries that were already queued; those attempts are abandoned, not deferred, so re-enabling delivers new events rather than replaying the ones that were dropped. */
                         enabled?: boolean;
@@ -40210,11 +40210,11 @@ export interface operations {
                     data?: string[];
                     /** @description Replace the targeted accounts (whole-array, each an acc_ id you own), or null to cover every account you can operate, now and later. */
                     account_ids?: string[] | null;
-                    /** @description Only deliver events whose data.motion_id is one of these Motions (mot_ ids you own, up to 100). Events that carry no Motion are then not delivered. Replaces the whole list; null removes the filter. */
-                    motion_ids?: string[] | null;
+                    /** @description Only deliver events whose data.campaign_id is one of these Campaigns (mot_ ids you own, up to 100). Events that carry no Campaign are then not delivered. Replaces the whole list; null removes the filter. */
+                    campaign_ids?: string[] | null;
                     /** @description The delivery body as a JSON text with {{variables}} inside its strings (GET /v1/webhooks/variables lists them per source); null (the default) sends the standard payload. Signed over the rendered bytes, sent as application/json, at most 16,384 bytes and 200 variables, read back as written. Excludes data remapping. A template that fails the lint answers 422 WEBHOOK_TEMPLATE_INVALID with every finding in errors[]. See https://docs.curviate.com/reference/webhooks/body-templates */
                     body_template?: string | null;
-                    /** @description With motion.custom_event in events: null (the default) delivers every custom event, a list only those names (up to 50). GET /v1/webhooks/events lists the names your Sequences send under custom_events. */
+                    /** @description With campaign.custom_event in events: null (the default) delivers every custom event, a list only those names (up to 50). GET /v1/webhooks/events lists the names your Sequences send under custom_events. */
                     custom_event_names?: string[] | null;
                     /** @description Immutable. The webhook's current source is accepted and changes nothing; any other value is refused. */
                     source?: string;
@@ -40242,7 +40242,7 @@ export interface operations {
                          * @description The event source this webhook subscribes to (immutable).
                          * @enum {string}
                          */
-                        source?: "messaging" | "user" | "account_status" | "post" | "motion";
+                        source?: "messaging" | "user" | "account_status" | "post" | "campaign";
                         /** @description The URL that receives delivery POST requests, read back masked: the host, then •••, never the path or query (they often carry a secret). PATCHing this masked value keeps the stored URL. */
                         request_url?: string;
                         /** @description Keyed fingerprint of the full URL. Changes when the URL does; equal on two of your webhooks with the same URL. */
@@ -40256,11 +40256,11 @@ export interface operations {
                         name?: string | null;
                         /** @description Accounts targeted by this webhook (acc_ ids you own), or null when it covers every account its creator can operate, now and later (any source). */
                         account_ids?: string[] | null;
-                        /** @description When set, only events whose data.motion_id is one of these Motions (mot_ ids) are delivered. null: no Motion filter. */
-                        motion_ids?: string[] | null;
+                        /** @description When set, only events whose data.campaign_id is one of these Campaigns (mot_ ids) are delivered. null: no Campaign filter. */
+                        campaign_ids?: string[] | null;
                         /** @description The body template as written (a JSON text with {{variables}}); null: the standard payload. See https://docs.curviate.com/reference/webhooks/body-templates */
                         body_template?: string | null;
-                        /** @description motion source: the motion.custom_event names delivered; null: every one. */
+                        /** @description campaign source: the campaign.custom_event names delivered; null: every one. */
                         custom_event_names?: string[] | null;
                         /** @description A disabled webhook is kept but delivers nothing. Disabling takes effect immediately, including for retries that were already queued; those attempts are abandoned, not deferred, so re-enabling delivers new events rather than replaying the ones that were dropped. */
                         enabled?: boolean;
@@ -40452,7 +40452,7 @@ export interface operations {
                             /** @description The ramp day, counted in the account's sending days since the ramp began, from 1; the day of the recovery ramp while that supplies `factor`. Null when no ramp applies. `factor` is that day's percentage over 100, and `week` is null. */
                             day?: number | null;
                         };
-                        /** @description Whether Curviate withdraws this account's old Motion-sent invitations on its own (default true). Past 400 pending invitations, those over 14 days old go oldest first, at most the larger of 25 and the day's invitation allowance a day, one at a time inside the account's working hours, each after a check that it is still pending. Invitations sent by hand or through the API are never withdrawn, and a withdrawn person is never invited again by a Motion. It runs while invitations are stopped at 650 pending. Set it with PATCH /v1/{account_id}/safety-policy and `auto_withdraw`; a change is recorded in the account's ledger. */
+                        /** @description Whether Curviate withdraws this account's old Campaign-sent invitations on its own (default true). Past 400 pending invitations, those over 14 days old go oldest first, at most the larger of 25 and the day's invitation allowance a day, one at a time inside the account's working hours, each after a check that it is still pending. Invitations sent by hand or through the API are never withdrawn, and a withdrawn person is never invited again by a Campaign. It runs while invitations are stopped at 650 pending. Set it with PATCH /v1/{account_id}/safety-policy and `auto_withdraw`; a change is recorded in the account's ledger. */
                         auto_withdraw?: boolean;
                         /**
                          * @description How close this account's daily targets sit to its limits (default `normal`). `normal` aims about midway between the green figure and the limit. `increased` works close to the limit, never past it, and raises the chance LinkedIn notices the activity. It changes only the targets; the pace follows. Set it with PATCH /v1/{account_id}/safety-policy and `activity_level`, by whoever may change this account's active hours; a change is recorded in the account's ledger. It runs as `normal` on its own, and the setting stays, while warm-up is on or the account's health is not `healthy`: see `activity_level_effective`.
@@ -40589,10 +40589,10 @@ export interface operations {
                                 source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
                             }[];
                         }[];
-                        /** @description How Curviate paces Motion actions on this account: before a Motion action of a type, at least `min_gap_seconds` plus a random part of `jitter_seconds` must have passed since the account's previous Motion action of that type, and `global.min_gap_seconds` since its previous Motion action of any type or its previous LinkedIn write through the API. `read` covers profile and post reads. Direct API calls are never paced: those are yours to pace. Values resolve per field from Curviate's default, then the team's, then this account's. Write any subset as `pacing: {"invite.send": {"min_gap_seconds": 600}}`; null clears a field or a whole type back to the default. Values are whole seconds from 0 to 86400 and are never clamped; an unknown type or field, a fraction or an out-of-range value is a 400 naming it. */
+                        /** @description How Curviate paces Campaign actions on this account: before a Campaign action of a type, at least `min_gap_seconds` plus a random part of `jitter_seconds` must have passed since the account's previous Campaign action of that type, and `global.min_gap_seconds` since its previous Campaign action of any type or its previous LinkedIn write through the API. `read` covers profile and post reads. Direct API calls are never paced: those are yours to pace. Values resolve per field from Curviate's default, then the team's, then this account's. Write any subset as `pacing: {"invite.send": {"min_gap_seconds": 600}}`; null clears a field or a whole type back to the default. Values are whole seconds from 0 to 86400 and are never clamped; an unknown type or field, a fraction or an out-of-range value is a 400 naming it. */
                         pacing?: {
                             "invite.send"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -40615,7 +40615,7 @@ export interface operations {
                                 }[];
                             };
                             "post.comment"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -40638,7 +40638,7 @@ export interface operations {
                                 }[];
                             };
                             "message.send"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -40661,7 +40661,7 @@ export interface operations {
                                 }[];
                             };
                             "inmail.send"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -40684,7 +40684,7 @@ export interface operations {
                                 }[];
                             };
                             "profile.follow"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -40707,7 +40707,7 @@ export interface operations {
                                 }[];
                             };
                             "profile.unfollow"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -40730,7 +40730,7 @@ export interface operations {
                                 }[];
                             };
                             "skill.endorse"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -40753,7 +40753,7 @@ export interface operations {
                                 }[];
                             };
                             "invite.withdraw"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -40776,7 +40776,7 @@ export interface operations {
                                 }[];
                             };
                             "post.react"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -40799,7 +40799,7 @@ export interface operations {
                                 }[];
                             };
                             read?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -40822,7 +40822,7 @@ export interface operations {
                                 }[];
                             };
                             global?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -41013,7 +41013,7 @@ export interface operations {
                         /** @description Read-only, ignored: the rung this row's hours come from. */
                         activity_window_source?: unknown;
                     }[];
-                    /** @description Motion pacing at this scope (an account, or the team default every account inherits), keyed by action type (`invite.send`, `post.comment`, `message.send`, `inmail.send`, `profile.follow`, `profile.unfollow`, `skill.endorse`, `invite.withdraw`, `post.react`), `read` and `global`: `{"invite.send": {"min_gap_seconds": 600, "jitter_seconds": 360}}`. Any subset; null clears a field or a type back to the default. Whole seconds from 0 to 86400, never clamped. A value below the default carries an `over_default` warning, the rows' own shape. Direct API calls are never paced. */
+                    /** @description Campaign pacing at this scope (an account, or the team default every account inherits), keyed by action type (`invite.send`, `post.comment`, `message.send`, `inmail.send`, `profile.follow`, `profile.unfollow`, `skill.endorse`, `invite.withdraw`, `post.react`), `read` and `global`: `{"invite.send": {"min_gap_seconds": 600, "jitter_seconds": 360}}`. Any subset; null clears a field or a type back to the default. Whole seconds from 0 to 86400, never clamped. A value below the default carries an `over_default` warning, the rows' own shape. Direct API calls are never paced. */
                     pacing?: {
                         [key: string]: {
                             /** @description Whole seconds, 0 to 86400. Null clears it. */
@@ -41073,7 +41073,7 @@ export interface operations {
                         /** @description Custom: sending days between steps, 1 to 7. */
                         every?: number | null;
                     };
-                    /** @description Automatic withdrawal of old invitations Curviate sent for this account's Motions, default true. While this account has more than 400 pending invitations, Curviate withdraws the Motion-sent ones older than 14 days, oldest first, a few a day (at most the larger of 25 and the day's invitation allowance), inside its working hours and one at a time with the usual gaps, after checking each is still pending. It never touches an invitation you sent by hand or through the API, and never invites a withdrawn person again. It keeps working while invitations are stopped at 650 pending, which is how the account comes back under. Set false to keep every old invitation pending; the level then falls only as people accept or you withdraw. */
+                    /** @description Automatic withdrawal of old invitations Curviate sent for this account's Campaigns, default true. While this account has more than 400 pending invitations, Curviate withdraws the Campaign-sent ones older than 14 days, oldest first, a few a day (at most the larger of 25 and the day's invitation allowance), inside its working hours and one at a time with the usual gaps, after checking each is still pending. It never touches an invitation you sent by hand or through the API, and never invites a withdrawn person again. It keeps working while invitations are stopped at 650 pending, which is how the account comes back under. Set false to keep every old invitation pending; the level then falls only as people accept or you withdraw. */
                     auto_withdraw?: boolean;
                     /** @description Read-only: the time zone the activity window is read in, from where this account connects. Accepted and ignored, so the read's object can be sent back unchanged. The window's settable inputs are per row: `activity_window_start`, `activity_window_end`, `activity_window_applies_to`. */
                     activity_window?: unknown;
@@ -41145,7 +41145,7 @@ export interface operations {
                             /** @description The ramp day, counted in the account's sending days since the ramp began, from 1; the day of the recovery ramp while that supplies `factor`. Null when no ramp applies. `factor` is that day's percentage over 100, and `week` is null. */
                             day?: number | null;
                         };
-                        /** @description Whether Curviate withdraws this account's old Motion-sent invitations on its own (default true). Past 400 pending invitations, those over 14 days old go oldest first, at most the larger of 25 and the day's invitation allowance a day, one at a time inside the account's working hours, each after a check that it is still pending. Invitations sent by hand or through the API are never withdrawn, and a withdrawn person is never invited again by a Motion. It runs while invitations are stopped at 650 pending. Set it with PATCH /v1/{account_id}/safety-policy and `auto_withdraw`; a change is recorded in the account's ledger. */
+                        /** @description Whether Curviate withdraws this account's old Campaign-sent invitations on its own (default true). Past 400 pending invitations, those over 14 days old go oldest first, at most the larger of 25 and the day's invitation allowance a day, one at a time inside the account's working hours, each after a check that it is still pending. Invitations sent by hand or through the API are never withdrawn, and a withdrawn person is never invited again by a Campaign. It runs while invitations are stopped at 650 pending. Set it with PATCH /v1/{account_id}/safety-policy and `auto_withdraw`; a change is recorded in the account's ledger. */
                         auto_withdraw?: boolean;
                         /**
                          * @description How close this account's daily targets sit to its limits (default `normal`). `normal` aims about midway between the green figure and the limit. `increased` works close to the limit, never past it, and raises the chance LinkedIn notices the activity. It changes only the targets; the pace follows. Set it with PATCH /v1/{account_id}/safety-policy and `activity_level`, by whoever may change this account's active hours; a change is recorded in the account's ledger. It runs as `normal` on its own, and the setting stays, while warm-up is on or the account's health is not `healthy`: see `activity_level_effective`.
@@ -41282,10 +41282,10 @@ export interface operations {
                                 source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
                             }[];
                         }[];
-                        /** @description How Curviate paces Motion actions on this account: before a Motion action of a type, at least `min_gap_seconds` plus a random part of `jitter_seconds` must have passed since the account's previous Motion action of that type, and `global.min_gap_seconds` since its previous Motion action of any type or its previous LinkedIn write through the API. `read` covers profile and post reads. Direct API calls are never paced: those are yours to pace. Values resolve per field from Curviate's default, then the team's, then this account's. Write any subset as `pacing: {"invite.send": {"min_gap_seconds": 600}}`; null clears a field or a whole type back to the default. Values are whole seconds from 0 to 86400 and are never clamped; an unknown type or field, a fraction or an out-of-range value is a 400 naming it. */
+                        /** @description How Curviate paces Campaign actions on this account: before a Campaign action of a type, at least `min_gap_seconds` plus a random part of `jitter_seconds` must have passed since the account's previous Campaign action of that type, and `global.min_gap_seconds` since its previous Campaign action of any type or its previous LinkedIn write through the API. `read` covers profile and post reads. Direct API calls are never paced: those are yours to pace. Values resolve per field from Curviate's default, then the team's, then this account's. Write any subset as `pacing: {"invite.send": {"min_gap_seconds": 600}}`; null clears a field or a whole type back to the default. Values are whole seconds from 0 to 86400 and are never clamped; an unknown type or field, a fraction or an out-of-range value is a 400 naming it. */
                         pacing?: {
                             "invite.send"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -41308,7 +41308,7 @@ export interface operations {
                                 }[];
                             };
                             "post.comment"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -41331,7 +41331,7 @@ export interface operations {
                                 }[];
                             };
                             "message.send"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -41354,7 +41354,7 @@ export interface operations {
                                 }[];
                             };
                             "inmail.send"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -41377,7 +41377,7 @@ export interface operations {
                                 }[];
                             };
                             "profile.follow"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -41400,7 +41400,7 @@ export interface operations {
                                 }[];
                             };
                             "profile.unfollow"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -41423,7 +41423,7 @@ export interface operations {
                                 }[];
                             };
                             "skill.endorse"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -41446,7 +41446,7 @@ export interface operations {
                                 }[];
                             };
                             "invite.withdraw"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -41469,7 +41469,7 @@ export interface operations {
                                 }[];
                             };
                             "post.react"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -41492,7 +41492,7 @@ export interface operations {
                                 }[];
                             };
                             read?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -41515,7 +41515,7 @@ export interface operations {
                                 }[];
                             };
                             global?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -41821,10 +41821,10 @@ export interface operations {
                                 }[];
                             }[];
                         }[];
-                        /** @description The team's Motion pacing defaults: the Curviate default where the team has set nothing. Every account inherits them unless it sets its own. How Curviate paces Motion actions on this account: before a Motion action of a type, at least `min_gap_seconds` plus a random part of `jitter_seconds` must have passed since the account's previous Motion action of that type, and `global.min_gap_seconds` since its previous Motion action of any type or its previous LinkedIn write through the API. `read` covers profile and post reads. Direct API calls are never paced: those are yours to pace. Values resolve per field from Curviate's default, then the team's, then this account's. Write any subset as `pacing: {"invite.send": {"min_gap_seconds": 600}}`; null clears a field or a whole type back to the default. Values are whole seconds from 0 to 86400 and are never clamped; an unknown type or field, a fraction or an out-of-range value is a 400 naming it. */
+                        /** @description The team's Campaign pacing defaults: the Curviate default where the team has set nothing. Every account inherits them unless it sets its own. How Curviate paces Campaign actions on this account: before a Campaign action of a type, at least `min_gap_seconds` plus a random part of `jitter_seconds` must have passed since the account's previous Campaign action of that type, and `global.min_gap_seconds` since its previous Campaign action of any type or its previous LinkedIn write through the API. `read` covers profile and post reads. Direct API calls are never paced: those are yours to pace. Values resolve per field from Curviate's default, then the team's, then this account's. Write any subset as `pacing: {"invite.send": {"min_gap_seconds": 600}}`; null clears a field or a whole type back to the default. Values are whole seconds from 0 to 86400 and are never clamped; an unknown type or field, a fraction or an out-of-range value is a 400 naming it. */
                         pacing?: {
                             "invite.send"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -41847,7 +41847,7 @@ export interface operations {
                                 }[];
                             };
                             "post.comment"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -41870,7 +41870,7 @@ export interface operations {
                                 }[];
                             };
                             "message.send"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -41893,7 +41893,7 @@ export interface operations {
                                 }[];
                             };
                             "inmail.send"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -41916,7 +41916,7 @@ export interface operations {
                                 }[];
                             };
                             "profile.follow"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -41939,7 +41939,7 @@ export interface operations {
                                 }[];
                             };
                             "profile.unfollow"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -41962,7 +41962,7 @@ export interface operations {
                                 }[];
                             };
                             "skill.endorse"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -41985,7 +41985,7 @@ export interface operations {
                                 }[];
                             };
                             "invite.withdraw"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -42008,7 +42008,7 @@ export interface operations {
                                 }[];
                             };
                             "post.react"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -42031,7 +42031,7 @@ export interface operations {
                                 }[];
                             };
                             read?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -42054,7 +42054,7 @@ export interface operations {
                                 }[];
                             };
                             global?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -42215,7 +42215,7 @@ export interface operations {
                             activity_window_source?: unknown;
                         }[];
                     }[];
-                    /** @description Motion pacing at this scope (an account, or the team default every account inherits), keyed by action type (`invite.send`, `post.comment`, `message.send`, `inmail.send`, `profile.follow`, `profile.unfollow`, `skill.endorse`, `invite.withdraw`, `post.react`), `read` and `global`: `{"invite.send": {"min_gap_seconds": 600, "jitter_seconds": 360}}`. Any subset; null clears a field or a type back to the default. Whole seconds from 0 to 86400, never clamped. A value below the default carries an `over_default` warning, the rows' own shape. Direct API calls are never paced. */
+                    /** @description Campaign pacing at this scope (an account, or the team default every account inherits), keyed by action type (`invite.send`, `post.comment`, `message.send`, `inmail.send`, `profile.follow`, `profile.unfollow`, `skill.endorse`, `invite.withdraw`, `post.react`), `read` and `global`: `{"invite.send": {"min_gap_seconds": 600, "jitter_seconds": 360}}`. Any subset; null clears a field or a type back to the default. Whole seconds from 0 to 86400, never clamped. A value below the default carries an `over_default` warning, the rows' own shape. Direct API calls are never paced. */
                     pacing?: {
                         [key: string]: {
                             /** @description Whole seconds, 0 to 86400. Null clears it. */
@@ -42363,10 +42363,10 @@ export interface operations {
                                 }[];
                             }[];
                         }[];
-                        /** @description The team's Motion pacing defaults: the Curviate default where the team has set nothing. Every account inherits them unless it sets its own. How Curviate paces Motion actions on this account: before a Motion action of a type, at least `min_gap_seconds` plus a random part of `jitter_seconds` must have passed since the account's previous Motion action of that type, and `global.min_gap_seconds` since its previous Motion action of any type or its previous LinkedIn write through the API. `read` covers profile and post reads. Direct API calls are never paced: those are yours to pace. Values resolve per field from Curviate's default, then the team's, then this account's. Write any subset as `pacing: {"invite.send": {"min_gap_seconds": 600}}`; null clears a field or a whole type back to the default. Values are whole seconds from 0 to 86400 and are never clamped; an unknown type or field, a fraction or an out-of-range value is a 400 naming it. */
+                        /** @description The team's Campaign pacing defaults: the Curviate default where the team has set nothing. Every account inherits them unless it sets its own. How Curviate paces Campaign actions on this account: before a Campaign action of a type, at least `min_gap_seconds` plus a random part of `jitter_seconds` must have passed since the account's previous Campaign action of that type, and `global.min_gap_seconds` since its previous Campaign action of any type or its previous LinkedIn write through the API. `read` covers profile and post reads. Direct API calls are never paced: those are yours to pace. Values resolve per field from Curviate's default, then the team's, then this account's. Write any subset as `pacing: {"invite.send": {"min_gap_seconds": 600}}`; null clears a field or a whole type back to the default. Values are whole seconds from 0 to 86400 and are never clamped; an unknown type or field, a fraction or an out-of-range value is a 400 naming it. */
                         pacing?: {
                             "invite.send"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -42389,7 +42389,7 @@ export interface operations {
                                 }[];
                             };
                             "post.comment"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -42412,7 +42412,7 @@ export interface operations {
                                 }[];
                             };
                             "message.send"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -42435,7 +42435,7 @@ export interface operations {
                                 }[];
                             };
                             "inmail.send"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -42458,7 +42458,7 @@ export interface operations {
                                 }[];
                             };
                             "profile.follow"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -42481,7 +42481,7 @@ export interface operations {
                                 }[];
                             };
                             "profile.unfollow"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -42504,7 +42504,7 @@ export interface operations {
                                 }[];
                             };
                             "skill.endorse"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -42527,7 +42527,7 @@ export interface operations {
                                 }[];
                             };
                             "invite.withdraw"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -42550,7 +42550,7 @@ export interface operations {
                                 }[];
                             };
                             "post.react"?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -42573,7 +42573,7 @@ export interface operations {
                                 }[];
                             };
                             read?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -42596,7 +42596,7 @@ export interface operations {
                                 }[];
                             };
                             global?: {
-                                /** @description The least time between two Motion calls of this type on the account, in seconds. */
+                                /** @description The least time between two Campaign calls of this type on the account, in seconds. */
                                 min_gap_seconds?: number;
                                 /** @description A random extra of up to this many seconds added to each gap. On `global` it defaults to 25: the wait after any action is at least `min_gap_seconds` plus a random part of this. */
                                 jitter_seconds?: number;
@@ -42880,8 +42880,8 @@ export interface operations {
                             } | null;
                             /** @description The accounts GET /v1/accounts lists for you in that team. Only with include=counts, on a team this credential may count (see the operation). */
                             accounts?: number;
-                            /** @description The Motions GET /v1/motions?status=active lists in that team. Only with include=counts, on a team this credential may count (see the operation). */
-                            active_motions?: number;
+                            /** @description The Campaigns GET /v1/campaigns?status=active lists in that team. Only with include=counts, on a team this credential may count (see the operation). */
+                            active_campaigns?: number;
                             /** @description Only where you are an Owner. Only with include=counts, on a team this credential may count (see the operation). */
                             seats?: {
                                 /** @description Seats an account occupies, lent-in seats included. */
@@ -44291,7 +44291,7 @@ export interface operations {
                             event_name_field: string | null;
                             /** @description Event names read from event_name_field so far. */
                             event_names_seen: string[];
-                            motion_id: string | null;
+                            campaign_id: string | null;
                             match: {
                                 enrollment_id?: string | null;
                                 linkedin_url?: string | null;
@@ -44321,9 +44321,9 @@ export interface operations {
                             /** Format: date-time */
                             last_arrival_at: string | null;
                             arrivals_7d: number;
-                            /** @description Steps of current Motions waiting for this event. */
+                            /** @description Steps of current Campaigns waiting for this event. */
                             used_by: {
-                                motion_id?: string;
+                                campaign_id?: string;
                                 step_id?: string;
                             }[];
                             created_by: {
@@ -44393,15 +44393,15 @@ export interface operations {
                     event_name?: string | null;
                     /** @description Path in the post the event name is read from (trimmed, lowercased), e.g. event_type. */
                     event_name_field?: string | null;
-                    /** @description Only this Motion's Enrollments move. null: any Motion's. */
-                    motion_id?: string | null;
-                    /** @description Up to three paths, tried in this order: the first that finds a Contact wins. null removes one. */
+                    /** @description Only this Campaign's Enrollments move. null: any Campaign's. */
+                    campaign_id?: string | null;
+                    /** @description Up to three paths, tried in this order: the first that finds a Lead wins. null removes one. */
                     match?: {
                         /** @description Path to an Enrollment id (enr_...) in the post, e.g. custom_variables.enrollment_id. */
                         enrollment_id?: string | null;
                         /** @description Path to the person's LinkedIn URL in the post. */
                         linkedin_url?: string | null;
-                        /** @description Path to an email address the Contact already has, e.g. lead_email. */
+                        /** @description Path to an email address the Lead already has, e.g. lead_email. */
                         email?: string | null;
                     };
                     /** @description A header every post must carry, else 401. null removes it. */
@@ -44435,7 +44435,7 @@ export interface operations {
                         event_name_field: string | null;
                         /** @description Event names read from event_name_field so far. */
                         event_names_seen: string[];
-                        motion_id: string | null;
+                        campaign_id: string | null;
                         match: {
                             enrollment_id?: string | null;
                             linkedin_url?: string | null;
@@ -44465,9 +44465,9 @@ export interface operations {
                         /** Format: date-time */
                         last_arrival_at: string | null;
                         arrivals_7d: number;
-                        /** @description Steps of current Motions waiting for this event. */
+                        /** @description Steps of current Campaigns waiting for this event. */
                         used_by: {
-                            motion_id?: string;
+                            campaign_id?: string;
                             step_id?: string;
                         }[];
                         created_by: {
@@ -44484,7 +44484,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid field: exactly one of event_name and event_name_field, a path, motion_id or the header. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description Invalid field: exactly one of event_name and event_name_field, a path, campaign_id or the header. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -44502,7 +44502,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: incoming events are part of Motions; this team's Tier does not include them. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: incoming events are part of Campaigns; this team's Tier does not include them. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -44571,7 +44571,7 @@ export interface operations {
                         event_name_field: string | null;
                         /** @description Event names read from event_name_field so far. */
                         event_names_seen: string[];
-                        motion_id: string | null;
+                        campaign_id: string | null;
                         match: {
                             enrollment_id?: string | null;
                             linkedin_url?: string | null;
@@ -44601,9 +44601,9 @@ export interface operations {
                         /** Format: date-time */
                         last_arrival_at: string | null;
                         arrivals_7d: number;
-                        /** @description Steps of current Motions waiting for this event. */
+                        /** @description Steps of current Campaigns waiting for this event. */
                         used_by: {
-                            motion_id?: string;
+                            campaign_id?: string;
                             step_id?: string;
                         }[];
                         created_by: {
@@ -44638,7 +44638,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: only the creator edits, rotates and captures; Owners and Managers switch one on or off and delete it. Or TIER_REQUIRED: incoming events are part of Motions; this team's Tier does not include them. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description INSUFFICIENT_ROLE: only the creator edits, rotates and captures; Owners and Managers switch one on or off and delete it. Or TIER_REQUIRED: incoming events are part of Campaigns; this team's Tier does not include them. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -44687,7 +44687,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Capturing: the next post replaces the sample (and still moves Motions when switched on). */
+            /** @description Capturing: the next post replaces the sample (and still moves Campaigns when switched on). */
             202: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -44707,7 +44707,7 @@ export interface operations {
                         event_name_field: string | null;
                         /** @description Event names read from event_name_field so far. */
                         event_names_seen: string[];
-                        motion_id: string | null;
+                        campaign_id: string | null;
                         match: {
                             enrollment_id?: string | null;
                             linkedin_url?: string | null;
@@ -44737,9 +44737,9 @@ export interface operations {
                         /** Format: date-time */
                         last_arrival_at: string | null;
                         arrivals_7d: number;
-                        /** @description Steps of current Motions waiting for this event. */
+                        /** @description Steps of current Campaigns waiting for this event. */
                         used_by: {
-                            motion_id?: string;
+                            campaign_id?: string;
                             step_id?: string;
                         }[];
                         created_by: {
@@ -44774,7 +44774,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: only the creator edits, rotates and captures; Owners and Managers switch one on or off and delete it. Or TIER_REQUIRED: incoming events are part of Motions; this team's Tier does not include them. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description INSUFFICIENT_ROLE: only the creator edits, rotates and captures; Owners and Managers switch one on or off and delete it. Or TIER_REQUIRED: incoming events are part of Campaigns; this team's Tier does not include them. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -44839,11 +44839,11 @@ export interface operations {
                             /** Format: date-time */
                             received_at?: string;
                             event_name?: string | null;
-                            /** @description moved, recorded, no_enrollment_waiting, no_contact, no_match_field, ambiguous_email, invalid_event_name, sample_captured, incoming_off, tier_required or bad_payload. Accept values you do not know. */
+                            /** @description moved, recorded, no_enrollment_waiting, no_lead, no_match_field, ambiguous_email, invalid_event_name, sample_captured, incoming_off, tier_required or bad_payload. Accept values you do not know. */
                             outcome?: string;
                             /** @enum {string|null} */
                             matched_by?: "enrollment_id" | "linkedin_url" | "email" | null;
-                            contact_id?: string | null;
+                            lead_id?: string | null;
                             enrollments_moved?: number;
                             enrollments_recorded?: number;
                             values?: Record<string, never>[];
@@ -44929,7 +44929,7 @@ export interface operations {
                         event_name_field: string | null;
                         /** @description Event names read from event_name_field so far. */
                         event_names_seen: string[];
-                        motion_id: string | null;
+                        campaign_id: string | null;
                         match: {
                             enrollment_id?: string | null;
                             linkedin_url?: string | null;
@@ -44959,9 +44959,9 @@ export interface operations {
                         /** Format: date-time */
                         last_arrival_at: string | null;
                         arrivals_7d: number;
-                        /** @description Steps of current Motions waiting for this event. */
+                        /** @description Steps of current Campaigns waiting for this event. */
                         used_by: {
-                            motion_id?: string;
+                            campaign_id?: string;
                             step_id?: string;
                         }[];
                         created_by: {
@@ -45119,15 +45119,15 @@ export interface operations {
                     event_name?: string | null;
                     /** @description Path in the post the event name is read from (trimmed, lowercased), e.g. event_type. */
                     event_name_field?: string | null;
-                    /** @description Only this Motion's Enrollments move. null: any Motion's. */
-                    motion_id?: string | null;
-                    /** @description Up to three paths, tried in this order: the first that finds a Contact wins. null removes one. */
+                    /** @description Only this Campaign's Enrollments move. null: any Campaign's. */
+                    campaign_id?: string | null;
+                    /** @description Up to three paths, tried in this order: the first that finds a Lead wins. null removes one. */
                     match?: {
                         /** @description Path to an Enrollment id (enr_...) in the post, e.g. custom_variables.enrollment_id. */
                         enrollment_id?: string | null;
                         /** @description Path to the person's LinkedIn URL in the post. */
                         linkedin_url?: string | null;
-                        /** @description Path to an email address the Contact already has, e.g. lead_email. */
+                        /** @description Path to an email address the Lead already has, e.g. lead_email. */
                         email?: string | null;
                     };
                     /** @description A header every post must carry, else 401. null removes it. */
@@ -45163,7 +45163,7 @@ export interface operations {
                         event_name_field: string | null;
                         /** @description Event names read from event_name_field so far. */
                         event_names_seen: string[];
-                        motion_id: string | null;
+                        campaign_id: string | null;
                         match: {
                             enrollment_id?: string | null;
                             linkedin_url?: string | null;
@@ -45193,9 +45193,9 @@ export interface operations {
                         /** Format: date-time */
                         last_arrival_at: string | null;
                         arrivals_7d: number;
-                        /** @description Steps of current Motions waiting for this event. */
+                        /** @description Steps of current Campaigns waiting for this event. */
                         used_by: {
-                            motion_id?: string;
+                            campaign_id?: string;
                             step_id?: string;
                         }[];
                         created_by: {
@@ -45230,7 +45230,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: only the creator edits, rotates and captures; Owners and Managers switch one on or off and delete it. Or TIER_REQUIRED: incoming events are part of Motions; this team's Tier does not include them. */
+            /** @description INSUFFICIENT_ROLE: only the creator edits, rotates and captures; Owners and Managers switch one on or off and delete it. Or TIER_REQUIRED: incoming events are part of Campaigns; this team's Tier does not include them. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -46338,16 +46338,16 @@ export interface operations {
             };
         };
     };
-    getV1Contacts: {
+    getV1Leads: {
         parameters: {
             query?: {
-                /** @description Only Contacts in these Contact lists: in any of them, or in all with list_match=all. One id is one list. Comma list of up to 20 Contact list ids (cl_...). */
+                /** @description Only Leads in these Lead lists: in any of them, or in all with list_match=all. One id is one list. Comma list of up to 20 Lead list ids (cl_...). */
                 list_id?: string;
-                /** @description Tag names, any casing: Contacts with any of them. Repeat the key, comma-separate or mix; empties ignored. */
+                /** @description Tag names, any casing: Leads with any of them. Repeat the key, comma-separate or mix; empties ignored. */
                 tag?: string;
-                /** @description Only Contacts in this import's report (imp_...), while the import exists. */
+                /** @description Only Leads in this import's report (imp_...), while the import exists. */
                 import_id?: string;
-                /** @description The Contact for this person, any URL spelling. */
+                /** @description The Lead for this person, any URL spelling. */
                 linkedin_url?: string;
                 /** @description Case-insensitive text match on names, headline, job title, company, email, location and profile slug. */
                 q?: string;
@@ -46355,19 +46355,19 @@ export interface operations {
                 enrichment_status?: "none" | "queued" | "done" | "failed";
                 /** @description true: Connections of your accounts only; false: everyone else. */
                 connected?: boolean;
-                /** @description Only Contacts that are Connections of any of these accounts: a comma list of up to 50 account ids (acc_...). One id is one account. It implies connected=true. */
+                /** @description Only Leads that are Connections of any of these accounts: a comma list of up to 50 account ids (acc_...). One id is one account. It implies connected=true. */
                 account_id?: string;
-                /** @description Only Contacts with an Enrollment in this Motion (mot_...). */
-                motion_id?: string;
-                /** @description With motion_id: queued, active, paused, finished, failed, skipped; pending = queued until 2027-01-21. Repeat the key, comma-separate or mix; empties ignored. */
+                /** @description Only Leads with an Enrollment in this Campaign (mot_...). */
+                campaign_id?: string;
+                /** @description With campaign_id: queued, active, paused, finished, failed, skipped; pending = queued until 2027-01-21. Repeat the key, comma-separate or mix; empties ignored. */
                 enrollment_status?: ("queued" | "active" | "paused" | "finished" | "failed" | "skipped" | "pending")[];
                 /** @description With list_id: any (default), in at least one of the lists; all, in every one. */
                 list_match?: "any" | "all";
-                /** @description Only Contacts in none of these Contact lists. Comma list of up to 20 Contact list ids (cl_...). */
+                /** @description Only Leads in none of these Lead lists. Comma list of up to 20 Lead list ids (cl_...). */
                 not_list_id?: string;
-                /** @description true: only Contacts with an email address; false: only those without. */
+                /** @description true: only Leads with an email address; false: only those without. */
                 has_email?: boolean;
-                /** @description true: the page also carries total, the number of Contacts the filters match. */
+                /** @description true: the page also carries total, the number of Leads the filters match. */
                 include_total?: boolean;
                 /** @description By creation time: desc (default) or asc. */
                 order?: "desc" | "asc";
@@ -46387,7 +46387,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Contacts, newest first by default. With include_total=true, total counts every Contact the filters match. */
+            /** @description Leads, newest first by default. With include_total=true, total counts every Lead the filters match. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -46397,14 +46397,14 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {string} */
-                        object: "contact_page";
+                        object: "lead_page";
                         items: {
                             /**
                              * @description Response type discriminator.
                              * @enum {string}
                              */
-                            object: "contact";
-                            /** @description Contact id (con_...). */
+                            object: "lead";
+                            /** @description Lead id (con_...). */
                             id: string;
                             /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person. */
                             linkedin_url: string | null;
@@ -46436,7 +46436,7 @@ export interface operations {
                             location: string | null;
                             /** @description About text. */
                             about: string | null;
-                            /** @description ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with contact.language. */
+                            /** @description ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with lead.language. */
                             language: string | null;
                             /** @description Your own fields. */
                             extra: {
@@ -46448,17 +46448,17 @@ export interface operations {
                             };
                             /** @description Tag names. */
                             tags: string[];
-                            /** @description Contact lists (cl_...) holding this Contact. */
+                            /** @description Lead lists (cl_...) holding this Lead. */
                             list_ids: string[];
                             /** @description Your accounts this person is a Connection of. */
                             connected_account_ids: string[];
                             enrichment: {
                                 /** @enum {string} */
                                 status: "none" | "queued" | "done" | "failed";
-                                /** @description When observed profile data last changed this Contact. */
+                                /** @description When observed profile data last changed this Lead. */
                                 enriched_at: string | null;
                                 /**
-                                 * @description Why the last enrich visit failed: profile_not_found (no such profile, or it is not this person), expired (not visited within 7 days), account_unavailable (the account was removed), platform_error, or tier_required (the team's plan no longer includes Contacts).
+                                 * @description Why the last enrich visit failed: profile_not_found (no such profile, or it is not this person), expired (not visited within 7 days), account_unavailable (the account was removed), platform_error, or tier_required (the team's plan no longer includes Leads).
                                  * @enum {string|null}
                                  */
                                 failure_code: "profile_not_found" | "expired" | "account_unavailable" | "platform_error" | "tier_required" | null;
@@ -46470,7 +46470,7 @@ export interface operations {
                         }[];
                         /** @description Pass back as cursor for the next page; null on the last page. */
                         cursor: string | null;
-                        /** @description Only with include_total=true: how many Contacts the filters match. */
+                        /** @description Only with include_total=true: how many Leads the filters match. */
                         total?: number;
                     };
                 };
@@ -46525,7 +46525,7 @@ export interface operations {
             };
         };
     };
-    postV1Contacts: {
+    postV1Leads: {
         parameters: {
             query?: never;
             header?: {
@@ -46540,7 +46540,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description The person's LinkedIn profile or Sales Navigator lead URL. Any spelling of one person resolves to one Contact. */
+                    /** @description The person's LinkedIn profile or Sales Navigator lead URL. Any spelling of one person resolves to one Lead. */
                     linkedin_url: string;
                     /** @description Full name, up to 200 characters. */
                     full_name?: string | null;
@@ -46566,17 +46566,17 @@ export interface operations {
                     extra?: {
                         [key: string]: unknown;
                     };
-                    /** @description Tag names to add (never removes). Up to 50 Tags per Contact; a new name creates the Tag. */
+                    /** @description Tag names to add (never removes). Up to 50 Tags per Lead; a new name creates the Tag. */
                     tags?: string[];
-                    /** @description A Contact list to add the Contact to (cl_...). */
+                    /** @description A Lead list to add the Lead to (cl_...). */
                     list_id?: string;
-                    /** @description A Contact list to add the Contact to, by name; created if none matches (any casing). */
+                    /** @description A Lead list to add the Lead to, by name; created if none matches (any casing). */
                     list_name?: string;
                 };
             };
         };
         responses: {
-            /** @description An existing Contact for this person: outcome updated (a field, Tag or membership changed) or unchanged. */
+            /** @description An existing Lead for this person: outcome updated (a field, Tag or membership changed) or unchanged. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -46589,8 +46589,8 @@ export interface operations {
                          * @description Response type discriminator.
                          * @enum {string}
                          */
-                        object: "contact";
-                        /** @description Contact id (con_...). */
+                        object: "lead";
+                        /** @description Lead id (con_...). */
                         id: string;
                         /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person. */
                         linkedin_url: string | null;
@@ -46622,7 +46622,7 @@ export interface operations {
                         location: string | null;
                         /** @description About text. */
                         about: string | null;
-                        /** @description ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with contact.language. */
+                        /** @description ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with lead.language. */
                         language: string | null;
                         /** @description Your own fields. */
                         extra: {
@@ -46634,17 +46634,17 @@ export interface operations {
                         };
                         /** @description Tag names. */
                         tags: string[];
-                        /** @description Contact lists (cl_...) holding this Contact. */
+                        /** @description Lead lists (cl_...) holding this Lead. */
                         list_ids: string[];
                         /** @description Your accounts this person is a Connection of. */
                         connected_account_ids: string[];
                         enrichment: {
                             /** @enum {string} */
                             status: "none" | "queued" | "done" | "failed";
-                            /** @description When observed profile data last changed this Contact. */
+                            /** @description When observed profile data last changed this Lead. */
                             enriched_at: string | null;
                             /**
-                             * @description Why the last enrich visit failed: profile_not_found (no such profile, or it is not this person), expired (not visited within 7 days), account_unavailable (the account was removed), platform_error, or tier_required (the team's plan no longer includes Contacts).
+                             * @description Why the last enrich visit failed: profile_not_found (no such profile, or it is not this person), expired (not visited within 7 days), account_unavailable (the account was removed), platform_error, or tier_required (the team's plan no longer includes Leads).
                              * @enum {string|null}
                              */
                             failure_code: "profile_not_found" | "expired" | "account_unavailable" | "platform_error" | "tier_required" | null;
@@ -46658,7 +46658,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Contact created. outcome is created. */
+            /** @description Lead created. outcome is created. */
             201: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -46671,8 +46671,8 @@ export interface operations {
                          * @description Response type discriminator.
                          * @enum {string}
                          */
-                        object: "contact";
-                        /** @description Contact id (con_...). */
+                        object: "lead";
+                        /** @description Lead id (con_...). */
                         id: string;
                         /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person. */
                         linkedin_url: string | null;
@@ -46704,7 +46704,7 @@ export interface operations {
                         location: string | null;
                         /** @description About text. */
                         about: string | null;
-                        /** @description ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with contact.language. */
+                        /** @description ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with lead.language. */
                         language: string | null;
                         /** @description Your own fields. */
                         extra: {
@@ -46716,17 +46716,17 @@ export interface operations {
                         };
                         /** @description Tag names. */
                         tags: string[];
-                        /** @description Contact lists (cl_...) holding this Contact. */
+                        /** @description Lead lists (cl_...) holding this Lead. */
                         list_ids: string[];
                         /** @description Your accounts this person is a Connection of. */
                         connected_account_ids: string[];
                         enrichment: {
                             /** @enum {string} */
                             status: "none" | "queued" | "done" | "failed";
-                            /** @description When observed profile data last changed this Contact. */
+                            /** @description When observed profile data last changed this Lead. */
                             enriched_at: string | null;
                             /**
-                             * @description Why the last enrich visit failed: profile_not_found (no such profile, or it is not this person), expired (not visited within 7 days), account_unavailable (the account was removed), platform_error, or tier_required (the team's plan no longer includes Contacts).
+                             * @description Why the last enrich visit failed: profile_not_found (no such profile, or it is not this person), expired (not visited within 7 days), account_unavailable (the account was removed), platform_error, or tier_required (the team's plan no longer includes Leads).
                              * @enum {string|null}
                              */
                             failure_code: "profile_not_found" | "expired" | "account_unavailable" | "platform_error" | "tier_required" | null;
@@ -46758,7 +46758,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -46767,7 +46767,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: list_id is not one of your Contact lists. */
+            /** @description RESOURCE_NOT_FOUND: list_id is not one of your Lead lists. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -46785,7 +46785,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description CONTACT_LIMIT_REACHED: a team cap would be passed (100000 Contacts, 1000 lists, 1000 Tags). Nothing is written. */
+            /** @description LEAD_LIMIT_REACHED: a team cap would be passed (100000 Leads, 1000 lists, 1000 Tags). Nothing is written. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -46808,16 +46808,16 @@ export interface operations {
             };
         };
     };
-    getV1ContactsExport: {
+    getV1LeadsExport: {
         parameters: {
             query?: {
-                /** @description Only Contacts in these Contact lists: in any of them, or in all with list_match=all. One id is one list. Comma list of up to 20 Contact list ids (cl_...). */
+                /** @description Only Leads in these Lead lists: in any of them, or in all with list_match=all. One id is one list. Comma list of up to 20 Lead list ids (cl_...). */
                 list_id?: string;
-                /** @description Tag names, any casing: Contacts with any of them. Repeat the key, comma-separate or mix; empties ignored. */
+                /** @description Tag names, any casing: Leads with any of them. Repeat the key, comma-separate or mix; empties ignored. */
                 tag?: string;
-                /** @description Only Contacts in this import's report (imp_...), while the import exists. */
+                /** @description Only Leads in this import's report (imp_...), while the import exists. */
                 import_id?: string;
-                /** @description The Contact for this person, any URL spelling. */
+                /** @description The Lead for this person, any URL spelling. */
                 linkedin_url?: string;
                 /** @description Case-insensitive text match on names, headline, job title, company, email, location and profile slug. */
                 q?: string;
@@ -46825,17 +46825,17 @@ export interface operations {
                 enrichment_status?: "none" | "queued" | "done" | "failed";
                 /** @description true: Connections of your accounts only; false: everyone else. */
                 connected?: boolean;
-                /** @description Only Contacts that are Connections of any of these accounts: a comma list of up to 50 account ids (acc_...). One id is one account. It implies connected=true. */
+                /** @description Only Leads that are Connections of any of these accounts: a comma list of up to 50 account ids (acc_...). One id is one account. It implies connected=true. */
                 account_id?: string;
-                /** @description Only Contacts with an Enrollment in this Motion (mot_...). */
-                motion_id?: string;
-                /** @description With motion_id: queued, active, paused, finished, failed, skipped; pending = queued until 2027-01-21. Repeat the key, comma-separate or mix; empties ignored. */
+                /** @description Only Leads with an Enrollment in this Campaign (mot_...). */
+                campaign_id?: string;
+                /** @description With campaign_id: queued, active, paused, finished, failed, skipped; pending = queued until 2027-01-21. Repeat the key, comma-separate or mix; empties ignored. */
                 enrollment_status?: ("queued" | "active" | "paused" | "finished" | "failed" | "skipped" | "pending")[];
                 /** @description With list_id: any (default), in at least one of the lists; all, in every one. */
                 list_match?: "any" | "all";
-                /** @description Only Contacts in none of these Contact lists. Comma list of up to 20 Contact list ids (cl_...). */
+                /** @description Only Leads in none of these Lead lists. Comma list of up to 20 Lead list ids (cl_...). */
                 not_list_id?: string;
-                /** @description true: only Contacts with an email address; false: only those without. */
+                /** @description true: only Leads with an email address; false: only those without. */
                 has_email?: boolean;
                 /** @description csv, json or ndjson (default). */
                 format?: "csv" | "json" | "ndjson";
@@ -46868,8 +46868,8 @@ export interface operations {
                          * @description Response type discriminator.
                          * @enum {string}
                          */
-                        object: "contact";
-                        /** @description Contact id (con_...). */
+                        object: "lead";
+                        /** @description Lead id (con_...). */
                         id: string;
                         /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person. */
                         linkedin_url: string | null;
@@ -46901,7 +46901,7 @@ export interface operations {
                         location: string | null;
                         /** @description About text. */
                         about: string | null;
-                        /** @description ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with contact.language. */
+                        /** @description ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with lead.language. */
                         language: string | null;
                         /** @description Your own fields. */
                         extra: {
@@ -46913,17 +46913,17 @@ export interface operations {
                         };
                         /** @description Tag names. */
                         tags: string[];
-                        /** @description Contact lists (cl_...) holding this Contact. */
+                        /** @description Lead lists (cl_...) holding this Lead. */
                         list_ids: string[];
                         /** @description Your accounts this person is a Connection of. */
                         connected_account_ids: string[];
                         enrichment: {
                             /** @enum {string} */
                             status: "none" | "queued" | "done" | "failed";
-                            /** @description When observed profile data last changed this Contact. */
+                            /** @description When observed profile data last changed this Lead. */
                             enriched_at: string | null;
                             /**
-                             * @description Why the last enrich visit failed: profile_not_found (no such profile, or it is not this person), expired (not visited within 7 days), account_unavailable (the account was removed), platform_error, or tier_required (the team's plan no longer includes Contacts).
+                             * @description Why the last enrich visit failed: profile_not_found (no such profile, or it is not this person), expired (not visited within 7 days), account_unavailable (the account was removed), platform_error, or tier_required (the team's plan no longer includes Leads).
                              * @enum {string|null}
                              */
                             failure_code: "profile_not_found" | "expired" | "account_unavailable" | "platform_error" | "tier_required" | null;
@@ -46985,7 +46985,7 @@ export interface operations {
             };
         };
     };
-    postV1ContactsUpdate: {
+    postV1LeadsUpdate: {
         parameters: {
             query?: never;
             header?: {
@@ -47000,24 +47000,24 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description Contact ids (con_...), up to 1000. */
-                    contact_ids?: string[];
-                    /** @description Instead of contact_ids: every Contact this filter matches, up to 10000. */
+                    /** @description Lead ids (con_...), up to 1000. */
+                    lead_ids?: string[];
+                    /** @description Instead of lead_ids: every Lead this filter matches, up to 10000. */
                     filter?: {
-                        /** @description Only Contacts in these Contact lists: in any of them, or in all with list_match all. Up to 20 Contact list ids (cl_...). */
+                        /** @description Only Leads in these Lead lists: in any of them, or in all with list_match all. Up to 20 Lead list ids (cl_...). */
                         list_id?: string[];
                         /**
                          * @description With list_id: any (default) or all.
                          * @enum {string}
                          */
                         list_match?: "any" | "all";
-                        /** @description Only Contacts in none of these Contact lists. Up to 20 Contact list ids (cl_...). */
+                        /** @description Only Leads in none of these Lead lists. Up to 20 Lead list ids (cl_...). */
                         not_list_id?: string[];
-                        /** @description Tag names, any casing: Contacts with any of them. */
+                        /** @description Tag names, any casing: Leads with any of them. */
                         tag?: string[];
-                        /** @description Only Contacts in this import's report (imp_...). */
+                        /** @description Only Leads in this import's report (imp_...). */
                         import_id?: string;
-                        /** @description The Contact for this person, any URL spelling. */
+                        /** @description The Lead for this person, any URL spelling. */
                         linkedin_url?: string;
                         /** @description Case-insensitive text match, as the listing's q. */
                         q?: string;
@@ -47028,30 +47028,30 @@ export interface operations {
                         enrichment_status?: "none" | "queued" | "done" | "failed";
                         /** @description true: Connections of your accounts only; false: everyone else. */
                         connected?: boolean;
-                        /** @description Only Contacts that are Connections of this account (acc_...), or of any of up to 50. */
+                        /** @description Only Leads that are Connections of this account (acc_...), or of any of up to 50. */
                         account_id?: string | string[];
-                        /** @description Only Contacts with an Enrollment in this Motion (mot_...). */
-                        motion_id?: string;
-                        /** @description With motion_id: queued, active, paused, finished, failed, skipped; pending = queued until 2027-01-21. */
+                        /** @description Only Leads with an Enrollment in this Campaign (mot_...). */
+                        campaign_id?: string;
+                        /** @description With campaign_id: queued, active, paused, finished, failed, skipped; pending = queued until 2027-01-21. */
                         enrollment_status?: ("queued" | "active" | "paused" | "finished" | "failed" | "skipped" | "pending")[];
-                        /** @description true: only Contacts with an email address; false: only those without. */
+                        /** @description true: only Leads with an email address; false: only those without. */
                         has_email?: boolean;
                     };
                     /** @description Tag names to add; a new name creates the Tag. */
                     add_tags?: string[];
                     /** @description Tag names to remove; an unknown name is a no-op. */
                     remove_tags?: string[];
-                    /** @description Contact list to add the Contacts to (cl_...). */
+                    /** @description Lead list to add the Leads to (cl_...). */
                     add_list_id?: string;
-                    /** @description Contact list to add the Contacts to, by name; created if none matches. */
+                    /** @description Lead list to add the Leads to, by name; created if none matches. */
                     add_list_name?: string;
-                    /** @description Contact list to remove the Contacts from (cl_...). */
+                    /** @description Lead list to remove the Leads from (cl_...). */
                     remove_list_id?: string;
                 };
             };
         };
         responses: {
-            /** @description Counts. A Contact that would pass 50 Tags is left untouched and listed in refused. */
+            /** @description Counts. A Lead that would pass 50 Tags is left untouched and listed in refused. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -47064,14 +47064,14 @@ export interface operations {
                         unchanged: number;
                         not_found: string[];
                         refused: {
-                            contact_id: string;
+                            lead_id: string;
                             /** @enum {string} */
                             reason: "too_many_tags";
                         }[];
                     };
                 };
             };
-            /** @description No operation named, contact_ids and filter both or neither, contact_ids empty or too long, a bad Tag name, add_list_id together with add_list_name, an invalid filter, or a filter matches more than 10000 Contacts (the message names the count; nothing is written). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description No operation named, lead_ids and filter both or neither, lead_ids empty or too long, a bad Tag name, add_list_id together with add_list_name, an invalid filter, or a filter matches more than 10000 Leads (the message names the count; nothing is written). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -47089,7 +47089,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -47098,7 +47098,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: add_list_id or remove_list_id is not one of your Contact lists. In filter: an id in list_id or not_list_id, or a tag name, is not yours (the message names the parameter). ACCOUNT_NOT_FOUND: account_id is not one of your accounts. */
+            /** @description RESOURCE_NOT_FOUND: add_list_id or remove_list_id is not one of your Lead lists. In filter: an id in list_id or not_list_id, or a tag name, is not yours (the message names the parameter). ACCOUNT_NOT_FOUND: account_id is not one of your accounts. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -47116,7 +47116,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description CONTACT_LIMIT_REACHED: a team cap would be passed (100000 Contacts, 1000 lists, 1000 Tags). Nothing is written. */
+            /** @description LEAD_LIMIT_REACHED: a team cap would be passed (100000 Leads, 1000 lists, 1000 Tags). Nothing is written. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -47139,7 +47139,7 @@ export interface operations {
             };
         };
     };
-    postV1ContactsDelete: {
+    postV1LeadsDelete: {
         parameters: {
             query?: never;
             header?: {
@@ -47154,24 +47154,24 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description Contact ids (con_...), up to 1000. */
-                    contact_ids?: string[];
-                    /** @description Instead of contact_ids: every Contact this filter matches, up to 10000. */
+                    /** @description Lead ids (con_...), up to 1000. */
+                    lead_ids?: string[];
+                    /** @description Instead of lead_ids: every Lead this filter matches, up to 10000. */
                     filter?: {
-                        /** @description Only Contacts in these Contact lists: in any of them, or in all with list_match all. Up to 20 Contact list ids (cl_...). */
+                        /** @description Only Leads in these Lead lists: in any of them, or in all with list_match all. Up to 20 Lead list ids (cl_...). */
                         list_id?: string[];
                         /**
                          * @description With list_id: any (default) or all.
                          * @enum {string}
                          */
                         list_match?: "any" | "all";
-                        /** @description Only Contacts in none of these Contact lists. Up to 20 Contact list ids (cl_...). */
+                        /** @description Only Leads in none of these Lead lists. Up to 20 Lead list ids (cl_...). */
                         not_list_id?: string[];
-                        /** @description Tag names, any casing: Contacts with any of them. */
+                        /** @description Tag names, any casing: Leads with any of them. */
                         tag?: string[];
-                        /** @description Only Contacts in this import's report (imp_...). */
+                        /** @description Only Leads in this import's report (imp_...). */
                         import_id?: string;
-                        /** @description The Contact for this person, any URL spelling. */
+                        /** @description The Lead for this person, any URL spelling. */
                         linkedin_url?: string;
                         /** @description Case-insensitive text match, as the listing's q. */
                         q?: string;
@@ -47182,13 +47182,13 @@ export interface operations {
                         enrichment_status?: "none" | "queued" | "done" | "failed";
                         /** @description true: Connections of your accounts only; false: everyone else. */
                         connected?: boolean;
-                        /** @description Only Contacts that are Connections of this account (acc_...), or of any of up to 50. */
+                        /** @description Only Leads that are Connections of this account (acc_...), or of any of up to 50. */
                         account_id?: string | string[];
-                        /** @description Only Contacts with an Enrollment in this Motion (mot_...). */
-                        motion_id?: string;
-                        /** @description With motion_id: queued, active, paused, finished, failed, skipped; pending = queued until 2027-01-21. */
+                        /** @description Only Leads with an Enrollment in this Campaign (mot_...). */
+                        campaign_id?: string;
+                        /** @description With campaign_id: queued, active, paused, finished, failed, skipped; pending = queued until 2027-01-21. */
                         enrollment_status?: ("queued" | "active" | "paused" | "finished" | "failed" | "skipped" | "pending")[];
-                        /** @description true: only Contacts with an email address; false: only those without. */
+                        /** @description true: only Leads with an email address; false: only those without. */
                         has_email?: boolean;
                     };
                 };
@@ -47209,7 +47209,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description contact_ids and filter both or neither, contact_ids empty or over 1000, an invalid filter, or a filter matches more than 10000 Contacts (the message names the count; nothing is written). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description lead_ids and filter both or neither, lead_ids empty or over 1000, an invalid filter, or a filter matches more than 10000 Leads (the message names the count; nothing is written). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -47268,7 +47268,7 @@ export interface operations {
             };
         };
     };
-    postV1ContactsEnrich: {
+    postV1LeadsEnrich: {
         parameters: {
             query?: never;
             header?: {
@@ -47283,9 +47283,9 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description Contact ids (con_...), up to 1000. */
-                    contact_ids?: string[];
-                    /** @description A Contact list of up to 1000 Contacts to enrich instead of contact_ids (cl_...). */
+                    /** @description Lead ids (con_...), up to 1000. */
+                    lead_ids?: string[];
+                    /** @description A Lead list of up to 1000 Leads to enrich instead of lead_ids (cl_...). */
                     list_id?: string;
                     /** @description The account (acc_...) whose live profile views enrich what the store cannot. Required unless mode is cache_only. */
                     account_id?: string;
@@ -47300,7 +47300,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description What happened to each Contact. from_store: filled now from data Curviate already holds. queued: a live profile visit waits in the account's paced queue. skipped lists every other Contact with its reason (already_queued, queue_full, not_stored, not_found). A visit's result lands on the Contact's enrichment (done, or failed with failure_code profile_not_found, expired, account_unavailable, platform_error or tier_required). */
+            /** @description What happened to each Lead. from_store: filled now from data Curviate already holds. queued: a live profile visit waits in the account's paced queue. skipped lists every other Lead with its reason (already_queued, queue_full, not_stored, not_found). A visit's result lands on the Lead's enrichment (done, or failed with failure_code profile_not_found, expired, account_unavailable, platform_error or tier_required). */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -47310,7 +47310,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {string} */
-                        object: "contact_enrichment";
+                        object: "lead_enrichment";
                         /** @description The account the visits are queued from. */
                         account_id: string | null;
                         counts: {
@@ -47322,14 +47322,14 @@ export interface operations {
                             not_found: number;
                         };
                         skipped: {
-                            contact_id: string;
+                            lead_id: string;
                             /** @enum {string} */
                             reason: "already_queued" | "queue_full" | "not_stored" | "not_found";
                         }[];
                     };
                 };
             };
-            /** @description contact_ids and list_id both or neither, more than 1000 ids or list members, account_id missing without mode cache_only, or max_age with cache_only. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description lead_ids and list_id both or neither, more than 1000 ids or list members, account_id missing without mode cache_only, or max_age with cache_only. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -47347,7 +47347,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: a Member named a teammate's account. ACCOUNT_NOT_SHARED: its person turned team access off. NO_ACTIVE_SEAT: the account has no seat. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description INSUFFICIENT_ROLE: a Member named a teammate's account. ACCOUNT_NOT_SHARED: its person turned team access off. NO_ACTIVE_SEAT: the account has no seat. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -47356,7 +47356,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ACCOUNT_NOT_FOUND: account_id is not one of your accounts. RESOURCE_NOT_FOUND: list_id is not one of your Contact lists. */
+            /** @description ACCOUNT_NOT_FOUND: account_id is not one of your accounts. RESOURCE_NOT_FOUND: list_id is not one of your Lead lists. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -47397,7 +47397,7 @@ export interface operations {
             };
         };
     };
-    getV1ContactsImports: {
+    getV1LeadsImports: {
         parameters: {
             query?: {
                 /** @description Max items per page (1-100, default 20). */
@@ -47426,10 +47426,10 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {string} */
-                        object: "contact_import_list";
+                        object: "lead_import_list";
                         items: {
                             /** @enum {string} */
-                            object: "contact_import";
+                            object: "lead_import";
                             /** @description Import id (imp_...). */
                             id: string;
                             /** @enum {string} */
@@ -47443,9 +47443,9 @@ export interface operations {
                                 unchanged: number;
                                 skipped: number;
                             };
-                            /** @description The Contact list every row was added to. */
+                            /** @description The Lead list every row was added to. */
                             list_id: string | null;
-                            /** @description Tag names added to every row's Contact. */
+                            /** @description Tag names added to every row's Lead. */
                             tags: string[];
                             /** @description CSV only: how each header was read. */
                             columns: {
@@ -47473,13 +47473,13 @@ export interface operations {
                                 row: number;
                                 /** @enum {string} */
                                 outcome: "created" | "updated" | "unchanged" | "skipped";
-                                /** @description The Contact this row wrote to; null when skipped or when the Contact was deleted since. */
-                                contact_id: string | null;
+                                /** @description The Lead this row wrote to; null when skipped or when the Lead was deleted since. */
+                                lead_id: string | null;
                                 /**
                                  * @description Why a row was skipped.
                                  * @enum {string|null}
                                  */
-                                reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
+                                reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | null;
                                 /** @description The field a field_too_long row names. */
                                 field: string | null;
                                 /** @description An earlier row of this import for the same person. */
@@ -47523,7 +47523,7 @@ export interface operations {
             };
         };
     };
-    postV1ContactsImports: {
+    postV1LeadsImports: {
         parameters: {
             query?: never;
             header?: {
@@ -47544,15 +47544,15 @@ export interface operations {
                     }[];
                     /** @description The file as text (RFC 4180, UTF-8). Send rows or csv, not both. */
                     csv?: string;
-                    /** @description A Contact list to add every row's Contact to (cl_...). */
+                    /** @description A Lead list to add every row's Lead to (cl_...). */
                     list_id?: string;
-                    /** @description A Contact list to add every row's Contact to, by name; created if none matches. */
+                    /** @description A Lead list to add every row's Lead to, by name; created if none matches. */
                     list_name?: string;
-                    /** @description Tag names added to every row's Contact. */
+                    /** @description Tag names added to every row's Lead. */
                     tags?: string[];
-                    /** @description Tag names removed from every row's Contact. */
+                    /** @description Tag names removed from every row's Lead. */
                     remove_tags?: string[];
-                    /** @description Default false: a row's `lists` (names) is ignored. True: each row's Contact joins those Contact lists, created if missing; never removed. Past the Team's list limit the row is skipped (list_limit_reached). */
+                    /** @description Default false: a row's `lists` (names) is ignored. True: each row's Lead joins those Lead lists, created if missing; never removed. Past the Team's list limit the row is skipped (list_limit_reached). */
                     apply_lists?: boolean;
                     /** @description csv only: a map of header to target (a standard field, `tags`, `extra.<key>` or `ignore`) that overrides the header matching. */
                     mapping?: {
@@ -47577,7 +47577,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {string} */
-                        object: "contact_import";
+                        object: "lead_import";
                         /** @description Import id (imp_...). */
                         id: string;
                         /** @enum {string} */
@@ -47591,9 +47591,9 @@ export interface operations {
                             unchanged: number;
                             skipped: number;
                         };
-                        /** @description The Contact list every row was added to. */
+                        /** @description The Lead list every row was added to. */
                         list_id: string | null;
-                        /** @description Tag names added to every row's Contact. */
+                        /** @description Tag names added to every row's Lead. */
                         tags: string[];
                         /** @description CSV only: how each header was read. */
                         columns: {
@@ -47621,13 +47621,13 @@ export interface operations {
                             row: number;
                             /** @enum {string} */
                             outcome: "created" | "updated" | "unchanged" | "skipped";
-                            /** @description The Contact this row wrote to; null when skipped or when the Contact was deleted since. */
-                            contact_id: string | null;
+                            /** @description The Lead this row wrote to; null when skipped or when the Lead was deleted since. */
+                            lead_id: string | null;
                             /**
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -47636,7 +47636,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description More rows than that: queued and processed in the background. Poll GET /v1/contacts/imports/{id}. */
+            /** @description More rows than that: queued and processed in the background. Poll GET /v1/leads/imports/{id}. */
             202: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -47646,7 +47646,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {string} */
-                        object: "contact_import";
+                        object: "lead_import";
                         /** @description Import id (imp_...). */
                         id: string;
                         /** @enum {string} */
@@ -47660,9 +47660,9 @@ export interface operations {
                             unchanged: number;
                             skipped: number;
                         };
-                        /** @description The Contact list every row was added to. */
+                        /** @description The Lead list every row was added to. */
                         list_id: string | null;
-                        /** @description Tag names added to every row's Contact. */
+                        /** @description Tag names added to every row's Lead. */
                         tags: string[];
                         /** @description CSV only: how each header was read. */
                         columns: {
@@ -47690,13 +47690,13 @@ export interface operations {
                             row: number;
                             /** @enum {string} */
                             outcome: "created" | "updated" | "unchanged" | "skipped";
-                            /** @description The Contact this row wrote to; null when skipped or when the Contact was deleted since. */
-                            contact_id: string | null;
+                            /** @description The Lead this row wrote to; null when skipped or when the Lead was deleted since. */
+                            lead_id: string | null;
                             /**
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -47723,7 +47723,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -47732,7 +47732,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: list_id is not one of your Contact lists. */
+            /** @description RESOURCE_NOT_FOUND: list_id is not one of your Lead lists. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -47750,7 +47750,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description CONTACT_LIMIT_REACHED: a team cap would be passed (100000 Contacts, 1000 lists, 1000 Tags). Nothing is written. */
+            /** @description LEAD_LIMIT_REACHED: a team cap would be passed (100000 Leads, 1000 lists, 1000 Tags). Nothing is written. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -47759,7 +47759,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description IMPORT_QUEUE_FULL: 5 background imports are already queued or running. Wait for one to finish, then retry. RATE_LIMIT_TENANT: other Contact or Motion writes of your team held its write lock for 5 s, nothing was imported; when an import holds it, details.import_id and details.started_at name it. Retry with a backoff. */
+            /** @description IMPORT_QUEUE_FULL: 5 background imports are already queued or running. Wait for one to finish, then retry. RATE_LIMIT_TENANT: other Lead or Campaign writes of your team held its write lock for 5 s, nothing was imported; when an import holds it, details.import_id and details.started_at name it. Retry with a backoff. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -47773,7 +47773,7 @@ export interface operations {
             };
         };
     };
-    getV1ContactsImportsId: {
+    getV1LeadsImportsId: {
         parameters: {
             query?: never;
             header?: {
@@ -47790,7 +47790,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The import and its counts. Its per-row report: GET /v1/contacts/imports/{id}/rows. */
+            /** @description The import and its counts. Its per-row report: GET /v1/leads/imports/{id}/rows. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -47800,7 +47800,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {string} */
-                        object: "contact_import";
+                        object: "lead_import";
                         /** @description Import id (imp_...). */
                         id: string;
                         /** @enum {string} */
@@ -47814,9 +47814,9 @@ export interface operations {
                             unchanged: number;
                             skipped: number;
                         };
-                        /** @description The Contact list every row was added to. */
+                        /** @description The Lead list every row was added to. */
                         list_id: string | null;
-                        /** @description Tag names added to every row's Contact. */
+                        /** @description Tag names added to every row's Lead. */
                         tags: string[];
                         /** @description CSV only: how each header was read. */
                         columns: {
@@ -47844,13 +47844,13 @@ export interface operations {
                             row: number;
                             /** @enum {string} */
                             outcome: "created" | "updated" | "unchanged" | "skipped";
-                            /** @description The Contact this row wrote to; null when skipped or when the Contact was deleted since. */
-                            contact_id: string | null;
+                            /** @description The Lead this row wrote to; null when skipped or when the Lead was deleted since. */
+                            lead_id: string | null;
                             /**
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -47900,7 +47900,7 @@ export interface operations {
             };
         };
     };
-    getV1ContactsImportsIdRows: {
+    getV1LeadsImportsIdRows: {
         parameters: {
             query?: {
                 /** @description Outcomes to keep: created, updated, unchanged, skipped. Repeat the key, comma-separate or mix; empties ignored. */
@@ -47934,19 +47934,19 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {string} */
-                        object: "contact_import_row_list";
+                        object: "lead_import_row_list";
                         items: {
                             /** @description 1-based data row. */
                             row: number;
                             /** @enum {string} */
                             outcome: "created" | "updated" | "unchanged" | "skipped";
-                            /** @description The Contact this row wrote to; null when skipped or when the Contact was deleted since. */
-                            contact_id: string | null;
+                            /** @description The Lead this row wrote to; null when skipped or when the Lead was deleted since. */
+                            lead_id: string | null;
                             /**
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "contact_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "contact_limit_reached" | "contact_deleted" | null;
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -47998,7 +47998,7 @@ export interface operations {
             };
         };
     };
-    getV1ContactsId: {
+    getV1LeadsId: {
         parameters: {
             query?: never;
             header?: {
@@ -48008,14 +48008,14 @@ export interface operations {
                 "Curviate-Client"?: string;
             };
             path: {
-                /** @description Contact id (con_...). */
+                /** @description Lead id (con_...). */
                 id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description The Contact. */
+            /** @description The Lead. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -48028,8 +48028,8 @@ export interface operations {
                          * @description Response type discriminator.
                          * @enum {string}
                          */
-                        object: "contact";
-                        /** @description Contact id (con_...). */
+                        object: "lead";
+                        /** @description Lead id (con_...). */
                         id: string;
                         /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person. */
                         linkedin_url: string | null;
@@ -48061,7 +48061,7 @@ export interface operations {
                         location: string | null;
                         /** @description About text. */
                         about: string | null;
-                        /** @description ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with contact.language. */
+                        /** @description ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with lead.language. */
                         language: string | null;
                         /** @description Your own fields. */
                         extra: {
@@ -48073,17 +48073,17 @@ export interface operations {
                         };
                         /** @description Tag names. */
                         tags: string[];
-                        /** @description Contact lists (cl_...) holding this Contact. */
+                        /** @description Lead lists (cl_...) holding this Lead. */
                         list_ids: string[];
                         /** @description Your accounts this person is a Connection of. */
                         connected_account_ids: string[];
                         enrichment: {
                             /** @enum {string} */
                             status: "none" | "queued" | "done" | "failed";
-                            /** @description When observed profile data last changed this Contact. */
+                            /** @description When observed profile data last changed this Lead. */
                             enriched_at: string | null;
                             /**
-                             * @description Why the last enrich visit failed: profile_not_found (no such profile, or it is not this person), expired (not visited within 7 days), account_unavailable (the account was removed), platform_error, or tier_required (the team's plan no longer includes Contacts).
+                             * @description Why the last enrich visit failed: profile_not_found (no such profile, or it is not this person), expired (not visited within 7 days), account_unavailable (the account was removed), platform_error, or tier_required (the team's plan no longer includes Leads).
                              * @enum {string|null}
                              */
                             failure_code: "profile_not_found" | "expired" | "account_unavailable" | "platform_error" | "tier_required" | null;
@@ -48113,7 +48113,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: no such Contact. A Contact merged into another answers with merged_into naming the one to use. */
+            /** @description RESOURCE_NOT_FOUND: no such Lead. A Lead merged into another answers with merged_into naming the one to use. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -48136,7 +48136,7 @@ export interface operations {
             };
         };
     };
-    deleteV1ContactsId: {
+    deleteV1LeadsId: {
         parameters: {
             query?: never;
             header?: {
@@ -48146,7 +48146,7 @@ export interface operations {
                 "Curviate-Client"?: string;
             };
             path: {
-                /** @description Contact id (con_...). */
+                /** @description Lead id (con_...). */
                 id: string;
             };
             cookie?: never;
@@ -48189,7 +48189,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: no such Contact. A Contact merged into another answers with merged_into naming the one to use. */
+            /** @description RESOURCE_NOT_FOUND: no such Lead. A Lead merged into another answers with merged_into naming the one to use. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -48212,7 +48212,7 @@ export interface operations {
             };
         };
     };
-    patchV1ContactsId: {
+    patchV1LeadsId: {
         parameters: {
             query?: never;
             header?: {
@@ -48222,7 +48222,7 @@ export interface operations {
                 "Curviate-Client"?: string;
             };
             path: {
-                /** @description Contact id (con_...). */
+                /** @description Lead id (con_...). */
                 id: string;
             };
             cookie?: never;
@@ -48258,7 +48258,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The updated Contact. */
+            /** @description The updated Lead. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -48271,8 +48271,8 @@ export interface operations {
                          * @description Response type discriminator.
                          * @enum {string}
                          */
-                        object: "contact";
-                        /** @description Contact id (con_...). */
+                        object: "lead";
+                        /** @description Lead id (con_...). */
                         id: string;
                         /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person. */
                         linkedin_url: string | null;
@@ -48304,7 +48304,7 @@ export interface operations {
                         location: string | null;
                         /** @description About text. */
                         about: string | null;
-                        /** @description ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with contact.language. */
+                        /** @description ISO 639-1 language code, lowercase (de, en). What you supplied, else the language of the person's LinkedIn profile locale, which is the language their profile was created in, not always the one they speak. Yours is never overwritten. Branch a Sequence on it with lead.language. */
                         language: string | null;
                         /** @description Your own fields. */
                         extra: {
@@ -48316,17 +48316,17 @@ export interface operations {
                         };
                         /** @description Tag names. */
                         tags: string[];
-                        /** @description Contact lists (cl_...) holding this Contact. */
+                        /** @description Lead lists (cl_...) holding this Lead. */
                         list_ids: string[];
                         /** @description Your accounts this person is a Connection of. */
                         connected_account_ids: string[];
                         enrichment: {
                             /** @enum {string} */
                             status: "none" | "queued" | "done" | "failed";
-                            /** @description When observed profile data last changed this Contact. */
+                            /** @description When observed profile data last changed this Lead. */
                             enriched_at: string | null;
                             /**
-                             * @description Why the last enrich visit failed: profile_not_found (no such profile, or it is not this person), expired (not visited within 7 days), account_unavailable (the account was removed), platform_error, or tier_required (the team's plan no longer includes Contacts).
+                             * @description Why the last enrich visit failed: profile_not_found (no such profile, or it is not this person), expired (not visited within 7 days), account_unavailable (the account was removed), platform_error, or tier_required (the team's plan no longer includes Leads).
                              * @enum {string|null}
                              */
                             failure_code: "profile_not_found" | "expired" | "account_unavailable" | "platform_error" | "tier_required" | null;
@@ -48356,7 +48356,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -48365,7 +48365,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: no such Contact. A Contact merged into another answers with merged_into naming the one to use. */
+            /** @description RESOURCE_NOT_FOUND: no such Lead. A Lead merged into another answers with merged_into naming the one to use. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -48433,7 +48433,7 @@ export interface operations {
                             /** @description Tag id (ctg_...). */
                             id: string;
                             name: string;
-                            contact_count: number;
+                            lead_count: number;
                             created_at: string;
                         }[];
                         /** @description Pass back as cursor for the next page; null on the last page. */
@@ -48490,7 +48490,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Deleted, and removed from every Contact. No response body. */
+            /** @description Deleted, and removed from every Lead. No response body. */
             204: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -48535,7 +48535,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_IN_USE: a Motion that is not completed or archived, or an import still queued or running, uses it; the message names them. Remove it from the Motion or archive the Motion, or wait for the import to finish. */
+            /** @description RESOURCE_IN_USE: a Campaign that is not completed or archived, or an import still queued or running, uses it; the message names them. Remove it from the Campaign or archive the Campaign, or wait for the import to finish. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -48596,7 +48596,7 @@ export interface operations {
                         /** @description Tag id (ctg_...). */
                         id: string;
                         name: string;
-                        contact_count: number;
+                        lead_count: number;
                         created_at: string;
                     };
                 };
@@ -48619,7 +48619,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -48637,7 +48637,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description NAME_TAKEN: another Tag has this name in any casing. Renaming a Tag to its own name in other casing is allowed. RESOURCE_IN_USE: a Motion that is not completed or archived uses the Tag; the message names it. */
+            /** @description NAME_TAKEN: another Tag has this name in any casing. Renaming a Tag to its own name in other casing is allowed. RESOURCE_IN_USE: a Campaign that is not completed or archived uses the Tag; the message names it. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -48669,7 +48669,7 @@ export interface operations {
             };
         };
     };
-    getV1ContactLists: {
+    getV1LeadLists: {
         parameters: {
             query?: {
                 /** @description Case-insensitive match on the list name. */
@@ -48690,7 +48690,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Contact lists, by name. */
+            /** @description Lead lists, by name. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -48700,16 +48700,16 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {string} */
-                        object: "contact_list_page";
+                        object: "lead_list_page";
                         items: {
                             /** @enum {string} */
-                            object: "contact_list";
-                            /** @description Contact list id (cl_...). */
+                            object: "lead_list";
+                            /** @description Lead list id (cl_...). */
                             id: string;
                             name: string;
                             /** @description Description. */
                             description: string | null;
-                            contact_count: number;
+                            lead_count: number;
                             created_at: string;
                             updated_at: string;
                         }[];
@@ -48750,7 +48750,7 @@ export interface operations {
             };
         };
     };
-    postV1ContactLists: {
+    postV1LeadLists: {
         parameters: {
             query?: never;
             header?: {
@@ -48769,22 +48769,22 @@ export interface operations {
                     name: string;
                     /** @description Up to 500 characters. */
                     description?: string | null;
-                    /** @description The new list holds every Contact this filter matches now, up to 10000; the lists it names are left as they are. Omit for an empty list. */
+                    /** @description The new list holds every Lead this filter matches now, up to 10000; the lists it names are left as they are. Omit for an empty list. */
                     from?: {
-                        /** @description Only Contacts in these Contact lists: in any of them, or in all with list_match all. Up to 20 Contact list ids (cl_...). */
+                        /** @description Only Leads in these Lead lists: in any of them, or in all with list_match all. Up to 20 Lead list ids (cl_...). */
                         list_id?: string[];
                         /**
                          * @description With list_id: any (default) or all.
                          * @enum {string}
                          */
                         list_match?: "any" | "all";
-                        /** @description Only Contacts in none of these Contact lists. Up to 20 Contact list ids (cl_...). */
+                        /** @description Only Leads in none of these Lead lists. Up to 20 Lead list ids (cl_...). */
                         not_list_id?: string[];
-                        /** @description Tag names, any casing: Contacts with any of them. */
+                        /** @description Tag names, any casing: Leads with any of them. */
                         tag?: string[];
-                        /** @description Only Contacts in this import's report (imp_...). */
+                        /** @description Only Leads in this import's report (imp_...). */
                         import_id?: string;
-                        /** @description The Contact for this person, any URL spelling. */
+                        /** @description The Lead for this person, any URL spelling. */
                         linkedin_url?: string;
                         /** @description Case-insensitive text match, as the listing's q. */
                         q?: string;
@@ -48795,20 +48795,20 @@ export interface operations {
                         enrichment_status?: "none" | "queued" | "done" | "failed";
                         /** @description true: Connections of your accounts only; false: everyone else. */
                         connected?: boolean;
-                        /** @description Only Contacts that are Connections of this account (acc_...), or of any of up to 50. */
+                        /** @description Only Leads that are Connections of this account (acc_...), or of any of up to 50. */
                         account_id?: string | string[];
-                        /** @description Only Contacts with an Enrollment in this Motion (mot_...). */
-                        motion_id?: string;
-                        /** @description With motion_id: queued, active, paused, finished, failed, skipped; pending = queued until 2027-01-21. */
+                        /** @description Only Leads with an Enrollment in this Campaign (mot_...). */
+                        campaign_id?: string;
+                        /** @description With campaign_id: queued, active, paused, finished, failed, skipped; pending = queued until 2027-01-21. */
                         enrollment_status?: ("queued" | "active" | "paused" | "finished" | "failed" | "skipped" | "pending")[];
-                        /** @description true: only Contacts with an email address; false: only those without. */
+                        /** @description true: only Leads with an email address; false: only those without. */
                         has_email?: boolean;
                     };
                 };
             };
         };
         responses: {
-            /** @description List created. With from, contact_count is how many Contacts it matched. */
+            /** @description List created. With from, lead_count is how many Leads it matched. */
             201: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -48818,19 +48818,19 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {string} */
-                        object: "contact_list";
-                        /** @description Contact list id (cl_...). */
+                        object: "lead_list";
+                        /** @description Lead list id (cl_...). */
                         id: string;
                         name: string;
                         /** @description Description. */
                         description: string | null;
-                        contact_count: number;
+                        lead_count: number;
                         created_at: string;
                         updated_at: string;
                     };
                 };
             };
-            /** @description A name that is empty or over 100 characters, a description over 500, an invalid from, or a from that matches more than 10000 Contacts (the message names the count; nothing is written). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description A name that is empty or over 100 characters, a description over 500, an invalid from, or a from that matches more than 10000 Leads (the message names the count; nothing is written). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -48848,7 +48848,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -48866,7 +48866,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description NAME_TAKEN: another Contact list has this name in any casing. Nothing is created. */
+            /** @description NAME_TAKEN: another Lead list has this name in any casing. Nothing is created. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -48884,7 +48884,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description CONTACT_LIMIT_REACHED: a team cap would be passed (100000 Contacts, 1000 lists, 1000 Tags). Nothing is written. */
+            /** @description LEAD_LIMIT_REACHED: a team cap would be passed (100000 Leads, 1000 lists, 1000 Tags). Nothing is written. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -48907,7 +48907,7 @@ export interface operations {
             };
         };
     };
-    getV1ContactListsId: {
+    getV1LeadListsId: {
         parameters: {
             query?: never;
             header?: {
@@ -48917,14 +48917,14 @@ export interface operations {
                 "Curviate-Client"?: string;
             };
             path: {
-                /** @description Contact list id (cl_...). */
+                /** @description Lead list id (cl_...). */
                 id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description The Contact list. */
+            /** @description The Lead list. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -48934,13 +48934,13 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {string} */
-                        object: "contact_list";
-                        /** @description Contact list id (cl_...). */
+                        object: "lead_list";
+                        /** @description Lead list id (cl_...). */
                         id: string;
                         name: string;
                         /** @description Description. */
                         description: string | null;
-                        contact_count: number;
+                        lead_count: number;
                         created_at: string;
                         updated_at: string;
                     };
@@ -48987,7 +48987,7 @@ export interface operations {
             };
         };
     };
-    deleteV1ContactListsId: {
+    deleteV1LeadListsId: {
         parameters: {
             query?: never;
             header?: {
@@ -48997,14 +48997,14 @@ export interface operations {
                 "Curviate-Client"?: string;
             };
             path: {
-                /** @description Contact list id (cl_...). */
+                /** @description Lead list id (cl_...). */
                 id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Deleted. Its Contacts are kept, only the memberships go. No response body. */
+            /** @description Deleted. Its Leads are kept, only the memberships go. No response body. */
             204: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -49040,7 +49040,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_IN_USE: a Motion that is not completed or archived, or an import still queued or running, uses it; the message names them. Remove it from the Motion or archive the Motion, or wait for the import to finish. */
+            /** @description RESOURCE_IN_USE: a Campaign that is not completed or archived, or an import still queued or running, uses it; the message names them. Remove it from the Campaign or archive the Campaign, or wait for the import to finish. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -49063,7 +49063,7 @@ export interface operations {
             };
         };
     };
-    patchV1ContactListsId: {
+    patchV1LeadListsId: {
         parameters: {
             query?: never;
             header?: {
@@ -49073,7 +49073,7 @@ export interface operations {
                 "Curviate-Client"?: string;
             };
             path: {
-                /** @description Contact list id (cl_...). */
+                /** @description Lead list id (cl_...). */
                 id: string;
             };
             cookie?: never;
@@ -49089,7 +49089,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The updated Contact list. */
+            /** @description The updated Lead list. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -49099,13 +49099,13 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {string} */
-                        object: "contact_list";
-                        /** @description Contact list id (cl_...). */
+                        object: "lead_list";
+                        /** @description Lead list id (cl_...). */
                         id: string;
                         name: string;
                         /** @description Description. */
                         description: string | null;
-                        contact_count: number;
+                        lead_count: number;
                         created_at: string;
                         updated_at: string;
                     };
@@ -49129,7 +49129,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -49147,7 +49147,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description NAME_TAKEN: another Contact list has this name in any casing. */
+            /** @description NAME_TAKEN: another Lead list has this name in any casing. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -49182,7 +49182,7 @@ export interface operations {
     getV1DoNotContact: {
         parameters: {
             query?: {
-                /** @description Case-insensitive match on the Contact's name. */
+                /** @description Case-insensitive match on the Lead's name. */
                 q?: string;
                 /** @description Max items per page (1-100, default 20). */
                 limit?: number;
@@ -49219,9 +49219,9 @@ export interface operations {
                             object?: "do_not_contact_entry";
                             /** @description Entry id (dnc_...). */
                             id?: string;
-                            /** @description The person's Contact. Null once the Contact is deleted: the entry stays and still matches the person. */
-                            contact?: {
-                                /** @description Contact id (con_...). */
+                            /** @description The person's Lead. Null once the Lead is deleted: the entry stays and still matches the person. */
+                            lead?: {
+                                /** @description Lead id (con_...). */
                                 id?: string;
                                 /** @description Full name. */
                                 name?: string | null;
@@ -49298,9 +49298,9 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description One of your Contacts (con_...). */
-                    contact_id?: string;
-                    /** @description A LinkedIn profile URL; a person who is not a Contact yet becomes one first. */
+                    /** @description One of your Leads (con_...). */
+                    lead_id?: string;
+                    /** @description A LinkedIn profile URL; a person who is not a Lead yet becomes one first. */
                     linkedin_url?: string;
                     /**
                      * @description Why, from a fixed list: asked_to_stop, existing_customer, competitor, partner, employee or other.
@@ -49327,9 +49327,9 @@ export interface operations {
                         object?: "do_not_contact_entry";
                         /** @description Entry id (dnc_...). */
                         id?: string;
-                        /** @description The person's Contact. Null once the Contact is deleted: the entry stays and still matches the person. */
-                        contact?: {
-                            /** @description Contact id (con_...). */
+                        /** @description The person's Lead. Null once the Lead is deleted: the entry stays and still matches the person. */
+                        lead?: {
+                            /** @description Lead id (con_...). */
                             id?: string;
                             /** @description Full name. */
                             name?: string | null;
@@ -49373,9 +49373,9 @@ export interface operations {
                         object?: "do_not_contact_entry";
                         /** @description Entry id (dnc_...). */
                         id?: string;
-                        /** @description The person's Contact. Null once the Contact is deleted: the entry stays and still matches the person. */
-                        contact?: {
-                            /** @description Contact id (con_...). */
+                        /** @description The person's Lead. Null once the Lead is deleted: the entry stays and still matches the person. */
+                        lead?: {
+                            /** @description Lead id (con_...). */
                             id?: string;
                             /** @description Full name. */
                             name?: string | null;
@@ -49403,7 +49403,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Neither or both of contact_id and linkedin_url, a URL that is not a LinkedIn profile, or a reason outside the list. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description Neither or both of lead_id and linkedin_url, a URL that is not a LinkedIn profile, or a reason outside the list. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -49421,7 +49421,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -49430,7 +49430,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: no such Contact. A Contact merged into another answers with merged_into naming the one to use. */
+            /** @description RESOURCE_NOT_FOUND: no such Lead. A Lead merged into another answers with merged_into naming the one to use. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -49448,7 +49448,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description CONTACT_LIMIT_REACHED: adding by URL would create a Contact past your team's cap. Nothing is written. */
+            /** @description LEAD_LIMIT_REACHED: adding by URL would create a Lead past your team's cap. Nothing is written. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -49499,7 +49499,7 @@ export interface operations {
                     "application/x-ndjson": string;
                     "text/csv": string;
                     "application/json": {
-                        /** @description The person's LinkedIn profile URL; null once the Contact is deleted. */
+                        /** @description The person's LinkedIn profile URL; null once the Lead is deleted. */
                         linkedin_url?: string | null;
                         /**
                          * @description Why, from a fixed list.
@@ -49624,13 +49624,13 @@ export interface operations {
                             outcome?: "created" | "unchanged" | "skipped";
                             /** @description The person's entry (dnc_...), created or existing. */
                             entry_id?: string | null;
-                            /** @description The person's Contact (con_...). */
-                            contact_id?: string | null;
+                            /** @description The person's Lead (con_...). */
+                            lead_id?: string | null;
                             /**
                              * @description Why the row was skipped.
                              * @enum {string|null}
                              */
-                            skip_reason?: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_reason" | "malformed_row" | "contact_limit_reached" | null;
+                            skip_reason?: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_reason" | "malformed_row" | "lead_limit_reached" | null;
                             /** @description The field a skip is about. */
                             field?: string | null;
                             /** @description The first row of the file that named this person. */
@@ -49657,7 +49657,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -49722,9 +49722,9 @@ export interface operations {
                         object?: "do_not_contact_entry";
                         /** @description Entry id (dnc_...). */
                         id?: string;
-                        /** @description The person's Contact. Null once the Contact is deleted: the entry stays and still matches the person. */
-                        contact?: {
-                            /** @description Contact id (con_...). */
+                        /** @description The person's Lead. Null once the Lead is deleted: the entry stays and still matches the person. */
+                        lead?: {
+                            /** @description Lead id (con_...). */
                             id?: string;
                             /** @description Full name. */
                             name?: string | null;
@@ -49912,9 +49912,9 @@ export interface operations {
                         object?: "do_not_contact_entry";
                         /** @description Entry id (dnc_...). */
                         id?: string;
-                        /** @description The person's Contact. Null once the Contact is deleted: the entry stays and still matches the person. */
-                        contact?: {
-                            /** @description Contact id (con_...). */
+                        /** @description The person's Lead. Null once the Lead is deleted: the entry stays and still matches the person. */
+                        lead?: {
+                            /** @description Lead id (con_...). */
                             id?: string;
                             /** @description Full name. */
                             name?: string | null;
@@ -49960,7 +49960,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Contacts (Contacts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -50001,7 +50001,7 @@ export interface operations {
             };
         };
     };
-    postV1MotionsVoiceClips: {
+    postV1CampaignsVoiceClips: {
         parameters: {
             query: {
                 filename: string;
@@ -50074,7 +50074,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Motions (Automate). Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include Campaigns (Automate). Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -50124,7 +50124,7 @@ export interface operations {
             };
         };
     };
-    getV1MotionsVoiceClipsId: {
+    getV1CampaignsVoiceClipsId: {
         parameters: {
             query?: never;
             header?: {
@@ -50186,7 +50186,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Not used below Automate: a team that lost Motions can still read its clips. */
+            /** @description Not used below Automate: a team that lost Campaigns can still read its clips. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -50218,16 +50218,16 @@ export interface operations {
             };
         };
     };
-    getV1Motions: {
+    getV1Campaigns: {
         parameters: {
             query?: {
                 /** @description draft, scheduled, active, paused, completed, archived. Default: all but archived. Repeat the key, comma-separate or mix; empties ignored. */
                 status?: ("draft" | "scheduled" | "active" | "paused" | "completed" | "archived")[];
-                /** @description Only Motions sending from any of these accounts (acc_...). Repeat the key, comma-separate or mix; empties ignored. */
+                /** @description Only Campaigns sending from any of these accounts (acc_...). Repeat the key, comma-separate or mix; empties ignored. */
                 account_id?: string;
                 /** @description updated (default): latest edit first. activity: latest step record first, else updated_at. A cursor belongs to its sort. */
                 sort?: "updated" | "activity";
-                /** @description Case-insensitive match on the Motion name. */
+                /** @description Case-insensitive match on the Campaign name. */
                 q?: string;
                 /** @description Max items per page (1-100, default 20). */
                 limit?: number;
@@ -50245,7 +50245,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Motions, most recently updated first (sort=activity: latest step record first). Items carry sequence_version and last_activity_at but not sequence or warnings: read one Motion for those. */
+            /** @description Campaigns, most recently updated first (sort=activity: latest step record first). Items carry sequence_version and last_activity_at but not sequence or warnings: read one Campaign for those. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -50255,14 +50255,14 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {string} */
-                        object: "motion_list";
+                        object: "campaign_list";
                         items: {
                             /**
                              * @description Response type discriminator.
                              * @enum {string}
                              */
-                            object: "motion";
-                            /** @description Motion id (mot_...). */
+                            object: "campaign";
+                            /** @description Campaign id (mot_...). */
                             id: string;
                             name: string;
                             /** @enum {string} */
@@ -50272,13 +50272,13 @@ export interface operations {
                              * @enum {string|null}
                              */
                             pause_reason: "user" | "acceptance_floor" | "no_sending_account" | "tier_required" | null;
-                            /** @description Contact lists (cl_...) whose Contacts enroll. */
-                            contact_list_ids: string[];
-                            /** @description Contact lists (cl_...) whose Contacts never enroll. */
+                            /** @description Lead lists (cl_...) whose Leads enroll. */
+                            lead_list_ids: string[];
+                            /** @description Lead lists (cl_...) whose Leads never enroll. */
                             exclusion_list_ids: string[];
                             /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                             account_ids: string[];
-                            /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Motion; changing the Team's hours later does not move it. */
+                            /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Campaign; changing the Team's hours later does not move it. */
                             schedule: {
                                 days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
                                 hours: {
@@ -50291,42 +50291,42 @@ export interface operations {
                                 end_at: string | null;
                             };
                             settings: {
-                                accounts_per_contact: number;
+                                accounts_per_lead: number;
                                 /**
-                                 * @description Which sending account takes a Contact. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
+                                 * @description Which sending account takes a Lead. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
                                  * @enum {string}
                                  */
                                 assign: "auto" | "already_connected";
                                 /**
-                                 * @description This Motion's weight in each sending account's budgets: normal (1) or prioritized (1.5). Motions with a higher priority are preferred in the weighting on every budget; every Motion with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Motions the same day.
+                                 * @description This Campaign's weight in each sending account's budgets: normal (1) or prioritized (1.5). Campaigns with a higher priority are preferred in the weighting on every budget; every Campaign with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Campaigns the same day.
                                  * @enum {string}
                                  */
                                 priority: "normal" | "prioritized";
                                 exclude: {
-                                    other_motions: boolean;
+                                    other_campaigns: boolean;
                                     known_chats: boolean;
                                     pending_invites: boolean;
                                 };
-                                /** @description Optional, off by default (null). When on, pauses the Motion when the invitation acceptance rate falls below percent. */
+                                /** @description Optional, off by default (null). When on, pauses the Campaign when the invitation acceptance rate falls below percent. */
                                 acceptance_floor: {
                                     percent: number;
                                     min_invites: number;
                                 } | null;
-                                /** @description Deprecated (warning W13): Motion variables are removed; write text in place or use a custom field. */
+                                /** @description Deprecated (warning W13): Campaign variables are removed; write text in place or use a custom field. */
                                 variables: {
                                     [key: string]: string;
                                 };
                                 /**
-                                 * @description Several mode only (accounts_per_contact above 1; absent otherwise). stop: a reply to one account, or a message sent by hand from it, ends the Contact's Enrollments on the other accounts.
+                                 * @description Several mode only (accounts_per_lead above 1; absent otherwise). stop: a reply to one account, or a message sent by hand from it, ends the Lead's Enrollments on the other accounts.
                                  * @enum {string}
                                  */
                                 on_reply_elsewhere?: "stop" | "continue";
-                                /** @description Several mode only. The stopped accounts also withdraw the pending invitations this Motion sent. */
+                                /** @description Several mode only. The stopped accounts also withdraw the pending invitations this Campaign sent. */
                                 withdraw_on_reply_elsewhere?: boolean;
-                                /** @description Several mode only. The least time between two accounts' starts on one Contact, 1d to 30d. */
+                                /** @description Several mode only. The least time between two accounts' starts on one Lead, 1d to 30d. */
                                 account_gap?: string;
                             };
-                            /** @description contact.* predicates a Contact must all pass to enroll. */
+                            /** @description lead.* predicates a Lead must all pass to enroll. */
                             where: {
                                 [key: string]: unknown;
                             }[];
@@ -50351,7 +50351,7 @@ export interface operations {
                                 /** @description Skipped at admission or start. */
                                 skipped: number;
                             };
-                            /** @description The user who created the Motion. */
+                            /** @description The user who created the Campaign. */
                             created_by_user_id: string | null;
                             /** @description ISO 8601. */
                             created_at: string;
@@ -50363,7 +50363,7 @@ export interface operations {
                             completed_at: string | null;
                             /** @description When it was archived. */
                             archived_at: string | null;
-                            /** @description ISO 8601: the Motion's latest step record among those you may see (a record of a teammate's account with team access off is theirs alone); null when there is none. sort=activity orders by it. */
+                            /** @description ISO 8601: the Campaign's latest step record among those you may see (a record of a teammate's account with team access off is theirs alone); null when there is none. sort=activity orders by it. */
                             last_activity_at: string | null;
                         }[];
                         /** @description Pass back as cursor for the next page; null on the last page. */
@@ -50421,7 +50421,7 @@ export interface operations {
             };
         };
     };
-    postV1Motions: {
+    postV1Campaigns: {
         parameters: {
             query?: never;
             header?: {
@@ -50438,9 +50438,9 @@ export interface operations {
                 "application/json": {
                     /** @description 1 to 100 characters. */
                     name: string;
-                    /** @description Contact lists (cl_...) whose Contacts enroll, up to 20. Replaced whole on update. */
-                    contact_list_ids?: string[];
-                    /** @description Contact lists (cl_...) whose Contacts never enroll, up to 20. Replaced whole on update. */
+                    /** @description Lead lists (cl_...) whose Leads enroll, up to 20. Replaced whole on update. */
+                    lead_list_ids?: string[];
+                    /** @description Lead lists (cl_...) whose Leads never enroll, up to 20. Replaced whole on update. */
                     exclusion_list_ids?: string[];
                     /** @description Sending accounts (acc_...), up to 100. Replaced whole on update. */
                     account_ids?: string[];
@@ -50448,7 +50448,7 @@ export interface operations {
                     schedule?: {
                         /** @description Retired: days and hours are read in each sending account's own time zone. Accepted with warning W13 until 2027-01-25, never stored or returned. */
                         timezone?: string | null;
-                        /** @description Days actions may run on. Default: the days of the Team's Active hours (mon to fri unless the Team set others), taken when the Motion is created and stored on it. */
+                        /** @description Days actions may run on. Default: the days of the Team's Active hours (mon to fri unless the Team set others), taken when the Campaign is created and stored on it. */
                         days?: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
                         /** @description Daily window, read in each sending account's own time zone; start before end. The first action after the hours open starts a few minutes later. Replaced whole on update. */
                         hours?: {
@@ -50457,7 +50457,7 @@ export interface operations {
                             /** @description Default: the end of the Team's Active hours (22:00 unless the Team set another), taken at creation. */
                             end: string;
                         };
-                        /** @description ISO 8601 with offset. A start before this leaves the Motion scheduled. Default null. */
+                        /** @description ISO 8601 with offset. A start before this leaves the Campaign scheduled. Default null. */
                         start_at?: string | null;
                         /** @description ISO 8601 with offset, after start_at. Default null. */
                         end_at?: string | null;
@@ -50465,51 +50465,51 @@ export interface operations {
                     /** @description Merged key by key on update. */
                     settings?: {
                         /**
-                         * @description This Motion's weight in each sending account's budgets: normal (1) or prioritized (1.5). Motions with a higher priority are preferred in the weighting on every budget; every Motion with work due still progresses, and a limit is never exceeded. Default normal.
+                         * @description This Campaign's weight in each sending account's budgets: normal (1) or prioritized (1.5). Campaigns with a higher priority are preferred in the weighting on every budget; every Campaign with work due still progresses, and a limit is never exceeded. Default normal.
                          * @enum {string}
                          */
                         priority?: "normal" | "prioritized";
-                        /** @description How many sending accounts may contact one Contact (1 to 10). Default 1. */
-                        accounts_per_contact?: number;
+                        /** @description How many sending accounts may contact one Lead (1 to 10). Default 1. */
+                        accounts_per_lead?: number;
                         /**
-                         * @description Which sending account takes a Contact. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them; anyone else is skipped. Default auto. even is retired: accepted and ignored with a SETTING_REMOVED notice and a Deprecation: true header until 2027-01-28, never stored or returned; a 400 after that day.
+                         * @description Which sending account takes a Lead. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them; anyone else is skipped. Default auto. even is retired: accepted and ignored with a SETTING_REMOVED notice and a Deprecation: true header until 2027-01-28, never stored or returned; a 400 after that day.
                          * @enum {string}
                          */
                         assign?: "auto" | "even" | "already_connected";
                         /** @description Retired: new people now start at each sending account's daily allowance. Accepted and ignored with a SETTING_REMOVED notice and a Deprecation: true header until 2027-01-28, never stored or returned; a 400 after that day. */
                         new_enrollments_per_account_per_day?: number;
                         exclude?: {
-                            /** @description Skip Contacts already in another Motion. Default true. */
-                            other_motions?: boolean;
-                            /** @description Skip Contacts the account already chats with. Default true. */
+                            /** @description Skip Leads already in another Campaign. Default true. */
+                            other_campaigns?: boolean;
+                            /** @description Skip Leads the account already chats with. Default true. */
                             known_chats?: boolean;
-                            /** @description Skip Contacts with a pending invitation from any account of the team, sent from Curviate or not. Default true. */
+                            /** @description Skip Leads with a pending invitation from any account of the team, sent from Curviate or not. Default true. */
                             pending_invites?: boolean;
                         };
-                        /** @description Optional, off by default (null). When on, pauses the Motion when the invitation acceptance rate falls below percent. null turns it off. */
+                        /** @description Optional, off by default (null). When on, pauses the Campaign when the invitation acceptance rate falls below percent. null turns it off. */
                         acceptance_floor?: {
                             /** @description Pause below this acceptance rate, in percent. Default 20 when you turn the floor on. */
                             percent?: number;
                             /** @description Invitations before the floor is evaluated (10 to 1000). Default 30 when you turn the floor on. */
                             min_invites?: number;
                         } | null;
-                        /** @description Deprecated: Motion variables are removed (accepted with warning W13 until 2027-01-19); write text that is the same for everyone in place, and per-Contact text in a custom field. Rendered as `{{motion.<key>}}`. Up to 50 keys matching ^[a-z][a-z0-9_]{0,39}$; values up to 2000 characters, without variables. On update a null value removes the key. */
+                        /** @description Deprecated: Campaign variables are removed (accepted with warning W13 until 2027-01-19); write text that is the same for everyone in place, and per-Lead text in a custom field. Rendered as `{{campaign.<key>}}`. Up to 50 keys matching ^[a-z][a-z0-9_]{0,39}$; values up to 2000 characters, without variables. On update a null value removes the key. */
                         variables?: {
                             [key: string]: string | null;
                         };
                         /**
-                         * @description Several mode only (accounts_per_contact above 1; absent and refused otherwise). What a reply to one sending account, or a message sent by hand from it, does to the Contact's Enrollments on the Motion's other accounts: stop (default) ends them, continue lets them run on.
+                         * @description Several mode only (accounts_per_lead above 1; absent and refused otherwise). What a reply to one sending account, or a message sent by hand from it, does to the Lead's Enrollments on the Campaign's other accounts: stop (default) ends them, continue lets them run on.
                          * @enum {string}
                          */
                         on_reply_elsewhere?: "stop" | "continue";
-                        /** @description Several mode only, with on_reply_elsewhere stop. When true, the stopped accounts also withdraw the pending invitations this Motion sent the Contact. Default false. */
+                        /** @description Several mode only, with on_reply_elsewhere stop. When true, the stopped accounts also withdraw the pending invitations this Campaign sent the Lead. Default false. */
                         withdraw_on_reply_elsewhere?: boolean;
-                        /** @description Several mode only. The least time between two accounts' starts on one Contact, plus a small random spread: a number then m, h or d, 1d to 30d. Default 1d. */
+                        /** @description Several mode only. The least time between two accounts' starts on one Lead, plus a small random spread: a number then m, h or d, 1d to 30d. Default 1d. */
                         account_gap?: string;
                         /** @description Retired: the Sequence decides what a reply does (on_reply "end" stops on a reply), and a message you send by hand always ends the Enrollment. Accepted with warning W13 until 2027-01-25, never stored or returned: false always; true only while no reply route reaches a step that acts (on_reply, or the then of an until message.replied), else 400. */
                         stop_on_engagement?: boolean;
                     };
-                    /** @description Up to 20 contact.* predicates, all of which a Contact must pass to enroll, e.g. [{"contact.has_photo":true}]. Replaced whole on update. */
+                    /** @description Up to 20 lead.* predicates, all of which a Lead must pass to enroll, e.g. [{"lead.has_photo":true}]. Replaced whole on update. */
                     where?: unknown[];
                     /** @description The Sequence document (GET /schemas/sequence/v1.json), validated whole; every error comes back at once. Replaced whole on update. null clears a draft's. */
                     sequence?: components["schemas"]["SequenceDocument"] | null;
@@ -50517,7 +50517,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The Motion, as a draft. */
+            /** @description The Campaign, as a draft. */
             201: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -50530,8 +50530,8 @@ export interface operations {
                          * @description Response type discriminator.
                          * @enum {string}
                          */
-                        object: "motion";
-                        /** @description Motion id (mot_...). */
+                        object: "campaign";
+                        /** @description Campaign id (mot_...). */
                         id: string;
                         name: string;
                         /** @enum {string} */
@@ -50541,13 +50541,13 @@ export interface operations {
                          * @enum {string|null}
                          */
                         pause_reason: "user" | "acceptance_floor" | "no_sending_account" | "tier_required" | null;
-                        /** @description Contact lists (cl_...) whose Contacts enroll. */
-                        contact_list_ids: string[];
-                        /** @description Contact lists (cl_...) whose Contacts never enroll. */
+                        /** @description Lead lists (cl_...) whose Leads enroll. */
+                        lead_list_ids: string[];
+                        /** @description Lead lists (cl_...) whose Leads never enroll. */
                         exclusion_list_ids: string[];
                         /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                         account_ids: string[];
-                        /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Motion; changing the Team's hours later does not move it. */
+                        /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Campaign; changing the Team's hours later does not move it. */
                         schedule: {
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
                             hours: {
@@ -50560,42 +50560,42 @@ export interface operations {
                             end_at: string | null;
                         };
                         settings: {
-                            accounts_per_contact: number;
+                            accounts_per_lead: number;
                             /**
-                             * @description Which sending account takes a Contact. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
+                             * @description Which sending account takes a Lead. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
                              * @enum {string}
                              */
                             assign: "auto" | "already_connected";
                             /**
-                             * @description This Motion's weight in each sending account's budgets: normal (1) or prioritized (1.5). Motions with a higher priority are preferred in the weighting on every budget; every Motion with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Motions the same day.
+                             * @description This Campaign's weight in each sending account's budgets: normal (1) or prioritized (1.5). Campaigns with a higher priority are preferred in the weighting on every budget; every Campaign with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Campaigns the same day.
                              * @enum {string}
                              */
                             priority: "normal" | "prioritized";
                             exclude: {
-                                other_motions: boolean;
+                                other_campaigns: boolean;
                                 known_chats: boolean;
                                 pending_invites: boolean;
                             };
-                            /** @description Optional, off by default (null). When on, pauses the Motion when the invitation acceptance rate falls below percent. */
+                            /** @description Optional, off by default (null). When on, pauses the Campaign when the invitation acceptance rate falls below percent. */
                             acceptance_floor: {
                                 percent: number;
                                 min_invites: number;
                             } | null;
-                            /** @description Deprecated (warning W13): Motion variables are removed; write text in place or use a custom field. */
+                            /** @description Deprecated (warning W13): Campaign variables are removed; write text in place or use a custom field. */
                             variables: {
                                 [key: string]: string;
                             };
                             /**
-                             * @description Several mode only (accounts_per_contact above 1; absent otherwise). stop: a reply to one account, or a message sent by hand from it, ends the Contact's Enrollments on the other accounts.
+                             * @description Several mode only (accounts_per_lead above 1; absent otherwise). stop: a reply to one account, or a message sent by hand from it, ends the Lead's Enrollments on the other accounts.
                              * @enum {string}
                              */
                             on_reply_elsewhere?: "stop" | "continue";
-                            /** @description Several mode only. The stopped accounts also withdraw the pending invitations this Motion sent. */
+                            /** @description Several mode only. The stopped accounts also withdraw the pending invitations this Campaign sent. */
                             withdraw_on_reply_elsewhere?: boolean;
-                            /** @description Several mode only. The least time between two accounts' starts on one Contact, 1d to 30d. */
+                            /** @description Several mode only. The least time between two accounts' starts on one Lead, 1d to 30d. */
                             account_gap?: string;
                         };
-                        /** @description contact.* predicates a Contact must all pass to enroll. */
+                        /** @description lead.* predicates a Lead must all pass to enroll. */
                         where: {
                             [key: string]: unknown;
                         }[];
@@ -50622,7 +50622,7 @@ export interface operations {
                             /** @description Skipped at admission or start. */
                             skipped: number;
                         };
-                        /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
+                        /** @description Lint warnings on the Sequence and the Campaign. They never block a write. */
                         warnings: {
                             /** @description The warning id, W1 to W17. */
                             code: string;
@@ -50632,7 +50632,7 @@ export interface operations {
                             rule: string;
                             /** @description Equal to rule. */
                             message: string;
-                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Motion-level warning. */
+                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Campaign-level warning. */
                             pointer: string;
                             /** @description One sentence saying what to do. */
                             hint: string;
@@ -50646,7 +50646,7 @@ export interface operations {
                             /** @description Did-you-mean replacements, when there are some. */
                             candidates?: string[];
                         }[];
-                        /** @description The user who created the Motion. */
+                        /** @description The user who created the Campaign. */
                         created_by_user_id: string | null;
                         /** @description ISO 8601. */
                         created_at: string;
@@ -50669,7 +50669,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid input; the message starts with the field. An unknown query parameter, an unknown key or a read-only field, a value over its cap, a list id that is not yours (contact_list_ids: unknown list cl_...), one list as both source and exclusion, an invalid schedule or setting (a Several-mode setting with accounts_per_contact 1, withdraw_on_reply_elsewhere true with on_reply_elsewhere continue, an account_gap outside 1d to 30d), or an unknown where predicate (where[0]: ...). Checked before the sequence. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description Invalid input; the message starts with the field. An unknown query parameter, an unknown key or a read-only field, a value over its cap, a list id that is not yours (lead_list_ids: unknown list cl_...), one list as both source and exclusion, an invalid schedule or setting (a Several-mode setting with accounts_per_lead 1, withdraw_on_reply_elsewhere true with on_reply_elsewhere continue, an account_gap outside 1d to 30d), or an unknown where predicate (where[0]: ...). Checked before the sequence. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -50687,7 +50687,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Motion's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Motion sends from to pause or archive, and removes only their own. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Campaign's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Campaign sends from to pause or archive, and removes only their own. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -50746,7 +50746,7 @@ export interface operations {
             };
         };
     };
-    getV1MotionsId: {
+    getV1CampaignsId: {
         parameters: {
             query?: never;
             header?: {
@@ -50756,14 +50756,14 @@ export interface operations {
                 "Curviate-Client"?: string;
             };
             path: {
-                /** @description Motion id (mot_...). */
+                /** @description Campaign id (mot_...). */
                 id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description The Motion. */
+            /** @description The Campaign. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -50776,8 +50776,8 @@ export interface operations {
                          * @description Response type discriminator.
                          * @enum {string}
                          */
-                        object: "motion";
-                        /** @description Motion id (mot_...). */
+                        object: "campaign";
+                        /** @description Campaign id (mot_...). */
                         id: string;
                         name: string;
                         /** @enum {string} */
@@ -50787,13 +50787,13 @@ export interface operations {
                          * @enum {string|null}
                          */
                         pause_reason: "user" | "acceptance_floor" | "no_sending_account" | "tier_required" | null;
-                        /** @description Contact lists (cl_...) whose Contacts enroll. */
-                        contact_list_ids: string[];
-                        /** @description Contact lists (cl_...) whose Contacts never enroll. */
+                        /** @description Lead lists (cl_...) whose Leads enroll. */
+                        lead_list_ids: string[];
+                        /** @description Lead lists (cl_...) whose Leads never enroll. */
                         exclusion_list_ids: string[];
                         /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                         account_ids: string[];
-                        /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Motion; changing the Team's hours later does not move it. */
+                        /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Campaign; changing the Team's hours later does not move it. */
                         schedule: {
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
                             hours: {
@@ -50806,42 +50806,42 @@ export interface operations {
                             end_at: string | null;
                         };
                         settings: {
-                            accounts_per_contact: number;
+                            accounts_per_lead: number;
                             /**
-                             * @description Which sending account takes a Contact. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
+                             * @description Which sending account takes a Lead. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
                              * @enum {string}
                              */
                             assign: "auto" | "already_connected";
                             /**
-                             * @description This Motion's weight in each sending account's budgets: normal (1) or prioritized (1.5). Motions with a higher priority are preferred in the weighting on every budget; every Motion with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Motions the same day.
+                             * @description This Campaign's weight in each sending account's budgets: normal (1) or prioritized (1.5). Campaigns with a higher priority are preferred in the weighting on every budget; every Campaign with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Campaigns the same day.
                              * @enum {string}
                              */
                             priority: "normal" | "prioritized";
                             exclude: {
-                                other_motions: boolean;
+                                other_campaigns: boolean;
                                 known_chats: boolean;
                                 pending_invites: boolean;
                             };
-                            /** @description Optional, off by default (null). When on, pauses the Motion when the invitation acceptance rate falls below percent. */
+                            /** @description Optional, off by default (null). When on, pauses the Campaign when the invitation acceptance rate falls below percent. */
                             acceptance_floor: {
                                 percent: number;
                                 min_invites: number;
                             } | null;
-                            /** @description Deprecated (warning W13): Motion variables are removed; write text in place or use a custom field. */
+                            /** @description Deprecated (warning W13): Campaign variables are removed; write text in place or use a custom field. */
                             variables: {
                                 [key: string]: string;
                             };
                             /**
-                             * @description Several mode only (accounts_per_contact above 1; absent otherwise). stop: a reply to one account, or a message sent by hand from it, ends the Contact's Enrollments on the other accounts.
+                             * @description Several mode only (accounts_per_lead above 1; absent otherwise). stop: a reply to one account, or a message sent by hand from it, ends the Lead's Enrollments on the other accounts.
                              * @enum {string}
                              */
                             on_reply_elsewhere?: "stop" | "continue";
-                            /** @description Several mode only. The stopped accounts also withdraw the pending invitations this Motion sent. */
+                            /** @description Several mode only. The stopped accounts also withdraw the pending invitations this Campaign sent. */
                             withdraw_on_reply_elsewhere?: boolean;
-                            /** @description Several mode only. The least time between two accounts' starts on one Contact, 1d to 30d. */
+                            /** @description Several mode only. The least time between two accounts' starts on one Lead, 1d to 30d. */
                             account_gap?: string;
                         };
-                        /** @description contact.* predicates a Contact must all pass to enroll. */
+                        /** @description lead.* predicates a Lead must all pass to enroll. */
                         where: {
                             [key: string]: unknown;
                         }[];
@@ -50868,7 +50868,7 @@ export interface operations {
                             /** @description Skipped at admission or start. */
                             skipped: number;
                         };
-                        /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
+                        /** @description Lint warnings on the Sequence and the Campaign. They never block a write. */
                         warnings: {
                             /** @description The warning id, W1 to W17. */
                             code: string;
@@ -50878,7 +50878,7 @@ export interface operations {
                             rule: string;
                             /** @description Equal to rule. */
                             message: string;
-                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Motion-level warning. */
+                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Campaign-level warning. */
                             pointer: string;
                             /** @description One sentence saying what to do. */
                             hint: string;
@@ -50892,7 +50892,7 @@ export interface operations {
                             /** @description Did-you-mean replacements, when there are some. */
                             candidates?: string[];
                         }[];
-                        /** @description The user who created the Motion. */
+                        /** @description The user who created the Campaign. */
                         created_by_user_id: string | null;
                         /** @description ISO 8601. */
                         created_at: string;
@@ -50925,7 +50925,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: no such Motion. */
+            /** @description RESOURCE_NOT_FOUND: no such Campaign. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -50948,7 +50948,7 @@ export interface operations {
             };
         };
     };
-    deleteV1MotionsId: {
+    deleteV1CampaignsId: {
         parameters: {
             query?: never;
             header?: {
@@ -50958,7 +50958,7 @@ export interface operations {
                 "Curviate-Client"?: string;
             };
             path: {
-                /** @description Motion id (mot_...). */
+                /** @description Campaign id (mot_...). */
                 id: string;
             };
             cookie?: never;
@@ -50992,7 +50992,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Motion's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Motion sends from to pause or archive, and removes only their own. Not fixed by retrying. */
+            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Campaign's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Campaign sends from to pause or archive, and removes only their own. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -51001,7 +51001,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: no such Motion. */
+            /** @description RESOURCE_NOT_FOUND: no such Campaign. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -51010,7 +51010,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description MOTION_STATUS_CONFLICT: only draft Motions can be deleted. Archive it instead. The message names the current status and the operations it allows. */
+            /** @description CAMPAIGN_STATUS_CONFLICT: only draft Campaigns can be deleted. Archive it instead. The message names the current status and the operations it allows. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -51033,7 +51033,7 @@ export interface operations {
             };
         };
     };
-    patchV1MotionsId: {
+    patchV1CampaignsId: {
         parameters: {
             query?: never;
             header?: {
@@ -51043,7 +51043,7 @@ export interface operations {
                 "Curviate-Client"?: string;
             };
             path: {
-                /** @description Motion id (mot_...). */
+                /** @description Campaign id (mot_...). */
                 id: string;
             };
             cookie?: never;
@@ -51053,9 +51053,9 @@ export interface operations {
                 "application/json": {
                     /** @description 1 to 100 characters. */
                     name?: string;
-                    /** @description Contact lists (cl_...) whose Contacts enroll, up to 20. Replaced whole on update. */
-                    contact_list_ids?: string[];
-                    /** @description Contact lists (cl_...) whose Contacts never enroll, up to 20. Replaced whole on update. */
+                    /** @description Lead lists (cl_...) whose Leads enroll, up to 20. Replaced whole on update. */
+                    lead_list_ids?: string[];
+                    /** @description Lead lists (cl_...) whose Leads never enroll, up to 20. Replaced whole on update. */
                     exclusion_list_ids?: string[];
                     /** @description Sending accounts (acc_...), up to 100. Replaced whole on update. */
                     account_ids?: string[];
@@ -51063,7 +51063,7 @@ export interface operations {
                     schedule?: {
                         /** @description Retired: days and hours are read in each sending account's own time zone. Accepted with warning W13 until 2027-01-25, never stored or returned. */
                         timezone?: string | null;
-                        /** @description Days actions may run on. Default: the days of the Team's Active hours (mon to fri unless the Team set others), taken when the Motion is created and stored on it. */
+                        /** @description Days actions may run on. Default: the days of the Team's Active hours (mon to fri unless the Team set others), taken when the Campaign is created and stored on it. */
                         days?: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
                         /** @description Daily window, read in each sending account's own time zone; start before end. The first action after the hours open starts a few minutes later. Replaced whole on update. */
                         hours?: {
@@ -51072,7 +51072,7 @@ export interface operations {
                             /** @description Default: the end of the Team's Active hours (22:00 unless the Team set another), taken at creation. */
                             end: string;
                         };
-                        /** @description ISO 8601 with offset. A start before this leaves the Motion scheduled. Default null. */
+                        /** @description ISO 8601 with offset. A start before this leaves the Campaign scheduled. Default null. */
                         start_at?: string | null;
                         /** @description ISO 8601 with offset, after start_at. Default null. */
                         end_at?: string | null;
@@ -51080,61 +51080,61 @@ export interface operations {
                     /** @description Merged key by key on update. */
                     settings?: {
                         /**
-                         * @description This Motion's weight in each sending account's budgets: normal (1) or prioritized (1.5). Motions with a higher priority are preferred in the weighting on every budget; every Motion with work due still progresses, and a limit is never exceeded. Default normal.
+                         * @description This Campaign's weight in each sending account's budgets: normal (1) or prioritized (1.5). Campaigns with a higher priority are preferred in the weighting on every budget; every Campaign with work due still progresses, and a limit is never exceeded. Default normal.
                          * @enum {string}
                          */
                         priority?: "normal" | "prioritized";
-                        /** @description How many sending accounts may contact one Contact (1 to 10). Default 1. */
-                        accounts_per_contact?: number;
+                        /** @description How many sending accounts may contact one Lead (1 to 10). Default 1. */
+                        accounts_per_lead?: number;
                         /**
-                         * @description Which sending account takes a Contact. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them; anyone else is skipped. Default auto. even is retired: accepted and ignored with a SETTING_REMOVED notice and a Deprecation: true header until 2027-01-28, never stored or returned; a 400 after that day.
+                         * @description Which sending account takes a Lead. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them; anyone else is skipped. Default auto. even is retired: accepted and ignored with a SETTING_REMOVED notice and a Deprecation: true header until 2027-01-28, never stored or returned; a 400 after that day.
                          * @enum {string}
                          */
                         assign?: "auto" | "even" | "already_connected";
                         /** @description Retired: new people now start at each sending account's daily allowance. Accepted and ignored with a SETTING_REMOVED notice and a Deprecation: true header until 2027-01-28, never stored or returned; a 400 after that day. */
                         new_enrollments_per_account_per_day?: number;
                         exclude?: {
-                            /** @description Skip Contacts already in another Motion. Default true. */
-                            other_motions?: boolean;
-                            /** @description Skip Contacts the account already chats with. Default true. */
+                            /** @description Skip Leads already in another Campaign. Default true. */
+                            other_campaigns?: boolean;
+                            /** @description Skip Leads the account already chats with. Default true. */
                             known_chats?: boolean;
-                            /** @description Skip Contacts with a pending invitation from any account of the team, sent from Curviate or not. Default true. */
+                            /** @description Skip Leads with a pending invitation from any account of the team, sent from Curviate or not. Default true. */
                             pending_invites?: boolean;
                         };
-                        /** @description Optional, off by default (null). When on, pauses the Motion when the invitation acceptance rate falls below percent. null turns it off. */
+                        /** @description Optional, off by default (null). When on, pauses the Campaign when the invitation acceptance rate falls below percent. null turns it off. */
                         acceptance_floor?: {
                             /** @description Pause below this acceptance rate, in percent. Default 20 when you turn the floor on. */
                             percent?: number;
                             /** @description Invitations before the floor is evaluated (10 to 1000). Default 30 when you turn the floor on. */
                             min_invites?: number;
                         } | null;
-                        /** @description Deprecated: Motion variables are removed (accepted with warning W13 until 2027-01-19); write text that is the same for everyone in place, and per-Contact text in a custom field. Rendered as `{{motion.<key>}}`. Up to 50 keys matching ^[a-z][a-z0-9_]{0,39}$; values up to 2000 characters, without variables. On update a null value removes the key. */
+                        /** @description Deprecated: Campaign variables are removed (accepted with warning W13 until 2027-01-19); write text that is the same for everyone in place, and per-Lead text in a custom field. Rendered as `{{campaign.<key>}}`. Up to 50 keys matching ^[a-z][a-z0-9_]{0,39}$; values up to 2000 characters, without variables. On update a null value removes the key. */
                         variables?: {
                             [key: string]: string | null;
                         };
                         /**
-                         * @description Several mode only (accounts_per_contact above 1; absent and refused otherwise). What a reply to one sending account, or a message sent by hand from it, does to the Contact's Enrollments on the Motion's other accounts: stop (default) ends them, continue lets them run on.
+                         * @description Several mode only (accounts_per_lead above 1; absent and refused otherwise). What a reply to one sending account, or a message sent by hand from it, does to the Lead's Enrollments on the Campaign's other accounts: stop (default) ends them, continue lets them run on.
                          * @enum {string}
                          */
                         on_reply_elsewhere?: "stop" | "continue";
-                        /** @description Several mode only, with on_reply_elsewhere stop. When true, the stopped accounts also withdraw the pending invitations this Motion sent the Contact. Default false. */
+                        /** @description Several mode only, with on_reply_elsewhere stop. When true, the stopped accounts also withdraw the pending invitations this Campaign sent the Lead. Default false. */
                         withdraw_on_reply_elsewhere?: boolean;
-                        /** @description Several mode only. The least time between two accounts' starts on one Contact, plus a small random spread: a number then m, h or d, 1d to 30d. Default 1d. */
+                        /** @description Several mode only. The least time between two accounts' starts on one Lead, plus a small random spread: a number then m, h or d, 1d to 30d. Default 1d. */
                         account_gap?: string;
                         /** @description Retired: the Sequence decides what a reply does (on_reply "end" stops on a reply), and a message you send by hand always ends the Enrollment. Accepted with warning W13 until 2027-01-25, never stored or returned: false always; true only while no reply route reaches a step that acts (on_reply, or the then of an until message.replied), else 400. */
                         stop_on_engagement?: boolean;
                     };
-                    /** @description Up to 20 contact.* predicates, all of which a Contact must pass to enroll, e.g. [{"contact.has_photo":true}]. Replaced whole on update. */
+                    /** @description Up to 20 lead.* predicates, all of which a Lead must pass to enroll, e.g. [{"lead.has_photo":true}]. Replaced whole on update. */
                     where?: unknown[];
                     /** @description The Sequence document (GET /schemas/sequence/v1.json), validated whole; every error comes back at once. Replaced whole on update. null clears a draft's. */
                     sequence?: components["schemas"]["SequenceDocument"] | null;
-                    /** @description The sequence_revision of the Motion as you read it, which your edit is based on. When the stored Sequence has moved past it, the PATCH is refused whole with 409 SEQUENCE_CONFLICT, carrying the current document in current; merge it, or send yours again with if_sequence_revision set to current.sequence_revision to replace it. Omitted: the last write wins. */
+                    /** @description The sequence_revision of the Campaign as you read it, which your edit is based on. When the stored Sequence has moved past it, the PATCH is refused whole with 409 SEQUENCE_CONFLICT, carrying the current document in current; merge it, or send yours again with if_sequence_revision set to current.sequence_revision to replace it. Omitted: the last write wins. */
                     if_sequence_revision?: number;
                 };
             };
         };
         responses: {
-            /** @description The updated Motion, plus sequence_change: none, copy (applied in place) or structural (a new Sequence version). A draft's Sequence is rewritten freely and reports none. */
+            /** @description The updated Campaign, plus sequence_change: none, copy (applied in place) or structural (a new Sequence version). A draft's Sequence is rewritten freely and reports none. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -51147,8 +51147,8 @@ export interface operations {
                          * @description Response type discriminator.
                          * @enum {string}
                          */
-                        object: "motion";
-                        /** @description Motion id (mot_...). */
+                        object: "campaign";
+                        /** @description Campaign id (mot_...). */
                         id: string;
                         name: string;
                         /** @enum {string} */
@@ -51158,13 +51158,13 @@ export interface operations {
                          * @enum {string|null}
                          */
                         pause_reason: "user" | "acceptance_floor" | "no_sending_account" | "tier_required" | null;
-                        /** @description Contact lists (cl_...) whose Contacts enroll. */
-                        contact_list_ids: string[];
-                        /** @description Contact lists (cl_...) whose Contacts never enroll. */
+                        /** @description Lead lists (cl_...) whose Leads enroll. */
+                        lead_list_ids: string[];
+                        /** @description Lead lists (cl_...) whose Leads never enroll. */
                         exclusion_list_ids: string[];
                         /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                         account_ids: string[];
-                        /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Motion; changing the Team's hours later does not move it. */
+                        /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Campaign; changing the Team's hours later does not move it. */
                         schedule: {
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
                             hours: {
@@ -51177,42 +51177,42 @@ export interface operations {
                             end_at: string | null;
                         };
                         settings: {
-                            accounts_per_contact: number;
+                            accounts_per_lead: number;
                             /**
-                             * @description Which sending account takes a Contact. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
+                             * @description Which sending account takes a Lead. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
                              * @enum {string}
                              */
                             assign: "auto" | "already_connected";
                             /**
-                             * @description This Motion's weight in each sending account's budgets: normal (1) or prioritized (1.5). Motions with a higher priority are preferred in the weighting on every budget; every Motion with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Motions the same day.
+                             * @description This Campaign's weight in each sending account's budgets: normal (1) or prioritized (1.5). Campaigns with a higher priority are preferred in the weighting on every budget; every Campaign with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Campaigns the same day.
                              * @enum {string}
                              */
                             priority: "normal" | "prioritized";
                             exclude: {
-                                other_motions: boolean;
+                                other_campaigns: boolean;
                                 known_chats: boolean;
                                 pending_invites: boolean;
                             };
-                            /** @description Optional, off by default (null). When on, pauses the Motion when the invitation acceptance rate falls below percent. */
+                            /** @description Optional, off by default (null). When on, pauses the Campaign when the invitation acceptance rate falls below percent. */
                             acceptance_floor: {
                                 percent: number;
                                 min_invites: number;
                             } | null;
-                            /** @description Deprecated (warning W13): Motion variables are removed; write text in place or use a custom field. */
+                            /** @description Deprecated (warning W13): Campaign variables are removed; write text in place or use a custom field. */
                             variables: {
                                 [key: string]: string;
                             };
                             /**
-                             * @description Several mode only (accounts_per_contact above 1; absent otherwise). stop: a reply to one account, or a message sent by hand from it, ends the Contact's Enrollments on the other accounts.
+                             * @description Several mode only (accounts_per_lead above 1; absent otherwise). stop: a reply to one account, or a message sent by hand from it, ends the Lead's Enrollments on the other accounts.
                              * @enum {string}
                              */
                             on_reply_elsewhere?: "stop" | "continue";
-                            /** @description Several mode only. The stopped accounts also withdraw the pending invitations this Motion sent. */
+                            /** @description Several mode only. The stopped accounts also withdraw the pending invitations this Campaign sent. */
                             withdraw_on_reply_elsewhere?: boolean;
-                            /** @description Several mode only. The least time between two accounts' starts on one Contact, 1d to 30d. */
+                            /** @description Several mode only. The least time between two accounts' starts on one Lead, 1d to 30d. */
                             account_gap?: string;
                         };
-                        /** @description contact.* predicates a Contact must all pass to enroll. */
+                        /** @description lead.* predicates a Lead must all pass to enroll. */
                         where: {
                             [key: string]: unknown;
                         }[];
@@ -51239,7 +51239,7 @@ export interface operations {
                             /** @description Skipped at admission or start. */
                             skipped: number;
                         };
-                        /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
+                        /** @description Lint warnings on the Sequence and the Campaign. They never block a write. */
                         warnings: {
                             /** @description The warning id, W1 to W17. */
                             code: string;
@@ -51249,7 +51249,7 @@ export interface operations {
                             rule: string;
                             /** @description Equal to rule. */
                             message: string;
-                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Motion-level warning. */
+                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Campaign-level warning. */
                             pointer: string;
                             /** @description One sentence saying what to do. */
                             hint: string;
@@ -51263,7 +51263,7 @@ export interface operations {
                             /** @description Did-you-mean replacements, when there are some. */
                             candidates?: string[];
                         }[];
-                        /** @description The user who created the Motion. */
+                        /** @description The user who created the Campaign. */
                         created_by_user_id: string | null;
                         /** @description ISO 8601. */
                         created_at: string;
@@ -51288,7 +51288,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid input, as on create. On a started Motion also: sequence null, a schedule.end_at that is not in the future, and a changed schedule.start_at or settings.accounts_per_contact once it has been active. An unknown query parameter. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description Invalid input, as on create. On a started Campaign also: sequence null, a schedule.end_at that is not in the future, and a changed schedule.start_at or settings.accounts_per_lead once it has been active. An unknown query parameter. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -51306,7 +51306,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Motion's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Motion sends from to pause or archive, and removes only their own. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Campaign's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Campaign sends from to pause or archive, and removes only their own. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -51315,7 +51315,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: no such Motion. ACCOUNT_NOT_FOUND: an id in account_ids is not one of your accounts (the message names it). */
+            /** @description RESOURCE_NOT_FOUND: no such Campaign. ACCOUNT_NOT_FOUND: an id in account_ids is not one of your accounts (the message names it). */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -51324,7 +51324,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description MOTION_STATUS_CONFLICT: the Motion is archived and read-only. REAUTH_REQUIRED: a newly added account is disconnected. SEQUENCE_CONFLICT: if_sequence_revision is not the stored sequence_revision (someone saved since you loaded it); nothing is saved, and current carries the stored sequence, sequence_revision, sequence_version, sequence_updated_by_user_id and updated_at. */
+            /** @description CAMPAIGN_STATUS_CONFLICT: the Campaign is archived and read-only. REAUTH_REQUIRED: a newly added account is disconnected. SEQUENCE_CONFLICT: if_sequence_revision is not the stored sequence_revision (someone saved since you loaded it); nothing is saved, and current carries the stored sequence, sequence_revision, sequence_version, sequence_updated_by_user_id and updated_at. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -51342,7 +51342,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description SEQUENCE_INVALID: the sequence breaks one or more rules. errors[] lists them in step order (the first 100; the message counts them all), each compiler-style: path, rule, code (R1 to R29), message, pointer (a JSON Pointer into the document), hint, docs_url, severity and, for a did-you-mean, candidates. Nothing is saved. Changing settings.variables re-checks the stored sequence, so removing a variable it uses is refused here too. MOTION_NOT_STARTABLE: on a scheduled, active or paused Motion the result must still pass what start checks; errors[] lists the gaps. */
+            /** @description SEQUENCE_INVALID: the sequence breaks one or more rules. errors[] lists them in step order (the first 100; the message counts them all), each compiler-style: path, rule, code (R1 to R29), message, pointer (a JSON Pointer into the document), hint, docs_url, severity and, for a did-you-mean, candidates. Nothing is saved. Changing settings.variables re-checks the stored sequence, so removing a variable it uses is refused here too. CAMPAIGN_NOT_STARTABLE: on a scheduled, active or paused Campaign the result must still pass what start checks; errors[] lists the gaps. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -51365,7 +51365,7 @@ export interface operations {
             };
         };
     };
-    postV1MotionsIdStart: {
+    postV1CampaignsIdStart: {
         parameters: {
             query?: never;
             header?: {
@@ -51375,14 +51375,14 @@ export interface operations {
                 "Curviate-Client"?: string;
             };
             path: {
-                /** @description Motion id (mot_...). */
+                /** @description Campaign id (mot_...). */
                 id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description The Motion, now active or scheduled. */
+            /** @description The Campaign, now active or scheduled. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -51395,8 +51395,8 @@ export interface operations {
                          * @description Response type discriminator.
                          * @enum {string}
                          */
-                        object: "motion";
-                        /** @description Motion id (mot_...). */
+                        object: "campaign";
+                        /** @description Campaign id (mot_...). */
                         id: string;
                         name: string;
                         /** @enum {string} */
@@ -51406,13 +51406,13 @@ export interface operations {
                          * @enum {string|null}
                          */
                         pause_reason: "user" | "acceptance_floor" | "no_sending_account" | "tier_required" | null;
-                        /** @description Contact lists (cl_...) whose Contacts enroll. */
-                        contact_list_ids: string[];
-                        /** @description Contact lists (cl_...) whose Contacts never enroll. */
+                        /** @description Lead lists (cl_...) whose Leads enroll. */
+                        lead_list_ids: string[];
+                        /** @description Lead lists (cl_...) whose Leads never enroll. */
                         exclusion_list_ids: string[];
                         /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                         account_ids: string[];
-                        /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Motion; changing the Team's hours later does not move it. */
+                        /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Campaign; changing the Team's hours later does not move it. */
                         schedule: {
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
                             hours: {
@@ -51425,42 +51425,42 @@ export interface operations {
                             end_at: string | null;
                         };
                         settings: {
-                            accounts_per_contact: number;
+                            accounts_per_lead: number;
                             /**
-                             * @description Which sending account takes a Contact. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
+                             * @description Which sending account takes a Lead. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
                              * @enum {string}
                              */
                             assign: "auto" | "already_connected";
                             /**
-                             * @description This Motion's weight in each sending account's budgets: normal (1) or prioritized (1.5). Motions with a higher priority are preferred in the weighting on every budget; every Motion with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Motions the same day.
+                             * @description This Campaign's weight in each sending account's budgets: normal (1) or prioritized (1.5). Campaigns with a higher priority are preferred in the weighting on every budget; every Campaign with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Campaigns the same day.
                              * @enum {string}
                              */
                             priority: "normal" | "prioritized";
                             exclude: {
-                                other_motions: boolean;
+                                other_campaigns: boolean;
                                 known_chats: boolean;
                                 pending_invites: boolean;
                             };
-                            /** @description Optional, off by default (null). When on, pauses the Motion when the invitation acceptance rate falls below percent. */
+                            /** @description Optional, off by default (null). When on, pauses the Campaign when the invitation acceptance rate falls below percent. */
                             acceptance_floor: {
                                 percent: number;
                                 min_invites: number;
                             } | null;
-                            /** @description Deprecated (warning W13): Motion variables are removed; write text in place or use a custom field. */
+                            /** @description Deprecated (warning W13): Campaign variables are removed; write text in place or use a custom field. */
                             variables: {
                                 [key: string]: string;
                             };
                             /**
-                             * @description Several mode only (accounts_per_contact above 1; absent otherwise). stop: a reply to one account, or a message sent by hand from it, ends the Contact's Enrollments on the other accounts.
+                             * @description Several mode only (accounts_per_lead above 1; absent otherwise). stop: a reply to one account, or a message sent by hand from it, ends the Lead's Enrollments on the other accounts.
                              * @enum {string}
                              */
                             on_reply_elsewhere?: "stop" | "continue";
-                            /** @description Several mode only. The stopped accounts also withdraw the pending invitations this Motion sent. */
+                            /** @description Several mode only. The stopped accounts also withdraw the pending invitations this Campaign sent. */
                             withdraw_on_reply_elsewhere?: boolean;
-                            /** @description Several mode only. The least time between two accounts' starts on one Contact, 1d to 30d. */
+                            /** @description Several mode only. The least time between two accounts' starts on one Lead, 1d to 30d. */
                             account_gap?: string;
                         };
-                        /** @description contact.* predicates a Contact must all pass to enroll. */
+                        /** @description lead.* predicates a Lead must all pass to enroll. */
                         where: {
                             [key: string]: unknown;
                         }[];
@@ -51487,7 +51487,7 @@ export interface operations {
                             /** @description Skipped at admission or start. */
                             skipped: number;
                         };
-                        /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
+                        /** @description Lint warnings on the Sequence and the Campaign. They never block a write. */
                         warnings: {
                             /** @description The warning id, W1 to W17. */
                             code: string;
@@ -51497,7 +51497,7 @@ export interface operations {
                             rule: string;
                             /** @description Equal to rule. */
                             message: string;
-                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Motion-level warning. */
+                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Campaign-level warning. */
                             pointer: string;
                             /** @description One sentence saying what to do. */
                             hint: string;
@@ -51511,7 +51511,7 @@ export interface operations {
                             /** @description Did-you-mean replacements, when there are some. */
                             candidates?: string[];
                         }[];
-                        /** @description The user who created the Motion. */
+                        /** @description The user who created the Campaign. */
                         created_by_user_id: string | null;
                         /** @description ISO 8601. */
                         created_at: string;
@@ -51544,7 +51544,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Motion's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Motion sends from to pause or archive, and removes only their own. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Campaign's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Campaign sends from to pause or archive, and removes only their own. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -51553,7 +51553,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: no such Motion. ACCOUNT_NOT_FOUND: an id in account_ids is not one of your accounts (the message names it). */
+            /** @description RESOURCE_NOT_FOUND: no such Campaign. ACCOUNT_NOT_FOUND: an id in account_ids is not one of your accounts (the message names it). */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -51562,7 +51562,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description MOTION_STATUS_CONFLICT: the Motion is not a draft. The message names the current status and the operations it allows. */
+            /** @description CAMPAIGN_STATUS_CONFLICT: the Campaign is not a draft. The message names the current status and the operations it allows. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -51571,7 +51571,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description MOTION_NOT_STARTABLE: the draft is not complete. errors[] lists every gap as {path, rule}, for example {path: "sequence", rule: "required"}. */
+            /** @description CAMPAIGN_NOT_STARTABLE: the draft is not complete. errors[] lists every gap as {path, rule}, for example {path: "sequence", rule: "required"}. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -51594,7 +51594,7 @@ export interface operations {
             };
         };
     };
-    postV1MotionsIdPause: {
+    postV1CampaignsIdPause: {
         parameters: {
             query?: never;
             header?: {
@@ -51604,14 +51604,14 @@ export interface operations {
                 "Curviate-Client"?: string;
             };
             path: {
-                /** @description Motion id (mot_...). */
+                /** @description Campaign id (mot_...). */
                 id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description The Motion, now paused with pause_reason user. */
+            /** @description The Campaign, now paused with pause_reason user. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -51624,8 +51624,8 @@ export interface operations {
                          * @description Response type discriminator.
                          * @enum {string}
                          */
-                        object: "motion";
-                        /** @description Motion id (mot_...). */
+                        object: "campaign";
+                        /** @description Campaign id (mot_...). */
                         id: string;
                         name: string;
                         /** @enum {string} */
@@ -51635,13 +51635,13 @@ export interface operations {
                          * @enum {string|null}
                          */
                         pause_reason: "user" | "acceptance_floor" | "no_sending_account" | "tier_required" | null;
-                        /** @description Contact lists (cl_...) whose Contacts enroll. */
-                        contact_list_ids: string[];
-                        /** @description Contact lists (cl_...) whose Contacts never enroll. */
+                        /** @description Lead lists (cl_...) whose Leads enroll. */
+                        lead_list_ids: string[];
+                        /** @description Lead lists (cl_...) whose Leads never enroll. */
                         exclusion_list_ids: string[];
                         /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                         account_ids: string[];
-                        /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Motion; changing the Team's hours later does not move it. */
+                        /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Campaign; changing the Team's hours later does not move it. */
                         schedule: {
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
                             hours: {
@@ -51654,42 +51654,42 @@ export interface operations {
                             end_at: string | null;
                         };
                         settings: {
-                            accounts_per_contact: number;
+                            accounts_per_lead: number;
                             /**
-                             * @description Which sending account takes a Contact. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
+                             * @description Which sending account takes a Lead. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
                              * @enum {string}
                              */
                             assign: "auto" | "already_connected";
                             /**
-                             * @description This Motion's weight in each sending account's budgets: normal (1) or prioritized (1.5). Motions with a higher priority are preferred in the weighting on every budget; every Motion with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Motions the same day.
+                             * @description This Campaign's weight in each sending account's budgets: normal (1) or prioritized (1.5). Campaigns with a higher priority are preferred in the weighting on every budget; every Campaign with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Campaigns the same day.
                              * @enum {string}
                              */
                             priority: "normal" | "prioritized";
                             exclude: {
-                                other_motions: boolean;
+                                other_campaigns: boolean;
                                 known_chats: boolean;
                                 pending_invites: boolean;
                             };
-                            /** @description Optional, off by default (null). When on, pauses the Motion when the invitation acceptance rate falls below percent. */
+                            /** @description Optional, off by default (null). When on, pauses the Campaign when the invitation acceptance rate falls below percent. */
                             acceptance_floor: {
                                 percent: number;
                                 min_invites: number;
                             } | null;
-                            /** @description Deprecated (warning W13): Motion variables are removed; write text in place or use a custom field. */
+                            /** @description Deprecated (warning W13): Campaign variables are removed; write text in place or use a custom field. */
                             variables: {
                                 [key: string]: string;
                             };
                             /**
-                             * @description Several mode only (accounts_per_contact above 1; absent otherwise). stop: a reply to one account, or a message sent by hand from it, ends the Contact's Enrollments on the other accounts.
+                             * @description Several mode only (accounts_per_lead above 1; absent otherwise). stop: a reply to one account, or a message sent by hand from it, ends the Lead's Enrollments on the other accounts.
                              * @enum {string}
                              */
                             on_reply_elsewhere?: "stop" | "continue";
-                            /** @description Several mode only. The stopped accounts also withdraw the pending invitations this Motion sent. */
+                            /** @description Several mode only. The stopped accounts also withdraw the pending invitations this Campaign sent. */
                             withdraw_on_reply_elsewhere?: boolean;
-                            /** @description Several mode only. The least time between two accounts' starts on one Contact, 1d to 30d. */
+                            /** @description Several mode only. The least time between two accounts' starts on one Lead, 1d to 30d. */
                             account_gap?: string;
                         };
-                        /** @description contact.* predicates a Contact must all pass to enroll. */
+                        /** @description lead.* predicates a Lead must all pass to enroll. */
                         where: {
                             [key: string]: unknown;
                         }[];
@@ -51716,7 +51716,7 @@ export interface operations {
                             /** @description Skipped at admission or start. */
                             skipped: number;
                         };
-                        /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
+                        /** @description Lint warnings on the Sequence and the Campaign. They never block a write. */
                         warnings: {
                             /** @description The warning id, W1 to W17. */
                             code: string;
@@ -51726,7 +51726,7 @@ export interface operations {
                             rule: string;
                             /** @description Equal to rule. */
                             message: string;
-                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Motion-level warning. */
+                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Campaign-level warning. */
                             pointer: string;
                             /** @description One sentence saying what to do. */
                             hint: string;
@@ -51740,7 +51740,7 @@ export interface operations {
                             /** @description Did-you-mean replacements, when there are some. */
                             candidates?: string[];
                         }[];
-                        /** @description The user who created the Motion. */
+                        /** @description The user who created the Campaign. */
                         created_by_user_id: string | null;
                         /** @description ISO 8601. */
                         created_at: string;
@@ -51773,7 +51773,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Motion's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Motion sends from to pause or archive, and removes only their own. Not fixed by retrying. */
+            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Campaign's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Campaign sends from to pause or archive, and removes only their own. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -51782,7 +51782,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: no such Motion. ACCOUNT_NOT_FOUND: an id in account_ids is not one of your accounts (the message names it). */
+            /** @description RESOURCE_NOT_FOUND: no such Campaign. ACCOUNT_NOT_FOUND: an id in account_ids is not one of your accounts (the message names it). */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -51791,7 +51791,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description MOTION_STATUS_CONFLICT: the Motion is not scheduled or active. The message names the current status and the operations it allows. */
+            /** @description CAMPAIGN_STATUS_CONFLICT: the Campaign is not scheduled or active. The message names the current status and the operations it allows. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -51814,7 +51814,7 @@ export interface operations {
             };
         };
     };
-    postV1MotionsIdResume: {
+    postV1CampaignsIdResume: {
         parameters: {
             query?: never;
             header?: {
@@ -51824,14 +51824,14 @@ export interface operations {
                 "Curviate-Client"?: string;
             };
             path: {
-                /** @description Motion id (mot_...). */
+                /** @description Campaign id (mot_...). */
                 id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description The Motion, now active or scheduled. */
+            /** @description The Campaign, now active or scheduled. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -51844,8 +51844,8 @@ export interface operations {
                          * @description Response type discriminator.
                          * @enum {string}
                          */
-                        object: "motion";
-                        /** @description Motion id (mot_...). */
+                        object: "campaign";
+                        /** @description Campaign id (mot_...). */
                         id: string;
                         name: string;
                         /** @enum {string} */
@@ -51855,13 +51855,13 @@ export interface operations {
                          * @enum {string|null}
                          */
                         pause_reason: "user" | "acceptance_floor" | "no_sending_account" | "tier_required" | null;
-                        /** @description Contact lists (cl_...) whose Contacts enroll. */
-                        contact_list_ids: string[];
-                        /** @description Contact lists (cl_...) whose Contacts never enroll. */
+                        /** @description Lead lists (cl_...) whose Leads enroll. */
+                        lead_list_ids: string[];
+                        /** @description Lead lists (cl_...) whose Leads never enroll. */
                         exclusion_list_ids: string[];
                         /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                         account_ids: string[];
-                        /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Motion; changing the Team's hours later does not move it. */
+                        /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Campaign; changing the Team's hours later does not move it. */
                         schedule: {
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
                             hours: {
@@ -51874,42 +51874,42 @@ export interface operations {
                             end_at: string | null;
                         };
                         settings: {
-                            accounts_per_contact: number;
+                            accounts_per_lead: number;
                             /**
-                             * @description Which sending account takes a Contact. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
+                             * @description Which sending account takes a Lead. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
                              * @enum {string}
                              */
                             assign: "auto" | "already_connected";
                             /**
-                             * @description This Motion's weight in each sending account's budgets: normal (1) or prioritized (1.5). Motions with a higher priority are preferred in the weighting on every budget; every Motion with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Motions the same day.
+                             * @description This Campaign's weight in each sending account's budgets: normal (1) or prioritized (1.5). Campaigns with a higher priority are preferred in the weighting on every budget; every Campaign with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Campaigns the same day.
                              * @enum {string}
                              */
                             priority: "normal" | "prioritized";
                             exclude: {
-                                other_motions: boolean;
+                                other_campaigns: boolean;
                                 known_chats: boolean;
                                 pending_invites: boolean;
                             };
-                            /** @description Optional, off by default (null). When on, pauses the Motion when the invitation acceptance rate falls below percent. */
+                            /** @description Optional, off by default (null). When on, pauses the Campaign when the invitation acceptance rate falls below percent. */
                             acceptance_floor: {
                                 percent: number;
                                 min_invites: number;
                             } | null;
-                            /** @description Deprecated (warning W13): Motion variables are removed; write text in place or use a custom field. */
+                            /** @description Deprecated (warning W13): Campaign variables are removed; write text in place or use a custom field. */
                             variables: {
                                 [key: string]: string;
                             };
                             /**
-                             * @description Several mode only (accounts_per_contact above 1; absent otherwise). stop: a reply to one account, or a message sent by hand from it, ends the Contact's Enrollments on the other accounts.
+                             * @description Several mode only (accounts_per_lead above 1; absent otherwise). stop: a reply to one account, or a message sent by hand from it, ends the Lead's Enrollments on the other accounts.
                              * @enum {string}
                              */
                             on_reply_elsewhere?: "stop" | "continue";
-                            /** @description Several mode only. The stopped accounts also withdraw the pending invitations this Motion sent. */
+                            /** @description Several mode only. The stopped accounts also withdraw the pending invitations this Campaign sent. */
                             withdraw_on_reply_elsewhere?: boolean;
-                            /** @description Several mode only. The least time between two accounts' starts on one Contact, 1d to 30d. */
+                            /** @description Several mode only. The least time between two accounts' starts on one Lead, 1d to 30d. */
                             account_gap?: string;
                         };
-                        /** @description contact.* predicates a Contact must all pass to enroll. */
+                        /** @description lead.* predicates a Lead must all pass to enroll. */
                         where: {
                             [key: string]: unknown;
                         }[];
@@ -51936,7 +51936,7 @@ export interface operations {
                             /** @description Skipped at admission or start. */
                             skipped: number;
                         };
-                        /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
+                        /** @description Lint warnings on the Sequence and the Campaign. They never block a write. */
                         warnings: {
                             /** @description The warning id, W1 to W17. */
                             code: string;
@@ -51946,7 +51946,7 @@ export interface operations {
                             rule: string;
                             /** @description Equal to rule. */
                             message: string;
-                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Motion-level warning. */
+                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Campaign-level warning. */
                             pointer: string;
                             /** @description One sentence saying what to do. */
                             hint: string;
@@ -51960,7 +51960,7 @@ export interface operations {
                             /** @description Did-you-mean replacements, when there are some. */
                             candidates?: string[];
                         }[];
-                        /** @description The user who created the Motion. */
+                        /** @description The user who created the Campaign. */
                         created_by_user_id: string | null;
                         /** @description ISO 8601. */
                         created_at: string;
@@ -51993,7 +51993,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Motion's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Motion sends from to pause or archive, and removes only their own. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Campaign's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Campaign sends from to pause or archive, and removes only their own. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -52002,7 +52002,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: no such Motion. ACCOUNT_NOT_FOUND: an id in account_ids is not one of your accounts (the message names it). */
+            /** @description RESOURCE_NOT_FOUND: no such Campaign. ACCOUNT_NOT_FOUND: an id in account_ids is not one of your accounts (the message names it). */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -52011,7 +52011,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description MOTION_STATUS_CONFLICT: the Motion is not paused. The message names the current status and the operations it allows. */
+            /** @description CAMPAIGN_STATUS_CONFLICT: the Campaign is not paused. The message names the current status and the operations it allows. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -52020,7 +52020,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description MOTION_NOT_STARTABLE: the Motion no longer passes what start checks. errors[] lists every gap as {path, rule}, for example {path: "sequence", rule: "required"}. */
+            /** @description CAMPAIGN_NOT_STARTABLE: the Campaign no longer passes what start checks. errors[] lists every gap as {path, rule}, for example {path: "sequence", rule: "required"}. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -52043,7 +52043,7 @@ export interface operations {
             };
         };
     };
-    postV1MotionsIdArchive: {
+    postV1CampaignsIdArchive: {
         parameters: {
             query?: never;
             header?: {
@@ -52053,14 +52053,14 @@ export interface operations {
                 "Curviate-Client"?: string;
             };
             path: {
-                /** @description Motion id (mot_...). */
+                /** @description Campaign id (mot_...). */
                 id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description The Motion, now archived and read-only. */
+            /** @description The Campaign, now archived and read-only. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -52073,8 +52073,8 @@ export interface operations {
                          * @description Response type discriminator.
                          * @enum {string}
                          */
-                        object: "motion";
-                        /** @description Motion id (mot_...). */
+                        object: "campaign";
+                        /** @description Campaign id (mot_...). */
                         id: string;
                         name: string;
                         /** @enum {string} */
@@ -52084,13 +52084,13 @@ export interface operations {
                          * @enum {string|null}
                          */
                         pause_reason: "user" | "acceptance_floor" | "no_sending_account" | "tier_required" | null;
-                        /** @description Contact lists (cl_...) whose Contacts enroll. */
-                        contact_list_ids: string[];
-                        /** @description Contact lists (cl_...) whose Contacts never enroll. */
+                        /** @description Lead lists (cl_...) whose Leads enroll. */
+                        lead_list_ids: string[];
+                        /** @description Lead lists (cl_...) whose Leads never enroll. */
                         exclusion_list_ids: string[];
                         /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                         account_ids: string[];
-                        /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Motion; changing the Team's hours later does not move it. */
+                        /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Campaign; changing the Team's hours later does not move it. */
                         schedule: {
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
                             hours: {
@@ -52103,42 +52103,42 @@ export interface operations {
                             end_at: string | null;
                         };
                         settings: {
-                            accounts_per_contact: number;
+                            accounts_per_lead: number;
                             /**
-                             * @description Which sending account takes a Contact. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
+                             * @description Which sending account takes a Lead. auto: one already connected or chatting with them, else whichever has room first. already_connected: only an account connected to them.
                              * @enum {string}
                              */
                             assign: "auto" | "already_connected";
                             /**
-                             * @description This Motion's weight in each sending account's budgets: normal (1) or prioritized (1.5). Motions with a higher priority are preferred in the weighting on every budget; every Motion with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Motions the same day.
+                             * @description This Campaign's weight in each sending account's budgets: normal (1) or prioritized (1.5). Campaigns with a higher priority are preferred in the weighting on every budget; every Campaign with work due still progresses, and a limit is never exceeded. A share nobody uses flows to the other Campaigns the same day.
                              * @enum {string}
                              */
                             priority: "normal" | "prioritized";
                             exclude: {
-                                other_motions: boolean;
+                                other_campaigns: boolean;
                                 known_chats: boolean;
                                 pending_invites: boolean;
                             };
-                            /** @description Optional, off by default (null). When on, pauses the Motion when the invitation acceptance rate falls below percent. */
+                            /** @description Optional, off by default (null). When on, pauses the Campaign when the invitation acceptance rate falls below percent. */
                             acceptance_floor: {
                                 percent: number;
                                 min_invites: number;
                             } | null;
-                            /** @description Deprecated (warning W13): Motion variables are removed; write text in place or use a custom field. */
+                            /** @description Deprecated (warning W13): Campaign variables are removed; write text in place or use a custom field. */
                             variables: {
                                 [key: string]: string;
                             };
                             /**
-                             * @description Several mode only (accounts_per_contact above 1; absent otherwise). stop: a reply to one account, or a message sent by hand from it, ends the Contact's Enrollments on the other accounts.
+                             * @description Several mode only (accounts_per_lead above 1; absent otherwise). stop: a reply to one account, or a message sent by hand from it, ends the Lead's Enrollments on the other accounts.
                              * @enum {string}
                              */
                             on_reply_elsewhere?: "stop" | "continue";
-                            /** @description Several mode only. The stopped accounts also withdraw the pending invitations this Motion sent. */
+                            /** @description Several mode only. The stopped accounts also withdraw the pending invitations this Campaign sent. */
                             withdraw_on_reply_elsewhere?: boolean;
-                            /** @description Several mode only. The least time between two accounts' starts on one Contact, 1d to 30d. */
+                            /** @description Several mode only. The least time between two accounts' starts on one Lead, 1d to 30d. */
                             account_gap?: string;
                         };
-                        /** @description contact.* predicates a Contact must all pass to enroll. */
+                        /** @description lead.* predicates a Lead must all pass to enroll. */
                         where: {
                             [key: string]: unknown;
                         }[];
@@ -52165,7 +52165,7 @@ export interface operations {
                             /** @description Skipped at admission or start. */
                             skipped: number;
                         };
-                        /** @description Lint warnings on the Sequence and the Motion. They never block a write. */
+                        /** @description Lint warnings on the Sequence and the Campaign. They never block a write. */
                         warnings: {
                             /** @description The warning id, W1 to W17. */
                             code: string;
@@ -52175,7 +52175,7 @@ export interface operations {
                             rule: string;
                             /** @description Equal to rule. */
                             message: string;
-                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Motion-level warning. */
+                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Campaign-level warning. */
                             pointer: string;
                             /** @description One sentence saying what to do. */
                             hint: string;
@@ -52189,7 +52189,7 @@ export interface operations {
                             /** @description Did-you-mean replacements, when there are some. */
                             candidates?: string[];
                         }[];
-                        /** @description The user who created the Motion. */
+                        /** @description The user who created the Campaign. */
                         created_by_user_id: string | null;
                         /** @description ISO 8601. */
                         created_at: string;
@@ -52222,7 +52222,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Motion's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Motion sends from to pause or archive, and removes only their own. Not fixed by retrying. */
+            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Campaign's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Campaign sends from to pause or archive, and removes only their own. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -52231,7 +52231,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: no such Motion. ACCOUNT_NOT_FOUND: an id in account_ids is not one of your accounts (the message names it). */
+            /** @description RESOURCE_NOT_FOUND: no such Campaign. ACCOUNT_NOT_FOUND: an id in account_ids is not one of your accounts (the message names it). */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -52240,7 +52240,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description MOTION_STATUS_CONFLICT: the Motion is already archived. The message names the current status and the operations it allows. */
+            /** @description CAMPAIGN_STATUS_CONFLICT: the Campaign is already archived. The message names the current status and the operations it allows. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -52263,7 +52263,7 @@ export interface operations {
             };
         };
     };
-    getV1MotionsIdSequence: {
+    getV1CampaignsIdSequence: {
         parameters: {
             query?: {
                 /** @description Sequence version. Default: the current one. */
@@ -52276,7 +52276,7 @@ export interface operations {
                 "Curviate-Client"?: string;
             };
             path: {
-                /** @description Motion id (mot_...). */
+                /** @description Campaign id (mot_...). */
                 id: string;
             };
             cookie?: never;
@@ -52294,7 +52294,7 @@ export interface operations {
                     "application/json": {
                         /** @enum {string} */
                         object: "sequence_version";
-                        motion_id: string;
+                        campaign_id: string;
                         version: number;
                         document: components["schemas"]["SequenceDocument"];
                         /** @description ISO 8601. */
@@ -52322,7 +52322,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: no such Motion, or no such version (a draft without a sequence has none). */
+            /** @description RESOURCE_NOT_FOUND: no such Campaign, or no such version (a draft without a sequence has none). */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -52345,13 +52345,13 @@ export interface operations {
             };
         };
     };
-    getV1MotionsIdPreview: {
+    getV1CampaignsIdPreview: {
         parameters: {
             query?: {
-                /** @description How many Contacts to render, the first enrollable ones by list order. 1 to 20, default 5. Not with contact_ids. */
+                /** @description How many Leads to render, the first enrollable ones by list order. 1 to 20, default 5. Not with lead_ids. */
                 sample?: number;
-                /** @description Contact ids (con_...) to render, up to 20, in the order given. Not with sample. Repeat the key, comma-separate or mix; empties ignored. */
-                contact_ids?: string[];
+                /** @description Lead ids (con_...) to render, up to 20, in the order given. Not with sample. Repeat the key, comma-separate or mix; empties ignored. */
+                lead_ids?: string[];
             };
             header?: {
                 /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
@@ -52360,7 +52360,7 @@ export interface operations {
                 "Curviate-Client"?: string;
             };
             path: {
-                /** @description Motion id (mot_...). */
+                /** @description Campaign id (mot_...). */
                 id: string;
             };
             cookie?: never;
@@ -52380,7 +52380,7 @@ export interface operations {
                          * @description Response type discriminator.
                          * @enum {string}
                          */
-                        object: "motion_preview";
+                        object: "campaign_preview";
                         /** @description The Sequence version previewed. */
                         sequence_version: number;
                         /** @description Every distinct route through the Sequence, from the first step and from on_reply, as step ids in order. A step that branched carries the exit taken (has_post:then). Every route ends with end. */
@@ -52388,14 +52388,14 @@ export interface operations {
                         /** @description true when there are more routes than the 200 listed, or when some rendered text was omitted (a response carries at most 1 MiB of it). */
                         truncated: boolean;
                         samples: {
-                            contact_id: string;
-                            /** @description A sending account to render this sample with, not a promise: the account is set when one takes the Contact. null when none can act or assignment needs LinkedIn. */
+                            lead_id: string;
+                            /** @description A sending account to render this sample with, not a promise: the account is set when one takes the Lead. null when none can act or assignment needs LinkedIn. */
                             account_id: string | null;
                             /**
-                             * @description Why the Contact would not be enrolled, from stored data: the Team's do-not-contact list holds it, an Exclusion list holds it, it is or was within 90 days in another Motion, an account already chats with it, or an account of the team has a pending invitation to it. null: nothing excludes it.
+                             * @description Why the Lead would not be enrolled, from stored data: the Team's do-not-contact list holds it, an Exclusion list holds it, it is or was within 90 days in another Campaign, an account already chats with it, or an account of the team has a pending invitation to it. null: nothing excludes it.
                              * @enum {string|null}
                              */
-                            excluded: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | null;
+                            excluded: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | null;
                             filters: {
                                 index: number;
                                 /**
@@ -52404,7 +52404,7 @@ export interface operations {
                                  */
                                 result: "pass" | "fail" | "unknown";
                             }[];
-                            /** @description Every step that sends text, rendered for this Contact. A voice.send step renders nothing: each variant names its clip and duration, and the step carries its fallback. */
+                            /** @description Every step that sends text, rendered for this Lead. A voice.send step renders nothing: each variant names its clip and duration, and the step carries its fallback. */
                             steps: {
                                 step_id: string;
                                 variants: {
@@ -52428,72 +52428,72 @@ export interface operations {
                                 fallback?: string | null;
                             }[];
                         }[];
-                        /** @description An estimate of how long the list takes, from each account's current budget ceilings (warm-up applied). Each Contact is enrolled on min(accounts_per_contact, accounts that can act) accounts; those Enrollments split evenly over the accounts. It ignores what other Motions spend. */
+                        /** @description An estimate of how long the list takes, from each account's current budget ceilings (warm-up applied). Each Lead is enrolled on min(accounts_per_lead, accounts that can act) accounts; those Enrollments split evenly over the accounts. It ignores what other Campaigns spend. */
                         projection: {
-                            /** @description The Contacts of the source lists, counted from stored data (nothing is read from LinkedIn), each once. A Contact that would be skipped for several reasons counts under the first: do_not_contact, excluded, other_motion, known_chat, pending_invite, filtered, not_connected. Present even when the Motion has no Sequence. */
+                            /** @description The Leads of the source lists, counted from stored data (nothing is read from LinkedIn), each once. A Lead that would be skipped for several reasons counts under the first: do_not_contact, excluded, other_campaign, known_chat, pending_invite, filtered, not_connected. Present even when the Campaign has no Sequence. */
                             audience: {
-                                /** @description Contacts in the Motion's source lists, each counted once. */
+                                /** @description Leads in the Campaign's source lists, each counted once. */
                                 total: number;
                                 skipped: {
-                                    /** @description On the Team's do-not-contact list. Always skipped, whatever the Motion's settings. */
+                                    /** @description On the Team's do-not-contact list. Always skipped, whatever the Campaign's settings. */
                                     do_not_contact: number;
-                                    /** @description In one of the Motion's exclusion lists. */
+                                    /** @description In one of the Campaign's exclusion lists. */
                                     excluded: number;
-                                    /** @description In another Motion, or in one within the last 90 days, when settings.exclude.other_motions is on. Whatever that setting, a Contact deleted and imported again whose earlier record was already in this Motion counts here too. */
-                                    other_motion: number;
+                                    /** @description In another Campaign, or in one within the last 90 days, when settings.exclude.other_campaigns is on. Whatever that setting, a Lead deleted and imported again whose earlier record was already in this Campaign counts here too. */
+                                    other_campaign: number;
                                     /** @description An account already chats with them (when settings.exclude.known_chats is on). */
                                     known_chat: number;
                                     /** @description An account of the team has a pending invitation to them, sent from Curviate or not, as each account's sent invitations were last read (when settings.exclude.pending_invites is on). */
                                     pending_invite: number;
-                                    /** @description Fail a where filter on stored Contact data (fields, extra fields, tags). A filter only LinkedIn can answer, such as degree or premium, is checked when the Contact enrolls and does not count here. */
+                                    /** @description Fail a where filter on stored Lead data (fields, extra fields, tags). A filter only LinkedIn can answer, such as degree or premium, is checked when the Lead enrolls and does not count here. */
                                     filtered: number;
-                                    /** @description With settings.assign already_connected: no sending account is connected to them, so the Motion will skip them. 0 for any other assign, and while a sending account has not finished reading its Connections. */
+                                    /** @description With settings.assign already_connected: no sending account is connected to them, so the Campaign will skip them. 0 for any other assign, and while a sending account has not finished reading its Connections. */
                                     not_connected: number;
                                 };
-                                /** @description total minus every skipped count: the Contacts the projection plans for. */
+                                /** @description total minus every skipped count: the Leads the projection plans for. */
                                 to_enroll: number;
                             };
-                            /** @description Contacts the projection plans for: audience.to_enroll. null when the Motion has no Sequence. */
-                            contacts: number | null;
+                            /** @description Leads the projection plans for: audience.to_enroll. null when the Campaign has no Sequence. */
+                            leads: number | null;
                             accounts: {
                                 account_id: string;
-                                /** @description This account's share of the Enrollments: with accounts_per_contact above 1, one Contact counts on each account it is enrolled on. */
-                                contacts: number;
+                                /** @description This account's share of the Enrollments: with accounts_per_lead above 1, one Lead counts on each account it is enrolled on. */
+                                leads: number;
                                 /** @description Schedule days to enroll that share; null when a ceiling of 0 admits none. */
                                 enroll_days: number | null;
-                                /** @description The limit that set this account's pace: the pool whose share sets the start rate (invitations, views), pace for a Motion with no invitation or profile view (about 60 new people a day), or a budget row such as messages_first_degree. */
+                                /** @description The limit that set this account's pace: the pool whose share sets the start rate (invitations, views), pace for a Campaign with no invitation or profile view (about 60 new people a day), or a budget row such as messages_first_degree. */
                                 binding: string;
-                                /** @description The LinkedIn actions a day this Motion is expected to make on this account. A draft: the mean daily invitations, messages and InMails of the first 7 days of its forecast, as if turned on now (the same simulation as include=forecast on GET /v1/analytics/motions/{motion_id}). A started Motion: at that pace, every budgeted step of the costliest route counted. An estimate; 0 when the account carries no Contact. */
+                                /** @description The LinkedIn actions a day this Campaign is expected to make on this account. A draft: the mean daily invitations, messages and InMails of the first 7 days of its forecast, as if turned on now (the same simulation as include=forecast on GET /v1/analytics/campaigns/{campaign_id}). A started Campaign: at that pace, every budgeted step of the costliest route counted. An estimate; 0 when the account carries no Lead. */
                                 expected_actions_per_day: number;
                             }[];
-                            /** @description Calendar days of waits and timeouts on the longest route, rounded up. null when the Motion has no Sequence. */
+                            /** @description Calendar days of waits and timeouts on the longest route, rounded up. null when the Campaign has no Sequence. */
                             longest_path_days: number | null;
-                            /** @description Schedule days until the last Contact finishes: the slowest account's enroll_days plus the longest route in schedule days, plus, with accounts_per_contact above 1, settings.account_gap (default 1d) in schedule days for each further account a Contact is enrolled on. null when nothing can run. */
+                            /** @description Schedule days until the last Lead finishes: the slowest account's enroll_days plus the longest route in schedule days, plus, with accounts_per_lead above 1, settings.account_gap (default 1d) in schedule days for each further account a Lead is enrolled on. null when nothing can run. */
                             finish_working_days: number | null;
-                            /** @description Whether every Contact finishes before schedule.end_at, counting schedule days from now (or schedule.start_at if later). null when the schedule has no end_at or the Motion has no Sequence. schedule.hours does not slow the estimate; warnings says where the hours cannot use the Motion's share. */
+                            /** @description Whether every Lead finishes before schedule.end_at, counting schedule days from now (or schedule.start_at if later). null when the schedule has no end_at or the Campaign has no Sequence. schedule.hours does not slow the estimate; warnings says where the hours cannot use the Campaign's share. */
                             fits_before_end_at: boolean | null;
                             /** @description The slowest account and its limiter; null when no sending account can act. */
                             binding: {
                                 account_id: string;
                                 limiter: string;
                             } | null;
-                            /** @description hours_below_share: the Motion's schedule.hours cannot use its share (a session runs in at most 90% of the hours and 8 hours a day, one action per the pool's mean gap). no_sending_account: every route of the Sequence sends an InMail and no sending account has Sales Navigator or Recruiter, so no account can take anyone; it has only code and message. Empty when none. */
+                            /** @description hours_below_share: the Campaign's schedule.hours cannot use its share (a session runs in at most 90% of the hours and 8 hours a day, one action per the pool's mean gap). no_sending_account: every route of the Sequence sends an InMail and no sending account has Sales Navigator or Recruiter, so no account can take anyone; it has only code and message. Empty when none. */
                             warnings: {
                                 /** @enum {string} */
                                 code: "hours_below_share" | "no_sending_account";
                                 account_id?: string;
                                 /** @description The pool that sets the rate: invitations or views. */
                                 pool?: string;
-                                /** @description This Motion's share of that pool, a day. */
+                                /** @description This Campaign's share of that pool, a day. */
                                 share_per_day?: number;
                                 /** @description What its hours fit, a day. */
                                 fits_per_day?: number;
                                 message: string;
                             }[];
-                            /** @description One line that says it is an estimate at the account's steady-state pace, for example: 100 Contacts finish in 27 working days; bound by invitations (an estimate at each Account's steady-state pace). When fits_before_end_at is false it says the Motion ends first and how many Contacts can enroll by then. */
+                            /** @description One line that says it is an estimate at the account's steady-state pace, for example: 100 Leads finish in 27 working days; bound by invitations (an estimate at each Account's steady-state pace). When fits_before_end_at is false it says the Campaign ends first and how many Leads can enroll by then. */
                             summary: string;
                         };
-                        /** @description Lint warnings, as on the Motion. */
+                        /** @description Lint warnings, as on the Campaign. */
                         warnings: {
                             /** @description The warning id, W1 to W17. */
                             code: string;
@@ -52503,7 +52503,7 @@ export interface operations {
                             rule: string;
                             /** @description Equal to rule. */
                             message: string;
-                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Motion-level warning. */
+                            /** @description RFC 6901 JSON Pointer into the Sequence document; empty for the document or a Campaign-level warning. */
                             pointer: string;
                             /** @description One sentence saying what to do. */
                             hint: string;
@@ -52520,7 +52520,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST: sample is not a whole number from 1 to 20, contact_ids holds more than 20 ids, a blank or repeated id, a parameter given twice or empty, a blank unknown parameter, both sample and contact_ids, or an unknown query parameter. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: sample is not a whole number from 1 to 20, lead_ids holds more than 20 ids, a blank or repeated id, a parameter given twice or empty, a blank unknown parameter, both sample and lead_ids, or an unknown query parameter. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -52538,7 +52538,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: no such Motion, or a contact_ids entry that is not one of your Contacts (a merged Contact names its survivor). */
+            /** @description RESOURCE_NOT_FOUND: no such Campaign, or a lead_ids entry that is not one of your Leads (a merged Lead names its survivor). */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -52561,7 +52561,7 @@ export interface operations {
             };
         };
     };
-    postV1MotionsIdContacts: {
+    postV1CampaignsIdLeads: {
         parameters: {
             query?: never;
             header?: {
@@ -52571,7 +52571,7 @@ export interface operations {
                 "Curviate-Client"?: string;
             };
             path: {
-                /** @description Motion id (mot_...). */
+                /** @description Campaign id (mot_...). */
                 id: string;
             };
             cookie?: never;
@@ -52579,15 +52579,15 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description Contact ids (con_...), up to 1000. */
-                    contact_ids: string[];
-                    /** @description Enroll them on this sending account (acc_...) of the Motion. Default: Curviate assigns one. */
+                    /** @description Lead ids (con_...), up to 1000. */
+                    lead_ids: string[];
+                    /** @description Enroll them on this sending account (acc_...) of the Campaign. Default: Curviate assigns one. */
                     account_id?: string;
                 };
             };
         };
         responses: {
-            /** @description One result per Contact id, in the order sent (an id sent twice is answered once). queued: a queued Enrollment was created, or one that was skipped or ended before it started was re-queued. already_enrolled: nothing changed (enrollment_ids leaves out an Enrollment on a teammate's account you cannot operate). do_not_contact, in_exclusion_list, in_other_motion, known_chat, pending_invite: the Contact is recorded as skipped. filtered_out: the Contact fails the Motion's where filters, no Enrollment. not_found: not one of your Contacts. */
+            /** @description One result per Lead id, in the order sent (an id sent twice is answered once). queued: a queued Enrollment was created, or one that was skipped or ended before it started was re-queued. already_enrolled: nothing changed (enrollment_ids leaves out an Enrollment on a teammate's account you cannot operate). do_not_contact, in_exclusion_list, in_other_campaign, known_chat, pending_invite: the Lead is recorded as skipped. filtered_out: the Lead fails the Campaign's where filters, no Enrollment. not_found: not one of your Leads. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -52597,18 +52597,18 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {string} */
-                        object: "motion_contacts_result";
+                        object: "campaign_leads_result";
                         results: {
-                            contact_id: string;
+                            lead_id: string;
                             /** @enum {string} */
-                            outcome: "queued" | "already_enrolled" | "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered_out" | "not_found";
-                            /** @description The Contact's Enrollments this answer is about; empty for not_found. */
+                            outcome: "queued" | "already_enrolled" | "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered_out" | "not_found";
+                            /** @description The Lead's Enrollments this answer is about; empty for not_found. */
                             enrollment_ids: string[];
                         }[];
                     };
                 };
             };
-            /** @description INVALID_REQUEST: an unknown key or query parameter, no contact_ids or more than 1000, or an account_id that is not a sending account of this Motion. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: an unknown key or query parameter, no lead_ids or more than 1000, or an account_id that is not a sending account of this Campaign. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -52626,7 +52626,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for an account the Motion sends from, or the account_id you name. INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description In a team, for an account the Campaign sends from, or the account_id you name. INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -52635,7 +52635,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: no such Motion. ACCOUNT_NOT_FOUND: account_id is not one of your accounts. */
+            /** @description RESOURCE_NOT_FOUND: no such Campaign. ACCOUNT_NOT_FOUND: account_id is not one of your accounts. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -52644,7 +52644,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description MOTION_STATUS_CONFLICT: the Motion is archived, or its schedule.end_at has passed. */
+            /** @description CAMPAIGN_STATUS_CONFLICT: the Campaign is archived, or its schedule.end_at has passed. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -52676,7 +52676,7 @@ export interface operations {
             };
         };
     };
-    postV1MotionsIdContactsRemove: {
+    postV1CampaignsIdLeadsRemove: {
         parameters: {
             query?: never;
             header?: {
@@ -52686,7 +52686,7 @@ export interface operations {
                 "Curviate-Client"?: string;
             };
             path: {
-                /** @description Motion id (mot_...). */
+                /** @description Campaign id (mot_...). */
                 id: string;
             };
             cookie?: never;
@@ -52694,13 +52694,13 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description Contact ids (con_...), up to 1000. */
-                    contact_ids: string[];
+                    /** @description Lead ids (con_...), up to 1000. */
+                    lead_ids: string[];
                 };
             };
         };
         responses: {
-            /** @description removed counts the Contacts whose queued or running Enrollments in this Motion ended (reason removed). not_found lists every other id, also a Contact whose Enrollment runs on a teammate's account you cannot operate: it is left as it is. */
+            /** @description removed counts the Leads whose queued or running Enrollments in this Campaign ended (reason removed). not_found lists every other id, also a Lead whose Enrollment runs on a teammate's account you cannot operate: it is left as it is. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -52714,7 +52714,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST: an unknown key or query parameter, no contact_ids or more than 1000. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: an unknown key or query parameter, no lead_ids or more than 1000. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -52732,7 +52732,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for an account the Motion sends from, or the account_id you name. INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account. Not fixed by retrying. */
+            /** @description In a team, for an account the Campaign sends from, or the account_id you name. INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -52741,7 +52741,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: no such Motion. */
+            /** @description RESOURCE_NOT_FOUND: no such Campaign. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -52750,7 +52750,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description MOTION_STATUS_CONFLICT: the Motion is archived. */
+            /** @description CAMPAIGN_STATUS_CONFLICT: the Campaign is archived. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -52785,10 +52785,10 @@ export interface operations {
     getV1Enrollments: {
         parameters: {
             query?: {
-                /** @description Only Enrollments of this Motion (mot_...). */
-                motion_id?: string;
-                /** @description Only Enrollments of this Contact (con_...). */
-                contact_id?: string;
+                /** @description Only Enrollments of this Campaign (mot_...). */
+                campaign_id?: string;
+                /** @description Only Enrollments of this Lead (con_...). */
+                lead_id?: string;
                 /** @description Only Enrollments on any of these accounts (acc_...). Repeat the key, comma-separate or mix; empties ignored. */
                 account_id?: string;
                 /** @description queued, active, paused, finished, failed, skipped; pending = queued until 2027-01-21. Default: all. Repeat the key, comma-separate or mix; empties ignored. */
@@ -52802,7 +52802,7 @@ export interface operations {
                 /** @description With done_step only: how that Step ended. The 200 response description defines each value. */
                 outcome?: "executed" | "skipped" | "failed" | "accepted" | "not_accepted" | "replied" | "no_reply" | "seen";
                 /** @description Catalogue reason codes: skip, finish or Step reasons (on done_step when given). Repeat the key, comma-separate or mix; empties ignored. */
-                reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit")[];
+                reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit")[];
                 /** @description Only Enrollments whose variant on that variant's Step is this one. */
                 variant_id?: string;
                 /** @description Relationship to the account at the start: connected, not_connected, invite_pending, unknown. Repeat the key, comma-separate or mix; empties ignored. */
@@ -52823,7 +52823,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Enrollments, newest first. Filters combine with AND. The counted unit is the Enrollment, one Contact on one account in one Motion: each Contact counts once per Account. done_step with outcome lists who did what at a Step: executed, skipped, failed (the Step's own record; a condition or wait counts as executed); accepted, not_accepted (on invite.send: its invitation was accepted, or withdrawn or never accepted before the wait for it timed out; on an until invite.accepted: its then or else exit); replied, no_reply (on message.send, voice.send or inmail.send: a reply came after it, or none and the Enrollment left the following until message.replied by else or finished; on an until message.replied: its then or else exit); seen (on message.send, voice.send or inmail.send: a read receipt arrived for it or the person replied after it, the same rule as the analytics seen rate). An outcome the Step's kind cannot have is a 400. */
+            /** @description Enrollments, newest first. Filters combine with AND. The counted unit is the Enrollment, one Lead on one account in one Campaign: each Lead counts once per Account. done_step with outcome lists who did what at a Step: executed, skipped, failed (the Step's own record; a condition or wait counts as executed); accepted, not_accepted (on invite.send: its invitation was accepted, or withdrawn or never accepted before the wait for it timed out; on an until invite.accepted: its then or else exit); replied, no_reply (on message.send, voice.send or inmail.send: a reply came after it, or none and the Enrollment left the following until message.replied by else or finished; on an until message.replied: its then or else exit); seen (on message.send, voice.send or inmail.send: a read receipt arrived for it or the person replied after it, the same rule as the analytics seen rate). An outcome the Step's kind cannot have is a 400. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -52842,11 +52842,11 @@ export interface operations {
                             object: "enrollment";
                             /** @description Enrollment id (enr_...). */
                             id: string;
-                            /** @description The Motion (mot_...). */
-                            motion_id: string;
-                            /** @description The Contact (con_...); null once the Contact is deleted. */
-                            contact_id: string | null;
-                            /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Motion takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
+                            /** @description The Campaign (mot_...). */
+                            campaign_id: string;
+                            /** @description The Lead (con_...); null once the Lead is deleted. */
+                            lead_id: string | null;
+                            /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Campaign takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
                             account_id: string | null;
                             /** @description The Sequence version this Enrollment runs on. */
                             sequence_version: number;
@@ -52857,10 +52857,10 @@ export interface operations {
                             status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                             /** @description The Step it is at; null before it starts. */
                             current_step_id: string | null;
-                            /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
+                            /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
                             waiting: {
                                 /** @enum {string} */
-                                kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
+                                kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
                                 /** @description The Step it waits at; null before it starts. */
                                 step_id: string | null;
                                 /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -52870,26 +52870,26 @@ export interface operations {
                              * @description Why it finished; null unless status is finished.
                              * @enum {string|null}
                              */
-                            finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
+                            finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
                             /**
-                             * @description Why the Contact was not enrolled; null unless status is skipped.
+                             * @description Why the Lead was not enrolled; null unless status is skipped.
                              * @enum {string|null}
                              */
-                            skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
-                            /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
+                            skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                            /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                             finish_message: string | null;
-                            /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
+                            /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
                             skip_message: string | null;
                             /** @description More on the skip, for example the index of the where filter that failed. */
                             skip_detail: string | null;
-                            /** @description True once the Contact replied. */
+                            /** @description True once the Lead replied. */
                             replied: boolean;
                             /** @description The variant chosen per Step: step id to variant id. */
                             variants: {
                                 [key: string]: string;
                             };
                             /**
-                             * @description The Contact's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
+                             * @description The Lead's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
                              * @enum {string|null}
                              */
                             relationship_at_enrollment: "connected" | "not_connected" | "invite_pending" | "unknown" | null;
@@ -52909,7 +52909,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid filter, a query key given twice, an empty value, or a malformed cursor. outcome without done_step, or an outcome that step's kind cannot have (the message names the step and its kind). A reason that is not a code of the catalogue (https://docs.curviate.com/reference/motion-reasons). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description Invalid filter, a query key given twice, an empty value, or a malformed cursor. outcome without done_step, or an outcome that step's kind cannot have (the message names the step and its kind). A reason that is not a code of the catalogue (https://docs.curviate.com/reference/campaign-reasons). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -52992,11 +52992,11 @@ export interface operations {
                         object: "enrollment";
                         /** @description Enrollment id (enr_...). */
                         id: string;
-                        /** @description The Motion (mot_...). */
-                        motion_id: string;
-                        /** @description The Contact (con_...); null once the Contact is deleted. */
-                        contact_id: string | null;
-                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Motion takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
+                        /** @description The Campaign (mot_...). */
+                        campaign_id: string;
+                        /** @description The Lead (con_...); null once the Lead is deleted. */
+                        lead_id: string | null;
+                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Campaign takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
                         account_id: string | null;
                         /** @description The Sequence version this Enrollment runs on. */
                         sequence_version: number;
@@ -53007,10 +53007,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -53020,26 +53020,26 @@ export interface operations {
                          * @description Why it finished; null unless status is finished.
                          * @enum {string|null}
                          */
-                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
                         /**
-                         * @description Why the Contact was not enrolled; null unless status is skipped.
+                         * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
-                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
-                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
+                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
                         skip_message: string | null;
                         /** @description More on the skip, for example the index of the where filter that failed. */
                         skip_detail: string | null;
-                        /** @description True once the Contact replied. */
+                        /** @description True once the Lead replied. */
                         replied: boolean;
                         /** @description The variant chosen per Step: step id to variant id. */
                         variants: {
                             [key: string]: string;
                         };
                         /**
-                         * @description The Contact's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
+                         * @description The Lead's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
                          * @enum {string|null}
                          */
                         relationship_at_enrollment: "connected" | "not_connected" | "invite_pending" | "unknown" | null;
@@ -53070,10 +53070,10 @@ export interface operations {
                             variant_id: string | null;
                             used_fallback: boolean;
                             /**
-                             * @description Why it was skipped or failed: a code of the reasons catalogue, https://docs.curviate.com/reference/motion-reasons.
+                             * @description Why it was skipped or failed: a code of the reasons catalogue, https://docs.curviate.com/reference/campaign-reasons.
                              * @enum {string|null}
                              */
-                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit" | null;
+                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit" | null;
                             /** @description The catalogue's one-line sentence for reason; null when reason is. */
                             reason_message: string | null;
                             /** @description The account that ran it; null for an entry no account ran (requeued). */
@@ -53160,11 +53160,11 @@ export interface operations {
                         object: "enrollment";
                         /** @description Enrollment id (enr_...). */
                         id: string;
-                        /** @description The Motion (mot_...). */
-                        motion_id: string;
-                        /** @description The Contact (con_...); null once the Contact is deleted. */
-                        contact_id: string | null;
-                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Motion takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
+                        /** @description The Campaign (mot_...). */
+                        campaign_id: string;
+                        /** @description The Lead (con_...); null once the Lead is deleted. */
+                        lead_id: string | null;
+                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Campaign takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
                         account_id: string | null;
                         /** @description The Sequence version this Enrollment runs on. */
                         sequence_version: number;
@@ -53175,10 +53175,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -53188,26 +53188,26 @@ export interface operations {
                          * @description Why it finished; null unless status is finished.
                          * @enum {string|null}
                          */
-                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
                         /**
-                         * @description Why the Contact was not enrolled; null unless status is skipped.
+                         * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
-                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
-                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
+                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
                         skip_message: string | null;
                         /** @description More on the skip, for example the index of the where filter that failed. */
                         skip_detail: string | null;
-                        /** @description True once the Contact replied. */
+                        /** @description True once the Lead replied. */
                         replied: boolean;
                         /** @description The variant chosen per Step: step id to variant id. */
                         variants: {
                             [key: string]: string;
                         };
                         /**
-                         * @description The Contact's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
+                         * @description The Lead's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
                          * @enum {string|null}
                          */
                         relationship_at_enrollment: "connected" | "not_connected" | "invite_pending" | "unknown" | null;
@@ -53242,7 +53242,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Motion sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Motion sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. */
+            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Campaign sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Campaign sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -53316,11 +53316,11 @@ export interface operations {
                         object: "enrollment";
                         /** @description Enrollment id (enr_...). */
                         id: string;
-                        /** @description The Motion (mot_...). */
-                        motion_id: string;
-                        /** @description The Contact (con_...); null once the Contact is deleted. */
-                        contact_id: string | null;
-                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Motion takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
+                        /** @description The Campaign (mot_...). */
+                        campaign_id: string;
+                        /** @description The Lead (con_...); null once the Lead is deleted. */
+                        lead_id: string | null;
+                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Campaign takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
                         account_id: string | null;
                         /** @description The Sequence version this Enrollment runs on. */
                         sequence_version: number;
@@ -53331,10 +53331,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -53344,26 +53344,26 @@ export interface operations {
                          * @description Why it finished; null unless status is finished.
                          * @enum {string|null}
                          */
-                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
                         /**
-                         * @description Why the Contact was not enrolled; null unless status is skipped.
+                         * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
-                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
-                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
+                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
                         skip_message: string | null;
                         /** @description More on the skip, for example the index of the where filter that failed. */
                         skip_detail: string | null;
-                        /** @description True once the Contact replied. */
+                        /** @description True once the Lead replied. */
                         replied: boolean;
                         /** @description The variant chosen per Step: step id to variant id. */
                         variants: {
                             [key: string]: string;
                         };
                         /**
-                         * @description The Contact's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
+                         * @description The Lead's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
                          * @enum {string|null}
                          */
                         relationship_at_enrollment: "connected" | "not_connected" | "invite_pending" | "unknown" | null;
@@ -53398,7 +53398,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Motion sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Motion sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. */
+            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Campaign sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Campaign sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -53416,7 +53416,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ENROLLMENT_NOT_ACTIVE: already paused by a user, finished or skipped. MOTION_STATUS_CONFLICT: the Motion is archived, or its schedule.end_at has passed. STEP_IN_FLIGHT: a Step is being sent right now; try again in a minute. */
+            /** @description ENROLLMENT_NOT_ACTIVE: already paused by a user, finished or skipped. CAMPAIGN_STATUS_CONFLICT: the Campaign is archived, or its schedule.end_at has passed. STEP_IN_FLIGHT: a Step is being sent right now; try again in a minute. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -53463,7 +53463,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The Enrollment: at the named Step, or, without at, where it was with its wait's remaining time. Active, or paused while its account or Motion is. One that ended before it started is queued again. */
+            /** @description The Enrollment: at the named Step, or, without at, where it was with its wait's remaining time. Active, or paused while its account or Campaign is. One that ended before it started is queued again. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -53479,11 +53479,11 @@ export interface operations {
                         object: "enrollment";
                         /** @description Enrollment id (enr_...). */
                         id: string;
-                        /** @description The Motion (mot_...). */
-                        motion_id: string;
-                        /** @description The Contact (con_...); null once the Contact is deleted. */
-                        contact_id: string | null;
-                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Motion takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
+                        /** @description The Campaign (mot_...). */
+                        campaign_id: string;
+                        /** @description The Lead (con_...); null once the Lead is deleted. */
+                        lead_id: string | null;
+                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Campaign takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
                         account_id: string | null;
                         /** @description The Sequence version this Enrollment runs on. */
                         sequence_version: number;
@@ -53494,10 +53494,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -53507,26 +53507,26 @@ export interface operations {
                          * @description Why it finished; null unless status is finished.
                          * @enum {string|null}
                          */
-                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
                         /**
-                         * @description Why the Contact was not enrolled; null unless status is skipped.
+                         * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
-                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
-                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
+                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
                         skip_message: string | null;
                         /** @description More on the skip, for example the index of the where filter that failed. */
                         skip_detail: string | null;
-                        /** @description True once the Contact replied. */
+                        /** @description True once the Lead replied. */
                         replied: boolean;
                         /** @description The variant chosen per Step: step id to variant id. */
                         variants: {
                             [key: string]: string;
                         };
                         /**
-                         * @description The Contact's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
+                         * @description The Lead's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
                          * @enum {string|null}
                          */
                         relationship_at_enrollment: "connected" | "not_connected" | "invite_pending" | "unknown" | null;
@@ -53561,7 +53561,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Motion sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Motion sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Campaign sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Campaign sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -53579,7 +53579,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ENROLLMENT_NOT_ACTIVE: a queued or skipped Enrollment, one whose Contact is gone, or one that finished with account_removed, account_unavailable, contact_deleted, contact_merged, do_not_contact or moved. ALREADY_ENROLLED_ON_ACCOUNT: the Contact has another open Enrollment on this account in the Motion (moved back in); act on that one. MOTION_STATUS_CONFLICT: the Motion is archived, or its schedule.end_at has passed. STEP_IN_FLIGHT: a Step is being sent right now; try again in a minute. */
+            /** @description ENROLLMENT_NOT_ACTIVE: a queued or skipped Enrollment, one whose Lead is gone, or one that finished with account_removed, account_unavailable, lead_deleted, lead_merged, do_not_contact or moved. ALREADY_ENROLLED_ON_ACCOUNT: the Lead has another open Enrollment on this account in the Campaign (moved back in); act on that one. CAMPAIGN_STATUS_CONFLICT: the Campaign is archived, or its schedule.end_at has passed. STEP_IN_FLIGHT: a Step is being sent right now; try again in a minute. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -53651,11 +53651,11 @@ export interface operations {
                         object: "enrollment";
                         /** @description Enrollment id (enr_...). */
                         id: string;
-                        /** @description The Motion (mot_...). */
-                        motion_id: string;
-                        /** @description The Contact (con_...); null once the Contact is deleted. */
-                        contact_id: string | null;
-                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Motion takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
+                        /** @description The Campaign (mot_...). */
+                        campaign_id: string;
+                        /** @description The Lead (con_...); null once the Lead is deleted. */
+                        lead_id: string | null;
+                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Campaign takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
                         account_id: string | null;
                         /** @description The Sequence version this Enrollment runs on. */
                         sequence_version: number;
@@ -53666,10 +53666,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -53679,26 +53679,26 @@ export interface operations {
                          * @description Why it finished; null unless status is finished.
                          * @enum {string|null}
                          */
-                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
                         /**
-                         * @description Why the Contact was not enrolled; null unless status is skipped.
+                         * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
-                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
-                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
+                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
                         skip_message: string | null;
                         /** @description More on the skip, for example the index of the where filter that failed. */
                         skip_detail: string | null;
-                        /** @description True once the Contact replied. */
+                        /** @description True once the Lead replied. */
                         replied: boolean;
                         /** @description The variant chosen per Step: step id to variant id. */
                         variants: {
                             [key: string]: string;
                         };
                         /**
-                         * @description The Contact's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
+                         * @description The Lead's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
                          * @enum {string|null}
                          */
                         relationship_at_enrollment: "connected" | "not_connected" | "invite_pending" | "unknown" | null;
@@ -53733,7 +53733,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Motion sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Motion sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Campaign sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Campaign sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -53823,11 +53823,11 @@ export interface operations {
                         object: "enrollment";
                         /** @description Enrollment id (enr_...). */
                         id: string;
-                        /** @description The Motion (mot_...). */
-                        motion_id: string;
-                        /** @description The Contact (con_...); null once the Contact is deleted. */
-                        contact_id: string | null;
-                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Motion takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
+                        /** @description The Campaign (mot_...). */
+                        campaign_id: string;
+                        /** @description The Lead (con_...); null once the Lead is deleted. */
+                        lead_id: string | null;
+                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Campaign takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
                         account_id: string | null;
                         /** @description The Sequence version this Enrollment runs on. */
                         sequence_version: number;
@@ -53838,10 +53838,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -53851,26 +53851,26 @@ export interface operations {
                          * @description Why it finished; null unless status is finished.
                          * @enum {string|null}
                          */
-                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
                         /**
-                         * @description Why the Contact was not enrolled; null unless status is skipped.
+                         * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
-                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
-                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
+                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
                         skip_message: string | null;
                         /** @description More on the skip, for example the index of the where filter that failed. */
                         skip_detail: string | null;
-                        /** @description True once the Contact replied. */
+                        /** @description True once the Lead replied. */
                         replied: boolean;
                         /** @description The variant chosen per Step: step id to variant id. */
                         variants: {
                             [key: string]: string;
                         };
                         /**
-                         * @description The Contact's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
+                         * @description The Lead's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
                          * @enum {string|null}
                          */
                         relationship_at_enrollment: "connected" | "not_connected" | "invite_pending" | "unknown" | null;
@@ -53914,7 +53914,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Motion sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Motion sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Campaign sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Campaign sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -53982,7 +53982,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description The sending account (acc_...) of the Motion to move the Enrollment to. */
+                    /** @description The sending account (acc_...) of the Campaign to move the Enrollment to. */
                     account_id: string;
                 };
             };
@@ -54004,11 +54004,11 @@ export interface operations {
                         object: "enrollment";
                         /** @description Enrollment id (enr_...). */
                         id: string;
-                        /** @description The Motion (mot_...). */
-                        motion_id: string;
-                        /** @description The Contact (con_...); null once the Contact is deleted. */
-                        contact_id: string | null;
-                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Motion takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
+                        /** @description The Campaign (mot_...). */
+                        campaign_id: string;
+                        /** @description The Lead (con_...); null once the Lead is deleted. */
+                        lead_id: string | null;
+                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Campaign takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
                         account_id: string | null;
                         /** @description The Sequence version this Enrollment runs on. */
                         sequence_version: number;
@@ -54019,10 +54019,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -54032,26 +54032,26 @@ export interface operations {
                          * @description Why it finished; null unless status is finished.
                          * @enum {string|null}
                          */
-                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
                         /**
-                         * @description Why the Contact was not enrolled; null unless status is skipped.
+                         * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
-                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
-                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
+                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
                         skip_message: string | null;
                         /** @description More on the skip, for example the index of the where filter that failed. */
                         skip_detail: string | null;
-                        /** @description True once the Contact replied. */
+                        /** @description True once the Lead replied. */
                         replied: boolean;
                         /** @description The variant chosen per Step: step id to variant id. */
                         variants: {
                             [key: string]: string;
                         };
                         /**
-                         * @description The Contact's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
+                         * @description The Lead's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
                          * @enum {string|null}
                          */
                         relationship_at_enrollment: "connected" | "not_connected" | "invite_pending" | "unknown" | null;
@@ -54097,7 +54097,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Motion sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Motion sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. The same for the target account: you need to be allowed to send from it in Motions. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Campaign sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Campaign sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. The same for the target account: you need to be allowed to send from it in Campaigns. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -54106,7 +54106,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: no such Enrollment. ACCOUNT_NOT_FOUND: account_id is not a sending account of this Motion (or not one of your accounts). */
+            /** @description RESOURCE_NOT_FOUND: no such Enrollment. ACCOUNT_NOT_FOUND: account_id is not a sending account of this Campaign (or not one of your accounts). */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -54115,7 +54115,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Nothing changed. ENROLLMENT_NOT_ACTIVE: the Enrollment finished (other than account_unavailable or account_removed) or was skipped. STEP_IN_FLIGHT: a Step is being sent right now; try again in a minute. ACCOUNT_ALREADY_ENGAGED: its account already contacted the person (more than a profile view). ALREADY_ENROLLED_ON_ACCOUNT: the target already holds this Contact in the Motion, or is its own account. KNOWN_CHAT: the Motion excludes known chats and your team already chats with the Contact. */
+            /** @description Nothing changed. ENROLLMENT_NOT_ACTIVE: the Enrollment finished (other than account_unavailable or account_removed) or was skipped. STEP_IN_FLIGHT: a Step is being sent right now; try again in a minute. ACCOUNT_ALREADY_ENGAGED: its account already contacted the person (more than a profile view). ALREADY_ENROLLED_ON_ACCOUNT: the target already holds this Lead in the Campaign, or is its own account. KNOWN_CHAT: the Campaign excludes known chats and your team already chats with the Lead. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -54165,10 +54165,10 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description The Motion (mot_...) to move the Enrollment's Contact to. It must send from the Enrollment's account. */
-                    motion_id: string;
+                    /** @description The Campaign (mot_...) to move the Enrollment's Lead to. It must send from the Enrollment's account. */
+                    campaign_id: string;
                     /**
-                     * @description Where the new Enrollment begins: start (the default and only value), the first Step of that Motion's Sequence. Its own conditions (already connected, already messaged) decide what runs.
+                     * @description Where the new Enrollment begins: start (the default and only value), the first Step of that Campaign's Sequence. Its own conditions (already connected, already messaged) decide what runs.
                      * @enum {string}
                      */
                     at?: "start";
@@ -54176,7 +54176,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The new Enrollment in the Motion you named, on the same account, queued to start at the first Step of that Motion's Sequence. The one you moved finished with finish_reason moved; its sends stay counted for its own Motion. */
+            /** @description The new Enrollment in the Campaign you named, on the same account, queued to start at the first Step of that Campaign's Sequence. The one you moved finished with finish_reason moved; its sends stay counted for its own Campaign. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -54192,11 +54192,11 @@ export interface operations {
                         object: "enrollment";
                         /** @description Enrollment id (enr_...). */
                         id: string;
-                        /** @description The Motion (mot_...). */
-                        motion_id: string;
-                        /** @description The Contact (con_...); null once the Contact is deleted. */
-                        contact_id: string | null;
-                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Motion takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
+                        /** @description The Campaign (mot_...). */
+                        campaign_id: string;
+                        /** @description The Lead (con_...); null once the Lead is deleted. */
+                        lead_id: string | null;
+                        /** @description The sending account (acc_...). null while the Enrollment waits for one: a sending account of the Campaign takes it when it has room, and it stays on that account. The account_id list filter leaves out Enrollments that have none yet. */
                         account_id: string | null;
                         /** @description The Sequence version this Enrollment runs on. */
                         sequence_version: number;
@@ -54207,10 +54207,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, motion_paused: its account or Motion holds it. no_overlap: the Motion's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "motion_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -54220,26 +54220,26 @@ export interface operations {
                          * @description Why it finished; null unless status is finished.
                          * @enum {string|null}
                          */
-                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
+                        finish_reason: "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "do_not_contact" | "moved" | null;
                         /**
-                         * @description Why the Contact was not enrolled; null unless status is skipped.
+                         * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
-                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/motion-reasons); null when finish_reason is. */
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
-                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/motion-reasons); null when skip_reason is. */
+                        /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
                         skip_message: string | null;
                         /** @description More on the skip, for example the index of the where filter that failed. */
                         skip_detail: string | null;
-                        /** @description True once the Contact replied. */
+                        /** @description True once the Lead replied. */
                         replied: boolean;
                         /** @description The variant chosen per Step: step id to variant id. */
                         variants: {
                             [key: string]: string;
                         };
                         /**
-                         * @description The Contact's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
+                         * @description The Lead's relationship to the account when the Enrollment started, from stored data (the account's Connections and its pending invitations; no LinkedIn call): connected, not_connected, invite_pending, or unknown when the account's Connections are not synced. Null until it starts.
                          * @enum {string|null}
                          */
                         relationship_at_enrollment: "connected" | "not_connected" | "invite_pending" | "unknown" | null;
@@ -54256,7 +54256,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST: motion_id is missing or names the Enrollment's own Motion, at is not start, or an unknown key. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: campaign_id is missing or names the Enrollment's own Campaign, at is not start, or an unknown key. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -54274,7 +54274,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Motion sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Motion sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. The same for the Motion you move it to: you need to be allowed to send from its accounts. TIER_REQUIRED: the team's Tier does not include Motions (Motions are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Campaign sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Campaign sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. The same for the Campaign you move it to: you need to be allowed to send from its accounts. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -54283,7 +54283,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: no such Enrollment, or no such Motion (another team's included). */
+            /** @description RESOURCE_NOT_FOUND: no such Enrollment, or no such Campaign (another team's included). */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -54292,7 +54292,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Nothing changed. ENROLLMENT_NOT_ACTIVE: the Enrollment is finished or skipped; move needs queued, active or paused. MOTION_STATUS_CONFLICT: the Motion you named is archived, or its schedule.end_at has passed. ACCOUNT_NOT_IN_MOTION: that Motion does not send from the Enrollment's account. ALREADY_ENROLLED_ON_ACCOUNT: the Contact's Enrollment in that Motion on this account completed or ended by a reply or a manual message, so it is not started over. STEP_IN_FLIGHT: a Step is being sent right now; try again in a minute. */
+            /** @description Nothing changed. ENROLLMENT_NOT_ACTIVE: the Enrollment is finished or skipped; move needs queued, active or paused. CAMPAIGN_STATUS_CONFLICT: the Campaign you named is archived, or its schedule.end_at has passed. ACCOUNT_NOT_IN_CAMPAIGN: that Campaign does not send from the Enrollment's account. ALREADY_ENROLLED_ON_ACCOUNT: the Lead's Enrollment in that Campaign on this account completed or ended by a reply or a manual message, so it is not started over. STEP_IN_FLIGHT: a Step is being sent right now; try again in a minute. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -54310,7 +54310,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description CONTACT_NOT_ENROLLABLE: the Motion you named refused the Contact; reason is do_not_contact, in_exclusion_list, known_chat, pending_invite, filtered_out or already_enrolled (an open Enrollment there already). Being in the other Motion never refuses a move. Nothing changed. */
+            /** @description LEAD_NOT_ENROLLABLE: the Campaign you named refused the Lead; reason is do_not_contact, in_exclusion_list, known_chat, pending_invite, filtered_out or already_enrolled (an open Enrollment there already). Being in the other Campaign never refuses a move. Nothing changed. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -54355,12 +54355,12 @@ export interface operations {
                     action: "pause" | "resume" | "stop" | "retry" | "event" | "reassign";
                     /** @description Enrollment ids (enr_...), 1 to 1000, distinct. Not with filter. */
                     ids?: string[];
-                    /** @description The GET /v1/enrollments filters as an object, motion_id required; lists as arrays. At most 1000 matches, else 400 and nothing is done. */
+                    /** @description The GET /v1/enrollments filters as an object, campaign_id required; lists as arrays. At most 1000 matches, else 400 and nothing is done. */
                     filter?: {
-                        /** @description The Motion (mot_...) whose Enrollments to act on. Required. */
-                        motion_id: string;
-                        /** @description Only Enrollments of this Contact (con_...). */
-                        contact_id?: string;
+                        /** @description The Campaign (mot_...) whose Enrollments to act on. Required. */
+                        campaign_id: string;
+                        /** @description Only Enrollments of this Lead (con_...). */
+                        lead_id?: string;
                         /** @description Only Enrollments on this account (acc_...), or on any of a list of up to 50. */
                         account_id?: string | string[];
                         /** @description Any of queued, active, paused, finished, failed, skipped; pending = queued until 2027-01-21. */
@@ -54377,7 +54377,7 @@ export interface operations {
                          */
                         outcome?: "executed" | "skipped" | "failed" | "accepted" | "not_accepted" | "replied" | "no_reply" | "seen";
                         /** @description Catalogue reason codes. */
-                        reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit")[];
+                        reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit")[];
                         /** @description Only Enrollments whose variant on that variant's Step is this one. */
                         variant_id?: string;
                         /** @description Any of connected, not_connected, invite_pending, unknown. */
@@ -54431,7 +54431,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST: not exactly one of ids or filter; more than 1000 ids or filter matches (nothing done); filter without motion_id; at with an action other than resume; event without name; reassign without account_id. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: not exactly one of ids or filter; more than 1000 ids or filter matches (nothing done); filter without campaign_id; at with an action other than resume; event without name; reassign without account_id. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -54449,7 +54449,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: resume, retry, event and reassign need a Tier with Motions; pause and stop always work. A refusal of one Enrollment (your role, its account's team access) is that Enrollment's result, never a 403 of the call. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
+            /** @description TIER_REQUIRED: resume, retry, event and reassign need a Tier with Campaigns; pause and stop always work. A refusal of one Enrollment (your role, its account's team access) is that Enrollment's result, never a 403 of the call. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -54490,7 +54490,7 @@ export interface operations {
             };
         };
     };
-    getV1AnalyticsMotions: {
+    getV1AnalyticsCampaigns: {
         parameters: {
             query?: {
                 /** @description First day of the window, YYYY-MM-DD, read in timezone. Default: 29 days before to. */
@@ -54505,17 +54505,17 @@ export interface operations {
                 timezone?: string;
                 /** @description Only these accounts (acc_...). Default: every account you can see. Repeat the key, comma-separate or mix; empties ignored. */
                 account_id?: string;
-                /** @description Only these Motions (mot_...). Default: every Motion. Repeat the key, comma-separate or mix; empties ignored. */
-                motion_id?: string;
-                /** @description motion, unibox (the Unibox), api (any API key or MCP grant), direct (unibox and api). Default: all. Repeat the key, comma-separate or mix; empties ignored. */
+                /** @description Only these Campaigns (mot_...). Default: every Campaign. Repeat the key, comma-separate or mix; empties ignored. */
+                campaign_id?: string;
+                /** @description campaign, unibox (the Unibox), api (any API key or MCP grant), direct (unibox and api). Default: all. Repeat the key, comma-separate or mix; empties ignored. */
                 origin?: string;
-                /** @description Sections: performance, daily, motions, accounts, flags, forecast. Omitted: the summary, which never holds forecast. Repeat the key, comma-separate or mix; empties ignored. */
+                /** @description Sections: performance, daily, campaigns, accounts, flags, forecast. Omitted: the summary, which never holds forecast. Repeat the key, comma-separate or mix; empties ignored. */
                 include?: string;
-                /** @description Dotted paths kept in the sections, e.g. motions.reply.rate. A requested path always appears. Repeat the key, comma-separate or mix; empties ignored. */
+                /** @description Dotted paths kept in the sections, e.g. campaigns.reply.rate. A requested path always appears. Repeat the key, comma-separate or mix; empties ignored. */
                 fields?: string;
                 /** @description Orders lists: sent, acceptance.rate, reply.rate, inmail_reply.rate, last_activity_at, name. -key: desc. Repeat the key, comma-separate or mix; empties ignored. */
                 sort?: string;
-                /** @description Items per list section (motions, accounts), 1-100. Default: 5 in the summary, else every item. */
+                /** @description Items per list section (campaigns, accounts), 1-100. Default: 5 in the summary, else every item. */
                 limit?: number;
                 /** @description previous_period: each rate gains previous (the same number of days just before from) and delta (rate - previous rate). */
                 compare?: "previous_period";
@@ -54533,7 +54533,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Results across your Motions and direct actions (API, CLI, MCP, Unibox). Each Contact counts once per Account and source. totals counts every visible record, archived Motions included; motions lists every Motion but drafts (archived ones only with records in the window), latest activity first, at most 100 (motions_truncated). Lags: a step counts once it settles, a reply within a minute, an acceptance about 2 hours after it happens. Grammar: include picks the sections (performance is totals under its section name), fields keeps dotted paths, sort and limit order and cut motions and accounts, compare=previous_period adds previous and delta to every rate, flags lists what to look at, and every Motion, account and step row carries next, the exact CLI call. Once any of these is given and include is not, the body is the summary: performance, the lists' top 5 by sent, flags. With none of them the full body of before is returned with a Deprecation header; it becomes the summary later. */
+            /** @description Results across your Campaigns and direct actions (API, CLI, MCP, Unibox). Each Lead counts once per Account and source. totals counts every visible record, archived Campaigns included; campaigns lists every Campaign but drafts (archived ones only with records in the window), latest activity first, at most 100 (campaigns_truncated). Lags: a step counts once it settles, a reply within a minute, an acceptance about 2 hours after it happens. Grammar: include picks the sections (performance is totals under its section name), fields keeps dotted paths, sort and limit order and cut campaigns and accounts, compare=previous_period adds previous and delta to every rate, flags lists what to look at, and every Campaign, account and step row carries next, the exact CLI call. Once any of these is given and include is not, the body is the summary: performance, the lists' top 5 by sent, flags. With none of them the full body of before is returned with a Deprecation header; it becomes the summary later. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -54543,16 +54543,16 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {string} */
-                        object: "analytics_motions";
+                        object: "analytics_campaigns";
                         scope: {
                             /** @description The account filter when exactly one account is named; null otherwise (read account_ids). */
                             account_id: string | null;
                             /** @description The account_id filter; [] when every visible account counts. */
                             account_ids: string[];
-                            /** @description The motion_id filter of the overview; [] when every Motion counts. */
-                            motion_ids: string[];
+                            /** @description The campaign_id filter of the overview; [] when every Campaign counts. */
+                            campaign_ids: string[];
                             /** @description The origins counted (direct is unibox and api); null for every origin. */
-                            origin: ("motion" | "unibox" | "api")[] | null;
+                            origin: ("campaign" | "unibox" | "api")[] | null;
                         };
                         /** @description The window as applied. */
                         window: {
@@ -54577,7 +54577,7 @@ export interface operations {
                         /** @description UTC instant of the read; outcomes so far and maturing are measured at it. */
                         generated_at: string;
                         totals?: {
-                            /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Contact counts once per Account. */
+                            /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Lead counts once per Account. */
                             enrollments: {
                                 /** @description Waiting to start. */
                                 queued: number;
@@ -54648,7 +54648,7 @@ export interface operations {
                                 /** @description Of those, first messaged less than 7 days ago. */
                                 maturing: number;
                             };
-                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Contact, first messaged in the window (InMail excluded), with no reply before that message, the share who replied at or after it so far. */
+                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Lead, first messaged in the window (InMail excluded), with no reply before that message, the share who replied at or after it so far. */
                             reply: {
                                 /** @description Numerator: the replied part of messaged, so far. */
                                 replied: number;
@@ -54658,7 +54658,7 @@ export interface operations {
                                 rate: number | null;
                                 /** @description True when messaged is below 30. The rate is still returned. */
                                 low_sample: boolean;
-                                /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                 pending: number;
                                 /** @description Of messaged, sent less than 7 days before generated_at. Still in the rate. */
                                 maturing: number;
@@ -54685,7 +54685,7 @@ export interface operations {
                                 /** @description Of those, first InMailed less than 7 days ago. */
                                 maturing: number;
                             };
-                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Contact, first InMailed in the window, with no reply before that InMail, the share who replied at or after it so far. A message is never counted here. */
+                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Lead, first InMailed in the window, with no reply before that InMail, the share who replied at or after it so far. A message is never counted here. */
                             inmail_reply: {
                                 /** @description Numerator: the replied part of inmailed, so far. */
                                 replied: number;
@@ -54695,7 +54695,7 @@ export interface operations {
                                 rate: number | null;
                                 /** @description True when inmailed is below 30. The rate is still returned. */
                                 low_sample: boolean;
-                                /** @description Of inmailed, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                /** @description Of inmailed, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                 pending: number;
                                 /** @description Of inmailed, sent less than 7 days before generated_at. Still in the rate. */
                                 maturing: number;
@@ -54730,11 +54730,11 @@ export interface operations {
                             };
                             /** @description Right now, like enrollments: why Enrollments were skipped or failed. Each map sums to its count. */
                             enrollment_reasons: {
-                                /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                 skipped: {
                                     [key: string]: number;
                                 };
-                                /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                 failed: {
                                     [key: string]: number;
                                 };
@@ -54782,15 +54782,15 @@ export interface operations {
                                 inmail_replied: number;
                             };
                         }[];
-                        motions?: {
-                            motion_id?: string;
+                        campaigns?: {
+                            campaign_id?: string;
                             name?: string;
                             status?: string;
                             /** @description Why it is paused; null unless paused. */
                             pause_reason?: string | null;
-                            /** @description The Motion's latest visible record; null when it has none. */
+                            /** @description The Campaign's latest visible record; null when it has none. */
                             last_activity_at?: string | null;
-                            /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Contact counts once per Account. */
+                            /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Lead counts once per Account. */
                             enrollments?: {
                                 /** @description Waiting to start. */
                                 queued: number;
@@ -54861,7 +54861,7 @@ export interface operations {
                                 /** @description Of those, first messaged less than 7 days ago. */
                                 maturing: number;
                             };
-                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Contact, first messaged in the window (InMail excluded), with no reply before that message, the share who replied at or after it so far. */
+                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Lead, first messaged in the window (InMail excluded), with no reply before that message, the share who replied at or after it so far. */
                             reply?: {
                                 /** @description Numerator: the replied part of messaged, so far. */
                                 replied: number;
@@ -54871,7 +54871,7 @@ export interface operations {
                                 rate: number | null;
                                 /** @description True when messaged is below 30. The rate is still returned. */
                                 low_sample: boolean;
-                                /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                 pending: number;
                                 /** @description Of messaged, sent less than 7 days before generated_at. Still in the rate. */
                                 maturing: number;
@@ -54898,7 +54898,7 @@ export interface operations {
                                 /** @description Of those, first InMailed less than 7 days ago. */
                                 maturing: number;
                             };
-                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Contact, first InMailed in the window, with no reply before that InMail, the share who replied at or after it so far. A message is never counted here. */
+                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Lead, first InMailed in the window, with no reply before that InMail, the share who replied at or after it so far. A message is never counted here. */
                             inmail_reply?: {
                                 /** @description Numerator: the replied part of inmailed, so far. */
                                 replied: number;
@@ -54908,7 +54908,7 @@ export interface operations {
                                 rate: number | null;
                                 /** @description True when inmailed is below 30. The rate is still returned. */
                                 low_sample: boolean;
-                                /** @description Of inmailed, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                /** @description Of inmailed, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                 pending: number;
                                 /** @description Of inmailed, sent less than 7 days before generated_at. Still in the rate. */
                                 maturing: number;
@@ -54943,11 +54943,11 @@ export interface operations {
                             };
                             /** @description Right now, like enrollments: why Enrollments were skipped or failed. Each map sums to its count. */
                             enrollment_reasons?: {
-                                /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                 skipped: {
                                     [key: string]: number;
                                 };
-                                /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                 failed: {
                                     [key: string]: number;
                                 };
@@ -54955,13 +54955,13 @@ export interface operations {
                             /** @description The exact CLI call that reads this item next. Only when a grammar parameter is given. */
                             next?: string;
                         }[];
-                        motions_truncated?: boolean;
+                        campaigns_truncated?: boolean;
                         /** @description Per account with records in the window or any Enrollment. Enrollment and window figures of totals equal the sum over these plus records with no account. */
                         accounts?: {
                             account_id: string;
                             /** @description null once the account is removed. */
                             account_name: string | null;
-                            /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Contact counts once per Account. */
+                            /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Lead counts once per Account. */
                             enrollments: {
                                 /** @description Waiting to start. */
                                 queued: number;
@@ -55032,7 +55032,7 @@ export interface operations {
                                 /** @description Of those, first messaged less than 7 days ago. */
                                 maturing: number;
                             };
-                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Contact, first messaged in the window (InMail excluded), with no reply before that message, the share who replied at or after it so far. */
+                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Lead, first messaged in the window (InMail excluded), with no reply before that message, the share who replied at or after it so far. */
                             reply: {
                                 /** @description Numerator: the replied part of messaged, so far. */
                                 replied: number;
@@ -55042,7 +55042,7 @@ export interface operations {
                                 rate: number | null;
                                 /** @description True when messaged is below 30. The rate is still returned. */
                                 low_sample: boolean;
-                                /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                 pending: number;
                                 /** @description Of messaged, sent less than 7 days before generated_at. Still in the rate. */
                                 maturing: number;
@@ -55069,7 +55069,7 @@ export interface operations {
                                 /** @description Of those, first InMailed less than 7 days ago. */
                                 maturing: number;
                             };
-                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Contact, first InMailed in the window, with no reply before that InMail, the share who replied at or after it so far. A message is never counted here. */
+                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Lead, first InMailed in the window, with no reply before that InMail, the share who replied at or after it so far. A message is never counted here. */
                             inmail_reply: {
                                 /** @description Numerator: the replied part of inmailed, so far. */
                                 replied: number;
@@ -55079,7 +55079,7 @@ export interface operations {
                                 rate: number | null;
                                 /** @description True when inmailed is below 30. The rate is still returned. */
                                 low_sample: boolean;
-                                /** @description Of inmailed, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                /** @description Of inmailed, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                 pending: number;
                                 /** @description Of inmailed, sent less than 7 days before generated_at. Still in the rate. */
                                 maturing: number;
@@ -55114,11 +55114,11 @@ export interface operations {
                             };
                             /** @description Right now, like enrollments: why Enrollments were skipped or failed. Each map sums to its count. */
                             enrollment_reasons: {
-                                /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                 skipped: {
                                     [key: string]: number;
                                 };
-                                /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                 failed: {
                                     [key: string]: number;
                                 };
@@ -55128,7 +55128,7 @@ export interface operations {
                         }[];
                         /** @description With the grammar: totals, under its section name. */
                         performance?: {
-                            /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Contact counts once per Account. */
+                            /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Lead counts once per Account. */
                             enrollments: {
                                 /** @description Waiting to start. */
                                 queued: number;
@@ -55199,7 +55199,7 @@ export interface operations {
                                 /** @description Of those, first messaged less than 7 days ago. */
                                 maturing: number;
                             };
-                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Contact, first messaged in the window (InMail excluded), with no reply before that message, the share who replied at or after it so far. */
+                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Lead, first messaged in the window (InMail excluded), with no reply before that message, the share who replied at or after it so far. */
                             reply: {
                                 /** @description Numerator: the replied part of messaged, so far. */
                                 replied: number;
@@ -55209,7 +55209,7 @@ export interface operations {
                                 rate: number | null;
                                 /** @description True when messaged is below 30. The rate is still returned. */
                                 low_sample: boolean;
-                                /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                 pending: number;
                                 /** @description Of messaged, sent less than 7 days before generated_at. Still in the rate. */
                                 maturing: number;
@@ -55236,7 +55236,7 @@ export interface operations {
                                 /** @description Of those, first InMailed less than 7 days ago. */
                                 maturing: number;
                             };
-                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Contact, first InMailed in the window, with no reply before that InMail, the share who replied at or after it so far. A message is never counted here. */
+                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Lead, first InMailed in the window, with no reply before that InMail, the share who replied at or after it so far. A message is never counted here. */
                             inmail_reply: {
                                 /** @description Numerator: the replied part of inmailed, so far. */
                                 replied: number;
@@ -55246,7 +55246,7 @@ export interface operations {
                                 rate: number | null;
                                 /** @description True when inmailed is below 30. The rate is still returned. */
                                 low_sample: boolean;
-                                /** @description Of inmailed, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                /** @description Of inmailed, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                 pending: number;
                                 /** @description Of inmailed, sent less than 7 days before generated_at. Still in the rate. */
                                 maturing: number;
@@ -55281,24 +55281,24 @@ export interface operations {
                             };
                             /** @description Right now, like enrollments: why Enrollments were skipped or failed. Each map sums to its count. */
                             enrollment_reasons: {
-                                /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                 skipped: {
                                     [key: string]: number;
                                 };
-                                /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                 failed: {
                                     [key: string]: number;
                                 };
                             };
                         };
-                        /** @description What to look at next, from this closed set, in this order. small_sample: a headline rate of performance (acceptance, reply, inmail_reply) rests on 1 to 29 sends, one flag per rate. still_maturing: more than a third of a headline rate's denominator went out under 7 days ago (maturing x 3 > denominator). rate_moved: with compare, both denominators at least 30, the previous rate above 0, and the rate moved by 25% of the previous rate or more, on the raw rates. limit_reached: an Account in scope was refused for a budget row's ceiling on 3 or more days of the window, one flag per Account and row. account_attention: an Account in scope needs reconnecting (reconnect_needed) or is restricted. biggest_drop_off (one Motion): the step with the largest share of skipped, failed and else among at least 30 entries; a tie goes to the earlier step. ab_leader (one Motion): a step whose every arm, the fallback row included, has a denominator of at least 30, and one arm has the strictly highest rate; it lists every arm's rate and denominator, never a significance figure. A tie: no flag. */
+                        /** @description What to look at next, from this closed set, in this order. small_sample: a headline rate of performance (acceptance, reply, inmail_reply) rests on 1 to 29 sends, one flag per rate. still_maturing: more than a third of a headline rate's denominator went out under 7 days ago (maturing x 3 > denominator). rate_moved: with compare, both denominators at least 30, the previous rate above 0, and the rate moved by 25% of the previous rate or more, on the raw rates. limit_reached: an Account in scope was refused for a budget row's ceiling on 3 or more days of the window, one flag per Account and row. account_attention: an Account in scope needs reconnecting (reconnect_needed) or is restricted. biggest_drop_off (one Campaign): the step with the largest share of skipped, failed and else among at least 30 entries; a tie goes to the earlier step. ab_leader (one Campaign): a step whose every arm, the fallback row included, has a denominator of at least 30, and one arm has the strictly highest rate; it lists every arm's rate and denominator, never a significance figure. A tie: no flag. */
                         flags?: {
                             /** @enum {string} */
                             code: "small_sample" | "still_maturing" | "rate_moved" | "limit_reached" | "account_attention" | "biggest_drop_off" | "ab_leader";
                             /** @description What the flag is about. */
                             subject: {
                                 /** @enum {string} */
-                                type: "team" | "motion" | "account" | "step";
+                                type: "team" | "campaign" | "account" | "step";
                                 /** @description tnt_, mot_, acc_ or the step id. */
                                 id: string;
                             };
@@ -55311,10 +55311,10 @@ export interface operations {
                             /** @description The exact CLI call that looks into it. */
                             next: string;
                         }[];
-                        /** @description Only with include=forecast. forecast: what your Motions are expected to send and get per day, from today (its whole expected day) through forecast_days (1-365, default 30) or the last day with activity, whichever comes first. A simulation of each Motion's Sequence, limits, warm-up, schedule and accounts with its observed acceptance and reply rates. Motions only, no direct actions; the configuration is frozen as it is now: no new Enrollments, no edits. A draft Motion: as if turned on now with its picked accounts; null when none is picked. Whole actions: each day's expected values summed over the scope, then rounded. */
+                        /** @description Only with include=forecast. forecast: what your Campaigns are expected to send and get per day, from today (its whole expected day) through forecast_days (1-365, default 30) or the last day with activity, whichever comes first. A simulation of each Campaign's Sequence, limits, warm-up, schedule and accounts with its observed acceptance and reply rates. Campaigns only, no direct actions; the configuration is frozen as it is now: no new Enrollments, no edits. A draft Campaign: as if turned on now with its picked accounts; null when none is picked. Whole actions: each day's expected values summed over the scope, then rounded. */
                         forecast?: {
                             /**
-                             * @description computing: an account of the scope has had no simulation yet, so daily is today's zeros and is not a forecast; read again in a few minutes. computed otherwise (always for a draft Motion).
+                             * @description computing: an account of the scope has had no simulation yet, so daily is today's zeros and is not a forecast; read again in a few minutes. computed otherwise (always for a draft Campaign).
                              * @enum {string}
                              */
                             status: "computed" | "computing";
@@ -55371,7 +55371,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ACCOUNT_NOT_FOUND: an account_id is not one of your accounts, or was removed. RESOURCE_NOT_FOUND: a motion_id is not one of your Motions. */
+            /** @description ACCOUNT_NOT_FOUND: an account_id is not one of your accounts, or was removed. RESOURCE_NOT_FOUND: a campaign_id is not one of your Campaigns. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -55394,7 +55394,7 @@ export interface operations {
             };
         };
     };
-    getV1AnalyticsMotionsMotionId: {
+    getV1AnalyticsCampaignsCampaignId: {
         parameters: {
             query?: {
                 /** @description First day of the window, YYYY-MM-DD, read in timezone. Default: 29 days before to. */
@@ -55417,7 +55417,7 @@ export interface operations {
                 started_from?: string;
                 /** @description Last day an Enrollment started on, YYYY-MM-DD, inclusive, read in timezone. Every figure then counts only those Enrollments, whenever their activity happened. Queued Enrollments have not started and never count. See window.cohort_after. */
                 started_to?: string;
-                /** @description motion, unibox (the Unibox), api (any API key or MCP grant), direct (unibox and api). Default: all. Repeat the key, comma-separate or mix; empties ignored. */
+                /** @description campaign, unibox (the Unibox), api (any API key or MCP grant), direct (unibox and api). Default: all. Repeat the key, comma-separate or mix; empties ignored. */
                 origin?: string;
                 /** @description Sections: performance, daily, steps, variants, paths, accounts, flags, forecast. Omitted: the summary, which never holds forecast. Repeat the key, comma-separate or mix; empties ignored. */
                 include?: string;
@@ -55425,7 +55425,7 @@ export interface operations {
                 fields?: string;
                 /** @description Orders lists: sent, acceptance.rate, reply.rate, inmail_reply.rate, last_activity_at, name. -key: desc. Repeat the key, comma-separate or mix; empties ignored. */
                 sort?: string;
-                /** @description Items per list section (motions, accounts), 1-100. Default: 5 in the summary, else every item. */
+                /** @description Items per list section (campaigns, accounts), 1-100. Default: 5 in the summary, else every item. */
                 limit?: number;
                 /** @description previous_period: each rate gains previous (the same number of days just before from) and delta (rate - previous rate). */
                 compare?: "previous_period";
@@ -55439,14 +55439,14 @@ export interface operations {
                 "Curviate-Client"?: string;
             };
             path: {
-                /** @description Motion id (mot_...). */
-                motion_id: string;
+                /** @description Campaign id (mot_...). */
+                campaign_id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description One Motion's results, with a row per step (current version first, then steps only older versions have) and per variant. Each Contact counts once per Account. paths splits the Motion by the Contact's relationship to the account when the Enrollment started (provisional). Lags as for the overview. Grammar: include picks the sections (performance is totals under its section name), fields keeps dotted paths, sort and limit order and cut motions and accounts, compare=previous_period adds previous and delta to every rate, flags lists what to look at, and every Motion, account and step row carries next, the exact CLI call. Once any of these is given and include is not, the body is the summary: performance, the lists' top 5 by sent, flags. With none of them the full body of before is returned with a Deprecation header; it becomes the summary later. Here the summary is performance, accounts and flags; steps and variants come with include (steps alone leaves out each step's variants). */
+            /** @description One Campaign's results, with a row per step (current version first, then steps only older versions have) and per variant. Each Lead counts once per Account. paths splits the Campaign by the Lead's relationship to the account when the Enrollment started (provisional). Lags as for the overview. Grammar: include picks the sections (performance is totals under its section name), fields keeps dotted paths, sort and limit order and cut campaigns and accounts, compare=previous_period adds previous and delta to every rate, flags lists what to look at, and every Campaign, account and step row carries next, the exact CLI call. Once any of these is given and include is not, the body is the summary: performance, the lists' top 5 by sent, flags. With none of them the full body of before is returned with a Deprecation header; it becomes the summary later. Here the summary is performance, accounts and flags; steps and variants come with include (steps alone leaves out each step's variants). */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -55456,8 +55456,8 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @enum {string} */
-                        object: "analytics_motion";
-                        motion: {
+                        object: "analytics_campaign";
+                        campaign: {
                             id: string;
                             name: string;
                             status: string;
@@ -55471,10 +55471,10 @@ export interface operations {
                             account_id: string | null;
                             /** @description The account_id filter; [] when every visible account counts. */
                             account_ids: string[];
-                            /** @description The motion_id filter of the overview; [] when every Motion counts. */
-                            motion_ids: string[];
+                            /** @description The campaign_id filter of the overview; [] when every Campaign counts. */
+                            campaign_ids: string[];
                             /** @description The origins counted (direct is unibox and api); null for every origin. */
-                            origin: ("motion" | "unibox" | "api")[] | null;
+                            origin: ("campaign" | "unibox" | "api")[] | null;
                             /** @description The variant_id filter; null when not used. */
                             variant_id: string | null;
                             /** @description The started_from filter; null when not used. */
@@ -55507,7 +55507,7 @@ export interface operations {
                         /** @description UTC instant of the read; outcomes so far and maturing are measured at it. */
                         generated_at: string;
                         totals?: {
-                            /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Contact counts once per Account. */
+                            /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Lead counts once per Account. */
                             enrollments: {
                                 /** @description Waiting to start. */
                                 queued: number;
@@ -55578,7 +55578,7 @@ export interface operations {
                                 /** @description Of those, first messaged less than 7 days ago. */
                                 maturing: number;
                             };
-                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Contact, first messaged in the window (InMail excluded), with no reply before that message, the share who replied at or after it so far. */
+                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Lead, first messaged in the window (InMail excluded), with no reply before that message, the share who replied at or after it so far. */
                             reply: {
                                 /** @description Numerator: the replied part of messaged, so far. */
                                 replied: number;
@@ -55588,7 +55588,7 @@ export interface operations {
                                 rate: number | null;
                                 /** @description True when messaged is below 30. The rate is still returned. */
                                 low_sample: boolean;
-                                /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                 pending: number;
                                 /** @description Of messaged, sent less than 7 days before generated_at. Still in the rate. */
                                 maturing: number;
@@ -55615,7 +55615,7 @@ export interface operations {
                                 /** @description Of those, first InMailed less than 7 days ago. */
                                 maturing: number;
                             };
-                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Contact, first InMailed in the window, with no reply before that InMail, the share who replied at or after it so far. A message is never counted here. */
+                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Lead, first InMailed in the window, with no reply before that InMail, the share who replied at or after it so far. A message is never counted here. */
                             inmail_reply: {
                                 /** @description Numerator: the replied part of inmailed, so far. */
                                 replied: number;
@@ -55625,7 +55625,7 @@ export interface operations {
                                 rate: number | null;
                                 /** @description True when inmailed is below 30. The rate is still returned. */
                                 low_sample: boolean;
-                                /** @description Of inmailed, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                /** @description Of inmailed, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                 pending: number;
                                 /** @description Of inmailed, sent less than 7 days before generated_at. Still in the rate. */
                                 maturing: number;
@@ -55660,11 +55660,11 @@ export interface operations {
                             };
                             /** @description Right now, like enrollments: why Enrollments were skipped or failed. Each map sums to its count. */
                             enrollment_reasons: {
-                                /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                 skipped: {
                                     [key: string]: number;
                                 };
-                                /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                 failed: {
                                     [key: string]: number;
                                 };
@@ -55783,7 +55783,7 @@ export interface operations {
                                 rate: number | null;
                                 /** @description True when messaged is below 30. The rate is still returned. */
                                 low_sample: boolean;
-                                /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                 pending: number;
                                 /** @description Of messaged, sent less than 7 days before generated_at. Still in the rate. */
                                 maturing: number;
@@ -55831,11 +55831,11 @@ export interface operations {
                             } | null;
                             /** @description Why this step was skipped or failed; each map sums to skipped or failed. An until timeout is no reason: it stays in else. */
                             reasons: {
-                                /** @description The window's skipped executions of this step, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                /** @description The window's skipped executions of this step, by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                 skipped: {
                                     [key: string]: number;
                                 };
-                                /** @description The window's failed executions of this step (outcome_unknown included), by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                /** @description The window's failed executions of this step (outcome_unknown included), by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                 failed: {
                                     [key: string]: number;
                                 };
@@ -55890,7 +55890,7 @@ export interface operations {
                                     rate: number | null;
                                     /** @description True when messaged is below 30. The rate is still returned. */
                                     low_sample: boolean;
-                                    /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                    /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                     pending: number;
                                     /** @description Of messaged, sent less than 7 days before generated_at. Still in the rate. */
                                     maturing: number;
@@ -55949,7 +55949,7 @@ export interface operations {
                             /** @enum {string} */
                             path: "connected" | "not_connected" | "unknown";
                             totals: {
-                                /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Contact counts once per Account. */
+                                /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Lead counts once per Account. */
                                 enrollments: {
                                     /** @description Waiting to start. */
                                     queued: number;
@@ -56020,7 +56020,7 @@ export interface operations {
                                     /** @description Of those, first messaged less than 7 days ago. */
                                     maturing: number;
                                 };
-                                /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Contact, first messaged in the window (InMail excluded), with no reply before that message, the share who replied at or after it so far. */
+                                /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Lead, first messaged in the window (InMail excluded), with no reply before that message, the share who replied at or after it so far. */
                                 reply: {
                                     /** @description Numerator: the replied part of messaged, so far. */
                                     replied: number;
@@ -56030,7 +56030,7 @@ export interface operations {
                                     rate: number | null;
                                     /** @description True when messaged is below 30. The rate is still returned. */
                                     low_sample: boolean;
-                                    /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                    /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                     pending: number;
                                     /** @description Of messaged, sent less than 7 days before generated_at. Still in the rate. */
                                     maturing: number;
@@ -56057,7 +56057,7 @@ export interface operations {
                                     /** @description Of those, first InMailed less than 7 days ago. */
                                     maturing: number;
                                 };
-                                /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Contact, first InMailed in the window, with no reply before that InMail, the share who replied at or after it so far. A message is never counted here. */
+                                /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Lead, first InMailed in the window, with no reply before that InMail, the share who replied at or after it so far. A message is never counted here. */
                                 inmail_reply: {
                                     /** @description Numerator: the replied part of inmailed, so far. */
                                     replied: number;
@@ -56067,7 +56067,7 @@ export interface operations {
                                     rate: number | null;
                                     /** @description True when inmailed is below 30. The rate is still returned. */
                                     low_sample: boolean;
-                                    /** @description Of inmailed, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                    /** @description Of inmailed, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                     pending: number;
                                     /** @description Of inmailed, sent less than 7 days before generated_at. Still in the rate. */
                                     maturing: number;
@@ -56102,11 +56102,11 @@ export interface operations {
                                 };
                                 /** @description Right now, like enrollments: why Enrollments were skipped or failed. Each map sums to its count. */
                                 enrollment_reasons: {
-                                    /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                    /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                     skipped: {
                                         [key: string]: number;
                                     };
-                                    /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                    /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                     failed: {
                                         [key: string]: number;
                                     };
@@ -56176,7 +56176,7 @@ export interface operations {
                                     rate: number | null;
                                     /** @description True when messaged is below 30. The rate is still returned. */
                                     low_sample: boolean;
-                                    /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                    /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                     pending: number;
                                     /** @description Of messaged, sent less than 7 days before generated_at. Still in the rate. */
                                     maturing: number;
@@ -56224,11 +56224,11 @@ export interface operations {
                                 } | null;
                                 /** @description Why this step was skipped or failed; each map sums to skipped or failed. An until timeout is no reason: it stays in else. */
                                 reasons: {
-                                    /** @description The window's skipped executions of this step, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                    /** @description The window's skipped executions of this step, by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                     skipped: {
                                         [key: string]: number;
                                     };
-                                    /** @description The window's failed executions of this step (outcome_unknown included), by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                    /** @description The window's failed executions of this step (outcome_unknown included), by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                     failed: {
                                         [key: string]: number;
                                     };
@@ -56283,7 +56283,7 @@ export interface operations {
                                         rate: number | null;
                                         /** @description True when messaged is below 30. The rate is still returned. */
                                         low_sample: boolean;
-                                        /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                        /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                         pending: number;
                                         /** @description Of messaged, sent less than 7 days before generated_at. Still in the rate. */
                                         maturing: number;
@@ -56350,7 +56350,7 @@ export interface operations {
                             account_id: string;
                             /** @description null once the account is removed. */
                             account_name: string | null;
-                            /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Contact counts once per Account. */
+                            /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Lead counts once per Account. */
                             enrollments: {
                                 /** @description Waiting to start. */
                                 queued: number;
@@ -56421,7 +56421,7 @@ export interface operations {
                                 /** @description Of those, first messaged less than 7 days ago. */
                                 maturing: number;
                             };
-                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Contact, first messaged in the window (InMail excluded), with no reply before that message, the share who replied at or after it so far. */
+                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Lead, first messaged in the window (InMail excluded), with no reply before that message, the share who replied at or after it so far. */
                             reply: {
                                 /** @description Numerator: the replied part of messaged, so far. */
                                 replied: number;
@@ -56431,7 +56431,7 @@ export interface operations {
                                 rate: number | null;
                                 /** @description True when messaged is below 30. The rate is still returned. */
                                 low_sample: boolean;
-                                /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                 pending: number;
                                 /** @description Of messaged, sent less than 7 days before generated_at. Still in the rate. */
                                 maturing: number;
@@ -56458,7 +56458,7 @@ export interface operations {
                                 /** @description Of those, first InMailed less than 7 days ago. */
                                 maturing: number;
                             };
-                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Contact, first InMailed in the window, with no reply before that InMail, the share who replied at or after it so far. A message is never counted here. */
+                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Lead, first InMailed in the window, with no reply before that InMail, the share who replied at or after it so far. A message is never counted here. */
                             inmail_reply: {
                                 /** @description Numerator: the replied part of inmailed, so far. */
                                 replied: number;
@@ -56468,7 +56468,7 @@ export interface operations {
                                 rate: number | null;
                                 /** @description True when inmailed is below 30. The rate is still returned. */
                                 low_sample: boolean;
-                                /** @description Of inmailed, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                /** @description Of inmailed, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                 pending: number;
                                 /** @description Of inmailed, sent less than 7 days before generated_at. Still in the rate. */
                                 maturing: number;
@@ -56503,11 +56503,11 @@ export interface operations {
                             };
                             /** @description Right now, like enrollments: why Enrollments were skipped or failed. Each map sums to its count. */
                             enrollment_reasons: {
-                                /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                 skipped: {
                                     [key: string]: number;
                                 };
-                                /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                 failed: {
                                     [key: string]: number;
                                 };
@@ -56517,7 +56517,7 @@ export interface operations {
                         }[];
                         /** @description With the grammar: totals, under its section name. */
                         performance?: {
-                            /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Contact counts once per Account. */
+                            /** @description Enrollments by state right now; the window does not apply. The counted unit is the Enrollment: Each Lead counts once per Account. */
                             enrollments: {
                                 /** @description Waiting to start. */
                                 queued: number;
@@ -56588,7 +56588,7 @@ export interface operations {
                                 /** @description Of those, first messaged less than 7 days ago. */
                                 maturing: number;
                             };
-                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Contact, first messaged in the window (InMail excluded), with no reply before that message, the share who replied at or after it so far. */
+                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Lead, first messaged in the window (InMail excluded), with no reply before that message, the share who replied at or after it so far. */
                             reply: {
                                 /** @description Numerator: the replied part of messaged, so far. */
                                 replied: number;
@@ -56598,7 +56598,7 @@ export interface operations {
                                 rate: number | null;
                                 /** @description True when messaged is below 30. The rate is still returned. */
                                 low_sample: boolean;
-                                /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                /** @description Of messaged, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                 pending: number;
                                 /** @description Of messaged, sent less than 7 days before generated_at. Still in the rate. */
                                 maturing: number;
@@ -56625,7 +56625,7 @@ export interface operations {
                                 /** @description Of those, first InMailed less than 7 days ago. */
                                 maturing: number;
                             };
-                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Contact, first InMailed in the window, with no reply before that InMail, the share who replied at or after it so far. A message is never counted here. */
+                            /** @description Of the Enrollments, or for direct actions the pairs of one Account and one Lead, first InMailed in the window, with no reply before that InMail, the share who replied at or after it so far. A message is never counted here. */
                             inmail_reply: {
                                 /** @description Numerator: the replied part of inmailed, so far. */
                                 replied: number;
@@ -56635,7 +56635,7 @@ export interface operations {
                                 rate: number | null;
                                 /** @description True when inmailed is below 30. The rate is still returned. */
                                 low_sample: boolean;
-                                /** @description Of inmailed, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Contact); a direct pair: its latest direct message at most 30 days ago. */
+                                /** @description Of inmailed, no reply yet and still able to get one: the Enrollment is open, or finished at most 30 days ago (not for a removed account or a deleted or merged Lead); a direct pair: its latest direct message at most 30 days ago. */
                                 pending: number;
                                 /** @description Of inmailed, sent less than 7 days before generated_at. Still in the rate. */
                                 maturing: number;
@@ -56670,24 +56670,24 @@ export interface operations {
                             };
                             /** @description Right now, like enrollments: why Enrollments were skipped or failed. Each map sums to its count. */
                             enrollment_reasons: {
-                                /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                /** @description The skipped Enrollments of enrollments.skipped, by skip_reason, by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                 skipped: {
                                     [key: string]: number;
                                 };
-                                /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/motion-reasons); a code with zero is absent. */
+                                /** @description The failed Enrollments of enrollments.failed, by finish_reason, by reason code (https://docs.curviate.com/reference/campaign-reasons); a code with zero is absent. */
                                 failed: {
                                     [key: string]: number;
                                 };
                             };
                         };
-                        /** @description What to look at next, from this closed set, in this order. small_sample: a headline rate of performance (acceptance, reply, inmail_reply) rests on 1 to 29 sends, one flag per rate. still_maturing: more than a third of a headline rate's denominator went out under 7 days ago (maturing x 3 > denominator). rate_moved: with compare, both denominators at least 30, the previous rate above 0, and the rate moved by 25% of the previous rate or more, on the raw rates. limit_reached: an Account in scope was refused for a budget row's ceiling on 3 or more days of the window, one flag per Account and row. account_attention: an Account in scope needs reconnecting (reconnect_needed) or is restricted. biggest_drop_off (one Motion): the step with the largest share of skipped, failed and else among at least 30 entries; a tie goes to the earlier step. ab_leader (one Motion): a step whose every arm, the fallback row included, has a denominator of at least 30, and one arm has the strictly highest rate; it lists every arm's rate and denominator, never a significance figure. A tie: no flag. */
+                        /** @description What to look at next, from this closed set, in this order. small_sample: a headline rate of performance (acceptance, reply, inmail_reply) rests on 1 to 29 sends, one flag per rate. still_maturing: more than a third of a headline rate's denominator went out under 7 days ago (maturing x 3 > denominator). rate_moved: with compare, both denominators at least 30, the previous rate above 0, and the rate moved by 25% of the previous rate or more, on the raw rates. limit_reached: an Account in scope was refused for a budget row's ceiling on 3 or more days of the window, one flag per Account and row. account_attention: an Account in scope needs reconnecting (reconnect_needed) or is restricted. biggest_drop_off (one Campaign): the step with the largest share of skipped, failed and else among at least 30 entries; a tie goes to the earlier step. ab_leader (one Campaign): a step whose every arm, the fallback row included, has a denominator of at least 30, and one arm has the strictly highest rate; it lists every arm's rate and denominator, never a significance figure. A tie: no flag. */
                         flags?: {
                             /** @enum {string} */
                             code: "small_sample" | "still_maturing" | "rate_moved" | "limit_reached" | "account_attention" | "biggest_drop_off" | "ab_leader";
                             /** @description What the flag is about. */
                             subject: {
                                 /** @enum {string} */
-                                type: "team" | "motion" | "account" | "step";
+                                type: "team" | "campaign" | "account" | "step";
                                 /** @description tnt_, mot_, acc_ or the step id. */
                                 id: string;
                             };
@@ -56700,10 +56700,10 @@ export interface operations {
                             /** @description The exact CLI call that looks into it. */
                             next: string;
                         }[];
-                        /** @description Only with include=forecast. forecast: what your Motions are expected to send and get per day, from today (its whole expected day) through forecast_days (1-365, default 30) or the last day with activity, whichever comes first. A simulation of each Motion's Sequence, limits, warm-up, schedule and accounts with its observed acceptance and reply rates. Motions only, no direct actions; the configuration is frozen as it is now: no new Enrollments, no edits. A draft Motion: as if turned on now with its picked accounts; null when none is picked. Whole actions: each day's expected values summed over the scope, then rounded. */
+                        /** @description Only with include=forecast. forecast: what your Campaigns are expected to send and get per day, from today (its whole expected day) through forecast_days (1-365, default 30) or the last day with activity, whichever comes first. A simulation of each Campaign's Sequence, limits, warm-up, schedule and accounts with its observed acceptance and reply rates. Campaigns only, no direct actions; the configuration is frozen as it is now: no new Enrollments, no edits. A draft Campaign: as if turned on now with its picked accounts; null when none is picked. Whole actions: each day's expected values summed over the scope, then rounded. */
                         forecast?: {
                             /**
-                             * @description computing: an account of the scope has had no simulation yet, so daily is today's zeros and is not a forecast; read again in a few minutes. computed otherwise (always for a draft Motion).
+                             * @description computing: an account of the scope has had no simulation yet, so daily is today's zeros and is not a forecast; read again in a few minutes. computed otherwise (always for a draft Campaign).
                              * @enum {string}
                              */
                             status: "computed" | "computing";
@@ -56760,7 +56760,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: no such Motion, or no such Sequence version. ACCOUNT_NOT_FOUND: account_id is not one of your accounts, or was removed. */
+            /** @description RESOURCE_NOT_FOUND: no such Campaign, or no such Sequence version. ACCOUNT_NOT_FOUND: account_id is not one of your accounts, or was removed. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -56810,7 +56810,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Core activity in budget units for the accounts you may operate (yours; an Owner or Manager also the team's shared accounts). Every budgeted LinkedIn call counts, reads and Motion steps included. Each budget row counts its own unit, so figures are per row and never added across rows. quotas is exactly the quotas array of GET /v1/accounts/{account_id}: the current budget window, not the requested one. */
+            /** @description Core activity in budget units for the accounts you may operate (yours; an Owner or Manager also the team's shared accounts). Every budgeted LinkedIn call counts, reads and Campaign steps included. Each budget row counts its own unit, so figures are per row and never added across rows. quotas is exactly the quotas array of GET /v1/accounts/{account_id}: the current budget window, not the requested one. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -56826,10 +56826,10 @@ export interface operations {
                             account_id: string | null;
                             /** @description The account_id filter; [] when every visible account counts. */
                             account_ids: string[];
-                            /** @description The motion_id filter of the overview; [] when every Motion counts. */
-                            motion_ids: string[];
+                            /** @description The campaign_id filter of the overview; [] when every Campaign counts. */
+                            campaign_ids: string[];
                             /** @description The origins counted (direct is unibox and api); null for every origin. */
-                            origin: ("motion" | "unibox" | "api")[] | null;
+                            origin: ("campaign" | "unibox" | "api")[] | null;
                         };
                         /** @description The window as applied. */
                         window: {
@@ -56947,7 +56947,7 @@ export interface operations {
                                 band: "green" | "amber" | "hard" | "over";
                                 /** @description Whether something on this row is configured above Curviate's own default. The safety policy carries the detail: which field, the value, the default and how well calibrated that default is. */
                                 over_default: boolean;
-                                /** @description An active pause on this row because the platform refused a recent request on it, or `null`. Motion work on other rows keeps running. A Motion also waits longer than this pause after LinkedIn refuses invitations or views for going too fast: 6 hours, then 24, then 72, at most 7 days on each repeat, resetting after 7 clean days; `health` on the account shows it. A halt is not a ceiling: no limit you raise lifts it, and it clears itself when it expires. To lift one before it expires, send this row in `clear_halts` on `PATCH /v1/{account_id}/safety-policy`; that is recorded, and the pause returns if the platform refuses the account again. */
+                                /** @description An active pause on this row because the platform refused a recent request on it, or `null`. Campaign work on other rows keeps running. A Campaign also waits longer than this pause after LinkedIn refuses invitations or views for going too fast: 6 hours, then 24, then 72, at most 7 days on each repeat, resetting after 7 clean days; `health` on the account shows it. A halt is not a ceiling: no limit you raise lifts it, and it clears itself when it expires. To lift one before it expires, send this row in `clear_halts` on `PATCH /v1/{account_id}/safety-policy`; that is recorded, and the pause returns if the platform refuses the account again. */
                                 halt: {
                                     /** @description What the platform did: `rate_limited`, `platform_fault`, or `resend_cooldown` (the same invitation was sent too recently). */
                                     reason?: string;
@@ -57024,15 +57024,15 @@ export interface operations {
             query?: {
                 /** @description Only this account's events (acc_...). Default: every account you can see. */
                 account_id?: string;
-                /** @description Only this Motion's events (mot_...). */
-                motion_id?: string;
+                /** @description Only this Campaign's events (mot_...). */
+                campaign_id?: string;
                 /** @description Only this person's events (con_...): their Enrollments' and the direct actions with them. */
-                contact_id?: string;
-                /** @description Only the outcome events of this Step, in any Sequence version of the Motion. Requires motion_id (step ids are unique per Motion, not per team). */
+                lead_id?: string;
+                /** @description Only the outcome events of this Step, in any Sequence version of the Campaign. Requires campaign_id (step ids are unique per Campaign, not per team). */
                 step_id?: string;
                 /** @description step.executed, step.failed, invite.accepted, message.replied. Default: all. Repeat the key, comma-separate or mix; empties ignored. */
                 kind?: ("step.executed" | "step.failed" | "invite.accepted" | "message.replied")[];
-                /** @description motion, unibox (the Unibox), api (any API key or MCP grant), direct (unibox and api). Default: all. Repeat the key, comma-separate or mix; empties ignored. */
+                /** @description campaign, unibox (the Unibox), api (any API key or MCP grant), direct (unibox and api). Default: all. Repeat the key, comma-separate or mix; empties ignored. */
                 origin?: string;
                 /** @description Max items per page (1-100, default 20). */
                 limit?: number;
@@ -57050,7 +57050,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Recent Motion events, newest first. Sources: steps executed, steps skipped or failed (an unknown send result is failed with reason outcome_unknown), invitations accepted and first replies. contact is the person's live record, null once deleted; a merged person shows the record they were merged into. Records of a removed account never appear. Message and reply events appear only to a caller who may read that conversation (the account's person always); never message text. Lags: a step appears once it settles, a reply within a minute, an acceptance about 2 hours after it happens. */
+            /** @description Recent Campaign events, newest first. Sources: steps executed, steps skipped or failed (an unknown send result is failed with reason outcome_unknown), invitations accepted and first replies. lead is the person's live record, null once deleted; a merged person shows the record they were merged into. Records of a removed account never appear. Message and reply events appear only to a caller who may read that conversation (the account's person always); never message text. Lags: a step appears once it settles, a reply within a minute, an acceptance about 2 hours after it happens. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -57071,14 +57071,14 @@ export interface operations {
                             /** @description UTC instant of the event. */
                             occurred_at: string;
                             /**
-                             * @description Who sent it: a Motion, the Unibox, or an API key or MCP grant (REST, CLI, MCP, SDK).
+                             * @description Who sent it: a Campaign, the Unibox, or an API key or MCP grant (REST, CLI, MCP, SDK).
                              * @enum {string}
                              */
-                            origin: "motion" | "unibox" | "api";
-                            /** @description The Motion; null for a direct action (origin unibox or api). */
-                            motion_id: string | null;
-                            /** @description The Motion's name; null for a direct action. */
-                            motion_name: string | null;
+                            origin: "campaign" | "unibox" | "api";
+                            /** @description The Campaign; null for a direct action (origin unibox or api). */
+                            campaign_id: string | null;
+                            /** @description The Campaign's name; null for a direct action. */
+                            campaign_name: string | null;
                             /** @description The Enrollment; null for a direct action. */
                             enrollment_id: string | null;
                             /** @description The sending account; null for an Enrollment with no account yet. */
@@ -57095,21 +57095,21 @@ export interface operations {
                              */
                             outcome: "executed" | "skipped" | "failed" | null;
                             /**
-                             * @description Why a step was skipped or failed, as a code of the reasons catalogue (https://docs.curviate.com/reference/motion-reasons); null otherwise.
+                             * @description Why a step was skipped or failed, as a code of the reasons catalogue (https://docs.curviate.com/reference/campaign-reasons); null otherwise.
                              * @enum {string|null}
                              */
-                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_motion" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "motion_archived" | "motion_ended" | "contact_deleted" | "contact_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit" | null;
+                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit" | null;
                             /** @description The catalogue's one-line plain-words sentence for reason; null when reason is. */
                             reason_message: string | null;
-                            /** @description The person, read live; null once the Contact is deleted. */
-                            contact: {
+                            /** @description The person, read live; null once the Lead is deleted. */
+                            lead: {
                                 id: string;
                                 /** @description Full name. */
                                 full_name: string | null;
                                 /** @description LinkedIn profile URL. */
                                 linkedin_url: string | null;
                             } | null;
-                            /** @description A direct action's person (origin unibox or api), name only: they may not be a Contact. Null for a Motion event or a person LinkedIn never named. */
+                            /** @description A direct action's person (origin unibox or api), name only: they may not be a Lead. Null for a Campaign event or a person LinkedIn never named. */
                             person_name: string | null;
                         }[];
                         /** @description Pass back as cursor for the next page; null on the last page. */
@@ -57117,7 +57117,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST: an unknown query parameter, kind or origin (linkedin is never counted), a limit outside 1 to 100, a cursor not from a prior response, or step_id without motion_id (step_id:). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: an unknown query parameter, kind or origin (linkedin is never counted), a limit outside 1 to 100, a cursor not from a prior response, or step_id without campaign_id (step_id:). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -57144,7 +57144,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: motion_id is not one of your Motions, or contact_id not one of your Contacts (a merged one names the Contact it was merged into). ACCOUNT_NOT_FOUND: account_id is not one of your accounts, or was removed. */
+            /** @description RESOURCE_NOT_FOUND: campaign_id is not one of your Campaigns, or lead_id not one of your Leads (a merged one names the Lead it was merged into). ACCOUNT_NOT_FOUND: account_id is not one of your accounts, or was removed. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -57182,11 +57182,11 @@ export interface operations {
                 timezone?: string;
                 /** @description Only these accounts (acc_...). Default: every account you can see. Repeat the key, comma-separate or mix; empties ignored. */
                 account_id?: string;
-                /** @description Only these Motions (mot_...). Default: every Motion. Repeat the key, comma-separate or mix; empties ignored. */
-                motion_id?: string;
-                /** @description motion, unibox (the Unibox), api (any API key or MCP grant), direct (unibox and api). Default: all. Repeat the key, comma-separate or mix; empties ignored. */
+                /** @description Only these Campaigns (mot_...). Default: every Campaign. Repeat the key, comma-separate or mix; empties ignored. */
+                campaign_id?: string;
+                /** @description campaign, unibox (the Unibox), api (any API key or MCP grant), direct (unibox and api). Default: all. Repeat the key, comma-separate or mix; empties ignored. */
                 origin?: string;
-                /** @description daily, accounts, motions, enrollments. Several: one ZIP. Repeat the key, comma-separate or mix; empties ignored. Default: all. */
+                /** @description daily, accounts, campaigns, enrollments. Several: one ZIP. Repeat the key, comma-separate or mix; empties ignored. Default: all. */
                 table?: string;
                 /** @description csv (UTF-8, formula guard), json (an array) or ndjson (one JSON object per line; one table only). Default: csv. */
                 format?: "csv" | "json" | "ndjson";
@@ -57245,7 +57245,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: a motion_id is not yours. ACCOUNT_NOT_FOUND: an account_id is not one of your accounts. */
+            /** @description RESOURCE_NOT_FOUND: a campaign_id is not yours. ACCOUNT_NOT_FOUND: an account_id is not one of your accounts. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -57284,11 +57284,11 @@ export interface operations {
             content: {
                 "application/json": {
                     /**
-                     * @description What to export. analytics: the Analytics tables. motion_activity: the Motions' activity records (sends, acceptances, replies, skips and failures). account_activity: the same plus direct actions (API, CLI, MCP, Unibox). account_metrics: each Account's own daily numbers. The activity and metrics files hold at most 366 days.
+                     * @description What to export. analytics: the Analytics tables. campaign_activity: the Campaigns' activity records (sends, acceptances, replies, skips and failures). account_activity: the same plus direct actions (API, CLI, MCP, Unibox). account_metrics: each Account's own daily numbers. The activity and metrics files hold at most 366 days.
                      * @enum {string}
                      */
-                    entity: "analytics" | "motion_activity" | "account_activity" | "account_metrics";
-                    /** @description analytics: daily, accounts, motions, enrollments. Several: one ZIP. Any other entity is one table of its own name: omit it. */
+                    entity: "analytics" | "campaign_activity" | "account_activity" | "account_metrics";
+                    /** @description analytics: daily, accounts, campaigns, enrollments. Several: one ZIP. Any other entity is one table of its own name: omit it. */
                     tables?: string[];
                     /**
                      * @description csv (UTF-8, formula guard), json (an array) or ndjson (one JSON object per line; one table only).
@@ -57296,7 +57296,7 @@ export interface operations {
                      */
                     format: "csv" | "json" | "ndjson";
                     /**
-                     * @description The Analytics overview's filters: from, to, range, bucket, timezone, account_id[], motion_id[], origin (account_metrics: no motion_id or origin). Default: none (the last 30 days).
+                     * @description The Analytics overview's filters: from, to, range, bucket, timezone, account_id[], campaign_id[], origin (account_metrics: no campaign_id or origin). Default: none (the last 30 days).
                      * @default {}
                      */
                     filters?: {
@@ -57319,7 +57319,7 @@ export interface operations {
                         object: "export";
                         /** @description Export id (exp_...). */
                         id: string;
-                        /** @description What was exported: analytics, motion_activity, account_activity or account_metrics. More values come, so accept ones you do not know. */
+                        /** @description What was exported: analytics, campaign_activity, account_activity or account_metrics. More values come, so accept ones you do not know. */
                         entity: string;
                         /** @description The tables, in the order asked (an entity other than analytics: its own name). */
                         tables: string[];
@@ -57330,7 +57330,7 @@ export interface operations {
                             [key: string]: unknown;
                         };
                         /**
-                         * @description queued, running, ready (download it), failed (see error), expired (24 h after ready, the file is deleted) or removed (a Contact was deleted, which removes the team's exports that hold Contacts). Accept values you do not know.
+                         * @description queued, running, ready (download it), failed (see error), expired (24 h after ready, the file is deleted) or removed (a Lead was deleted, which removes the team's exports that hold Leads). Accept values you do not know.
                          * @enum {string}
                          */
                         status: "queued" | "running" | "ready" | "failed" | "expired" | "removed";
@@ -57384,7 +57384,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: a motion_id in filters is not yours. ACCOUNT_NOT_FOUND: an account_id is not one of your accounts. */
+            /** @description RESOURCE_NOT_FOUND: a campaign_id in filters is not yours. ACCOUNT_NOT_FOUND: an account_id is not one of your accounts. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -57455,7 +57455,7 @@ export interface operations {
                         object: "export";
                         /** @description Export id (exp_...). */
                         id: string;
-                        /** @description What was exported: analytics, motion_activity, account_activity or account_metrics. More values come, so accept ones you do not know. */
+                        /** @description What was exported: analytics, campaign_activity, account_activity or account_metrics. More values come, so accept ones you do not know. */
                         entity: string;
                         /** @description The tables, in the order asked (an entity other than analytics: its own name). */
                         tables: string[];
@@ -57466,7 +57466,7 @@ export interface operations {
                             [key: string]: unknown;
                         };
                         /**
-                         * @description queued, running, ready (download it), failed (see error), expired (24 h after ready, the file is deleted) or removed (a Contact was deleted, which removes the team's exports that hold Contacts). Accept values you do not know.
+                         * @description queued, running, ready (download it), failed (see error), expired (24 h after ready, the file is deleted) or removed (a Lead was deleted, which removes the team's exports that hold Leads). Accept values you do not know.
                          * @enum {string}
                          */
                         status: "queued" | "running" | "ready" | "failed" | "expired" | "removed";
@@ -57621,7 +57621,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description EXPORT_EXPIRED: the 24 h are over and the file is deleted. EXPORT_REMOVED: a Contact was deleted, which removes the team's exports that hold Contacts. Run it again either way. */
+            /** @description EXPORT_EXPIRED: the 24 h are over and the file is deleted. EXPORT_REMOVED: a Lead was deleted, which removes the team's exports that hold Leads. Run it again either way. */
             410: {
                 headers: {
                     [name: string]: unknown;
@@ -58430,7 +58430,7 @@ export interface operations {
                             expires_at: string | null;
                         } | null;
                         /** @description The features the Team has now. Empty when it has no Tier, and for a Tier that adds none. */
-                        features: ("drafts" | "contacts" | "motions" | "network" | "unibox" | "keep_connected")[];
+                        features: ("drafts" | "leads" | "campaigns" | "network" | "unibox" | "keep_connected")[];
                     };
                 };
             };

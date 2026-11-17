@@ -3,11 +3,11 @@
  *
  * The surface is split in two:
  * - **Root-scoped** (`accounts`, `auth`, `connectRequests`, `webhooks`, `drafts`,
- *   `teams`, `notifications`, `contacts`, `contactLists`, `tags`, `motions`,
+ *   `teams`, `notifications`, `leads`, `leadLists`, `tags`, `campaigns`,
  *   `enrollments`, `tier`, `mailboxes`, `domains`) hang off the
  *   root client only. Connected-account management, connect/reconnect, webhook
  *   registration, Drafts (a Draft's account is optional), teams, Curviate's own
- *   Notifications and the team's Contacts, lists, Tags, Motions and Enrollments are
+ *   Notifications and the team's Leads, lists, Tags, Campaigns and Enrollments are
  *   team-wide concerns, not per-account ones; they carry no `account_id` path
  *   segment.
  * - **Account-scoped** (everything else) hang off `curviate.account(id)` only.
@@ -37,10 +37,10 @@ import { LinkedInNotificationsResource } from "./linkedin-notifications.js";
 import { NotificationsResource } from "./notifications.js";
 import { ConnectRequestsResource } from "./connect-requests.js";
 import { TeamsResource } from "./teams.js";
-import { ContactsResource } from "./contacts.js";
-import { ContactListsResource } from "./contact-lists.js";
+import { LeadsResource } from "./leads.js";
+import { LeadListsResource } from "./lead-lists.js";
 import { TagsResource } from "./tags.js";
-import { MotionsResource, EnrollmentsResource } from "./motions.js";
+import { CampaignsResource, EnrollmentsResource } from "./campaigns.js";
 import { TierResource } from "./tier.js";
 import { MailboxesResource } from "./mailboxes.js";
 import { DomainsResource } from "./domains.js";
@@ -75,16 +75,16 @@ export { LinkedInNotificationsResource } from "./linkedin-notifications.js";
 export { NotificationsResource } from "./notifications.js";
 export { ConnectRequestsResource } from "./connect-requests.js";
 export { TeamsResource } from "./teams.js";
-export { ContactsResource, ContactImportsResource } from "./contacts.js";
-export { ContactListsResource } from "./contact-lists.js";
+export { LeadsResource, LeadImportsResource } from "./leads.js";
+export { LeadListsResource } from "./lead-lists.js";
 export { TagsResource } from "./tags.js";
-export { MotionsResource, EnrollmentsResource } from "./motions.js";
+export { CampaignsResource, EnrollmentsResource } from "./campaigns.js";
 export { TierResource } from "./tier.js";
 export { MailboxesResource } from "./mailboxes.js";
 export { DomainsResource } from "./domains.js";
 export { NetworkResource, NetworkConnectionsResource } from "./network.js";
 export { UniboxResource, UniboxAccountsResource } from "./unibox.js";
-export { AnalyticsResource, AnalyticsMotionsResource, AnalyticsEventsResource } from "./analytics.js";
+export { AnalyticsResource, AnalyticsCampaignsResource, AnalyticsEventsResource } from "./analytics.js";
 export { BillingResource, BillingSeatsResource, BillingInvoicesResource } from "./billing.js";
 export { DoNotContactResource } from "./do-not-contact.js";
 export { IncomingEventsResource } from "./incoming-events.js";
@@ -158,10 +158,10 @@ export interface RootNamespaces
   teams: TeamsResource;
   /** Curviate's own Notifications, not the account's LinkedIn ones. */
   notifications: NotificationsResource;
-  contacts: ContactsResource;
-  contactLists: ContactListsResource;
+  leads: LeadsResource;
+  leadLists: LeadListsResource;
   tags: TagsResource;
-  motions: MotionsResource;
+  campaigns: CampaignsResource;
   enrollments: EnrollmentsResource;
   tier: TierResource;
   mailboxes: MailboxesResource;
@@ -186,10 +186,10 @@ export function buildRootNamespaces(ctx: RequestContext): RootNamespaces {
     drafts: new DraftsResource(ctx),
     teams: new TeamsResource(ctx),
     notifications: new NotificationsResource(ctx),
-    contacts: new ContactsResource(ctx),
-    contactLists: new ContactListsResource(ctx),
+    leads: new LeadsResource(ctx),
+    leadLists: new LeadListsResource(ctx),
     tags: new TagsResource(ctx),
-    motions: new MotionsResource(ctx),
+    campaigns: new CampaignsResource(ctx),
     enrollments: new EnrollmentsResource(ctx),
     tier: new TierResource(ctx),
     mailboxes: new MailboxesResource(ctx),

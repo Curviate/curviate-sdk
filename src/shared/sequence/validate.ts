@@ -2,7 +2,7 @@
 import { durationMinutes } from "./paths.js";
 import { normalizePath } from "../field-paths.js";
 import { awaitedEventName } from "./references.js";
-import { ACCOUNT_FIELDS, ACTION_PARAMS, ACTIONS, VOICE_CLIP_ID_RE, VOICE_CLIP_RULE, BOOLEAN_PREDICATES, DURATION_BOUNDS, DEPRECATED_ACCEPTED_UNTIL, DURATION_PATTERN, END, EVENT_NAME_PATTERN, EVENTS, EXTRA_KEY_PATTERN, FIELD_OPERATORS, ID_PATTERN, MAX_PREDICATE_DEPTH, MAX_QUOTED_TOKEN_CHARS, MAX_SAVE_ENTRIES, MAX_SEQUENCE_BYTES, MAX_STEP_NOTE_CHARS, MAX_STEPS, MAX_VARIABLE_REFS_PER_TEXT, MAX_TAG_CHARS, MAX_VARIANTS, MAX_VARIANTS_DEPRECATED, MESSAGING_ACTIONS, MY_FIELDS, MIN_VARIANTS, NAME_FIELDS, NUMBER_OPERATORS, REACTIONS, SAVE_NAME_PATTERN, SEQUENCE_SCHEMA_URL, STANDARD_FIELDS, STEP_KEYS, STEP_KINDS, TAG_PATTERN, TEXT_LIMITS, type Action, type StepKind, fallbackKeyword, isObject, longVariable, } from "./limits.js";
+import { ACCOUNT_FIELDS, ACTION_PARAMS, ACTIONS, VOICE_CLIP_ID_RE, VOICE_CLIP_RULE, BOOLEAN_PREDICATES, DURATION_BOUNDS, DEPRECATED_ACCEPTED_UNTIL, DURATION_PATTERN, END, EVENT_NAME_PATTERN, EVENTS, EXTRA_KEY_PATTERN, FIELD_OPERATORS, ID_PATTERN, MAX_PREDICATE_DEPTH, MAX_QUOTED_TOKEN_CHARS, MAX_SAVE_ENTRIES, MAX_SEQUENCE_BYTES, MAX_STEP_NOTE_CHARS, MAX_STEPS, MAX_VARIABLE_REFS_PER_TEXT, MAX_TAG_CHARS, MAX_VARIANTS, MAX_VARIANTS_DEPRECATED, MESSAGING_ACTIONS, MY_FIELDS, MIN_VARIANTS, NAME_FIELDS, NUMBER_OPERATORS, REACTIONS, SAVE_NAME_PATTERN, SEQUENCE_SCHEMA_URL, STANDARD_FIELDS, languageCode, STEP_KEYS, STEP_KINDS, TAG_PATTERN, TEXT_LIMITS, type Action, type StepKind, fallbackKeyword, isObject, longVariable, } from "./limits.js";
 import { isMessageSend } from "./message-actions.js";
 import { ruleHelp } from "./rules.js";
 export interface PathRule {
@@ -79,7 +79,7 @@ export function motionWarnings(doc: unknown, ctx: MotionWarningContext & {
     const out: SequenceWarning[] = [];
     const warn = (code: `W${number}`, path: string, pointer: string, rule: string, token?: string) => out.push(sequenceEntry(code, path, pointer, rule, token));
     if ((ctx.variableKeys ?? 0) > 0) {
-        warn("W13", "settings.variables", "", `Motion variables were removed${UNTIL}; write the text in place or use a custom field`, "text in place or a custom field");
+        warn("W13", "settings.variables", "", `Campaign variables were removed${UNTIL}; write the text in place or use a custom field`, "text in place or a custom field");
     }
     if (!isObject(doc))
         return out;
@@ -267,18 +267,18 @@ function checkText(ctx: Ctx, order: number, path: string, pointer: string, paren
             issue(ctx, { ...at, code: "R17", rule: "variable defaults are not supported; add a fallback" });
             continue;
         }
-        const motion = /^motion\.([a-z][a-z0-9_]{0,39})$/.exec(v.inner);
-        if (motion) {
+        const campaign = /^campaign\.([a-z][a-z0-9_]{0,39})$/.exec(v.inner);
+        if (campaign) {
             warning(ctx, {
                 ...at,
                 code: "W13",
-                rule: `${quote(v.token)}: Motion variables were removed${UNTIL}; write the text in place or use a custom field`,
-                token: `text in place or a custom field such as {{${motion[1]}}}`,
+                rule: `${quote(v.token)}: Campaign variables were removed${UNTIL}; write the text in place or use a custom field`,
+                token: `text in place or a custom field such as {{${campaign[1]}}}`,
             });
             if (ctx.mode.kind === "lint") {
                 warning(ctx, { ...at, code: "W9", rule: `${quote(v.token)} is checked against settings.variables by the server only` });
             }
-            else if (!Object.hasOwn(ctx.mode.variables, motion[1]!)) {
+            else if (!Object.hasOwn(ctx.mode.variables, campaign[1]!)) {
                 issue(ctx, { ...at, code: "R16", rule: `${quote(v.token)} is not defined in settings.variables` });
             }
             continue;
@@ -296,16 +296,16 @@ function checkText(ctx: Ctx, order: number, path: string, pointer: string, paren
             issue(ctx, {
                 ...at,
                 code: "R16",
-                rule: `unknown variable ${quote(v.token)}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or contact.<field>, contact.extra.<key>, account.first_name, account.last_name, account.full_name`,
+                rule: `unknown variable ${quote(v.token)}; use a field ({{first_name}}), your name ({{my_first_name}}), a custom field ({{opener}}), or lead.<field>, lead.extra.<key>, account.first_name, account.last_name, account.full_name`,
             });
             continue;
         }
         const long = longVariable(v.inner)!;
-        if (!v.inner.includes(".") && long.startsWith("contact.extra.") && ctx.values.saved.has(v.inner)) {
+        if (!v.inner.includes(".") && long.startsWith("lead.extra.") && ctx.values.saved.has(v.inner)) {
             const want = `{{enrollment.${v.inner}}}`;
-            warning(ctx, { ...at, code: "W16", rule: `${quote(v.token)} is read as a Contact field; did you mean ${want}?`, token: want, candidates: [want] });
+            warning(ctx, { ...at, code: "W16", rule: `${quote(v.token)} is read as a Lead field; did you mean ${want}?`, token: want, candidates: [want] });
         }
-        if (!v.inner.includes(".") && long.startsWith("contact.extra.")) {
+        if (!v.inner.includes(".") && long.startsWith("lead.extra.")) {
             const near = likelyTypoOf(v.inner);
             if (near !== null)
                 warning(ctx, { ...at, code: "W11", rule: `${quote(v.token)} is read as a custom field; did you mean ${near}?`, token: near });
@@ -313,11 +313,11 @@ function checkText(ctx: Ctx, order: number, path: string, pointer: string, paren
     }
     const rest = value.replace(VARIABLE_RE, " ");
     if (rest.includes("{{")) {
-        issue(ctx, { ...at, code: "R16", rule: "unclosed variable; write a variable as {{contact.first_name}}" });
+        issue(ctx, { ...at, code: "R16", rule: "unclosed variable; write a variable as {{lead.first_name}}" });
     }
     else {
         for (const m of rest.matchAll(SINGLE_BRACE_RE)) {
-            issue(ctx, { ...at, code: "R18", rule: `${quote(m[0])} is not a variable; write {{contact.<field>}} or remove the braces` });
+            issue(ctx, { ...at, code: "R18", rule: `${quote(m[0])} is not a variable; write {{lead.<field>}} or remove the braces` });
         }
     }
     const len = staticLength(value);
@@ -339,7 +339,7 @@ function enrollmentRef(ctx: Ctx, at: {
     if (ctx.values.saved.has(key))
         return;
     const candidates = ctx.values.toContact.has(key)
-        ? [form(`contact.extra.${key}`)]
+        ? [form(`lead.extra.${key}`)]
         : [...ctx.values.saved.keys()].filter((n) => distance(key, n, 2) <= 2).map((n) => form(`enrollment.${n}`));
     issue(ctx, { ...at, code: "R27", rule: `${shown}: no save of this Sequence writes ${quote(key)}`, ...(candidates.length ? { token: candidates[0]!, candidates } : {}) });
 }
@@ -347,10 +347,10 @@ function isKnownVariable(inner: string): boolean {
     const long = longVariable(inner);
     if (long === null)
         return false;
-    if (long.startsWith("contact.extra."))
-        return EXTRA_KEY_RE.test(long.slice("contact.extra.".length));
-    if (long.startsWith("contact."))
-        return (STANDARD_FIELDS as readonly string[]).includes(long.slice(8));
+    if (long.startsWith("lead.extra."))
+        return EXTRA_KEY_RE.test(long.slice("lead.extra.".length));
+    if (long.startsWith("lead."))
+        return (STANDARD_FIELDS as readonly string[]).includes(long.slice(5));
     if (long.startsWith("account."))
         return (ACCOUNT_FIELDS as readonly string[]).includes(long.slice(8));
     return false;
@@ -490,7 +490,7 @@ function run(doc: unknown, mode: Mode): SequenceValidationResult {
         for (const k of keysOf(raw)) {
             if (STEP_KEYS[kind].includes(k))
                 continue;
-            if (k === "save" || k === "save_to_contact") {
+            if (k === "save" || k === "save_to_lead") {
                 issue(ctx, { order, code: "R25", path: `${p}.${k}`, pointer: `${ptr}/${k}`, rule: `${k} is allowed only on an until event.<name> step` });
                 continue;
             }
@@ -596,7 +596,7 @@ function checkUntil(ctx: Ctx, order: number, p: string, ptr: string, raw: Record
     else if (!(EVENTS as readonly unknown[]).includes(ev)) {
         issue(ctx, { ...at, rule: "unknown event; use invite.accepted, message.replied, message.read or event.<name>" });
     }
-    for (const key of ["save", "save_to_contact"] as const) {
+    for (const key of ["save", "save_to_lead"] as const) {
         if (has(raw, key))
             checkSave(ctx, order, p, ptr, raw, key, custom && EVENT_RE.test(custom[2]!) ? custom[2]! : null);
     }
@@ -615,7 +615,7 @@ function checkUntil(ctx: Ctx, order: number, p: string, ptr: string, raw: Record
     }
 }
 const SAVE_CONTACT_FIELDS: readonly string[] = STANDARD_FIELDS.filter((f) => f !== "email");
-function checkSave(ctx: Ctx, order: number, p: string, ptr: string, raw: Record<string, unknown>, key: "save" | "save_to_contact", event: string | null): void {
+function checkSave(ctx: Ctx, order: number, p: string, ptr: string, raw: Record<string, unknown>, key: "save" | "save_to_lead", event: string | null): void {
     const v = raw[key];
     const at = { order, path: `${p}.${key}`, pointer: `${ptr}/${key}` };
     if (event === null) {
@@ -638,7 +638,7 @@ function checkSave(ctx: Ctx, order: number, p: string, ptr: string, raw: Record<
                 issue(ctx, { ...e, code: "R25", rule: `a value name must match ${SAVE_NAME_PATTERN}` });
         }
         else if (SAVE_CONTACT_FIELDS.includes(name)) {
-            issue(ctx, { ...e, code: "R25", rule: `${name} is a standard Contact field; only email can be saved to one` });
+            issue(ctx, { ...e, code: "R25", rule: `${name} is a standard Lead field; only email can be saved to one` });
         }
         else if (name !== "email" && !EXTRA_KEY_RE.test(name)) {
             issue(ctx, { ...e, code: "R25", rule: `a custom field key must match ${EXTRA_KEY_PATTERN}, or be email` });
@@ -671,8 +671,8 @@ function valuesOf(steps: unknown[]): Values {
                 out.saved.set(name, [...(out.saved.get(name) ?? []), ...(m && path ? [{ event: m[1]!, path }] : [])]);
             }
         }
-        if (isObject(s["save_to_contact"]))
-            for (const k of Object.keys(s["save_to_contact"]))
+        if (isObject(s["save_to_lead"]))
+            for (const k of Object.keys(s["save_to_lead"]))
                 out.toContact.add(k);
     }
     return out;
@@ -830,17 +830,17 @@ function checkDo(ctx: Ctx, order: number, p: string, ptr: string, raw: Record<st
             const contactVars = variablesIn(t.value)
                 .filter((v) => isKnownVariable(v.inner))
                 .map((v) => longVariable(v.inner)!)
-                .filter((l) => l.startsWith("contact."));
+                .filter((l) => l.startsWith("lead."));
             if (contactVars.length === 0) {
-                issue(ctx, { order, code: "R20", path: t.path, pointer: t.pointer, rule: "a comment must use a contact variable, such as {{contact.extra.comment}}" });
+                issue(ctx, { order, code: "R20", path: t.path, pointer: t.pointer, rule: "a comment must use a Lead variable, such as {{lead.extra.comment}}" });
             }
-            else if (contactVars.every((l) => (NAME_FIELDS as readonly string[]).includes(l.slice(8)))) {
+            else if (contactVars.every((l) => (NAME_FIELDS as readonly string[]).includes(l.slice(5)))) {
                 warning(ctx, {
                     order,
                     code: "W7",
                     path: t.path,
                     pointer: t.pointer,
-                    rule: "the comment's only per-Contact variables are name fields; write it per Contact, for example in contact.extra",
+                    rule: "the comment's only per-Lead variables are name fields; write it per Lead, for example in lead.extra",
                 });
             }
         }
@@ -933,26 +933,26 @@ function checkPredicate(pred: unknown, path: string, pointer: string, inWhere: b
         return;
     }
     switch (key) {
-        case "contact.degree": {
+        case "lead.degree": {
             const deg = (n: unknown) => n === 1 || n === 2 || n === 3;
             const ok = isObject(v) &&
                 keysOf(v).length === 1 &&
                 ((has(v, "eq") && deg(v["eq"])) || (has(v, "in") && Array.isArray(v["in"]) && v["in"].length > 0 && v["in"].every(deg)));
             if (!ok)
-                push('contact.degree takes {"eq": n} or {"in": [n, ...]}, n being 1, 2 or 3');
+                push('lead.degree takes {"eq": n} or {"in": [n, ...]}, n being 1, 2 or 3');
             return;
         }
-        case "contact.connections_gte":
+        case "lead.connections_gte":
             if (!Number.isInteger(v) || (v as number) < 0)
-                push("contact.connections_gte takes an integer of 0 or more");
+                push("lead.connections_gte takes an integer of 0 or more");
             return;
-        case "contact.posted_within":
+        case "lead.posted_within":
             if (typeof v !== "string" || !DURATION_RE.test(v))
-                push("contact.posted_within takes a duration like 14d");
+                push("lead.posted_within takes a duration like 14d");
             return;
-        case "contact.tag":
+        case "lead.tag":
             if (!tagOk(v))
-                push("contact.tag takes a Tag name of 1 to 64 characters, without , or ;");
+                push("lead.tag takes a Tag name of 1 to 64 characters, without , or ;");
             return;
     }
     const enrollmentKey = key.startsWith("enrollment.") ? key.slice("enrollment.".length) : null;
@@ -962,9 +962,9 @@ function checkPredicate(pred: unknown, path: string, pointer: string, inWhere: b
     }
     const field = enrollmentKey !== null
         ? true
-        : key.startsWith("contact.extra.")
-            ? EXTRA_KEY_RE.test(key.slice(14))
-            : key.startsWith("contact.") && (STANDARD_FIELDS as readonly string[]).includes(key.slice(8));
+        : key.startsWith("lead.extra.")
+            ? EXTRA_KEY_RE.test(key.slice(11))
+            : key.startsWith("lead.") && (STANDARD_FIELDS as readonly string[]).includes(key.slice(5));
     if (!field) {
         push(`unknown predicate ${quote(key)}`);
         return;
@@ -975,8 +975,8 @@ function checkPredicate(pred: unknown, path: string, pointer: string, inWhere: b
     if (enrollmentKey !== null && ctx)
         enrollmentRef(ctx, { order, path, pointer }, quote(key), enrollmentKey, (k) => k);
     if (op !== null && (NUMBER_OPERATORS as readonly string[]).includes(op)) {
-        if (enrollmentKey === null && !key.startsWith("contact.extra."))
-            push(`${op} compares numbers on enrollment.<key> and contact.extra.<key> only`, "R28");
+        if (enrollmentKey === null && !key.startsWith("lead.extra."))
+            push(`${op} compares numbers on enrollment.<key> and lead.extra.<key> only`, "R28");
         else if (typeof operand !== "number" || !Number.isFinite(operand))
             push(`${op} takes a number, like {"${op}": 50}`, "R28");
         else if (enrollmentKey !== null && ctx) {
@@ -1001,6 +1001,9 @@ function checkPredicate(pred: unknown, path: string, pointer: string, inWhere: b
                     : typeof operand === "boolean");
     if (!ok) {
         push(`${quote(key)} takes exactly one of {"eq": v}, {"neq": v}, {"in": [v, ...]}, {"contains": "text"}, {"exists": true or false}`);
+    }
+    else if (key === "lead.language" && (op === "eq" || op === "neq" || op === "in") && ![operand].flat().every((x) => languageCode(x) !== null)) {
+        push(`lead.language compares ISO 639-1 language codes, like {"eq": "de"}`);
     }
 }
 interface Edge {

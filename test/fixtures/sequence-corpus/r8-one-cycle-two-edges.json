@@ -14,7 +14,7 @@
       {
         "id": "b",
         "if": {
-          "contact.premium": true
+          "lead.premium": true
         },
         "then": "a",
         "else": "a"

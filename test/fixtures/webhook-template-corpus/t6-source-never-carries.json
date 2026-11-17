@@ -1,5 +1,5 @@
 {
-  "about": "account_status events carry no Contact and no step.",
+  "about": "account_status events carry no Lead and no step.",
   "rules": [
     "T6"
   ],

@@ -13,7 +13,7 @@
         "id": "m",
         "do": "message.send",
         "with": {
-          "text": "Hi {{motion.x}}",
+          "text": "Hi {{campaign.x}}",
           "fallback": "Hi"
         },
         "next": "end"
@@ -24,9 +24,9 @@
   "warnings": [
     {
       "path": "m.with.text",
-      "rule": "{{motion.x}}: Motion variables were removed; accepted until 2027-01-19; write the text in place or use a custom field",
+      "rule": "{{campaign.x}}: Campaign variables were removed; accepted until 2027-01-19; write the text in place or use a custom field",
       "code": "W13",
-      "message": "{{motion.x}}: Motion variables were removed; accepted until 2027-01-19; write the text in place or use a custom field",
+      "message": "{{campaign.x}}: Campaign variables were removed; accepted until 2027-01-19; write the text in place or use a custom field",
       "pointer": "/steps/0/with/text",
       "hint": "Use text in place or a custom field such as {{x}} instead.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#w13",
@@ -34,11 +34,11 @@
     },
     {
       "path": "m.with.text",
-      "rule": "{{motion.x}} is checked against settings.variables by the server only",
+      "rule": "{{campaign.x}} is checked against settings.variables by the server only",
       "code": "W9",
-      "message": "{{motion.x}} is checked against settings.variables by the server only",
+      "message": "{{campaign.x}} is checked against settings.variables by the server only",
       "pointer": "/steps/0/with/text",
-      "hint": "Motion variables are deprecated: write the text in place, or use a custom field.",
+      "hint": "Campaign variables are deprecated: write the text in place, or use a custom field.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#w9",
       "severity": "warning"
     }

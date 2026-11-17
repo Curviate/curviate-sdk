@@ -138,7 +138,7 @@ export class WebhooksResource {
    * `validateWebhookTemplate`. A template that fails is refused with
    * `WEBHOOK_TEMPLATE_INVALID` (every finding with `line` and `col`); its
    * warnings come back in `warnings`. `custom_event_names` narrows
-   * `motion.custom_event` to those names (`null`: every one).
+   * `campaign.custom_event` to those names (`null`: every one).
    *
    * @example
    * await curviate.webhooks.create({ source: "account_status", request_url: "https://example.com/hooks" });
@@ -225,13 +225,13 @@ export class WebhooksResource {
 
   /**
    * The variables a body template of this source may use, each with its
-   * scope, type and an example from the synthetic sample. On `motion` it also
+   * scope, type and an example from the synthetic sample. On `campaign` it also
    * lists every Enrollment value your Team's current Sequences save
    * (`{{enrollment.<key>}}`), with `saved_by`.
    * `GET /v1/webhooks/variables`
    *
    * @example
-   * const { variables } = await curviate.webhooks.variables({ source: "motion" });
+   * const { variables } = await curviate.webhooks.variables({ source: "campaign" });
    */
   variables(params: WebhookVariablesParams): Promise<WebhookVariablesResult> {
     return this.ctx.request<WebhookVariablesResult>({

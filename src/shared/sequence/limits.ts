@@ -60,7 +60,7 @@ export const ACTION_PARAMS: Record<Action, readonly string[]> = {
     "skill.endorse": [],
 };
 export const VOICE_CLIP_ID_RE = /^vc_[0-9A-HJKMNP-TV-Z]{26}$/;
-export const VOICE_CLIP_RULE = "must be the id of a Voice clip of this Team (POST /v1/motions/voice-clips)";
+export const VOICE_CLIP_RULE = "must be the id of a Voice clip of this Team (POST /v1/campaigns/voice-clips)";
 export const MESSAGING_ACTIONS: readonly Action[] = ["invite.send", ...MESSAGE_SEND_ACTIONS, "post.comment"];
 export const REACTIONS = ["like", "celebrate", "support", "love", "insightful", "funny"] as const;
 export const EVENTS = ["invite.accepted", "message.replied", "message.read"] as const;
@@ -75,14 +75,23 @@ export const STANDARD_FIELDS = [
     "location",
     "linkedin_url",
     "about",
+    "language",
 ] as const;
+const LANGUAGE_CODES = new Set(("aa ab ae af ak am an ar as av ay az ba be bg bh bi bm bn bo br bs ca ce ch co cr cs cu cv cy da de dv dz ee el en eo es et eu fa ff fi fj fo fr fy " +
+    "ga gd gl gn gu gv ha he hi ho hr ht hu hy hz ia id ie ig ii ik io is it iu ja jv ka kg ki kj kk kl km kn ko kr ks ku kv kw ky la lb lg li ln lo lt " +
+    "lu lv mg mh mi mk ml mn mr ms mt my na nb nd ne ng nl nn no nr nv ny oc oj om or os pa pi pl ps pt qu rm rn ro ru rw sa sc sd se sg si sk sl sm sn " +
+    "so sq sr ss st su sv sw ta te tg th ti tk tl tn to tr ts tt tw ty ug uk ur uz ve vi vo wa wo xh yi yo za zh zu").split(" "));
+export function languageCode(v: unknown): string | null {
+    const c = typeof v === "string" ? v.trim().toLowerCase() : "";
+    return LANGUAGE_CODES.has(c) ? c : null;
+}
 export const NAME_FIELDS = ["full_name", "first_name", "last_name"] as const;
 export const ACCOUNT_FIELDS = ["first_name", "last_name", "full_name"] as const;
 export const BOOLEAN_PREDICATES = [
-    "contact.connected",
-    "contact.open_profile",
-    "contact.premium",
-    "contact.has_photo",
+    "lead.connected",
+    "lead.open_profile",
+    "lead.premium",
+    "lead.has_photo",
 ] as const;
 export const FIELD_OPERATORS = ["eq", "neq", "in", "contains", "exists"] as const;
 export const NUMBER_OPERATORS = ["gte", "lte"] as const;
@@ -96,7 +105,7 @@ export const TEXT_LIMITS = {
 export const STEP_KEYS: Record<StepKind, readonly string[]> = {
     do: ["id", "do", "with", "variants", "event", "next", "else", "note"],
     wait: ["id", "wait", "next", "note"],
-    until: ["id", "until", "timeout", "save", "save_to_contact", "then", "else", "note"],
+    until: ["id", "until", "timeout", "save", "save_to_lead", "then", "else", "note"],
     if: ["id", "if", "then", "else", "note"],
     emit: ["id", "emit", "next", "note"],
     tag: ["id", "tag", "event", "next", "note"],
@@ -114,8 +123,8 @@ export function longVariable(inner: string): string | null {
     if (inner.startsWith("my_"))
         return null;
     if ((STANDARD_FIELDS as readonly string[]).includes(inner))
-        return `contact.${inner}`;
-    return `contact.extra.${inner}`;
+        return `lead.${inner}`;
+    return `lead.extra.${inner}`;
 }
 export const isObject = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
 export const fallbackKeyword = (action: unknown): "drop" | "skip" | null => (action === "invite.send" ? "drop" : action === "post.comment" ? "skip" : null);

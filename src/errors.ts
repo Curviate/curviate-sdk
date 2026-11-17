@@ -298,8 +298,8 @@ export const ERROR_CODES = [
   //   team Owner also gets `upgradeUrl`. When one Account lacks the feature
   //   while the Team has it (an Account on a seat another Team lent this one
   //   carries that seat's Tier), `details.account_id` names it: leave it out,
-  //   or ask the Owner who lent the seat. Writes in Drafts, Contacts and
-  //   Motions (and Network and Unibox) need Automate; reads, exports, deletes
+  //   or ask the Owner who lent the seat. Writes in Drafts, Leads and
+  //   Campaigns (and Network and Unibox) need Automate; reads, exports, deletes
   //   and stopping running work pass on any Tier.
   "INSUFFICIENT_ROLE",
   "TIER_REQUIRED",
@@ -397,20 +397,20 @@ export const ERROR_CODES = [
   "SPENDING_CAP_REACHED",
   "CANCEL_IN_DASHBOARD",
 
-  // Contacts, Contact lists and Tags (`contacts`, `contactLists`, `tags`).
+  // Leads, Lead lists and Tags (`leads`, `leadLists`, `tags`).
   //
-  // - `NAME_TAKEN` (409): another Contact list or Tag already has this name in
+  // - `NAME_TAKEN` (409): another Lead list or Tag already has this name in
   //   any casing. Pick another name, or use the existing one.
-  // - `RESOURCE_IN_USE` (409): a live Motion or a running import uses this
-  //   list or Tag; the message names them. Finish or archive the Motion, or
+  // - `RESOURCE_IN_USE` (409): a live Campaign or a running import uses this
+  //   list or Tag; the message names them. Finish or archive the Campaign, or
   //   wait for the import.
-  // - `CONTACT_LIMIT_REACHED` (422): a cap is reached (Contacts, lists or Tags
-  //   per team, Tags per Contact); the message names it. Delete some first.
+  // - `LEAD_LIMIT_REACHED` (422): a cap is reached (Leads, lists or Tags
+  //   per team, Tags per Lead); the message names it. Delete some first.
   // - `IMPORT_QUEUE_FULL` (429): 5 background imports are already queued or
   //   running. Retry after one finishes.
   "NAME_TAKEN",
   "RESOURCE_IN_USE",
-  "CONTACT_LIMIT_REACHED",
+  "LEAD_LIMIT_REACHED",
   "IMPORT_QUEUE_FULL",
 
   // Sequences (`Sequence`, `validateSequence`). `SEQUENCE_INVALID` (422 from
@@ -420,14 +420,14 @@ export const ERROR_CODES = [
   // one fix round covers them all. Nothing is saved. user_fixable, never
   // retryable as sent.
   //
-  // `SEQUENCE_CONFLICT` (409): `motions.update` sent `if_sequence_revision`
+  // `SEQUENCE_CONFLICT` (409): `campaigns.update` sent `if_sequence_revision`
   // and someone saved the Sequence since; nothing is saved. `current` carries
   // the stored document and its `sequence_revision`: merge, or send yours again
   // with that revision to replace it.
   "SEQUENCE_INVALID",
   "SEQUENCE_CONFLICT",
 
-  // Voice clips (`motions.voiceClips.upload`). `VOICE_CLIP_INVALID` (422): the
+  // Voice clips (`campaigns.voiceClips.upload`). `VOICE_CLIP_INVALID` (422): the
   // file is empty, is not audio or cannot be decoded, is under 1 second or is
   // over 120 seconds; the message names the reason and the limit. A clip is
   // never shortened and nothing is stored. user_fixable, never retryable as
@@ -436,41 +436,44 @@ export const ERROR_CODES = [
   // `Retry-After` is the wait), `PLATFORM_RATE_LIMIT` (429, `Retry-After: 5`).
   "VOICE_CLIP_INVALID",
 
-  // Motions and Enrollments (`motions`, `enrollments`).
+  // Campaigns and Enrollments (`campaigns`, `enrollments`).
   //
-  // - `MOTION_NOT_STARTABLE` (422): `start` or `resume` found gaps; `errors`
-  //   lists every one as `{path, rule}` (a Contact list, a sending account, a
+  // - `CAMPAIGN_NOT_STARTABLE` (422): `start` or `resume` found gaps; `errors`
+  //   lists every one as `{path, rule}` (a Lead list, a sending account, a
   //   Sequence). Fix them and retry.
-  // - `MOTION_STATUS_CONFLICT` (409): the operation does not apply in the
-  //   Motion's status; the message names it and the operations it allows.
+  // - `CAMPAIGN_STATUS_CONFLICT` (409): the operation does not apply in the
+  //   Campaign's status; the message names it and the operations it allows.
   //   Only a draft can be deleted: archive instead.
   // - `ENROLLMENT_NOT_ACTIVE` (409): the Enrollment's status does not take
   //   this operation (stop and pause: queued, active or paused; events:
   //   active or paused; resume: active, paused or finished, not when the
-  //   account or Contact is gone).
+  //   account or Lead is gone).
   // - `STEP_IN_FLIGHT` (409): a Step of the Enrollment is being sent right
   //   now; pause and reassign wait until it settles. Retry in a minute.
   // - `NOTHING_TO_RETRY` (409, or thrown by `enrollments.retry`): Retry found no
   //   Step whose latest outcome is `failed`; nothing was resumed or sent.
   // - `ACCOUNT_ALREADY_ENGAGED` (409): reassign refused: the Enrollment's
-  //   account already did something the Contact can see.
+  //   account already did something the Lead can see.
   // - `ALREADY_ENROLLED_ON_ACCOUNT` (409): reassign refused: the target
-  //   account already holds this Contact in the Motion, or is its own account.
-  // - `KNOWN_CHAT` (409): reassign refused: the Motion excludes known chats
-  //   and the Contact already has a chat with your team.
-  // - `CONTACT_NOT_ENROLLABLE` (422): adding a Contact to a Motion from a chat
-  //   was refused (already enrolled, excluded, in another Motion, filtered).
-  // - `CHAT_NOT_ONE_TO_ONE` (422): a Unibox Contact action on a group chat,
+  //   account already holds this Lead in the Campaign, or is its own account.
+  // - `KNOWN_CHAT` (409): reassign refused: the Campaign excludes known chats
+  //   and the Lead already has a chat with your team.
+  // - `ACCOUNT_NOT_IN_CAMPAIGN` (409): moving an Enrollment refused: the target
+  //   Campaign does not send from the Enrollment's account.
+  // - `LEAD_NOT_ENROLLABLE` (422): adding a Lead to a Campaign from a chat
+  //   was refused (already enrolled, excluded, in another Campaign, filtered).
+  // - `CHAT_NOT_ONE_TO_ONE` (422): a Unibox Lead action on a group chat,
   //   or a chat whose counterpart is not a person.
-  "MOTION_NOT_STARTABLE",
-  "MOTION_STATUS_CONFLICT",
+  "CAMPAIGN_NOT_STARTABLE",
+  "CAMPAIGN_STATUS_CONFLICT",
   "ENROLLMENT_NOT_ACTIVE",
   "STEP_IN_FLIGHT",
   "NOTHING_TO_RETRY",
   "ACCOUNT_ALREADY_ENGAGED",
   "ALREADY_ENROLLED_ON_ACCOUNT",
   "KNOWN_CHAT",
-  "CONTACT_NOT_ENROLLABLE",
+  "ACCOUNT_NOT_IN_CAMPAIGN",
+  "LEAD_NOT_ENROLLABLE",
   "CHAT_NOT_ONE_TO_ONE",
 
   // Dashboard v2 surface.
@@ -500,8 +503,8 @@ export const ERROR_CODES = [
   //   file is not there to download yet.
   // - `EXPORT_EXPIRED` (410): the export's 24 h are over and its file is
   //   deleted. Run it again.
-  // - `EXPORT_REMOVED` (410): a Contact was deleted, which removes your team's
-  //   Contact-level exports. Run it again.
+  // - `EXPORT_REMOVED` (410): a Lead was deleted, which removes your team's
+  //   Lead-level exports. Run it again.
   // - `NOTHING_TO_REDELIVER` (409): a redeliver of a delivery that was never
   //   sent (`skipped_no_email`).
   // - `REDELIVERY_EXPIRED` (410): a redeliver at or after the delivery's
@@ -619,7 +622,7 @@ export interface SafetyHint {
  * compiler-style keys: `code` (`R1` to `R29`, `W1` to `W16`), `message`
  * (equal to `rule`), `pointer` (a JSON Pointer into the document you sent),
  * `hint` (the fix) and `docs_url` (the rule's docs entry). A
- * `MOTION_NOT_STARTABLE` gap is `{path, rule}` only.
+ * `CAMPAIGN_NOT_STARTABLE` gap is `{path, rule}` only.
  */
 export interface CurviateErrorDetail {
   path: string;
@@ -735,7 +738,7 @@ export interface CurviateErrorInit {
   /**
    * Every failure, as `{path, rule}` plus the compiler-style keys of a
    * Sequence rule, on a refusal that lists them: wire field `errors`
-   * (`SEQUENCE_INVALID`, `MOTION_NOT_STARTABLE`), or the offline
+   * (`SEQUENCE_INVALID`, `CAMPAIGN_NOT_STARTABLE`), or the offline
    * `SEQUENCE_INVALID` a Sequence builder throws. `message` repeats the first.
    */
   errors?: CurviateErrorDetail[];

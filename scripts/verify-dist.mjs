@@ -29,7 +29,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 // Import from the built dist — this is the whole point.
-import { constructEvent, WebhookSignatureError, Sequence, validateSequence, CurviateError } from "../dist/index.js";
+import { Curviate, ERROR_CODES, constructEvent, WebhookSignatureError, Sequence, validateSequence, CurviateError } from "../dist/index.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -244,6 +244,24 @@ async function main() {
       JSON.stringify(validateSequence(invalid.document).errors) === JSON.stringify(invalid.errors),
       "sequence: validateSequence gives the corpus errors",
     );
+  }
+
+  // 6. The Lead and Campaign rename: the built client has the new
+  // resources and none of the old; the built types and error codes carry no old name.
+  {
+    const client = new Curviate({ apiKey: "cvt_test_dist" });
+    assert(
+      ["leads", "leadLists", "campaigns"].every((k) => k in client) && ["contacts", "contactLists", "motions"].every((k) => !(k in client)),
+      "rename: dist exports leads, leadLists, campaigns and not contacts, contactLists, motions",
+    );
+    const codes = new Set(ERROR_CODES);
+    assert(
+      ["LEAD_LIMIT_REACHED", "LEAD_NOT_ENROLLABLE", "CAMPAIGN_NOT_STARTABLE", "CAMPAIGN_STATUS_CONFLICT", "ACCOUNT_NOT_IN_CAMPAIGN"].every((c) => codes.has(c)) &&
+        ["CONTACT_LIMIT_REACHED", "CONTACT_NOT_ENROLLABLE", "MOTION_NOT_STARTABLE", "MOTION_STATUS_CONFLICT", "ACCOUNT_NOT_IN_MOTION"].every((c) => !codes.has(c)),
+      "rename: dist error codes hold the five new names and none of the old",
+    );
+    const dts = readFileSync(resolve(__dirname, "../dist/index.d.ts"), "utf8");
+    assert(!/\b(ContactsResource|ContactListsResource|MotionsResource|contactLists)\b|readonly (contacts|motions):/.test(dts), "rename: dist index.d.ts declares no old resource");
   }
 
   console.log("\nAll dist checks passed.");

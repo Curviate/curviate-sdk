@@ -102,10 +102,10 @@ export type TeamSafetyPolicyUpdateBody =
 export type TeamSafetyPolicyUpdateResult =
   paths["/v1/safety-policy"]["patch"]["responses"]["200"]["content"]["application/json"];
 
-/** `GET /v1/accounts/{account_id}/overview` query. `motion_id`, `origin`, `include`, `fields` and `sort` take a comma list or an array. */
+/** `GET /v1/accounts/{account_id}/overview` query. `campaign_id`, `origin`, `include`, `fields` and `sort` take a comma list or an array. */
 export type AccountOverviewParams = WithLists<
   NonNullable<paths["/v1/accounts/{account_id}/overview"]["get"]["parameters"]["query"]>,
-  "motion_id" | "origin" | "include" | "fields" | "sort"
+  "campaign_id" | "origin" | "include" | "fields" | "sort"
 >;
 
 /** `GET /v1/accounts/{account_id}/overview` 200 body. */
@@ -126,8 +126,8 @@ export class AccountsResource {
    * daily, so it does not expire), `status` and
    * `status_reason` (why it is disconnected or needs a reconnect: `trial_ended`
    * or `proxy`), `warm_up` (the active ramp), `inmail_balance` (the credits
-   * LinkedIn last reported and when, `null` until observed), `motions_count`
-   * with the first 20 Motions in `motion_refs`, and `quotas`: three of the
+   * LinkedIn last reported and when, `null` until observed), `campaigns_count`
+   * with the first 20 Campaigns in `campaign_refs`, and `quotas`: three of the
    * account's safety rows (`connection_requests_no_note`,
    * `messages_first_degree`, `inmail`) with `remaining`, absent on an account
    * you can see but not operate. `connection_requests_no_note` now counts
@@ -234,7 +234,7 @@ export class AccountsResource {
    * means the window is closed). A live write outside the window is refused
    * with `BUDGET_EXHAUSTED` (`safetyReason: "activity_window"`), except direct
    * messaging (a send, new chat, InMail, edit, delete, reaction or read mark,
-   * by a person or an agent), which goes at any hour on any day; Motions
+   * by a person or an agent), which goes at any hour on any day; Campaigns
    * always wait. Limits, warm-up, halts and do-not-contact still apply to a
    * direct message. Reads are never affected.
    *
@@ -293,12 +293,12 @@ export class AccountsResource {
    * `proxy.password`, if given, is never returned.
    *
    * `save_connections_as_contacts` (Automate; on by default) saves the
-   * account's Connections as Contacts: each person becomes one Contact in your
-   * team, an existing Contact is only filled in, do-not-contact people are
+   * account's Connections as Leads: each person becomes one Lead in your
+   * team, an existing Lead is only filled in, do-not-contact people are
    * skipped. `true` also saves the Connections already synced; `false` keeps
-   * the Contacts saved so far. Without Automate it throws `TIER_REQUIRED`, and
+   * the Leads saved so far. Without Automate it throws `TIER_REQUIRED`, and
    * `get` omits the field. `save_connections_paused_reason` reads
-   * `"contact_limit_reached"` while your team holds its 100,000 Contacts.
+   * `"lead_limit_reached"` while your team holds its 100,000 Leads.
    *
    * Returns the account (as `get` returns it, without `quotas` and
    * `event_log`). After a location change its `connection_location` is re-read,
@@ -328,8 +328,8 @@ export class AccountsResource {
   /**
    * Turn team access on or off for an account you connected. `false` opts it
    * out: nobody else in the team can operate it (`ACCOUNT_NOT_SHARED`), it
-   * leaves every Motion that held it, and its queued enrichment visits are
-   * dropped. `true` shares it again (it does not rejoin a Motion). Only the
+   * leaves every Campaign that held it, and its queued enrichment visits are
+   * dropped. `true` shares it again (it does not rejoin a Campaign). Only the
    * person who connected the account can do this (`ACCOUNT_OWNER_ONLY`).
    * `PUT /v1/accounts/{account_id}/team-access`
    *
@@ -441,14 +441,14 @@ export class AccountsResource {
    * `metrics` snapshot (`null` before the first one, or when you may not
    * operate the account), `limits` (its three outreach rows now),
    * `activity` (its latest 10 actions and their outcomes, metadata only), and
-   * its results in the window (`performance`, `daily`, its `motions`) as the
+   * its results in the window (`performance`, `daily`, its `campaigns`) as the
    * team overview reads them scoped to it. `profile`, `metrics`, `limits` and
-   * `activity` do not follow the window. The window, `motion_id`, `origin`,
+   * `activity` do not follow the window. The window, `campaign_id`, `origin`,
    * `include`, `fields`, `sort`, `limit` and `compare` work as on
-   * `analytics.motions.list`; with none of `include` and `fields` the body is
+   * `analytics.campaigns.list`; with none of `include` and `fields` the body is
    * trimmed to a summary. `flags` includes `account_attention` and
    * `limit_reached` for this account. `include: "forecast"` adds the
-   * account's forecast (Motions only), as on `analytics.motions.list`.
+   * account's forecast (Campaigns only), as on `analytics.campaigns.list`.
    * `GET /v1/accounts/{account_id}/overview`
    *
    * @example
@@ -458,7 +458,7 @@ export class AccountsResource {
     return this.ctx.request<AccountOverview>({
       method: "GET",
       path: apiPath`/v1/accounts/${accountId}/overview`,
-      query: commaLists(params, "motion_id", "origin", "include", "fields", "sort"),
+      query: commaLists(params, "campaign_id", "origin", "include", "fields", "sort"),
     });
   }
 
@@ -509,7 +509,7 @@ export class AccountsResource {
    * (default off). On starts the ramp at week 1 (15%) from now, rising to full
    * limits over 5 weeks; off is full limits at once. Recovery after a LinkedIn
    * restriction applies either way. `active_hours` sets the account's own days and
-   * local hours for Motions and other live writes (direct messaging ignores
+   * local hours for Campaigns and other live writes (direct messaging ignores
    * them); a row's own `activity_window_start` / `activity_window_end` win over
    * it. Read-only fields (`activity_window`, a row's
    * `effective_ceiling`, `over_default`, `warm_up_state` ...) are accepted and

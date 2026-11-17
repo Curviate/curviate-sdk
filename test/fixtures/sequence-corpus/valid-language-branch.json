@@ -1,0 +1,15 @@
+{
+  "about": "valid language branch: one Campaign serves DE and EN on lead.language; no language goes else",
+  "rules": [],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      { "id": "lang", "if": { "lead.language": { "eq": "de" } }, "then": "de", "else": "en" },
+      { "id": "de", "do": "message.send", "with": { "text": "Hallo {{first_name}}!", "fallback": "Hallo!" }, "next": "end" },
+      { "id": "en", "do": "message.send", "with": { "text": "Hi {{first_name}}!", "fallback": "Hi!" }, "next": "end" }
+    ]
+  },
+  "errors": [],
+  "warnings": []
+}

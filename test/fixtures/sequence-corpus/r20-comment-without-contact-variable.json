@@ -21,11 +21,11 @@
   "errors": [
     {
       "path": "c.with.text",
-      "rule": "a comment must use a contact variable, such as {{contact.extra.comment}}",
+      "rule": "a comment must use a Lead variable, such as {{lead.extra.comment}}",
       "code": "R20",
-      "message": "a comment must use a contact variable, such as {{contact.extra.comment}}",
+      "message": "a comment must use a Lead variable, such as {{lead.extra.comment}}",
       "pointer": "/steps/0/with/text",
-      "hint": "Use a Contact variable in the comment, for example a custom field {{comment}} your AI writes per Contact.",
+      "hint": "Use a Lead variable in the comment, for example a custom field {{comment}} your AI writes per Lead.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r20",
       "severity": "error"
     }

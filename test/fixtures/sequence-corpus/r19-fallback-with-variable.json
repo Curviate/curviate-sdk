@@ -11,8 +11,8 @@
         "id": "m",
         "do": "message.send",
         "with": {
-          "text": "Hi {{contact.first_name}}",
-          "fallback": "Hi {{contact.first_name}}"
+          "text": "Hi {{lead.first_name}}",
+          "fallback": "Hi {{lead.first_name}}"
         },
         "next": "end"
       }

@@ -20,9 +20,9 @@
   "errors": [
     {
       "path": "m.with.text",
-      "rule": "{aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa is not a variable; write {{contact.<field>}} or remove the braces",
+      "rule": "{aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa is not a variable; write {{lead.<field>}} or remove the braces",
       "code": "R18",
-      "message": "{aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa is not a variable; write {{contact.<field>}} or remove the braces",
+      "message": "{aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa is not a variable; write {{lead.<field>}} or remove the braces",
       "pointer": "/steps/0/with/text",
       "hint": "Write a variable with double braces, like {{first_name}}, or remove the braces.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r18",

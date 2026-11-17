@@ -1,5 +1,5 @@
 {
-  "about": "motion research example: engage a Contact who changed roles; connected Contacts jump straight to the message",
+  "about": "motion research example: engage a Lead who changed roles; connected Leads jump straight to the message",
   "rules": [
     "W1"
   ],
@@ -14,7 +14,7 @@
       {
         "id": "connected",
         "if": {
-          "contact.connected": true
+          "lead.connected": true
         },
         "then": "r_msg",
         "else": "invite"
@@ -42,7 +42,7 @@
         "id": "r_msg",
         "do": "message.send",
         "with": {
-          "text": "Congrats on the new role at {{contact.company}}, {{contact.first_name}}. How are the first weeks going?",
+          "text": "Congrats on the new role at {{lead.company}}, {{lead.first_name}}. How are the first weeks going?",
           "fallback": "Congrats on the new role. How are the first weeks going?"
         },
         "next": "end"

@@ -81,7 +81,7 @@ const profile = await acc.users.get("some-user-id"); // someone else's
 
 ## Notifications
 
-`curviate.notifications` is Curviate telling you something needs attention: an account needs reconnecting, a Motion paused, an import finished, a teammate joined or left. Each person has their own list and read state. Check it at session start:
+`curviate.notifications` is Curviate telling you something needs attention: an account needs reconnecting, a Campaign paused, an import finished, a teammate joined or left. Each person has their own list and read state. Check it at session start:
 
 ```ts
 const { unread_count } = await curviate.notifications.unreadCount();
@@ -115,11 +115,11 @@ await curviate.billing.seats.return(seat_id);
 
 ## Tiers
 
-A Team's Tier decides which features it has. Drafts, Contacts, Motions (and Network and Unibox) need Automate: a write in one of those groups on a Team below it is refused with `TIER_REQUIRED`, before the request is even validated. Reads, exports, deletes and stopping running work (`motions.pause`, `motions.archive`, `enrollments.stop`) pass on any Tier. The refusal names what is missing:
+A Team's Tier decides which features it has. Drafts, Leads, Campaigns (and Network and Unibox) need Automate: a write in one of those groups on a Team below it is refused with `TIER_REQUIRED`, before the request is even validated. Reads, exports, deletes and stopping running work (`campaigns.pause`, `campaigns.archive`, `enrollments.stop`) pass on any Tier. The refusal names what is missing:
 
 ```ts
 try {
-  await curviate.motions.start("mot_123");
+  await curviate.campaigns.start("mot_123");
 } catch (err) {
   if (isCurviateError(err) && err.code === "TIER_REQUIRED") {
     console.warn(`${err.feature} needs ${err.requiredTier}; this team has ${err.currentTier ?? "no Tier"}.`);
@@ -130,14 +130,14 @@ try {
 const { tier, features } = await curviate.tier.get(); // check first: no write is sent
 ```
 
-`curviate.tier.get()` returns the Tier now (`null` for none), the bought Tier, the free trial or granted Tier that raises it, a downgrade due at the next renewal (`pending`), and the `features` it includes. It reports no prices. A Motion or a sync that stopped for the Tier reads `pause_reason` / `paused_reason: "tier_required"`.
+`curviate.tier.get()` returns the Tier now (`null` for none), the bought Tier, the free trial or granted Tier that raises it, a downgrade due at the next renewal (`pending`), and the `features` it includes. It reports no prices. A Campaign or a sync that stopped for the Tier reads `pause_reason` / `paused_reason: "tier_required"`.
 
-## Contacts, lists and Tags
+## Leads, lists and Tags
 
-`curviate.contacts` keeps the people your team works with: a LinkedIn URL plus your own fields, Tags and Contact lists. Any spelling of one person's URL resolves to one Contact, so `upsert` is safe to repeat:
+`curviate.leads` keeps the people your team works with: a LinkedIn URL plus your own fields, Tags and Lead lists. Any spelling of one person's URL resolves to one Lead, so `upsert` is safe to repeat:
 
 ```ts
-const { id, outcome } = await curviate.contacts.upsert({
+const { id, outcome } = await curviate.leads.upsert({
   linkedin_url: "https://www.linkedin.com/in/ana/",
   job_title: "CTO",
   tags: ["warm"],
@@ -146,25 +146,25 @@ const { id, outcome } = await curviate.contacts.upsert({
 
 // Bulk: rows or a CSV string, up to 10,000 rows. Over 500 runs in the background.
 const csv = await readFile("leads.csv", "utf8"); // node:fs/promises
-const imp = await curviate.contacts.imports.create({ csv, list_name: "Q4 webinar" });
+const imp = await curviate.leads.imports.create({ csv, list_name: "Q4 webinar" });
 // Once `status` is `completed` (poll `imports.get` for a background import):
-const { items: skipped } = await curviate.contacts.imports.rows(imp.id, { outcome: "skipped" });
+const { items: skipped } = await curviate.leads.imports.rows(imp.id, { outcome: "skipped" });
 
-await curviate.contacts.updateMany({ contact_ids: [id], add_tags: ["vip"] });
-const all = await curviate.contacts.export({ format: "json", tag: "vip" });
+await curviate.leads.updateMany({ lead_ids: [id], add_tags: ["vip"] });
+const all = await curviate.leads.export({ format: "json", tag: "vip" });
 
 // One filter everywhere: several lists, an opt-in total, then act on exactly what it matches.
 const filter = { list_id: ["cl_1", "cl_2"], list_match: "all" as const, not_list_id: ["cl_3"], has_email: true };
-const { total } = await curviate.contacts.list({ ...filter, include_total: true, limit: 1 });
-await curviate.contactLists.create({ name: "Both, with email", from: filter }); // a static list of what matches now
-await curviate.contacts.updateMany({ filter, add_tags: ["vip"] }); // or deleteMany({ filter }); over 10,000 matches is refused
+const { total } = await curviate.leads.list({ ...filter, include_total: true, limit: 1 });
+await curviate.leadLists.create({ name: "Both, with email", from: filter }); // a static list of what matches now
+await curviate.leads.updateMany({ filter, add_tags: ["vip"] }); // or deleteMany({ filter }); over 10,000 matches is refused
 ```
 
-`list_id` and `not_list_id` take up to 20 Contact list ids (an array or a comma list). `curviate.doNotContact` is the Team-wide do-not-contact list (`list`, `get`, `add`, `update`, `remove`): no Motion contacts a person on it and a write toward them throws `DO_NOT_CONTACT`. `contacts.enrich` fills profile fields from what Curviate already stores, else queues paced live profile views from an account you name: a live view is a real profile view the person may see. `curviate.contactLists` and `curviate.tags` rename and delete; a Tag has no create call, the first write naming it creates it. Refusals: `NAME_TAKEN`, `RESOURCE_IN_USE` (a live Motion or a running import uses it), `CONTACT_LIMIT_REACHED`, `IMPORT_QUEUE_FULL`. Deletes are for Owners and Managers.
+`list_id` and `not_list_id` take up to 20 Lead list ids (an array or a comma list). `curviate.doNotContact` is the Team-wide do-not-contact list (`list`, `get`, `add`, `update`, `remove`): no Campaign contacts a person on it and a write toward them throws `DO_NOT_CONTACT`. `leads.enrich` fills profile fields from what Curviate already stores, else queues paced live profile views from an account you name: a live view is a real profile view the person may see. `curviate.leadLists` and `curviate.tags` rename and delete; a Tag has no create call, the first write naming it creates it. Refusals: `NAME_TAKEN`, `RESOURCE_IN_USE` (a live Campaign or a running import uses it), `LEAD_LIMIT_REACHED`, `IMPORT_QUEUE_FULL`. Deletes are for Owners and Managers.
 
 ## Sequences
 
-A Motion runs one Sequence: a JSON document of steps (`do`, `wait`, `until`, `if`, `tag`, and the legacy `emit`), run from the first step and ended explicitly with `"end"`. The SDK has an offline module for it: a typed builder that emits exactly that document, and `validateSequence`, which gives the verdict the API gives. Nothing in it touches the network, a key or the file system, so it runs in CI, browsers and edge functions. It needs TypeScript 5.0 or later.
+A Campaign runs one Sequence: a JSON document of steps (`do`, `wait`, `until`, `if`, `tag`, and the legacy `emit`), run from the first step and ended explicitly with `"end"`. The SDK has an offline module for it: a typed builder that emits exactly that document, and `validateSequence`, which gives the verdict the API gives. Nothing in it touches the network, a key or the file system, so it runs in CI, browsers and edge functions. It needs TypeScript 5.0 or later.
 
 ```ts
 import { Sequence, step } from "@curviate/sdk";
@@ -187,11 +187,11 @@ const seq = Sequence.create({ on_reply: "end" }).add(
 const document = seq.toDocument(); // the Sequence document, keys in canonical order
 ```
 
-Field names are the document's keys (`on_reply`, `note_fallback`, `withdraw_after`). Variables: `{{first_name}}` (any standard Contact field), `{{my_first_name}}`, `{{my_last_name}}`, `{{my_full_name}}` (the sending account), and any other `{{<key>}}` is the custom field `contact.extra.<key>`; the long forms `{{contact.first_name}}`, `{{contact.extra.opener}}` and `{{account.first_name}}` stay valid. A messaging step takes one text in `with` or exactly 2 `variants` (A/B). An optional `event` on a `do` or `tag` step sends a custom event each time the step runs; `until event.<name>` waits for one your agent sends (`enrollments.events`). With literal arguments, the type checker refuses what the API would: a typo'd action, event, reaction or predicate, a `{{...}}` that is not a variable (`{{firstName}}`, `{{my_title}}`, a `| default:` filter), a text with a variable and no fallback, one variant, a duration like `"1w"`, the reserved id `"end"`, and a jump to a step you never added (at `toDocument()`). Text the type checker cannot see (a `string` variable) is checked when you call `validate()` or `toDocument()`.
+Field names are the document's keys (`on_reply`, `note_fallback`, `withdraw_after`). Variables: `{{first_name}}` (any standard Lead field), `{{my_first_name}}`, `{{my_last_name}}`, `{{my_full_name}}` (the sending account), and any other `{{<key>}}` is the custom field `lead.extra.<key>`; the long forms `{{lead.first_name}}`, `{{lead.extra.opener}}` and `{{account.first_name}}` stay valid. A messaging step takes one text in `with` or exactly 2 `variants` (A/B). An optional `event` on a `do` or `tag` step sends a custom event each time the step runs; `until event.<name>` waits for one your agent sends (`enrollments.events`). With literal arguments, the type checker refuses what the API would: a typo'd action, event, reaction or predicate, a `{{...}}` that is not a variable (`{{firstName}}`, `{{my_title}}`, a `| default:` filter), a text with a variable and no fallback, one variant, a duration like `"1w"`, the reserved id `"end"`, and a jump to a step you never added (at `toDocument()`). Text the type checker cannot see (a `string` variable) is checked when you call `validate()` or `toDocument()`.
 
 Every builder operation (`add`, `insertBefore`, `replace`, `remove`, `onReply`) returns a new builder. `toDocument()` throws `SEQUENCE_INVALID` with every error in `err.errors`, the same list the API returns: `path`, `rule`, and the compiler-style `code` (`R1` to `R28`), `pointer` (a JSON Pointer into the document), `hint` (the fix), `docs_url`, `severity` and, for a did-you-mean, `candidates`. Warnings (`W1` to `W16`) never block, read them with `validate()`. `JSON.stringify(seq)` equals `JSON.stringify(seq.toDocument())`. `newStepId(document, kind)` names a new step as the dashboard editor does (`message`, `message_2`, `w_<step>` for a wait before a step).
 
-Raw JSON stays first class. Validate a document you wrote by hand, or load one (a Motion's `sequence`) to edit it:
+Raw JSON stays first class. Validate a document you wrote by hand, or load one (a Campaign's `sequence`) to edit it:
 
 ```ts
 import { Sequence, step, validateSequence } from "@curviate/sdk";
@@ -199,47 +199,47 @@ import { Sequence, step, validateSequence } from "@curviate/sdk";
 const { errors, warnings } = validateSequence(JSON.parse(text));
 for (const e of errors) console.error(`${e.path}: ${e.rule} (${e.code}: ${e.hint})`);
 
-const edited = Sequence.fromDocument(motion.sequence) // throws SEQUENCE_INVALID when invalid
+const edited = Sequence.fromDocument(campaign.sequence) // throws SEQUENCE_INVALID when invalid
   .insertBefore("opener", step.wait("settle", "1d"))
   .toDocument();
 ```
 
-Deprecated forms are accepted with warning `W13` until 2027-01-19, then refused: 3 to 5 variants (use 2), `until signal.<name>` (use `until event.<name>`) and `{{motion.<key>}}` (write the text in place or use a custom field; offline it also gives `W9`). Warnings that need the Motion's sending accounts or settings come from the API only. `SEQUENCE_SCHEMA_V1` is the published JSON Schema (`SEQUENCE_SCHEMA_URL`) for editors and tooling. R29 (an `until event.<name>` gate on a field the incoming event's sample does not carry) needs your Team's incoming events, so it comes from the API only. The validator is the API's own rule code, shipped with this SDK: a document using an action or event added to the API later is refused offline while the API accepts it; upgrade the SDK.
+Deprecated forms are accepted with warning `W13` until 2027-01-19, then refused: 3 to 5 variants (use 2), `until signal.<name>` (use `until event.<name>`) and `{{campaign.<key>}}` (write the text in place or use a custom field; offline it also gives `W9`). Warnings that need the Campaign's sending accounts or settings come from the API only. `SEQUENCE_SCHEMA_V1` is the published JSON Schema (`SEQUENCE_SCHEMA_URL`) for editors and tooling. R29 (an `until event.<name>` gate on a field the incoming event's sample does not carry) needs your Team's incoming events, so it comes from the API only. The validator is the API's own rule code, shipped with this SDK: a document using an action or event added to the API later is refused offline while the API accepts it; upgrade the SDK.
 
-## Motions and Enrollments
+## Campaigns and Enrollments
 
-A Motion runs one Sequence for the Contacts of its Contact lists, on its sending accounts, inside its schedule. `sequence` in `motions.create` and `motions.update` takes a builder or a document:
+A Campaign runs one Sequence for the Leads of its Lead lists, on its sending accounts, inside its schedule. `sequence` in `campaigns.create` and `campaigns.update` takes a builder or a document:
 
 ```ts
 import { Sequence, step } from "@curviate/sdk";
 
-const motion = await curviate.motions.create({
+const campaign = await curviate.campaigns.create({
   name: "Q4 webinar follow-up",
-  contact_list_ids: ["cl_123"],
+  lead_list_ids: ["cl_123"],
   account_ids: ["acc_123"],
   schedule: { days: ["mon", "tue", "wed", "thu", "fri"] }, // read in each sending account's own time zone
   sequence: seq, // a builder: converted with toDocument(); an invalid one throws SEQUENCE_INVALID, nothing is sent
 });
 
-const { paths, samples, projection } = await curviate.motions.preview(motion.id); // a read: nothing is sent to LinkedIn
-await curviate.motions.start(motion.id);
+const { paths, samples, projection } = await curviate.campaigns.preview(campaign.id); // a read: nothing is sent to LinkedIn
+await curviate.campaigns.start(campaign.id);
 
 // Edit later: load the stored document into a builder. if_sequence_revision refuses the save
 // with SEQUENCE_CONFLICT (the stored document in err.current) when someone saved since.
-const current = await curviate.motions.get(motion.id);
-await curviate.motions.update(motion.id, {
+const current = await curviate.campaigns.get(campaign.id);
+await curviate.campaigns.update(campaign.id, {
   sequence: Sequence.fromDocument(current.sequence).insertBefore("opener", step.wait("settle", "1d")),
   if_sequence_revision: current.sequence_revision,
 });
 
-// Enrollments: one Contact's run on one account.
-const { items: failed } = await curviate.enrollments.list({ motion_id: motion.id, done_step: "opener", outcome: "failed" });
+// Enrollments: one Lead's run on one account.
+const { items: failed } = await curviate.enrollments.list({ campaign_id: campaign.id, done_step: "opener", outcome: "failed" });
 await curviate.enrollments.bulk({ action: "retry", ids: failed.map((e) => e.id) }); // one result per Enrollment
 await curviate.enrollments.retry("enr_123"); // one: throws NOTHING_TO_RETRY unless its Step failed
 await curviate.enrollments.events("enr_123", { name: "research_ready" }); // moves an `until event.research_ready`
 ```
 
-A plain object goes as is and the API validates it; wrap hand-written JSON in `Sequence.fromDocument(json)` to have it checked offline first. `sequence: null` clears a draft's. Status operations: `start`, `pause`, `resume`, `archive` (irreversible), `delete` (drafts only); `addContacts` / `removeContacts` enroll or take out Contacts directly; `getSequenceVersion` reads a past version. `curviate.enrollments` lists one Contact's run per account (`list`, filtered by status, Step, Sequence version, or how a Step ended: `done_step` with `outcome`, `reason`, `variant_id`, `relationship_at_enrollment`; `get` with its Step history) and acts on it: `pause`, `resume()` (lift your pause), `retry(id)` (retry the failed Step; it acts only on a failure, else throws `NOTHING_TO_RETRY`, so a repeated call never sends a delivered message again), `resume({ at })` (an explicit jump to a Step, not guarded: it re-enters a Step that already sent; use `retry` for a failure), `events({ name })`, `reassign({ account_id })`, `stop`, and `bulk` for up to 1,000 at once by ids or filter. `signal` is the deprecated name of `events`, accepted until 2027-01-19. Refusals: `MOTION_NOT_STARTABLE` (every gap in `err.errors`), `MOTION_STATUS_CONFLICT`, `ENROLLMENT_NOT_ACTIVE`, `SEQUENCE_INVALID`, `SEQUENCE_CONFLICT`, `STEP_IN_FLIGHT` (retry in a minute), `NOTHING_TO_RETRY` (from `retry`, or per Enrollment in `bulk`), `ACCOUNT_ALREADY_ENGAGED`, `ALREADY_ENROLLED_ON_ACCOUNT`, `KNOWN_CHAT`.
+A plain object goes as is and the API validates it; wrap hand-written JSON in `Sequence.fromDocument(json)` to have it checked offline first. `sequence: null` clears a draft's. Status operations: `start`, `pause`, `resume`, `archive` (irreversible), `delete` (drafts only); `addLeads` / `removeLeads` enroll or take out Leads directly; `getSequenceVersion` reads a past version. `curviate.enrollments` lists one Lead's run per account (`list`, filtered by status, Step, Sequence version, or how a Step ended: `done_step` with `outcome`, `reason`, `variant_id`, `relationship_at_enrollment`; `get` with its Step history) and acts on it: `pause`, `resume()` (lift your pause), `retry(id)` (retry the failed Step; it acts only on a failure, else throws `NOTHING_TO_RETRY`, so a repeated call never sends a delivered message again), `resume({ at })` (an explicit jump to a Step, not guarded: it re-enters a Step that already sent; use `retry` for a failure), `events({ name })`, `reassign({ account_id })`, `stop`, and `bulk` for up to 1,000 at once by ids or filter. `signal` is the deprecated name of `events`, accepted until 2027-01-19. Refusals: `CAMPAIGN_NOT_STARTABLE` (every gap in `err.errors`), `CAMPAIGN_STATUS_CONFLICT`, `ENROLLMENT_NOT_ACTIVE`, `SEQUENCE_INVALID`, `SEQUENCE_CONFLICT`, `STEP_IN_FLIGHT` (retry in a minute), `NOTHING_TO_RETRY` (from `retry`, or per Enrollment in `bulk`), `ACCOUNT_ALREADY_ENGAGED`, `ALREADY_ENROLLED_ON_ACCOUNT`, `KNOWN_CHAT`.
 
 ## Network, Unibox and Analytics
 
@@ -256,24 +256,24 @@ for await (const p of curviate.network.connections.list({ group: "person" })) co
 
 // One inbox over every account you can operate.
 for await (const chat of curviate.unibox.list({ unread: true })) console.log(chat.chat_id);
-const { items: theirs, total } = await curviate.unibox.list({ person: "con_1", motion_ids: ["none"], include_total: true }); // total: every match, not the page
+const { items: theirs, total } = await curviate.unibox.list({ person: "con_1", campaign_ids: ["none"], include_total: true }); // total: every match, not the page
 const { unread_chats } = await curviate.unibox.unreadCount();
 await curviate.unibox.accounts.update("acc_1", { sync_full_inbox: true }); // by the person who connected it
 await curviate.unibox.refresh();
-await curviate.unibox.tagContact("acc_1", "chat_1", { tags: ["warm"] });
-await curviate.unibox.enroll("acc_1", "chat_1", { motion_id: "mot_1" });
+await curviate.unibox.tagLead("acc_1", "chat_1", { tags: ["warm"] });
+await curviate.unibox.enroll("acc_1", "chat_1", { campaign_id: "mot_1" });
 
-// Motion results, activity in budget units, the events feed.
-const overview = await curviate.analytics.motions.list({ from: "2026-10-01", to: "2026-10-31" });
-const summary = await curviate.analytics.motions.list({ range: "30d", compare: "previous_period", origin: ["motion", "unibox"] });
-const detail = await curviate.analytics.motions.get("mot_1");
+// Campaign results, activity in budget units, the events feed.
+const overview = await curviate.analytics.campaigns.list({ from: "2026-10-01", to: "2026-10-31" });
+const summary = await curviate.analytics.campaigns.list({ range: "30d", compare: "previous_period", origin: ["campaign", "unibox"] });
+const detail = await curviate.analytics.campaigns.get("mot_1");
 const { types } = await curviate.analytics.activity(); // per BudgetRow; never add rows together
-for await (const event of curviate.analytics.events.list({ kind: ["message.replied"] })) console.log(event.motion_name);
-const { items: forOne } = await curviate.analytics.events.list({ contact_id: "con_1", origin: ["unibox", "api"] }); // 404 for an unknown, other-team or merged-away id
+for await (const event of curviate.analytics.events.list({ kind: ["message.replied"] })) console.log(event.campaign_name);
+const { items: forOne } = await curviate.analytics.events.list({ lead_id: "con_1", origin: ["unibox", "api"] }); // 404 for an unknown, other-team or merged-away id
 
 // Files: stream the Analytics tables now, or run a background export and download it within 24 hours.
 const csv = await curviate.analytics.export({ table: ["daily"], range: "90d" }); // ArrayBuffer
-const job = await curviate.exports.create({ entity: "analytics", format: "csv", tables: ["daily", "motions"], filters: { range: "12m" } });
+const job = await curviate.exports.create({ entity: "analytics", format: "csv", tables: ["daily", "campaigns"], filters: { range: "12m" } });
 const file = await curviate.exports.download(job.id); // EXPORT_NOT_READY until exports.get(job.id).status is "ready"
 
 // One account at a glance, and its own daily numbers.
@@ -283,9 +283,9 @@ const { items: metrics } = await curviate.accounts.metrics("acc_1", { from: "202
 
 Every rate is the outcome so far over what was sent in the window, not over old enough cohorts, so it keeps moving as replies arrive: read it with `maturing` (sent under 7 days ago) and `low_sample` (under 30). Messages and InMails are counted apart (`reply` and `inmail_reply`). Enrollment counts are by state right now (`queued`, `active`, `paused`, `finished`, `failed`, `skipped`); the window does not change them. One export runs per Team at a time (`EXPORT_IN_PROGRESS`, with `err.details.export_id`).
 
-Unibox traps. A send through the API (`messaging.sendMessage`, `startChat`, `sendInMail`) marks the chat read, so `unread` turns `false` and `marked_unread` clears; a Motion send leaves it. `marked_unread` is `{origin: "unibox" | "api" | "linkedin", at}` when a chat was made unread without a new message from them. A disconnected account stays in `unibox.accounts.list()` and `unibox.list()` (`account_status: "disconnected"`), read-only: its messages come from the stored copy (`coverage.complete`, attachments `unavailable`), and a write on it throws `REAUTH_REQUIRED` (409). `unibox.refresh` runs once per account per 2 minutes (`cooldown` with `next_allowed_at` after that) and covers accounts with Motion chats or Motion outreach even without full-inbox sync; `not_synced` means none of those apply. A sent message carries `origin` (`motion`, `unibox`, `api`, `linkedin`; omitted when unknown, never on a received message or `last_message`) and `is_deleted`. Analytics `origin` is `motion`, `unibox` or `api`; `direct` is an alias for `unibox` and `api`.
+Unibox traps. A send through the API (`messaging.sendMessage`, `startChat`, `sendInMail`) marks the chat read, so `unread` turns `false` and `marked_unread` clears; a Campaign send leaves it. `marked_unread` is `{origin: "unibox" | "api" | "linkedin", at}` when a chat was made unread without a new message from them. A disconnected account stays in `unibox.accounts.list()` and `unibox.list()` (`account_status: "disconnected"`), read-only: its messages come from the stored copy (`coverage.complete`, attachments `unavailable`), and a write on it throws `REAUTH_REQUIRED` (409). `unibox.refresh` runs once per account per 2 minutes (`cooldown` with `next_allowed_at` after that) and covers accounts with Campaign chats or Campaign outreach even without full-inbox sync; `not_synced` means none of those apply. A sent message carries `origin` (`campaign`, `unibox`, `api`, `linkedin`; omitted when unknown, never on a received message or `last_message`) and `is_deleted`. Analytics `origin` is `campaign`, `unibox` or `api`; `direct` is an alias for `unibox` and `api`.
 
-Needs Automate: `network.resync`, `unibox.refresh`, `unibox.tagContact`, `unibox.enroll` and turning full-inbox sync on (off passes on any Tier). Messages and actions on a chat stay on `curviate.account(id).messaging`.
+Needs Automate: `network.resync`, `unibox.refresh`, `unibox.tagLead`, `unibox.enroll` and turning full-inbox sync on (off passes on any Tier). Messages and actions on a chat stay on `curviate.account(id).messaging`.
 
 ## Drafts and scheduled posts
 
@@ -375,8 +375,8 @@ import { Sequence, step } from "@curviate/sdk";
 
 // 1 to 120 seconds, up to 20 MiB, 100 uploads per Team per 24 hours (RATE_LIMIT_TENANT, Retry-After).
 // The file is converted once and the original is discarded. A retry stores a second clip.
-const clip = await curviate.motions.voiceClips.upload(await readFile("intro.mp3"), { filename: "intro.mp3" });
-const { duration_ms } = await curviate.motions.voiceClips.get(clip.id); // no download link in the response
+const clip = await curviate.campaigns.voiceClips.upload(await readFile("intro.mp3"), { filename: "intro.mp3" });
+const { duration_ms } = await curviate.campaigns.voiceClips.get(clip.id); // no download link in the response
 
 const seq = Sequence.create({ on_reply: "end" }).add(
   step.do("voice", "voice.send", {
@@ -699,9 +699,9 @@ API's own lint, and preview it:
 ```ts
 import { renderWebhookTemplate, validateWebhookTemplate } from "@curviate/sdk";
 
-const { errors } = validateWebhookTemplate(template, { source: "motion" });
+const { errors } = validateWebhookTemplate(template, { source: "campaign" });
 for (const e of errors) console.error(`${e.line}:${e.col} ${e.code} ${e.rule}`);
-const body = renderWebhookTemplate(template, { event: "enrollment.finished", contact: { email: "alex@example.com" } });
+const body = renderWebhookTemplate(template, { event: "enrollment.finished", lead: { email: "alex@example.com" } });
 ```
 
 A webhook's `request_url` reads back masked (`https://host/•••`); sending that value back on
