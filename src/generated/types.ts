@@ -2881,7 +2881,7 @@ export interface paths {
         put?: never;
         /**
          * Ask a person to connect or reconnect a LinkedIn account
-         * @description Credential-free connect: omit account_id for a new account, or name one to reconnect. Relay url to the person, who connects in their own Curviate dashboard. Never ask for a LinkedIn password, cookie or code. Read the request until status leaves pending. A retry makes a second request.
+         * @description Credential-free connect: omit account_id for a new account, or name one to reconnect. Relay url to the person, who connects in their own Curviate dashboard. Never ask for a LinkedIn password, cookie or code. Read the request until status leaves pending. A retry makes a second request. With mailbox, it asks for a Mailbox instead; for Google, a sealed app password in credentials is checked before the answer: completed with mailbox_id, or error_code says why and nothing is stored. With mailbox_id, it reconnects that Mailbox the same way (any member, any Mailbox of the team).
          */
         post: operations["postV1AuthConnectRequests"];
         delete?: never;
@@ -3584,6 +3584,138 @@ export interface paths {
          * @description Every field is optional; a given field replaces its value. Switching on needs a sample and at least one match path. The creator edits; Owners and Managers may only switch it on or off ({"enabled": ...} alone).
          */
         patch: operations["patchV1IncomingEventsId"];
+        trace?: never;
+    };
+    "/v1/mailboxes/discover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Find a Mailbox's settings from its address
+         * @description Finds the IMAP and SMTP settings for an email address, in this order: well-known hosts, the provider's own published settings, a public settings database, the address's mail exchangers, DNS service records, then a guess. An address on Google or Microsoft answers with its connection. Show the settings to the person and confirm them before connecting; `confirm_required` marks a result that arrived unencrypted. The request takes no password and the response holds none.
+         */
+        get: operations["getV1MailboxesDiscover"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/mailboxes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Mailboxes
+         * @description This team's Mailboxes, newest first, every role. Filter by `state`, by `sends_for` (an Account id, `shared` or `none`) or by `domain`. A Mailbox in `ramping` is working up to its daily cap; the read never shows the steps.
+         */
+        get: operations["getV1Mailboxes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/mailboxes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a Mailbox
+         * @description One Mailbox of this team. An unknown id and another team's id answer the same `404 MAILBOX_NOT_FOUND`.
+         */
+        get: operations["getV1MailboxesId"];
+        put?: never;
+        post?: never;
+        /**
+         * Remove a Mailbox
+         * @description Removes the Mailbox and deletes its stored credentials in one step. It changes no seat count and makes no Stripe call.
+         */
+        delete: operations["deleteV1MailboxesId"];
+        options?: never;
+        head?: never;
+        /**
+         * Update a Mailbox
+         * @description Sets the daily cap (1 to 50, a hard maximum for every caller), the signature (plain text, at most 2,000 characters, `null` clears it) and/or `sends_for`: `{kind: "account", account_id}` (this Mailbox sends only for that one Account), `{kind: "shared"}` (any Account of the team may send from it) or `null` (it sends nothing until linked). A Mailbox claimed for a person sends for exactly that person's Account; a list of Accounts is `400`, an Account outside the team `404 ACCOUNT_NOT_FOUND`. A change of the link leaves the Mailbox's open threads on it. Owners and Managers change any Mailbox; a Member only the ones they connected.
+         */
+        patch: operations["patchV1MailboxesId"];
+        trace?: never;
+    };
+    "/v1/mailboxes/{id}/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pause a Mailbox
+         * @description Stops this Mailbox sending until it is resumed. Only a `connected` or `ramping` Mailbox pauses; any other state answers `409 MAILBOX_STATE_CONFLICT`.
+         */
+        post: operations["postV1MailboxesIdPause"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/mailboxes/{id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resume a Mailbox
+         * @description Resumes a paused Mailbox: it goes to `ramping`, starting again at 5 emails a day. A Mailbox that is not paused, a provider pause before its `paused_until`, and one Curviate is fixing answer `409 MAILBOX_STATE_CONFLICT`.
+         */
+        post: operations["postV1MailboxesIdResume"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/domains/{domain}/checks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a domain's checks
+         * @description The checks of a sending domain of this team: MX, SPF, DKIM, DMARC and the tracking record, each `pass`, `fail` or `unknown`, as last run (daily, or by Check now), with the record to add for tracking. A check warns and never stops sending. A domain with no Mailbox of this team, and another team's domain, answer the same `404 DOMAIN_NOT_FOUND`.
+         */
+        get: operations["getV1DomainsDomainChecks"];
+        put?: never;
+        /**
+         * Check a domain now
+         * @description Runs the domain's checks now and returns the domain with the result. DNS lookups only; it sends nothing and connects to no Mailbox.
+         */
+        post: operations["postV1DomainsDomainChecks"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/v1/contacts": {
@@ -4613,7 +4745,7 @@ export interface paths {
         put?: never;
         /**
          * Add seats
-         * @description Adds seats to the workspace's active subscription. A trialing workspace gets 409 TRIAL_ACTIVE_SEAT_LIMIT (buy to convert first). Every call buys the seats it asks for.
+         * @description Adds seats to the workspace's active subscription. A trialing workspace gets 409 TRIAL_ACTIVE_SEAT_LIMIT (buy to convert first). Every call buys the seats it asks for, inside the team's spending cap (GET /v1/billing/spending-cap): an add that would take the seat count past it, seats lent to other teams included, gets 403 SPENDING_CAP_REACHED and buys nothing. An add that leaves the team at 80% of the cap or more carries a SPENDING_CAP_NEAR notice, every time. Only an Owner raises the cap, in the dashboard.
          */
         post: operations["postV1BillingSeatsAdd"];
         delete?: never;
@@ -4633,7 +4765,7 @@ export interface paths {
         put?: never;
         /**
          * Cancel a seat
-         * @description Schedules a seat for cancellation at the end of the current period. Already scheduled: returns the existing effective date. Already effective: 400 ALREADY_CANCELLED.
+         * @description Schedules a seat for cancellation at the end of the current period, never checked against the spending cap. Already scheduled: returns the existing effective date. Already effective: 400 ALREADY_CANCELLED. The team's last paid seat is not removed through the API, because that cancels the subscription: 409 CANCEL_IN_DASHBOARD; an Owner cancels in the dashboard.
          */
         post: operations["postV1BillingSeatsSeatIdCancel"];
         delete?: never;
@@ -4653,7 +4785,7 @@ export interface paths {
         put?: never;
         /**
          * Revert a scheduled seat cancellation
-         * @description Reverts a seat's pending end-of-period cancellation. 400 CANCELLATION_ALREADY_EFFECTIVE when nothing is scheduled or it already took effect; 400 INVALID_CANCELLATION_SOURCE when the whole subscription, not this seat, was scheduled to cancel.
+         * @description Reverts a seat's pending end-of-period cancellation. 400 CANCELLATION_ALREADY_EFFECTIVE when nothing is scheduled or it already took effect; 400 INVALID_CANCELLATION_SOURCE when the whole subscription, not this seat, was scheduled to cancel. The seat is billed again, so like an add it stays inside the team's spending cap: past it, 403 SPENDING_CAP_REACHED and nothing changes.
          */
         post: operations["postV1BillingSeatsSeatIdCancelRevert"];
         delete?: never;
@@ -25848,7 +25980,7 @@ export interface operations {
                             object: "curviate_notification";
                             /** @description Notification id (ntf_...). Valid for you only. */
                             id: string;
-                            /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, account.motion_work_paused, account.health_worsened, account.activity_level_fallback, motion.auto_paused, motion.no_sending_account, motion.completed, contacts.import_finished, export.finished, team.invite_accepted, team.member_left. */
+                            /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, account.motion_work_paused, account.health_worsened, account.activity_level_fallback, motion.auto_paused, motion.no_sending_account, motion.completed, contacts.import_finished, export.finished, billing.spending_cap_reached, team.invite_accepted, team.member_left. */
                             type: string;
                             /** @description What the Notification is about. */
                             subject: {
@@ -25856,7 +25988,7 @@ export interface operations {
                                  * @description The kind of subject.
                                  * @enum {string}
                                  */
-                                type: "account" | "motion" | "contact_import" | "team_member";
+                                type: "account" | "motion" | "contact_import" | "team_member" | "export" | "team";
                                 /** @description The subject's id. */
                                 id: string;
                                 /** @description Whether you can open the subject now. false when it is gone or you no longer have access to it. */
@@ -26110,7 +26242,7 @@ export interface operations {
                         object: "curviate_notification";
                         /** @description Notification id (ntf_...). Valid for you only. */
                         id: string;
-                        /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, account.motion_work_paused, account.health_worsened, account.activity_level_fallback, motion.auto_paused, motion.no_sending_account, motion.completed, contacts.import_finished, export.finished, team.invite_accepted, team.member_left. */
+                        /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, account.motion_work_paused, account.health_worsened, account.activity_level_fallback, motion.auto_paused, motion.no_sending_account, motion.completed, contacts.import_finished, export.finished, billing.spending_cap_reached, team.invite_accepted, team.member_left. */
                         type: string;
                         /** @description What the Notification is about. */
                         subject: {
@@ -26118,7 +26250,7 @@ export interface operations {
                              * @description The kind of subject.
                              * @enum {string}
                              */
-                            type: "account" | "motion" | "contact_import" | "team_member";
+                            type: "account" | "motion" | "contact_import" | "team_member" | "export" | "team";
                             /** @description The subject's id. */
                             id: string;
                             /** @description Whether you can open the subject now. false when it is gone or you no longer have access to it. */
@@ -34587,7 +34719,7 @@ export interface operations {
                                  * @description The safety row. `search` counts result LINES, not queries issued; `content_poll` also debits `profile_views`. Two rows are not counters and say so in `kind`: `total_actions` is a tally of everything this account did in the window, and `pending_invites` is the outstanding invitation backlog read from the platform rather than something this account spends.
                                  * @enum {string}
                                  */
-                                budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
+                                budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "company_reads" | "limit_probes" | "notification_reads" | "viewer_reads" | "other_reads" | "search_parameters" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
                                 /**
                                  * @description Which arithmetic produced `used`. `debit`: actions this account spent, counted as they happen. `tally`: a sum across the debit rows in the window, which is why it has a warn threshold and no ceiling. `gauge`: a level read from the platform rather than counted here, so it falls on its own as invitations are accepted or withdrawn.
                                  * @enum {string}
@@ -34618,6 +34750,19 @@ export interface operations {
                                 remaining: number | null;
                                 /** @description `interface_ceiling` with the account's warm-up ramp applied, and null wherever `interface_ceiling` is null. Read THIS to know where an elevated-interface call stops, for the same reason `effective_ceiling` rather than `ceiling` answers that for a standard one. */
                                 effective_interface_ceiling?: number | null;
+                                /** @description The highest `ceiling` a standard-interface call on this row is held to, whatever is configured: a stored value above it is kept and held to it (`effective_ceiling` shows the held figure). Null on a row with no maximum. Read-only. */
+                                hard_maximum?: number | null;
+                                /** @description The highest figure a call through this plan's own interface (the Sales Navigator or Recruiter operations) is held to on this row. Null where the plan has none. Read-only. */
+                                interface_hard_maximum?: number | null;
+                                /** @description True when the stored `ceiling` is above the highest maximum this Account's plan allows on this row; it is kept and held to the maximum, and a write above the maximum is refused. Read-only. */
+                                above_hard_maximum?: boolean;
+                                /** @description Today's use of this Account's profile visits by cause, summing to `used`: the keys `campaign`, `import`, `signal_watch` and `api` (any direct call). One budget, not four. Present on `profile_views` only; null on every other row. Read-only. */
+                                used_by_cause?: {
+                                    campaign: number;
+                                    import: number;
+                                    signal_watch: number;
+                                    api: number;
+                                } | null;
                                 /**
                                  * @description Where `used` sits against this row's own bands. `green` routine, `amber` at or past the routine band, `hard` at or past the warn-louder band, `over` at or past the ceiling, where the action is refused: limits are always enforced. A row with no figures reports `green` at every value, because there is nothing to be past.
                                  * @enum {string}
@@ -34667,6 +34812,19 @@ export interface operations {
                                 triggers?: ("connect" | "switched_on" | "post_restriction")[];
                                 /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. A fact only: it starts no ramp. */
                                 dormant?: boolean;
+                                /**
+                                 * @description Where the limits update is on: the ramp, `gradual` (30% on day 1 rising to 100% on day 14, the default when warm-up is turned on) or `custom` (`start`, `step`, `every`). Settable with `warm_up: {preset}`. Absent where it is not on.
+                                 * @enum {string|null}
+                                 */
+                                preset?: "gradual" | "custom" | null;
+                                /** @description Custom: the percentage on day 1, 5 to 90. Settable; Custom needs all of `start`, `step` and `every`, and a later write keeps the others. */
+                                start?: number | null;
+                                /** @description Custom: the percentage points added each time, 1 to 50. Settable. */
+                                step?: number | null;
+                                /** @description Custom: sending days between steps, 1 to 7. Settable. */
+                                every?: number | null;
+                                /** @description The ramp day, counted in the account's sending days since the ramp began, from 1; the day of the recovery ramp while that supplies `factor`. Null when no ramp applies. `factor` is that day's percentage over 100, and `week` is null. */
+                                day?: number | null;
                             };
                             /** @description The InMail credits LinkedIn last reported for this account, and when (`as_of`). Refreshed by every live InMail check and at connect; reading the account never calls LinkedIn. Null until a balance was observed, which on Basic can be never. */
                             inmail_balance?: {
@@ -34848,7 +35006,7 @@ export interface operations {
                              * @description The safety row. `search` counts result LINES, not queries issued; `content_poll` also debits `profile_views`. Two rows are not counters and say so in `kind`: `total_actions` is a tally of everything this account did in the window, and `pending_invites` is the outstanding invitation backlog read from the platform rather than something this account spends.
                              * @enum {string}
                              */
-                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
+                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "company_reads" | "limit_probes" | "notification_reads" | "viewer_reads" | "other_reads" | "search_parameters" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
                             /**
                              * @description Which arithmetic produced `used`. `debit`: actions this account spent, counted as they happen. `tally`: a sum across the debit rows in the window, which is why it has a warn threshold and no ceiling. `gauge`: a level read from the platform rather than counted here, so it falls on its own as invitations are accepted or withdrawn.
                              * @enum {string}
@@ -34879,6 +35037,19 @@ export interface operations {
                             remaining: number | null;
                             /** @description `interface_ceiling` with the account's warm-up ramp applied, and null wherever `interface_ceiling` is null. Read THIS to know where an elevated-interface call stops, for the same reason `effective_ceiling` rather than `ceiling` answers that for a standard one. */
                             effective_interface_ceiling?: number | null;
+                            /** @description The highest `ceiling` a standard-interface call on this row is held to, whatever is configured: a stored value above it is kept and held to it (`effective_ceiling` shows the held figure). Null on a row with no maximum. Read-only. */
+                            hard_maximum?: number | null;
+                            /** @description The highest figure a call through this plan's own interface (the Sales Navigator or Recruiter operations) is held to on this row. Null where the plan has none. Read-only. */
+                            interface_hard_maximum?: number | null;
+                            /** @description True when the stored `ceiling` is above the highest maximum this Account's plan allows on this row; it is kept and held to the maximum, and a write above the maximum is refused. Read-only. */
+                            above_hard_maximum?: boolean;
+                            /** @description Today's use of this Account's profile visits by cause, summing to `used`: the keys `campaign`, `import`, `signal_watch` and `api` (any direct call). One budget, not four. Present on `profile_views` only; null on every other row. Read-only. */
+                            used_by_cause?: {
+                                campaign: number;
+                                import: number;
+                                signal_watch: number;
+                                api: number;
+                            } | null;
                             /**
                              * @description Where `used` sits against this row's own bands. `green` routine, `amber` at or past the routine band, `hard` at or past the warn-louder band, `over` at or past the ceiling, where the action is refused: limits are always enforced. A row with no figures reports `green` at every value, because there is nothing to be past.
                              * @enum {string}
@@ -34928,6 +35099,19 @@ export interface operations {
                             triggers?: ("connect" | "switched_on" | "post_restriction")[];
                             /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. A fact only: it starts no ramp. */
                             dormant?: boolean;
+                            /**
+                             * @description Where the limits update is on: the ramp, `gradual` (30% on day 1 rising to 100% on day 14, the default when warm-up is turned on) or `custom` (`start`, `step`, `every`). Settable with `warm_up: {preset}`. Absent where it is not on.
+                             * @enum {string|null}
+                             */
+                            preset?: "gradual" | "custom" | null;
+                            /** @description Custom: the percentage on day 1, 5 to 90. Settable; Custom needs all of `start`, `step` and `every`, and a later write keeps the others. */
+                            start?: number | null;
+                            /** @description Custom: the percentage points added each time, 1 to 50. Settable. */
+                            step?: number | null;
+                            /** @description Custom: sending days between steps, 1 to 7. Settable. */
+                            every?: number | null;
+                            /** @description The ramp day, counted in the account's sending days since the ramp began, from 1; the day of the recovery ramp while that supplies `factor`. Null when no ramp applies. `factor` is that day's percentage over 100, and `week` is null. */
+                            day?: number | null;
                         };
                         /** @description The InMail credits LinkedIn last reported for this account, and when (`as_of`). Refreshed by every live InMail check and at connect; reading the account never calls LinkedIn. Null until a balance was observed, which on Basic can be never. */
                         inmail_balance?: {
@@ -35362,6 +35546,19 @@ export interface operations {
                             triggers?: ("connect" | "switched_on" | "post_restriction")[];
                             /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. A fact only: it starts no ramp. */
                             dormant?: boolean;
+                            /**
+                             * @description Where the limits update is on: the ramp, `gradual` (30% on day 1 rising to 100% on day 14, the default when warm-up is turned on) or `custom` (`start`, `step`, `every`). Settable with `warm_up: {preset}`. Absent where it is not on.
+                             * @enum {string|null}
+                             */
+                            preset?: "gradual" | "custom" | null;
+                            /** @description Custom: the percentage on day 1, 5 to 90. Settable; Custom needs all of `start`, `step` and `every`, and a later write keeps the others. */
+                            start?: number | null;
+                            /** @description Custom: the percentage points added each time, 1 to 50. Settable. */
+                            step?: number | null;
+                            /** @description Custom: sending days between steps, 1 to 7. Settable. */
+                            every?: number | null;
+                            /** @description The ramp day, counted in the account's sending days since the ramp began, from 1; the day of the recovery ramp while that supplies `factor`. Null when no ramp applies. `factor` is that day's percentage over 100, and `week` is null. */
+                            day?: number | null;
                         };
                         /** @description The InMail credits LinkedIn last reported for this account, and when (`as_of`). Refreshed by every live InMail check and at connect; reading the account never calls LinkedIn. Null until a balance was observed, which on Basic can be never. */
                         inmail_balance?: {
@@ -36037,7 +36234,7 @@ export interface operations {
                                  * @description The safety row. `search` counts result LINES, not queries issued; `content_poll` also debits `profile_views`. Two rows are not counters and say so in `kind`: `total_actions` is a tally of everything this account did in the window, and `pending_invites` is the outstanding invitation backlog read from the platform rather than something this account spends.
                                  * @enum {string}
                                  */
-                                budget_row?: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
+                                budget_row?: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "company_reads" | "limit_probes" | "notification_reads" | "viewer_reads" | "other_reads" | "search_parameters" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
                                 /**
                                  * @description Calendar grain this row is counted in. UTC, not account-local. `null` on the gauge, which has no window at all.
                                  * @enum {string|null}
@@ -37701,6 +37898,47 @@ export interface operations {
                     account_id?: string;
                     /** @description Optional, new connects only, default false (warm-up off: full limits from the start). true connects this account with warm-up on: its limits start at 15% and rise over 5 weeks, for a new account or one with few connections and little activity. Recovery after a LinkedIn restriction applies either way. Change it later with PATCH /v1/{account_id}/safety-policy and warm_up.enabled. */
                     warm_up?: boolean;
+                    /** @description Ask for a Mailbox instead of a LinkedIn account (kind mailbox_connect). */
+                    mailbox?: {
+                        /**
+                         * @description How the Mailbox connects: google_app_password (Gmail and Google Workspace), google_sign_in (a Google Workspace whose administrator trusts Curviate; never private Gmail), imap_smtp (any other host), microsoft_sign_in.
+                         * @enum {string}
+                         */
+                        connection: "google_app_password" | "imap_smtp" | "microsoft_sign_in" | "google_sign_in";
+                        /** @description The Mailbox's email address. */
+                        address: string;
+                        /** @description Only for imap_smtp, and required there: the IMAP settings from GET /v1/mailboxes/discover, as the person confirmed them. */
+                        imap?: {
+                            /** @description The IMAP host. */
+                            host: string;
+                            /** @description The IMAP port (usually 993 with tls, 143 with starttls). */
+                            port: number;
+                            /**
+                             * @description tls: TLS from the first byte. starttls: the server must offer STARTTLS, else the check fails with MAILBOX_TLS_FAILED. Never cleartext.
+                             * @enum {string}
+                             */
+                            security: "tls" | "starttls";
+                        };
+                        /** @description Only for imap_smtp, and required there: the SMTP submission settings from GET /v1/mailboxes/discover, as the person confirmed them. */
+                        smtp?: {
+                            /** @description The SMTP submission host. */
+                            host: string;
+                            /** @description The SMTP submission port (usually 465 with tls, 587 with starttls). */
+                            port: number;
+                            /**
+                             * @description tls: TLS from the first byte. starttls: the server must offer STARTTLS, else the check fails with MAILBOX_TLS_FAILED. Never cleartext.
+                             * @enum {string}
+                             */
+                            security: "tls" | "starttls";
+                        };
+                    };
+                    /** @description A Mailbox of this team (mbx_...) to reconnect (kind mailbox_reconnect). Any member may reconnect any Mailbox of the team. */
+                    mailbox_id?: string;
+                    /** @description Only with mailbox or mailbox_id, for google_app_password, imap_smtp and (reconnect only) google_sign_in: Curviate checks the password before answering and keeps it sealed (a reconnect replaces the old one). With mailbox_id of a google_sign_in Mailbox, it adds the Google app password beside the sign-in, for warm-up; sending and reply checks stay on the sign-in. Pass it only when the person handed it to you for this. */
+                    credentials?: {
+                        /** @description The app password (Google) or the host's password. Never returned. */
+                        password: string;
+                    };
                 };
             };
         };
@@ -37722,10 +37960,10 @@ export interface operations {
                         /** @description The connect request id (creq_...). Opaque. */
                         id: string;
                         /**
-                         * @description connect asks for a new account; reconnect for the named one.
+                         * @description connect asks for a new account; reconnect for the named one; mailbox_connect for a new Mailbox; mailbox_reconnect for the named Mailbox.
                          * @enum {string}
                          */
-                        kind: "connect" | "reconnect";
+                        kind: "connect" | "reconnect" | "mailbox_connect" | "mailbox_reconnect";
                         /**
                          * @description pending until the person completes it in their dashboard. completed: account_id is the connected account. expired: not started within 15 minutes. failed: three failed sign-ins, or the account to reconnect is gone. cancelled: someone cancelled it.
                          * @enum {string}
@@ -37743,10 +37981,14 @@ export interface operations {
                         created_at: string;
                         /** @description ISO-8601 UTC completion time, else null. */
                         completed_at: string | null;
+                        /** @description Mailbox kinds only: mailbox_reconnect: the named Mailbox, from creation. mailbox_connect: the connected Mailbox (mbx_...) once completed, else null. */
+                        mailbox_id?: string | null;
+                        /** @description Mailbox kinds only: the link for the person's administrator where their provider needs one (Microsoft's approval page; for google_sign_in, Curviate's page for Google Workspace administrators), else null. Not a secret: forward it to the administrator. */
+                        admin_consent_url?: string | null;
                     };
                 };
             };
-            /** @description INVALID_REQUEST: an unknown body key (the error names it) or a malformed account_id. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: an unknown body key (the error names it), a malformed account_id or address, credentials on a connection that signs in (or on the reconnect of a microsoft_sign_in Mailbox), imap_smtp without its imap and smtp settings, or a connection not available yet. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -37773,8 +38015,17 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ACCOUNT_NOT_FOUND: the account to reconnect is unknown, another team's, or disconnected. */
+            /** @description ACCOUNT_NOT_FOUND: the account to reconnect is unknown, another team's, or disconnected. MAILBOX_NOT_FOUND: the Mailbox to reconnect is unknown or another team's (the same answer). RESOURCE_NOT_FOUND: Mailboxes are not available to this team. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_ALREADY_CONNECTED: the address is already a Mailbox of this team. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -37784,6 +38035,15 @@ export interface operations {
             };
             /** @description Payload too large, the request body exceeds the size limit. */
             413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_APP_PASSWORD_REQUIRED: google_sign_in for a private Gmail address (gmail.com, googlemail.com). Connect it with google_app_password. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -37839,10 +38099,10 @@ export interface operations {
                         /** @description The connect request id (creq_...). Opaque. */
                         id: string;
                         /**
-                         * @description connect asks for a new account; reconnect for the named one.
+                         * @description connect asks for a new account; reconnect for the named one; mailbox_connect for a new Mailbox; mailbox_reconnect for the named Mailbox.
                          * @enum {string}
                          */
-                        kind: "connect" | "reconnect";
+                        kind: "connect" | "reconnect" | "mailbox_connect" | "mailbox_reconnect";
                         /**
                          * @description pending until the person completes it in their dashboard. completed: account_id is the connected account. expired: not started within 15 minutes. failed: three failed sign-ins, or the account to reconnect is gone. cancelled: someone cancelled it.
                          * @enum {string}
@@ -37860,6 +38120,10 @@ export interface operations {
                         created_at: string;
                         /** @description ISO-8601 UTC completion time, else null. */
                         completed_at: string | null;
+                        /** @description Mailbox kinds only: mailbox_reconnect: the named Mailbox, from creation. mailbox_connect: the connected Mailbox (mbx_...) once completed, else null. */
+                        mailbox_id?: string | null;
+                        /** @description Mailbox kinds only: the link for the person's administrator where their provider needs one (Microsoft's approval page; for google_sign_in, Curviate's page for Google Workspace administrators), else null. Not a secret: forward it to the administrator. */
+                        admin_consent_url?: string | null;
                     };
                 };
             };
@@ -37938,10 +38202,10 @@ export interface operations {
                         /** @description The connect request id (creq_...). Opaque. */
                         id: string;
                         /**
-                         * @description connect asks for a new account; reconnect for the named one.
+                         * @description connect asks for a new account; reconnect for the named one; mailbox_connect for a new Mailbox; mailbox_reconnect for the named Mailbox.
                          * @enum {string}
                          */
-                        kind: "connect" | "reconnect";
+                        kind: "connect" | "reconnect" | "mailbox_connect" | "mailbox_reconnect";
                         /**
                          * @description pending until the person completes it in their dashboard. completed: account_id is the connected account. expired: not started within 15 minutes. failed: three failed sign-ins, or the account to reconnect is gone. cancelled: someone cancelled it.
                          * @enum {string}
@@ -37959,6 +38223,10 @@ export interface operations {
                         created_at: string;
                         /** @description ISO-8601 UTC completion time, else null. */
                         completed_at: string | null;
+                        /** @description Mailbox kinds only: mailbox_reconnect: the named Mailbox, from creation. mailbox_connect: the connected Mailbox (mbx_...) once completed, else null. */
+                        mailbox_id?: string | null;
+                        /** @description Mailbox kinds only: the link for the person's administrator where their provider needs one (Microsoft's approval page; for google_sign_in, Curviate's page for Google Workspace administrators), else null. Not a secret: forward it to the administrator. */
+                        admin_consent_url?: string | null;
                     };
                 };
             };
@@ -40170,6 +40438,19 @@ export interface operations {
                             triggers?: ("connect" | "switched_on" | "post_restriction")[];
                             /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. A fact only: it starts no ramp. */
                             dormant?: boolean;
+                            /**
+                             * @description Where the limits update is on: the ramp, `gradual` (30% on day 1 rising to 100% on day 14, the default when warm-up is turned on) or `custom` (`start`, `step`, `every`). Settable with `warm_up: {preset}`. Absent where it is not on.
+                             * @enum {string|null}
+                             */
+                            preset?: "gradual" | "custom" | null;
+                            /** @description Custom: the percentage on day 1, 5 to 90. Settable; Custom needs all of `start`, `step` and `every`, and a later write keeps the others. */
+                            start?: number | null;
+                            /** @description Custom: the percentage points added each time, 1 to 50. Settable. */
+                            step?: number | null;
+                            /** @description Custom: sending days between steps, 1 to 7. Settable. */
+                            every?: number | null;
+                            /** @description The ramp day, counted in the account's sending days since the ramp began, from 1; the day of the recovery ramp while that supplies `factor`. Null when no ramp applies. `factor` is that day's percentage over 100, and `week` is null. */
+                            day?: number | null;
                         };
                         /** @description Whether Curviate withdraws this account's old Motion-sent invitations on its own (default true). Past 400 pending invitations, those over 14 days old go oldest first, at most the larger of 25 and the day's invitation allowance a day, one at a time inside the account's working hours, each after a check that it is still pending. Invitations sent by hand or through the API are never withdrawn, and a withdrawn person is never invited again by a Motion. It runs while invitations are stopped at 650 pending. Set it with PATCH /v1/{account_id}/safety-policy and `auto_withdraw`; a change is recorded in the account's ledger. */
                         auto_withdraw?: boolean;
@@ -40227,10 +40508,10 @@ export interface operations {
                             /** @description Warn-louder band. */
                             amber?: number | null;
                             /**
-                             * @description The calendar grain this row is counted in.
+                             * @description The calendar grain this row is counted in. `rolling`: any `window_span` days in a row, not the calendar week (the invitation total under the new limits).
                              * @enum {string}
                              */
-                            window_kind?: "day" | "week" | "month";
+                            window_kind?: "day" | "week" | "month" | "rolling";
                             /** @description How many grain units one counting window spans. */
                             window_span?: number;
                             /** @description IANA zone name the counting window is aligned to. Null counts in UTC. */
@@ -40277,6 +40558,19 @@ export interface operations {
                             interface_ceiling?: number | null;
                             /** @description `interface_ceiling` with the account's warm-up ramp applied, and null wherever `interface_ceiling` is null. Read THIS to know where an elevated-interface call stops, for the same reason `effective_ceiling` rather than `ceiling` answers that for a standard one. */
                             effective_interface_ceiling?: number | null;
+                            /** @description The highest `ceiling` a standard-interface call on this row is held to, whatever is configured: a stored value above it is kept and held to it (`effective_ceiling` shows the held figure). Null on a row with no maximum. Read-only. */
+                            hard_maximum?: number | null;
+                            /** @description The highest figure a call through this plan's own interface (the Sales Navigator or Recruiter operations) is held to on this row. Null where the plan has none. Read-only. */
+                            interface_hard_maximum?: number | null;
+                            /** @description True when the stored `ceiling` is above the highest maximum this Account's plan allows on this row; it is kept and held to the maximum, and a write above the maximum is refused. Read-only. */
+                            above_hard_maximum?: boolean;
+                            /** @description Today's use of this Account's profile visits by cause, summing to `used`: the keys `campaign`, `import`, `signal_watch` and `api` (any direct call). One budget, not four. Present on `profile_views` only; null on every other row. Read-only. */
+                            used_by_cause?: {
+                                campaign: number;
+                                import: number;
+                                signal_watch: number;
+                                api: number;
+                            } | null;
                             /** @description Empty when nothing on this row is above default. Computed against the STANDARD-interface default, like `band` and for the same reason. */
                             over_default?: {
                                 /**
@@ -40632,7 +40926,7 @@ export interface operations {
                      */
                     tenant_default_posture?: "warn" | "enforce" | null;
                     /** @description Lift the platform pause on these action types now, instead of waiting for it to expire. When the platform refuses a call on an account (a rate limit, a server error on a budgeted route, an invitation resend cooldown), Curviate pauses that action type for the platform's own retry-after or a seeded cooldown, and every later call on it is refused locally without reaching the platform. Naming an action type here clears that pause: the next call goes out. Read `quotas[].halt` on the account to see which action types are paused and for how long. A type with no active pause is accepted and does nothing, so this is safe to send for a set you have not checked. Clearing is recorded in the account's ledger with the expiry it cut short, who cleared it and when, and it appears on the safety-events surface. It does not disarm anything: if the platform refuses the account again, the pause comes straight back, longer than the one you cleared where the platform says so. Clear a pause when you have reason to believe the refusal was a transient upstream fault rather than the platform pushing back on this account; clearing one and calling straight back into a real rate limit is itself how accounts get restricted. */
-                    clear_halts?: ("connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot")[];
+                    clear_halts?: ("connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "company_reads" | "limit_probes" | "notification_reads" | "viewer_reads" | "other_reads" | "search_parameters" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot")[];
                     /**
                      * @description REMOVED: limits are always enforced; to send more, raise the limit. "enforce" (or null) is still accepted until 2027-02-01, changes nothing and earns a POSTURE_REMOVED notice; "warn", or any value after that day, is refused with INVALID_REQUEST.
                      * @enum {string|null}
@@ -40644,7 +40938,7 @@ export interface operations {
                          * @description The budget row this patch configures.
                          * @enum {string}
                          */
-                        budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
+                        budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "company_reads" | "limit_probes" | "notification_reads" | "viewer_reads" | "other_reads" | "search_parameters" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
                         /** @description What this row refuses at, in this row's own unit: limits are always enforced. Any value up to 9007199254740991 is accepted and stored verbatim; a value above the Curviate default is reported back, never clamped. */
                         ceiling?: number | null;
                         /** @description Routine band. Activity at or below it is unremarkable. */
@@ -40652,10 +40946,10 @@ export interface operations {
                         /** @description Warn-louder band, between green and the ceiling. */
                         amber?: number | null;
                         /**
-                         * @description The calendar grain this row is counted in.
+                         * @description The calendar grain this row is counted in. `rolling` (any 7 days in a row) is the invitation total's window under the new limits, fixed like the daily invitation row's: send it back unchanged or leave it out.
                          * @enum {string|null}
                          */
-                        window_kind?: "day" | "week" | "month" | null;
+                        window_kind?: "day" | "week" | "month" | "rolling" | null;
                         /** @description How many `window_kind` units one counting window spans. */
                         window_span?: number | null;
                         /** @description IANA zone name the counting window is aligned to, e.g. `Europe/Berlin` or `UTC`. Must be a real zone; anything else is a 400. Null counts in UTC. */
@@ -40704,6 +40998,14 @@ export interface operations {
                         interface_ceiling?: unknown;
                         /** @description READ-ONLY. `interface_ceiling` with the account's warm-up ramp applied. Read THIS to know where an elevated-interface call stops, for the same reason `effective_ceiling` and not `ceiling` answers that for a standard one. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                         effective_interface_ceiling?: unknown;
+                        /** @description READ-ONLY. The highest `ceiling` a standard-interface call on this row is held to, whatever is configured: a stored value above it is kept and held to it (`effective_ceiling` shows the held figure). Null on a row with no maximum. Read-only. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                        hard_maximum?: unknown;
+                        /** @description READ-ONLY. The highest figure a call through this plan's own interface (the Sales Navigator or Recruiter operations) is held to on this row. Null where the plan has none. Read-only. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                        interface_hard_maximum?: unknown;
+                        /** @description READ-ONLY. True when the stored `ceiling` is above the highest maximum this Account's plan allows on this row; it is kept and held to the maximum, and a write above the maximum is refused. Read-only. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                        above_hard_maximum?: unknown;
+                        /** @description READ-ONLY. Today's use of this Account's profile visits by cause, summing to `used`: the keys `campaign`, `import`, `signal_watch` and `api` (any direct call). One budget, not four. Present on `profile_views` only; null on every other row. Read-only. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
+                        used_by_cause?: unknown;
                         /** @description REMOVED from the read (SF-04). Accepted and ignored until 2027-02-01 so an older document round-trips; refused after. */
                         posture_source?: unknown;
                         /** @description READ-ONLY. The fields on this row configured above the Curviate default. Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
@@ -40755,10 +41057,21 @@ export interface operations {
                     limit_profile_detected_at?: unknown;
                     /** @description REMOVED from the read (SF-04). Accepted and ignored until 2027-02-01 so an older document round-trips; refused after. */
                     posture_source?: unknown;
-                    /** @description The account's warm-up. Only `enabled` is settable; its other keys are derived on every read, accepted and ignored, so the read's object can be sent back unchanged. */
+                    /** @description The account's warm-up. `enabled`, `preset`, `start`, `step` and `every` are settable (the settings apply only where the limits update is on); the other keys (`day`, `factor`, `state`, `week`, `steps`, `triggers`, `dormant`) are derived on every read, accepted and ignored, so the read's object can be sent back unchanged. */
                     warm_up?: {
-                        /** @description Turn this account's warm-up on (true) or off (false, the default). On starts the ramp at week 1 (0.15) from now, rising to full limits over 5 weeks; off is full limits at once. Recovery after a LinkedIn restriction applies either way. */
+                        /** @description Turn this account's warm-up on (true) or off (false, the default). On starts the ramp at day 1 from now; off is full limits at once. Recovery after a LinkedIn restriction applies either way. */
                         enabled?: boolean;
+                        /**
+                         * @description The ramp: `gradual` (the default when warm-up is turned on: 30% on day 1, 100% from day 14) or `custom` (needs `start`, `step` and `every`). Counted in the Account's sending days.
+                         * @enum {string|null}
+                         */
+                        preset?: "gradual" | "custom" | null;
+                        /** @description Custom: the percentage on day 1, 5 to 90. */
+                        start?: number | null;
+                        /** @description Custom: the percentage points added each time, 1 to 50. */
+                        step?: number | null;
+                        /** @description Custom: sending days between steps, 1 to 7. */
+                        every?: number | null;
                     };
                     /** @description Automatic withdrawal of old invitations Curviate sent for this account's Motions, default true. While this account has more than 400 pending invitations, Curviate withdraws the Motion-sent ones older than 14 days, oldest first, a few a day (at most the larger of 25 and the day's invitation allowance), inside its working hours and one at a time with the usual gaps, after checking each is still pending. It never touches an invitation you sent by hand or through the API, and never invites a withdrawn person again. It keeps working while invitations are stopped at 650 pending, which is how the account comes back under. Set false to keep every old invitation pending; the level then falls only as people accept or you withdraw. */
                     auto_withdraw?: boolean;
@@ -40818,6 +41131,19 @@ export interface operations {
                             triggers?: ("connect" | "switched_on" | "post_restriction")[];
                             /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. A fact only: it starts no ramp. */
                             dormant?: boolean;
+                            /**
+                             * @description Where the limits update is on: the ramp, `gradual` (30% on day 1 rising to 100% on day 14, the default when warm-up is turned on) or `custom` (`start`, `step`, `every`). Settable with `warm_up: {preset}`. Absent where it is not on.
+                             * @enum {string|null}
+                             */
+                            preset?: "gradual" | "custom" | null;
+                            /** @description Custom: the percentage on day 1, 5 to 90. Settable; Custom needs all of `start`, `step` and `every`, and a later write keeps the others. */
+                            start?: number | null;
+                            /** @description Custom: the percentage points added each time, 1 to 50. Settable. */
+                            step?: number | null;
+                            /** @description Custom: sending days between steps, 1 to 7. Settable. */
+                            every?: number | null;
+                            /** @description The ramp day, counted in the account's sending days since the ramp began, from 1; the day of the recovery ramp while that supplies `factor`. Null when no ramp applies. `factor` is that day's percentage over 100, and `week` is null. */
+                            day?: number | null;
                         };
                         /** @description Whether Curviate withdraws this account's old Motion-sent invitations on its own (default true). Past 400 pending invitations, those over 14 days old go oldest first, at most the larger of 25 and the day's invitation allowance a day, one at a time inside the account's working hours, each after a check that it is still pending. Invitations sent by hand or through the API are never withdrawn, and a withdrawn person is never invited again by a Motion. It runs while invitations are stopped at 650 pending. Set it with PATCH /v1/{account_id}/safety-policy and `auto_withdraw`; a change is recorded in the account's ledger. */
                         auto_withdraw?: boolean;
@@ -40875,10 +41201,10 @@ export interface operations {
                             /** @description Warn-louder band. */
                             amber?: number | null;
                             /**
-                             * @description The calendar grain this row is counted in.
+                             * @description The calendar grain this row is counted in. `rolling`: any `window_span` days in a row, not the calendar week (the invitation total under the new limits).
                              * @enum {string}
                              */
-                            window_kind?: "day" | "week" | "month";
+                            window_kind?: "day" | "week" | "month" | "rolling";
                             /** @description How many grain units one counting window spans. */
                             window_span?: number;
                             /** @description IANA zone name the counting window is aligned to. Null counts in UTC. */
@@ -40925,6 +41251,19 @@ export interface operations {
                             interface_ceiling?: number | null;
                             /** @description `interface_ceiling` with the account's warm-up ramp applied, and null wherever `interface_ceiling` is null. Read THIS to know where an elevated-interface call stops, for the same reason `effective_ceiling` rather than `ceiling` answers that for a standard one. */
                             effective_interface_ceiling?: number | null;
+                            /** @description The highest `ceiling` a standard-interface call on this row is held to, whatever is configured: a stored value above it is kept and held to it (`effective_ceiling` shows the held figure). Null on a row with no maximum. Read-only. */
+                            hard_maximum?: number | null;
+                            /** @description The highest figure a call through this plan's own interface (the Sales Navigator or Recruiter operations) is held to on this row. Null where the plan has none. Read-only. */
+                            interface_hard_maximum?: number | null;
+                            /** @description True when the stored `ceiling` is above the highest maximum this Account's plan allows on this row; it is kept and held to the maximum, and a write above the maximum is refused. Read-only. */
+                            above_hard_maximum?: boolean;
+                            /** @description Today's use of this Account's profile visits by cause, summing to `used`: the keys `campaign`, `import`, `signal_watch` and `api` (any direct call). One budget, not four. Present on `profile_views` only; null on every other row. Read-only. */
+                            used_by_cause?: {
+                                campaign: number;
+                                import: number;
+                                signal_watch: number;
+                                api: number;
+                            } | null;
                             /** @description Empty when nothing on this row is above default. Computed against the STANDARD-interface default, like `band` and for the same reason. */
                             over_default?: {
                                 /**
@@ -41264,7 +41603,7 @@ export interface operations {
                 /** @description Pagination cursor from a previous response; decodable, pass it back verbatim. */
                 cursor?: string;
                 /** @description Return only events flagged against this budget row. Omit for every row. */
-                budget_row?: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
+                budget_row?: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "company_reads" | "limit_probes" | "notification_reads" | "viewer_reads" | "other_reads" | "search_parameters" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
                 /** @description Only events at or after this instant (ISO-8601, e.g. 2026-09-01T00:00:00Z). */
                 since?: string;
                 /** @description Only events strictly before this instant (ISO-8601). */
@@ -41313,7 +41652,7 @@ export interface operations {
                              * @description The budget row that breached. It is not always a row the call itself spends: an invitation refused because the outstanding backlog is at its ceiling reports `pending_invites`, which is the thing that breached. `*` means the event was not about a row at all: the activity window closing on an action that spends no budget of its own, such as editing a message or a Recruiter admin action. The `budget_row` filter accepts real row names only, so page without it to see those.
                              * @enum {string}
                              */
-                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites" | "*";
+                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "company_reads" | "limit_probes" | "notification_reads" | "viewer_reads" | "other_reads" | "search_parameters" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites" | "*";
                             /**
                              * @description Which rule flagged it, and each one calls for a different response. `budget_exhausted`: the account reached the ceiling configured for that row, which you can raise on the safety policy. `activity_window`: the account was acting outside its configured activity window, so no ceiling was the constraint. Wait for the window to open (`reset_at`), or change the setting `hint.parameter` names: `active_hours`, or a row's `activity_window_start` or `activity_window_end`. `rate_limited`: the platform itself refused this account on that row recently and Curviate is holding the row until the pause expires. No ceiling you raise lifts it; the one thing that does is `clear_halts` on the safety policy, which lifts it deliberately and records that it was lifted. `halt_cleared` is the odd one out and the only entry that is not a refusal: somebody lifted one of those platform pauses early through `clear_halts` on the safety policy, so the row was open again from that instant. It carries `blocked: false` and its `method` is `update_safety_policy` rather than the operation that breached. Read it beside the `rate_limited` entry it lifts: the pause and its lifting are one thread, and an entry list that showed only the first would report a row as still paused.
                              * @enum {string}
@@ -41426,10 +41765,10 @@ export interface operations {
                                 /** @description Warn-louder band. */
                                 amber?: number | null;
                                 /**
-                                 * @description The calendar grain this row is counted in.
+                                 * @description The calendar grain this row is counted in. `rolling`: any `window_span` days in a row, not the calendar week (the invitation total under the new limits).
                                  * @enum {string}
                                  */
-                                window_kind?: "day" | "week" | "month";
+                                window_kind?: "day" | "week" | "month" | "rolling";
                                 /** @description How many grain units one counting window spans. */
                                 window_span?: number;
                                 /** @description IANA zone name the counting window is aligned to. Null counts in UTC. */
@@ -41737,6 +42076,22 @@ export interface operations {
                                     source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
                                 }[];
                             };
+                        };
+                        /** @description The Team's email settings in force. Each opt-out text reads as the Team set it, or the shipped English default when none is set. */
+                        email?: {
+                            /** @description Emails a day a Mailbox starts with, at most 50, default 30. Applies to Mailboxes connected after a change. */
+                            default_daily_cap?: number;
+                            /**
+                             * @description What an unsubscribe stops.
+                             * @enum {string}
+                             */
+                            opt_out_scope?: "everything" | "email_only";
+                            /** @description The opt-out line, at most 200 characters. */
+                            opt_out_text?: string;
+                            /** @description The text before the unsubscribe link's word, at most 100 characters. */
+                            opt_out_link_text?: string;
+                            /** @description The unsubscribe link's word, at most 30 characters. */
+                            opt_out_link_word?: string;
                         };
                         /** @description Present on a write only, and only when it sent a removed key (`posture`, `tenant_default_posture`): one POSTURE_REMOVED entry per key, naming it and the last day it is accepted (2027-02-01). Nothing was stored for it. Branch on code, never on message. */
                         notices?: {
@@ -41812,7 +42167,7 @@ export interface operations {
                              * @description The budget row this patch configures.
                              * @enum {string}
                              */
-                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
+                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "company_reads" | "limit_probes" | "notification_reads" | "viewer_reads" | "other_reads" | "search_parameters" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
                             /** @description What this row refuses at, in this row's own unit: limits are always enforced. Any value up to 9007199254740991 is accepted and stored verbatim; a value above the Curviate default is reported back, never clamped. */
                             ceiling?: number | null;
                             /** @description Routine band. Activity at or below it is unremarkable. */
@@ -41820,10 +42175,10 @@ export interface operations {
                             /** @description Warn-louder band, between green and the ceiling. */
                             amber?: number | null;
                             /**
-                             * @description The calendar grain this row is counted in.
+                             * @description The calendar grain this row is counted in. `rolling` (any 7 days in a row) is the invitation total's window under the new limits, fixed like the daily invitation row's: send it back unchanged or leave it out.
                              * @enum {string|null}
                              */
-                            window_kind?: "day" | "week" | "month" | null;
+                            window_kind?: "day" | "week" | "month" | "rolling" | null;
                             /** @description How many `window_kind` units one counting window spans. */
                             window_span?: number | null;
                             /** @description IANA zone name the counting window is aligned to, e.g. `Europe/Berlin` or `UTC`. Must be a real zone; anything else is a 400. Null counts in UTC. */
@@ -41870,6 +42225,22 @@ export interface operations {
                             /** @description READ-ONLY. The over-default warnings (a value below the default). Sent back on a write it is accepted and ignored, so the whole document round-trips; it is never stored and never ledgered. */
                             over_default?: unknown;
                         } | null;
+                    };
+                    /** @description The Team's email settings: the default cap of a new Mailbox, what an unsubscribe stops and the three opt-out texts. */
+                    email?: {
+                        /** @description Emails a day a Mailbox starts with, at most 50, default 30. Applies to Mailboxes connected after the change; the ones already connected keep their cap. */
+                        default_daily_cap?: number;
+                        /**
+                         * @description What an unsubscribe stops: `everything` (the default) or `email_only`.
+                         * @enum {string}
+                         */
+                        opt_out_scope?: "everything" | "email_only";
+                        /** @description The opt-out line an email step sends in line form. At most 200 characters, one plain line, no variables. null, "" or blank restores the shipped default: "If you'd rather not hear from me, reply \"no\" and I won't email you again.". */
+                        opt_out_text?: string | null;
+                        /** @description The text before the unsubscribe link's word, in link form. At most 100 characters, one plain line, no variables. null, "" or blank restores the shipped default: "Don't want to hear from me?". */
+                        opt_out_link_text?: string | null;
+                        /** @description The unsubscribe link's word, in link form. At most 30 characters, one plain line, no variables. null, "" or blank restores the shipped default: "Unsubscribe". */
+                        opt_out_link_word?: string | null;
                     };
                     /** @description The Team default active hours: the days and local hours live writes happen in; direct messaging goes at any hour. Null falls back to Curviate's default, 07:00-22:00 Monday to Friday. The read reports the hours in force and their source; sent back, it changes nothing. */
                     active_hours?: {
@@ -41936,10 +42307,10 @@ export interface operations {
                                 /** @description Warn-louder band. */
                                 amber?: number | null;
                                 /**
-                                 * @description The calendar grain this row is counted in.
+                                 * @description The calendar grain this row is counted in. `rolling`: any `window_span` days in a row, not the calendar week (the invitation total under the new limits).
                                  * @enum {string}
                                  */
-                                window_kind?: "day" | "week" | "month";
+                                window_kind?: "day" | "week" | "month" | "rolling";
                                 /** @description How many grain units one counting window spans. */
                                 window_span?: number;
                                 /** @description IANA zone name the counting window is aligned to. Null counts in UTC. */
@@ -42248,6 +42619,22 @@ export interface operations {
                                 }[];
                             };
                         };
+                        /** @description The Team's email settings in force. Each opt-out text reads as the Team set it, or the shipped English default when none is set. */
+                        email?: {
+                            /** @description Emails a day a Mailbox starts with, at most 50, default 30. Applies to Mailboxes connected after a change. */
+                            default_daily_cap?: number;
+                            /**
+                             * @description What an unsubscribe stops.
+                             * @enum {string}
+                             */
+                            opt_out_scope?: "everything" | "email_only";
+                            /** @description The opt-out line, at most 200 characters. */
+                            opt_out_text?: string;
+                            /** @description The text before the unsubscribe link's word, at most 100 characters. */
+                            opt_out_link_text?: string;
+                            /** @description The unsubscribe link's word, at most 30 characters. */
+                            opt_out_link_word?: string;
+                        };
                         /** @description Present on a write only, and only when it sent a removed key (`posture`, `tenant_default_posture`): one POSTURE_REMOVED entry per key, naming it and the last day it is accepted (2027-02-01). Nothing was stored for it. Branch on code, never on message. */
                         notices?: {
                             /**
@@ -42273,7 +42660,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST. An unknown limit profile, row name or field, or a value that is not a value (a negative ceiling). A value is never rejected for being unsafe. A time zone is not a setting: any value but null in a row's `activity_window_timezone` is refused with "The time zone follows where this account connects from. Change it with PATCH /v1/accounts/{account_id} and `country`, or your own `proxy`." Null there is accepted and ignored. A top-level `timezone` is not a field of this operation: it is refused as an unknown key, null included. `posture` and `tenant_default_posture` were removed: limits are always enforced; to send more, raise the limit. Until 2027-02-01 (the last accepted day) the value "enforce" or null is still accepted, stores nothing and earns a POSTURE_REMOVED entry in `notices` plus a `Deprecation: true` header; "warn" on any day, or any value after that day, is refused with a message naming the key. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST. An unknown limit profile, row name or field, or a value that is not a value (a negative ceiling). A value is never rejected for being unsafe. In `email`: a cap above 50, an opt_out_scope that is not everything or email_only, or a text over its limit, with a line break, or with {{ or }}; each names the field and its limit, and nothing is stored. A time zone is not a setting: any value but null in a row's `activity_window_timezone` is refused with "The time zone follows where this account connects from. Change it with PATCH /v1/accounts/{account_id} and `country`, or your own `proxy`." Null there is accepted and ignored. A top-level `timezone` is not a field of this operation: it is refused as an unknown key, null included. `posture` and `tenant_default_posture` were removed: limits are always enforced; to send more, raise the limit. Until 2027-02-01 (the last accepted day) the value "enforce" or null is still accepted, stores nothing and earns a POSTURE_REMOVED entry in `notices` plus a `Deprecation: true` header; "warn" on any day, or any value after that day, is refused with a message naming the key. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -44863,6 +45250,1073 @@ export interface operations {
             };
             /** @description Payload too large, the request body exceeds the size limit. */
             413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1MailboxesDiscover: {
+        parameters: {
+            query: {
+                /** @description The email address to find the IMAP and SMTP settings for, for example `anna@acme.example`. */
+                address: string;
+            };
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The settings found for the address. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description How to connect this address.
+                         * @enum {string}
+                         */
+                        connection: "google_app_password" | "microsoft_sign_in" | "imap_smtp";
+                        /** @description The IMAP server. Null when the connection is a sign-in with no settings. */
+                        imap: {
+                            host: string;
+                            port: number;
+                            /**
+                             * @description `tls` is TLS from the first byte; `starttls` upgrades the connection. Never cleartext.
+                             * @enum {string}
+                             */
+                            security: "tls" | "starttls";
+                        } | null;
+                        /** @description The SMTP submission server. Null when the connection is a sign-in with no settings. */
+                        smtp: {
+                            host: string;
+                            port: number;
+                            /**
+                             * @description `tls` is TLS from the first byte; `starttls` upgrades the connection. Never cleartext.
+                             * @enum {string}
+                             */
+                            security: "tls" | "starttls";
+                        } | null;
+                        /**
+                         * @description Where the settings came from; `guess` is unchecked.
+                         * @enum {string}
+                         */
+                        source: "known" | "autoconfig" | "ispdb" | "mx" | "srv" | "guess";
+                        /** @description True when the settings came over an unencrypted connection: show them and get an explicit confirm before connecting. */
+                        confirm_required: boolean;
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1Mailboxes: {
+        parameters: {
+            query?: {
+                /** @description Only Mailboxes in this state. */
+                state?: "connected" | "ramping" | "paused" | "paused_by_bounces" | "paused_by_provider" | "reconnect_needed";
+                /** @description An Account id, `shared` (a shared Mailbox) or `none` (no link yet). */
+                sends_for?: string;
+                /** @description Only Mailboxes on this domain (the part after the @). */
+                domain?: string;
+                /** @description Opaque pagination cursor from a previous response; pass it back verbatim */
+                cursor?: string;
+                /** @description Max items per page (1-100, default 50) */
+                limit?: number;
+            };
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description This team's Mailboxes, newest first. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object?: "list";
+                        items?: {
+                            /** @description Mailbox id (mbx_...), opaque. */
+                            id: string;
+                            address: string;
+                            display_name: string | null;
+                            /** @description The domain name of the address. */
+                            domain: string;
+                            /**
+                             * @description How the Mailbox is reached; `curviate` for a Mailbox bought from Curviate.
+                             * @enum {string}
+                             */
+                            connection: "google_app_password" | "google_sign_in" | "microsoft_sign_in" | "imap_smtp" | "curviate";
+                            /**
+                             * @description `ramping` means the daily cap is still being worked up to: it sends up to the cap a day and the limit rises each sending day.
+                             * @enum {string}
+                             */
+                            state: "connected" | "ramping" | "paused" | "paused_by_bounces" | "paused_by_provider" | "reconnect_needed";
+                            /** @description The Account this Mailbox sends for, `shared` (any Account may send from it), or null (it sends nothing until linked). */
+                            sends_for: {
+                                /** @enum {string} */
+                                kind: "account";
+                                account_id: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "shared";
+                            } | null;
+                            /** @description The link Curviate suggests; never applied until you confirm it. */
+                            sends_for_suggestion: Record<string, never> | null;
+                            /** @description Emails a day across all Campaigns and Accounts, at most 50. */
+                            daily_cap: number;
+                            /** @description The cap in force while it is lowered; null otherwise. */
+                            cap_lowered_to: number | null;
+                            sent_today: number;
+                            /** @description Emails sent and hard bounces over the last 7 days. */
+                            bounces_7d: {
+                                sent: number;
+                                bounced: number;
+                            };
+                            /** Format: date-time */
+                            paused_until: string | null;
+                            pause_reason: string | null;
+                            signature: string | null;
+                            connected_by_user_id: string | null;
+                            /** Format: date-time */
+                            connected_at: string;
+                            used_with: {
+                                accounts: {
+                                    account_id?: string;
+                                    emails?: number;
+                                }[];
+                                campaigns: {
+                                    campaign_id?: string;
+                                    emails?: number;
+                                }[];
+                            };
+                        }[];
+                        cursor?: string | null;
+                    };
+                };
+            };
+            /** @description Unknown state, limit out of range or malformed cursor. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: Mailboxes are not available to this team. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1MailboxesId: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Mailbox id (mbx_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One Mailbox. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Mailbox id (mbx_...), opaque. */
+                        id: string;
+                        address: string;
+                        display_name: string | null;
+                        /** @description The domain name of the address. */
+                        domain: string;
+                        /**
+                         * @description How the Mailbox is reached; `curviate` for a Mailbox bought from Curviate.
+                         * @enum {string}
+                         */
+                        connection: "google_app_password" | "google_sign_in" | "microsoft_sign_in" | "imap_smtp" | "curviate";
+                        /**
+                         * @description `ramping` means the daily cap is still being worked up to: it sends up to the cap a day and the limit rises each sending day.
+                         * @enum {string}
+                         */
+                        state: "connected" | "ramping" | "paused" | "paused_by_bounces" | "paused_by_provider" | "reconnect_needed";
+                        /** @description The Account this Mailbox sends for, `shared` (any Account may send from it), or null (it sends nothing until linked). */
+                        sends_for: {
+                            /** @enum {string} */
+                            kind: "account";
+                            account_id: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "shared";
+                        } | null;
+                        /** @description The link Curviate suggests; never applied until you confirm it. */
+                        sends_for_suggestion: Record<string, never> | null;
+                        /** @description Emails a day across all Campaigns and Accounts, at most 50. */
+                        daily_cap: number;
+                        /** @description The cap in force while it is lowered; null otherwise. */
+                        cap_lowered_to: number | null;
+                        sent_today: number;
+                        /** @description Emails sent and hard bounces over the last 7 days. */
+                        bounces_7d: {
+                            sent: number;
+                            bounced: number;
+                        };
+                        /** Format: date-time */
+                        paused_until: string | null;
+                        pause_reason: string | null;
+                        signature: string | null;
+                        connected_by_user_id: string | null;
+                        /** Format: date-time */
+                        connected_at: string;
+                        used_with: {
+                            accounts: {
+                                account_id?: string;
+                                emails?: number;
+                            }[];
+                            campaigns: {
+                                campaign_id?: string;
+                                emails?: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_NOT_FOUND: no Mailbox with this id in this team (another team's id answers the same), or RESOURCE_NOT_FOUND where Mailboxes are not available to this team. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    deleteV1MailboxesId: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Mailbox id (mbx_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The Mailbox and its credentials are gone. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object?: "mailbox";
+                        id?: string;
+                        /** @enum {boolean} */
+                        deleted?: true;
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: a Member removing a Mailbox they did not connect. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_NOT_FOUND: no Mailbox with this id in this team (another team's id answers the same), or RESOURCE_NOT_FOUND where Mailboxes are not available to this team. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    patchV1MailboxesId: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Mailbox id (mbx_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Emails a day across all Campaigns and Accounts, at most 50. */
+                    daily_cap?: number;
+                    /** @description Plain text sign-off, at most 2000 characters; null clears it. */
+                    signature?: string | null;
+                    /** @description {kind: "account", account_id}: this Mailbox sends only for that one Account; {kind: "shared"}: any Account of the team may send from it; null: it sends nothing until linked. One Account, never a list. */
+                    sends_for?: ({
+                        /** @constant */
+                        kind: "account";
+                        account_id: string;
+                    } | {
+                        /** @constant */
+                        kind: "shared";
+                    }) | null;
+                };
+            };
+        };
+        responses: {
+            /** @description The Mailbox as updated. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Mailbox id (mbx_...), opaque. */
+                        id: string;
+                        address: string;
+                        display_name: string | null;
+                        /** @description The domain name of the address. */
+                        domain: string;
+                        /**
+                         * @description How the Mailbox is reached; `curviate` for a Mailbox bought from Curviate.
+                         * @enum {string}
+                         */
+                        connection: "google_app_password" | "google_sign_in" | "microsoft_sign_in" | "imap_smtp" | "curviate";
+                        /**
+                         * @description `ramping` means the daily cap is still being worked up to: it sends up to the cap a day and the limit rises each sending day.
+                         * @enum {string}
+                         */
+                        state: "connected" | "ramping" | "paused" | "paused_by_bounces" | "paused_by_provider" | "reconnect_needed";
+                        /** @description The Account this Mailbox sends for, `shared` (any Account may send from it), or null (it sends nothing until linked). */
+                        sends_for: {
+                            /** @enum {string} */
+                            kind: "account";
+                            account_id: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "shared";
+                        } | null;
+                        /** @description The link Curviate suggests; never applied until you confirm it. */
+                        sends_for_suggestion: Record<string, never> | null;
+                        /** @description Emails a day across all Campaigns and Accounts, at most 50. */
+                        daily_cap: number;
+                        /** @description The cap in force while it is lowered; null otherwise. */
+                        cap_lowered_to: number | null;
+                        sent_today: number;
+                        /** @description Emails sent and hard bounces over the last 7 days. */
+                        bounces_7d: {
+                            sent: number;
+                            bounced: number;
+                        };
+                        /** Format: date-time */
+                        paused_until: string | null;
+                        pause_reason: string | null;
+                        signature: string | null;
+                        connected_by_user_id: string | null;
+                        /** Format: date-time */
+                        connected_at: string;
+                        used_with: {
+                            accounts: {
+                                account_id?: string;
+                                emails?: number;
+                            }[];
+                            campaigns: {
+                                campaign_id?: string;
+                                emails?: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: `daily_cap` above 50 or below 1, `signature` above 2,000 characters, `sends_for` that is not one Account, `shared` or null (a list of Accounts included), no field, or an unknown field. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: a Member changing a Mailbox they did not connect. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_NOT_FOUND: no Mailbox with this id in this team (another team's id answers the same), or RESOURCE_NOT_FOUND where Mailboxes are not available to this team. ACCOUNT_NOT_FOUND: `sends_for` names an Account that is not in this team (an unknown id answers the same). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1MailboxesIdPause: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Mailbox id (mbx_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The Mailbox, now `paused`. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Mailbox id (mbx_...), opaque. */
+                        id: string;
+                        address: string;
+                        display_name: string | null;
+                        /** @description The domain name of the address. */
+                        domain: string;
+                        /**
+                         * @description How the Mailbox is reached; `curviate` for a Mailbox bought from Curviate.
+                         * @enum {string}
+                         */
+                        connection: "google_app_password" | "google_sign_in" | "microsoft_sign_in" | "imap_smtp" | "curviate";
+                        /**
+                         * @description `ramping` means the daily cap is still being worked up to: it sends up to the cap a day and the limit rises each sending day.
+                         * @enum {string}
+                         */
+                        state: "connected" | "ramping" | "paused" | "paused_by_bounces" | "paused_by_provider" | "reconnect_needed";
+                        /** @description The Account this Mailbox sends for, `shared` (any Account may send from it), or null (it sends nothing until linked). */
+                        sends_for: {
+                            /** @enum {string} */
+                            kind: "account";
+                            account_id: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "shared";
+                        } | null;
+                        /** @description The link Curviate suggests; never applied until you confirm it. */
+                        sends_for_suggestion: Record<string, never> | null;
+                        /** @description Emails a day across all Campaigns and Accounts, at most 50. */
+                        daily_cap: number;
+                        /** @description The cap in force while it is lowered; null otherwise. */
+                        cap_lowered_to: number | null;
+                        sent_today: number;
+                        /** @description Emails sent and hard bounces over the last 7 days. */
+                        bounces_7d: {
+                            sent: number;
+                            bounced: number;
+                        };
+                        /** Format: date-time */
+                        paused_until: string | null;
+                        pause_reason: string | null;
+                        signature: string | null;
+                        connected_by_user_id: string | null;
+                        /** Format: date-time */
+                        connected_at: string;
+                        used_with: {
+                            accounts: {
+                                account_id?: string;
+                                emails?: number;
+                            }[];
+                            campaigns: {
+                                campaign_id?: string;
+                                emails?: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: a Member pausing a Mailbox they did not connect. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_NOT_FOUND: no Mailbox with this id in this team (another team's id answers the same), or RESOURCE_NOT_FOUND where Mailboxes are not available to this team. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_STATE_CONFLICT: the Mailbox is not `connected` or `ramping`. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1MailboxesIdResume: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Mailbox id (mbx_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The Mailbox, now `ramping` from 5 a day. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Mailbox id (mbx_...), opaque. */
+                        id: string;
+                        address: string;
+                        display_name: string | null;
+                        /** @description The domain name of the address. */
+                        domain: string;
+                        /**
+                         * @description How the Mailbox is reached; `curviate` for a Mailbox bought from Curviate.
+                         * @enum {string}
+                         */
+                        connection: "google_app_password" | "google_sign_in" | "microsoft_sign_in" | "imap_smtp" | "curviate";
+                        /**
+                         * @description `ramping` means the daily cap is still being worked up to: it sends up to the cap a day and the limit rises each sending day.
+                         * @enum {string}
+                         */
+                        state: "connected" | "ramping" | "paused" | "paused_by_bounces" | "paused_by_provider" | "reconnect_needed";
+                        /** @description The Account this Mailbox sends for, `shared` (any Account may send from it), or null (it sends nothing until linked). */
+                        sends_for: {
+                            /** @enum {string} */
+                            kind: "account";
+                            account_id: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "shared";
+                        } | null;
+                        /** @description The link Curviate suggests; never applied until you confirm it. */
+                        sends_for_suggestion: Record<string, never> | null;
+                        /** @description Emails a day across all Campaigns and Accounts, at most 50. */
+                        daily_cap: number;
+                        /** @description The cap in force while it is lowered; null otherwise. */
+                        cap_lowered_to: number | null;
+                        sent_today: number;
+                        /** @description Emails sent and hard bounces over the last 7 days. */
+                        bounces_7d: {
+                            sent: number;
+                            bounced: number;
+                        };
+                        /** Format: date-time */
+                        paused_until: string | null;
+                        pause_reason: string | null;
+                        signature: string | null;
+                        connected_by_user_id: string | null;
+                        /** Format: date-time */
+                        connected_at: string;
+                        used_with: {
+                            accounts: {
+                                account_id?: string;
+                                emails?: number;
+                            }[];
+                            campaigns: {
+                                campaign_id?: string;
+                                emails?: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: a Member resuming a Mailbox they did not connect. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_NOT_FOUND: no Mailbox with this id in this team (another team's id answers the same), or RESOURCE_NOT_FOUND where Mailboxes are not available to this team. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_STATE_CONFLICT: not paused, a provider pause before its `paused_until` (the message names the time), or one Curviate is fixing. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1DomainsDomainChecks: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description The sending domain, such as `acme.example`. */
+                domain: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The domain's checks as last run. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Domain id (dom_...), opaque. */
+                        id: string;
+                        name: string;
+                        /** @description `unknown` means a lookup failed or the DKIM selector is not known yet; it never means a failure. */
+                        checks: {
+                            /** @enum {string} */
+                            mx: "pass" | "fail" | "unknown";
+                            /** @enum {string} */
+                            spf: "pass" | "fail" | "unknown";
+                            /** @enum {string} */
+                            dkim: "pass" | "fail" | "unknown";
+                            /** @enum {string} */
+                            dmarc: "pass" | "fail" | "unknown";
+                            /** @enum {string} */
+                            tracking: "pass" | "fail" | "unknown";
+                        };
+                        /** @description The CNAME record to add at your DNS host so the tracking check passes. */
+                        tracking_record: {
+                            name: string;
+                            /** @enum {string} */
+                            type: "CNAME";
+                            value: string;
+                        };
+                        /** @description Blocklists named in bounce messages; empty until one is. */
+                        blocklists: string[];
+                        /** Format: date-time */
+                        checked_at: string | null;
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description DOMAIN_NOT_FOUND: no Mailbox of this team is on this domain (another team's domain answers the same), or RESOURCE_NOT_FOUND where Mailboxes are not available to this team. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1DomainsDomainChecks: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description The sending domain, such as `acme.example`. */
+                domain: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The domain, checked now. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Domain id (dom_...), opaque. */
+                        id: string;
+                        name: string;
+                        /** @description `unknown` means a lookup failed or the DKIM selector is not known yet; it never means a failure. */
+                        checks: {
+                            /** @enum {string} */
+                            mx: "pass" | "fail" | "unknown";
+                            /** @enum {string} */
+                            spf: "pass" | "fail" | "unknown";
+                            /** @enum {string} */
+                            dkim: "pass" | "fail" | "unknown";
+                            /** @enum {string} */
+                            dmarc: "pass" | "fail" | "unknown";
+                            /** @enum {string} */
+                            tracking: "pass" | "fail" | "unknown";
+                        };
+                        /** @description The CNAME record to add at your DNS host so the tracking check passes. */
+                        tracking_record: {
+                            name: string;
+                            /** @enum {string} */
+                            type: "CNAME";
+                            value: string;
+                        };
+                        /** @description Blocklists named in bounce messages; empty until one is. */
+                        blocklists: string[];
+                        /** Format: date-time */
+                        checked_at: string | null;
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description DOMAIN_NOT_FOUND: no Mailbox of this team is on this domain (another team's domain answers the same), or RESOURCE_NOT_FOUND where Mailboxes are not available to this team. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -55398,10 +56852,10 @@ export interface operations {
                         /** @description One row per budget row with at least one counted call in the window, in the Safety row order. */
                         types: {
                             /**
-                             * @description The budget row. Units differ per row: connection_requests_with_note, one invitation sent with a note (also counted in Invitations); connection_requests_no_note, one invitation sent, with or without a note; messages_first_degree, one message to a 1st-degree connection; inmail, one InMail sent; open_profile_inmail, one free message to an Open Profile; profile_views, one profile read; search, one search result line, not one query; comments, one comment posted; post_likes, one reaction to a post, a comment or a message; follows, one follow; content_poll, one content read: a page of posts, a feed, a company page or its followers; job_poll, one read of job postings; posts, one post published; endorsements, one skill endorsed; invite_responses, one received invitation accepted or declined; withdrawal_sweep, one sent invitation withdrawn; connections_sync, one background read of the connection list; inbox_sync, one background read of the inbox; profile_snapshot, one attempt of the daily Account snapshot.
+                             * @description The budget row. Units differ per row: connection_requests_with_note, one invitation sent with a note (also counted in Invitations); connection_requests_no_note, one invitation sent, with or without a note; connection_requests_day, one invitation sent today, with or without a note; messages_first_degree, one message to a 1st-degree connection; inmail, one InMail sent; open_profile_inmail, one free message to an Open Profile; profile_views, one profile read; search, one search result line, not one query; comments, one comment posted; post_likes, one reaction to a post, a comment or a message; follows, one follow; content_poll, one content read: a page of posts, a feed, a company page or its followers; company_reads, one company page read; limit_probes, one read that detects the Account's plan; notification_reads, one read of the notifications; viewer_reads, one read of the profile viewer list; other_reads, one read with no limit of its own; search_parameters, one search-parameter lookup that reaches LinkedIn; job_poll, one read of job postings; posts, one post published; endorsements, one skill endorsed; invite_responses, one received invitation accepted or declined; withdrawal_sweep, one sent invitation withdrawn; connections_sync, one background read of the connection list; inbox_sync, one background read of the inbox; profile_snapshot, one attempt of the daily Account snapshot.
                              * @enum {string}
                              */
-                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot";
+                            budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "company_reads" | "limit_probes" | "notification_reads" | "viewer_reads" | "other_reads" | "search_parameters" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot";
                             /** @description Units the row counted in the window: successful and failed calls, as its quotas counter holds them. */
                             used: number;
                             /** @description Of used, units of calls that failed. */
@@ -55425,10 +56879,10 @@ export interface operations {
                             account_name: string | null;
                             types: {
                                 /**
-                                 * @description The budget row. Units differ per row: connection_requests_with_note, one invitation sent with a note (also counted in Invitations); connection_requests_no_note, one invitation sent, with or without a note; messages_first_degree, one message to a 1st-degree connection; inmail, one InMail sent; open_profile_inmail, one free message to an Open Profile; profile_views, one profile read; search, one search result line, not one query; comments, one comment posted; post_likes, one reaction to a post, a comment or a message; follows, one follow; content_poll, one content read: a page of posts, a feed, a company page or its followers; job_poll, one read of job postings; posts, one post published; endorsements, one skill endorsed; invite_responses, one received invitation accepted or declined; withdrawal_sweep, one sent invitation withdrawn; connections_sync, one background read of the connection list; inbox_sync, one background read of the inbox; profile_snapshot, one attempt of the daily Account snapshot.
+                                 * @description The budget row. Units differ per row: connection_requests_with_note, one invitation sent with a note (also counted in Invitations); connection_requests_no_note, one invitation sent, with or without a note; connection_requests_day, one invitation sent today, with or without a note; messages_first_degree, one message to a 1st-degree connection; inmail, one InMail sent; open_profile_inmail, one free message to an Open Profile; profile_views, one profile read; search, one search result line, not one query; comments, one comment posted; post_likes, one reaction to a post, a comment or a message; follows, one follow; content_poll, one content read: a page of posts, a feed, a company page or its followers; company_reads, one company page read; limit_probes, one read that detects the Account's plan; notification_reads, one read of the notifications; viewer_reads, one read of the profile viewer list; other_reads, one read with no limit of its own; search_parameters, one search-parameter lookup that reaches LinkedIn; job_poll, one read of job postings; posts, one post published; endorsements, one skill endorsed; invite_responses, one received invitation accepted or declined; withdrawal_sweep, one sent invitation withdrawn; connections_sync, one background read of the connection list; inbox_sync, one background read of the inbox; profile_snapshot, one attempt of the daily Account snapshot.
                                  * @enum {string}
                                  */
-                                budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot";
+                                budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "company_reads" | "limit_probes" | "notification_reads" | "viewer_reads" | "other_reads" | "search_parameters" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot";
                                 /** @description Units the row counted in the window: successful and failed calls, as its quotas counter holds them. */
                                 used: number;
                                 /** @description Of used, units of calls that failed. */
@@ -55442,7 +56896,7 @@ export interface operations {
                                  * @description The safety row. `search` counts result LINES, not queries issued; `content_poll` also debits `profile_views`. Two rows are not counters and say so in `kind`: `total_actions` is a tally of everything this account did in the window, and `pending_invites` is the outstanding invitation backlog read from the platform rather than something this account spends.
                                  * @enum {string}
                                  */
-                                budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
+                                budget_row: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "company_reads" | "limit_probes" | "notification_reads" | "viewer_reads" | "other_reads" | "search_parameters" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
                                 /**
                                  * @description Which arithmetic produced `used`. `debit`: actions this account spent, counted as they happen. `tally`: a sum across the debit rows in the window, which is why it has a warn threshold and no ceiling. `gauge`: a level read from the platform rather than counted here, so it falls on its own as invitations are accepted or withdrawn.
                                  * @enum {string}
@@ -55473,6 +56927,19 @@ export interface operations {
                                 remaining: number | null;
                                 /** @description `interface_ceiling` with the account's warm-up ramp applied, and null wherever `interface_ceiling` is null. Read THIS to know where an elevated-interface call stops, for the same reason `effective_ceiling` rather than `ceiling` answers that for a standard one. */
                                 effective_interface_ceiling?: number | null;
+                                /** @description The highest `ceiling` a standard-interface call on this row is held to, whatever is configured: a stored value above it is kept and held to it (`effective_ceiling` shows the held figure). Null on a row with no maximum. Read-only. */
+                                hard_maximum?: number | null;
+                                /** @description The highest figure a call through this plan's own interface (the Sales Navigator or Recruiter operations) is held to on this row. Null where the plan has none. Read-only. */
+                                interface_hard_maximum?: number | null;
+                                /** @description True when the stored `ceiling` is above the highest maximum this Account's plan allows on this row; it is kept and held to the maximum, and a write above the maximum is refused. Read-only. */
+                                above_hard_maximum?: boolean;
+                                /** @description Today's use of this Account's profile visits by cause, summing to `used`: the keys `campaign`, `import`, `signal_watch` and `api` (any direct call). One budget, not four. Present on `profile_views` only; null on every other row. Read-only. */
+                                used_by_cause?: {
+                                    campaign: number;
+                                    import: number;
+                                    signal_watch: number;
+                                    api: number;
+                                } | null;
                                 /**
                                  * @description Where `used` sits against this row's own bands. `green` routine, `amber` at or past the routine band, `hard` at or past the warn-louder band, `over` at or past the ceiling, where the action is refused: limits are always enforced. A row with no figures reports `green` at every value, because there is nothing to be past.
                                  * @enum {string}
@@ -56392,6 +57859,16 @@ export interface operations {
                         next_invoice_at: string | null;
                         /** @description The newly created seat ids. */
                         seat_ids: string[];
+                        /** @description Present only when the add left the team at 80% of its spending cap or more (cap 10: from 8 seats): one SPENDING_CAP_NEAR entry, on every such add. Branch on code, never on message. */
+                        notices?: {
+                            /**
+                             * @description The team is close to its spending cap. An add past it is refused 403 SPENDING_CAP_REACHED.
+                             * @enum {string}
+                             */
+                            code: "SPENDING_CAP_NEAR";
+                            /** @description The seats the team now has, the cap, and that an Owner raises it. */
+                            message: string;
+                        }[];
                     };
                 };
             };
@@ -56422,7 +57899,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, only an Owner changes seats. Not fixed by retrying. */
+            /** @description INSUFFICIENT_ROLE: in a team, only an Owner changes seats. SPENDING_CAP_REACHED: an agent's add or revert would take the team past its spending cap; nothing changed, cap_seats and room_seats say how far it may go. Neither is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -56551,7 +58028,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description The workspace is on a free trial and cannot change seats. Buy a seat to convert to a paid subscription first. Or SEAT_LENT: the seat is lent to another Team, so it cannot be cancelled on its own. Nothing changed. Move it back first (POST /v1/billing/seats/{seat_id}/return). */
+            /** @description The workspace is on a free trial and cannot change seats. Buy a seat to convert to a paid subscription first. Or SEAT_LENT: the seat is lent to another Team, so it cannot be cancelled on its own. Nothing changed. Move it back first (POST /v1/billing/seats/{seat_id}/return). Or CANCEL_IN_DASHBOARD: this is the team's last paid seat, and removing it cancels the subscription. Nothing changed. An Owner cancels in the dashboard (Settings, Billing); retrying does not help. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -56644,7 +58121,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, only an Owner changes seats. Not fixed by retrying. */
+            /** @description INSUFFICIENT_ROLE: in a team, only an Owner changes seats. SPENDING_CAP_REACHED: an agent's add or revert would take the team past its spending cap; nothing changed, cap_seats and room_seats say how far it may go. Neither is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
