@@ -38,6 +38,8 @@ import {
   type MotionsResource,
   type EnrollmentsResource,
   type TierResource,
+  type MailboxesResource,
+  type DomainsResource,
   type NetworkResource,
   type UniboxResource,
   type AnalyticsResource,
@@ -76,6 +78,10 @@ export class Curviate {
   readonly enrollments: EnrollmentsResource;
   /** The Team's Tier and its features; `TIER_REQUIRED` explained. */
   readonly tier: TierResource;
+  /** Your Team's sending Mailboxes; connect one with `connectRequests.create({ mailbox })`. */
+  readonly mailboxes: MailboxesResource;
+  /** The DNS checks of your sending domains. */
+  readonly domains: DomainsResource;
   /** Your accounts' stored LinkedIn Connections and their sync. */
   readonly network: NetworkResource;
   /** One inbox over every account you can operate; full-inbox sync per account. */
@@ -110,6 +116,8 @@ export class Curviate {
     this.motions = ns.motions;
     this.enrollments = ns.enrollments;
     this.tier = ns.tier;
+    this.mailboxes = ns.mailboxes;
+    this.domains = ns.domains;
     this.network = ns.network;
     this.unibox = ns.unibox;
     this.analytics = ns.analytics;

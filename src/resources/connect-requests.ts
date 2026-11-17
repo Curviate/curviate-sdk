@@ -6,6 +6,14 @@
  * connect in their own Curviate dashboard. Your code never handles a LinkedIn
  * password, cookie or verification code: never ask for one.
  *
+ * The same request connects or reconnects a Mailbox (`kind` `mailbox_connect`
+ * or `mailbox_reconnect`): pass `mailbox` (new) or `mailbox_id` (reconnect).
+ * The one secret in this resource is a Mailbox's app or host password, and it
+ * goes in the `credentials` field of the create body and nowhere else: not a
+ * URL, a query, a log line, a prompt or a tool argument. The answer never
+ * holds it. Pass it only when the person handed it to you for this; a sign-in
+ * connection (`microsoft_sign_in`, `google_sign_in`) takes no password at all.
+ *
  * Poll {@link ConnectRequestsResource.get} until `status` leaves `pending`:
  * `completed` (then `account_id` is the connected account), `expired` (not
  * started within 15 minutes), `failed` or `cancelled`.
@@ -45,9 +53,44 @@ export class ConnectRequestsResource {
    * full limits from the start); with `account_id` it is
    * `400 INVALID_REQUEST`.
    *
+   * **A Mailbox** instead of a LinkedIn account: send `mailbox: { connection,
+   * address, imap?, smtp? }` for a new one (`kind` `mailbox_connect`) or
+   * `mailbox_id` (`mbx_...`) to reconnect one of your Team's
+   * (`mailbox_reconnect`). `connection` is `google_app_password` (Gmail and
+   * Google Workspace), `google_sign_in` (a Google Workspace whose
+   * administrator trusts Curviate; a private Gmail address is refused with
+   * `MAILBOX_APP_PASSWORD_REQUIRED`), `microsoft_sign_in` or `imap_smtp`.
+   * `imap_smtp` needs `imap` and `smtp` (`host`, `port`, `security` of `tls` or
+   * `starttls`, never cleartext): the settings from
+   * `curviate.mailboxes.discover`, as the person confirmed them.
+   *
+   * `credentials: { password }` is for `google_app_password`, `imap_smtp` and
+   * (reconnect only) `google_sign_in`. Curviate checks the password before it
+   * answers and keeps it sealed; the answer and every later read never return
+   * it. It belongs only in this request body: keep it out of URLs, logs and
+   * anything an agent echoes. On a sign-in connection `credentials` is
+   * `400 INVALID_REQUEST`. Relay the answer's `url` to the person, and
+   * `admin_consent_url` for an administrator where the provider needs one;
+   * poll `get` until `status` leaves `pending`, then `mailbox_id` names the
+   * connected Mailbox. An address already connected is
+   * `MAILBOX_ALREADY_CONNECTED`.
+   *
    * @example
    * const req = await curviate.connectRequests.create();
    * console.log(`Open this link to connect your LinkedIn account: ${req.url}`);
+   *
+   * @example
+   * // A Mailbox: sign in with Microsoft, no password anywhere.
+   * const req = await curviate.connectRequests.create({
+   *   mailbox: { connection: "microsoft_sign_in", address: "anna@acme.example" },
+   * });
+   *
+   * @example
+   * // An app password the person handed you, read from your own secret store.
+   * const req = await curviate.connectRequests.create({
+   *   mailbox: { connection: "google_app_password", address: "anna@acme.example" },
+   *   credentials: { password: process.env.MAILBOX_APP_PASSWORD! },
+   * });
    */
   create(body: ConnectRequestCreateBody = {}): Promise<ConnectRequest> {
     return this.ctx.request<ConnectRequest>({
