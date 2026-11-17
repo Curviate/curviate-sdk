@@ -109,6 +109,11 @@ export function replyRouteActs(doc: unknown): boolean {
     }
     return false;
 }
+export function businessDays(v: unknown): number | null {
+    const m = typeof v === "string" ? /^([1-9][0-9]*)bd$/.exec(v) : null;
+    return m ? Number(m[1]) : null;
+}
+export const waitMinutes = (v: unknown): number => durationMinutes(v) || (businessDays(v) ?? 0) * 1440;
 export function durationMinutes(v: unknown): number {
     const m = typeof v === "string" ? /^([1-9][0-9]*)(m|h|d)$/.exec(v) : null;
     if (!m)
@@ -117,42 +122,44 @@ export function durationMinutes(v: unknown): number {
 }
 export interface RouteCosts {
     longestMinutes: number;
+    longestBusinessDays: number;
     perKey: Map<string, number>;
 }
 export function routeCosts(doc: unknown, weigh: (step: Obj) => string | null): RouteCosts {
     const { nodes, first } = graphOf(doc);
-    const memo = new Map<string, {
+    type Cost = {
         minutes: number;
+        bd: number;
         counts: Map<string, number>;
-    }>();
-    const visit = (at: string, onTrail: Set<string>): {
-        minutes: number;
-        counts: Map<string, number>;
-    } => {
+    };
+    const memo = new Map<string, Cost>();
+    const visit = (at: string, onTrail: Set<string>): Cost => {
         const node = at === END ? undefined : nodes.get(at);
         if (node === undefined || onTrail.has(at))
-            return { minutes: 0, counts: new Map() };
+            return { minutes: 0, bd: 0, counts: new Map() };
         const done = memo.get(at);
         if (done)
             return done;
         onTrail.add(at);
         let minutes = 0;
+        let bd = 0;
         const counts = new Map<string, number>();
         for (const x of node.exits) {
             const r = visit(x.to, onTrail);
-            minutes = Math.max(minutes, r.minutes);
+            if (r.minutes > minutes)
+                [minutes, bd] = [r.minutes, r.bd];
             for (const [k, c] of r.counts)
                 counts.set(k, Math.max(counts.get(k) ?? 0, c));
         }
         onTrail.delete(at);
-        const own = node.step.wait !== undefined ? durationMinutes(node.step.wait) : node.step.until !== undefined ? durationMinutes(node.step.timeout) : 0;
+        const duration = node.step.wait !== undefined ? node.step.wait : node.step.until !== undefined ? node.step.timeout : undefined;
         const key = weigh(node.step);
         if (key !== null)
             counts.set(key, (counts.get(key) ?? 0) + 1);
-        const out = { minutes: minutes + own, counts };
+        const out = { minutes: minutes + waitMinutes(duration), bd: bd + (businessDays(duration) ?? 0), counts };
         memo.set(at, out);
         return out;
     };
-    const r = first === null ? { minutes: 0, counts: new Map<string, number>() } : visit(first, new Set());
-    return { longestMinutes: r.minutes, perKey: r.counts };
+    const r = first === null ? { minutes: 0, bd: 0, counts: new Map<string, number>() } : visit(first, new Set());
+    return { longestMinutes: r.minutes, longestBusinessDays: r.bd, perKey: r.counts };
 }

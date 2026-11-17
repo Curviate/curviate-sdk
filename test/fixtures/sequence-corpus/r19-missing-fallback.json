@@ -20,11 +20,11 @@
   "errors": [
     {
       "path": "m.with.fallback",
-      "rule": "required because the text uses a variable",
+      "rule": "{{lead.first_name}} has no fallback: write {{lead.first_name|...}}, add the step's fallback, or set on_missing to skip",
       "code": "R19",
-      "message": "required because the text uses a variable",
+      "message": "{{lead.first_name}} has no fallback: write {{lead.first_name|...}}, add the step's fallback, or set on_missing to skip",
       "pointer": "/steps/0/with",
-      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "hint": "Give each variable its own fallback ({{lead.first_name|there}}), or add a variable-free one on the step: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment; or set on_missing to skip.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19",
       "severity": "error"
     }

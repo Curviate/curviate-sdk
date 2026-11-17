@@ -6,6 +6,12 @@
  * start or send, InMail, follow, endorse, a reaction or comment, a live
  * profile read). A reply in a conversation they wrote in stays allowed. An
  * entry whose Lead was deleted still applies (`lead` reads `null`).
+ *
+ * An entry's `scope` is `everything` (the default) or `email_only`: email
+ * steps skip the person (`no_email`) while LinkedIn Campaigns and writes still
+ * reach them. `how` says what wrote it: `person` (`added_by` names who),
+ * `unsubscribe_link`, `email_header` or `reply_model`. The Lead read carries
+ * the entry as `do_not_contact: { scope, reason, how, at }`, or `null`.
  */
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";
@@ -45,7 +51,8 @@ export class DoNotContactResource {
 
   /**
    * One entry. `reason` is one of `asked_to_stop`, `existing_customer`,
-   * `competitor`, `partner`, `employee`, `other`, or `null`.
+   * `competitor`, `partner`, `employee`, `other`, `unsubscribed`, or `null`;
+   * `scope`, `how` and `added_by` (`null` unless `how` is `person`).
    * `GET /v1/do-not-contact/{id}`
    *
    * @example
@@ -58,13 +65,14 @@ export class DoNotContactResource {
   /**
    * Add one person by `lead_id` or `linkedin_url` (someone who is not a
    * Lead yet becomes one first, from stored data only), with an optional
-   * `reason`. A person already on the list resolves with their existing entry,
+   * `reason` and `scope` (`everything`, the default, or `email_only`). A person already on the list resolves with their existing entry,
    * unchanged. Any team member may add. For many people use {@link DoNotContactResource.import}. Needs
    * Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
    * `POST /v1/do-not-contact`
    *
    * @example
    * const entry = await curviate.doNotContact.add({ linkedin_url: "https://www.linkedin.com/in/ana/", reason: "asked_to_stop" });
+   * await curviate.doNotContact.add({ lead_id: "con_123", scope: "email_only" });
    */
   add(body: DoNotContactAddBody): Promise<DoNotContactEntry> {
     return this.ctx.request<DoNotContactEntry>({ method: "POST", path: "/v1/do-not-contact", body });
@@ -86,8 +94,8 @@ export class DoNotContactResource {
    * Export the whole list in one download, no paging, oldest first.
    * `format: "json"` resolves with the entry array; `csv` (UTF-8 with a BOM) and
    * `ndjson` (the default) resolve with the raw bytes. Each entry has
-   * `linkedin_url` (`null` once the Lead was deleted), `reason`, `added_by`,
-   * `via`, `created_at` and `id`. The file re-imports with {@link DoNotContactResource.import}.
+   * `linkedin_url` (`null` once the Lead was deleted), `reason`, `scope`,
+   * `how`, `added_by`, `via`, `created_at` and `id`. The file re-imports with {@link DoNotContactResource.import}.
    * Owners and Managers only (`INSUFFICIENT_ROLE`).
    * `GET /v1/do-not-contact/export`
    *
@@ -108,10 +116,10 @@ export class DoNotContactResource {
 
   /**
    * Put the people of a file on the list: up to 10,000 `rows` of
-   * `{ linkedin_url, reason? }`, or a `csv` string with a header line (an
+   * `{ linkedin_url, reason?, scope? }`, or a `csv` string with a header line (an
    * exported file works as it is). Each row works as {@link DoNotContactResource.add}:
    * a person already listed is `unchanged`, their entry and reason stay. A bad
-   * URL or reason skips its row (`skip_reason`) and the others apply; a bad
+   * URL, reason or scope skips its row (`skip_reason`) and the others apply; a bad
    * structure rejects the file. Resolves with the per-row report. Any team
    * member may import. Needs Automate.
    * `POST /v1/do-not-contact/import`

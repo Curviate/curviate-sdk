@@ -1,0 +1,42 @@
+{
+  "about": "weight 1.5, not an integer",
+  "rules": [
+    "R23"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "variants": [
+          {
+            "id": "v0",
+            "text": "Hi",
+            "weight": 1.5
+          },
+          {
+            "id": "v1",
+            "text": "Hi",
+            "weight": 1
+          }
+        ],
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "m.variants.v0.weight",
+      "rule": "weight is an integer 1 to 100",
+      "code": "R23",
+      "message": "weight is an integer 1 to 100",
+      "pointer": "/steps/0/variants/0/weight",
+      "hint": "Give the step 2 to 5 variants with ids unique in the document (weights on all or none, each 1 to 100), or one text in with.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r23",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

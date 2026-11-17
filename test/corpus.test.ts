@@ -45,4 +45,31 @@ describe("builder and embedded schema speak Lead and Campaign", () => {
     expect(validateSequence(doc).errors).toEqual([]);
     expect(JSON.stringify(SEQUENCE_SCHEMA_V1)).not.toMatch(/contact|motion/i);
   });
+
+  it("types what the API accepts (email step, per-variable fallbacks, on_missing, weights, business days) and refuses at compile time what it refuses", () => {
+    const doc = Sequence.create({ on_reply: "end" })
+      .add(
+        step.do("m", "message.send", { with: { text: "Hi {{lead.first_name|there}}" }, next: "w" }),
+        step.wait("w", "3bd", { next: "e" }),
+        step.do("e", "email.send", {
+          with: { subject: "Hi {{lead.first_name|there}}", text: "Hello {{lead.first_name|there}}\n\n{{mailbox.signature}}", on_missing: "skip" },
+          next: "u",
+        }),
+        step.until("u", "message.replied", { timeout: "5bd", then: "end", else: "v" }),
+        step.do("v", "message.send", {
+          variants: [
+            { id: "v_a", text: "One", weight: 70 },
+            { id: "v_b", text: "Two", weight: 30 },
+          ],
+          next: "end",
+        }),
+      )
+      .toDocument();
+    expect(validateSequence(doc)).toEqual({ errors: [], warnings: expect.any(Array) });
+    // @ts-expect-error a duration is m, h, d or bd
+    step.wait("x", "3w");
+    // @ts-expect-error a message variable without its own fallback needs the step's
+    step.do("y", "message.send", { with: { text: "Hi {{lead.first_name}}" } });
+    step.do("z", "message.send", { with: { text: "Hi {{lead.first_name}}", on_missing: "hold" } });
+  });
 });

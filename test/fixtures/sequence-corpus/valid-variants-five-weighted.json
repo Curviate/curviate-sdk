@@ -1,0 +1,44 @@
+{
+  "about": "5 variants with weights on all: valid",
+  "rules": [],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "variants": [
+          {
+            "id": "v0",
+            "text": "Hi",
+            "weight": 40
+          },
+          {
+            "id": "v1",
+            "text": "Hi",
+            "weight": 30
+          },
+          {
+            "id": "v2",
+            "text": "Hi",
+            "weight": 20
+          },
+          {
+            "id": "v3",
+            "text": "Hi",
+            "weight": 5
+          },
+          {
+            "id": "v4",
+            "text": "Hi",
+            "weight": 5
+          }
+        ],
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": []
+}

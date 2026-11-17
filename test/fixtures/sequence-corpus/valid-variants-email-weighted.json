@@ -1,0 +1,37 @@
+{
+  "about": "email.send: 3 variants with weights on all: valid",
+  "rules": [],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "e",
+        "do": "email.send",
+        "variants": [
+          {
+            "id": "v0",
+            "subject": "S",
+            "text": "Hi",
+            "weight": 50
+          },
+          {
+            "id": "v1",
+            "subject": "S",
+            "text": "Hi",
+            "weight": 30
+          },
+          {
+            "id": "v2",
+            "subject": "S",
+            "text": "Hi",
+            "weight": 20
+          }
+        ],
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": []
+}

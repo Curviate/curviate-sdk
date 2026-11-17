@@ -1,8 +1,8 @@
 // Vendored from the API by scripts/vendor-shared.mjs. Do not edit: change the API and re-run.
-import { durationMinutes } from "./paths.js";
+import { businessDays, durationMinutes } from "./paths.js";
 import { normalizePath } from "../field-paths.js";
 import { awaitedEventName } from "./references.js";
-import { ACCOUNT_FIELDS, ACTION_PARAMS, ACTIONS, VOICE_CLIP_ID_RE, VOICE_CLIP_RULE, BOOLEAN_PREDICATES, DURATION_BOUNDS, DEPRECATED_ACCEPTED_UNTIL, DURATION_PATTERN, END, EVENT_NAME_PATTERN, EVENTS, EXTRA_KEY_PATTERN, FIELD_OPERATORS, ID_PATTERN, MAX_PREDICATE_DEPTH, MAX_QUOTED_TOKEN_CHARS, MAX_SAVE_ENTRIES, MAX_SEQUENCE_BYTES, MAX_STEP_NOTE_CHARS, MAX_STEPS, MAX_VARIABLE_REFS_PER_TEXT, MAX_TAG_CHARS, MAX_VARIANTS, MAX_VARIANTS_DEPRECATED, MESSAGING_ACTIONS, MY_FIELDS, MIN_VARIANTS, NAME_FIELDS, NUMBER_OPERATORS, REACTIONS, SAVE_NAME_PATTERN, SEQUENCE_SCHEMA_URL, STANDARD_FIELDS, languageCode, STEP_KEYS, STEP_KINDS, TAG_PATTERN, TEXT_LIMITS, type Action, type StepKind, fallbackKeyword, isObject, longVariable, } from "./limits.js";
+import { ACCOUNT_FIELDS, ACTION_PARAMS, ACTIONS, VOICE_CLIP_ID_RE, VOICE_CLIP_RULE, BOOLEAN_PREDICATES, DURATION_BOUNDS, DEPRECATED_ACCEPTED_UNTIL, DURATION_PATTERN, BUSINESS_DAYS, EMAIL_OPT_OUT_FORMS, EMAIL_REFUSED_KEYS, EMAIL_THREADS, END, hasEmailStep, EVENT_NAME_PATTERN, EVENTS, EXTRA_KEY_PATTERN, FIELD_OPERATORS, ID_PATTERN, MAX_PREDICATE_DEPTH, MAX_QUOTED_TOKEN_CHARS, MAX_SAVE_ENTRIES, MAX_SEQUENCE_BYTES, MAX_STEP_NOTE_CHARS, MAX_STEPS, MAX_VARIABLE_REFS_PER_TEXT, MAX_TAG_CHARS, MAX_VARIANTS, MAX_VARIANT_WEIGHT, MIN_VARIANT_WEIGHT, MESSAGING_ACTIONS, MY_FIELDS, MIN_VARIANTS, NAME_FIELDS, NUMBER_OPERATORS, ON_MISSING, OPT_OUT_MAX, OPT_OUT_TEXTS, REACTIONS, SAVE_NAME_PATTERN, SEQUENCE_SCHEMA_URL, STANDARD_FIELDS, languageCode, STEP_KEYS, STEP_KINDS, TAG_PATTERN, TEXT_LIMITS, type Action, type StepKind, fallbackKeyword, isObject, longVariable, } from "./limits.js";
 import { isMessageSend } from "./message-actions.js";
 import { ruleHelp } from "./rules.js";
 export interface PathRule {
@@ -31,7 +31,10 @@ export type SendingAccountProfile = "basic" | "premium" | "sales_navigator" | "r
 export interface MotionWarningContext {
     accountProfiles: readonly SendingAccountProfile[];
     assign?: string | undefined;
+    minEmailGap?: number | undefined;
+    noMailbox?: readonly string[] | undefined;
 }
+export const EMAIL_GAP_LOW_BELOW = 2;
 export type SampleShapes = Readonly<Record<string, readonly {
     path: string;
     type: string;
@@ -108,6 +111,17 @@ export function motionWarnings(doc: unknown, ctx: MotionWarningContext & {
             warn("W4", `${id}.until`, jsonPointer("steps", i, "until"), "every sending Account uses Recruiter, and Recruiter chats never report a message as read");
         }
     });
+    if (hasEmailStep(doc)) {
+        if (typeof doc["on_reply"] === "string" && doc["on_reply"] !== END) {
+            warn("W19", "on_reply", "/on_reply", "on_reply_ignored: A reply ends this Campaign because it has an email step; this reply route is not taken.");
+        }
+        if (ctx.minEmailGap !== undefined && ctx.minEmailGap < EMAIL_GAP_LOW_BELOW) {
+            warn("W20", "schedule.min_email_gap_minutes", "", `email_gap_low: ${ctx.minEmailGap} minute${ctx.minEmailGap === 1 ? "" : "s"} between two emails from one Mailbox reads as automation; 5 or more is safer`);
+        }
+        for (const account of ctx.noMailbox ?? []) {
+            warn("W21", "account_ids", "", `no_mailbox: ${quote(account)} has no Mailbox that can send, so its Leads wait at their email steps; connect one, or choose a shared Mailbox`);
+        }
+    }
     return out;
 }
 export function validateWhere(where: unknown): PathRule[] {
@@ -182,14 +196,17 @@ type Bounds = {
     label: string;
     example: string;
 };
-function durationRule(bounds: Bounds): string {
-    return `must be a duration between ${bounds.label}: a number then m, h or d, like 30d`;
+function durationRule(bounds: Bounds, bd = false): string {
+    return `must be a duration between ${bounds.label}: a number then m, h or d, like 30d${bd ? `, or business days from ${BUSINESS_DAYS.min}bd to ${BUSINESS_DAYS.max}bd` : ""}`;
 }
 const durationHint = (bounds: Bounds) => `${bounds.label}, for example ${bounds.example}`;
 function durationOk(v: unknown, bounds: {
     min: number;
     max: number;
-}): boolean {
+}, bd = false): boolean {
+    const n = bd ? businessDays(v) : null;
+    if (n !== null)
+        return n >= BUSINESS_DAYS.min && n <= BUSINESS_DAYS.max;
     if (typeof v !== "string" || !DURATION_RE.test(v))
         return false;
     const m = durationMinutes(v);
@@ -202,9 +219,52 @@ const TAG_RULE = "a Tag name is 1 to 64 characters, without , or ;";
 interface Variable {
     token: string;
     inner: string;
+    fallback: string | null;
+    pipes: number;
 }
 function variablesIn(text: string): Variable[] {
-    return [...text.matchAll(VARIABLE_RE)].map((m) => ({ token: m[0], inner: m[1]!.trim() }));
+    return [...text.matchAll(VARIABLE_RE)].map((m) => {
+        const [name, ...rest] = m[1]!.split("|");
+        return { token: m[0], inner: name!.trim(), fallback: rest.length ? rest.join("|").trim() : null, pipes: rest.length };
+    });
+}
+const lacksFallback = (v: Variable): boolean => v.fallback === null && v.inner !== "mailbox.signature" && !v.inner.startsWith("campaign.");
+const PIPE_ACTIONS: readonly string[] = ["message.send", "inmail.send", "email.send"];
+export function leadVariablesWithoutFallback(doc: unknown): Array<{
+    variable: string;
+    steps: string[];
+    on_missing: string;
+}> {
+    const out = new Map<string, {
+        variable: string;
+        steps: string[];
+        on_missing: string;
+    }>();
+    const steps = isObject(doc) && Array.isArray(doc["steps"]) ? doc["steps"] : [];
+    for (const st of steps) {
+        if (!isObject(st) || typeof st["id"] !== "string" || !PIPE_ACTIONS.includes(st["do"] as string))
+            continue;
+        const w = isObject(st["with"]) ? st["with"] : {};
+        const onMissing = typeof w["on_missing"] === "string" ? w["on_missing"] : "fallback";
+        const arms = Array.isArray(st["variants"]) ? st["variants"].filter(isObject) : [w];
+        for (const arm of arms) {
+            for (const k of ["subject", "text", "body_html"]) {
+                if (typeof arm[k] !== "string")
+                    continue;
+                for (const v of variablesIn(arm[k] as string).filter(lacksFallback)) {
+                    const long = longVariable(v.inner);
+                    if (long === null || !long.startsWith("lead."))
+                        continue;
+                    const key = `${long}|${onMissing}`;
+                    const e = out.get(key) ?? { variable: long, steps: [], on_missing: onMissing };
+                    if (!e.steps.includes(st["id"]))
+                        e.steps.push(st["id"]);
+                    out.set(key, e);
+                }
+            }
+        }
+    }
+    return [...out.values()];
 }
 function hasVariable(text: string): boolean {
     return variablesIn(text).length > 0;
@@ -252,7 +312,7 @@ interface Ctx {
 }
 const issue = (ctx: Ctx, i: Issue) => ctx.issues.push(i);
 const warning = (ctx: Ctx, i: Issue) => ctx.warnings.push(i);
-function checkText(ctx: Ctx, order: number, path: string, pointer: string, parent: string, value: unknown, limit: number): string | null {
+function checkText(ctx: Ctx, order: number, path: string, pointer: string, parent: string, value: unknown, limit: number, email = false, pipes = false): string | null {
     if (typeof value !== "string" || value.trim() === "") {
         issue(ctx, { order, code: "R13", path, pointer: typeof value === "undefined" ? parent : pointer, rule: "must be non-empty text" });
         return null;
@@ -263,8 +323,17 @@ function checkText(ctx: Ctx, order: number, path: string, pointer: string, paren
         issue(ctx, { ...at, code: "R22", rule: `${vars.length} variables; the limit is ${MAX_VARIABLE_REFS_PER_TEXT} per text` });
     }
     for (const v of vars.length > MAX_VARIABLE_REFS_PER_TEXT ? [] : vars) {
-        if (v.inner.includes("|")) {
-            issue(ctx, { ...at, code: "R17", rule: "variable defaults are not supported; add a fallback" });
+        if (v.pipes > 0 && !pipes) {
+            issue(ctx, { ...at, code: "R17", rule: `${quote(v.token)}: a fallback after | works only in message.send, inmail.send and email.send; use the step's fallback here` });
+            continue;
+        }
+        if (v.pipes > 1 || v.fallback === "") {
+            issue(ctx, { ...at, code: "R17", rule: `${quote(v.token)}: write one non-empty fallback after |, as {{lead.first_name|there}}` });
+            continue;
+        }
+        if (v.inner === "mailbox.signature") {
+            if (!email)
+                issue(ctx, { ...at, code: "R16", rule: `${quote(v.token)} is valid only in an email.send step` });
             continue;
         }
         const campaign = /^campaign\.([a-z][a-z0-9_]{0,39})$/.exec(v.inner);
@@ -519,8 +588,8 @@ function run(doc: unknown, mode: Mode): SequenceValidationResult {
                 checkDo(ctx, order, p, ptr, raw, usedIds);
                 break;
             case "wait":
-                if (!durationOk(raw["wait"], DURATION_BOUNDS.wait)) {
-                    issue(ctx, { order, code: "R12", path: `${p}.wait`, pointer: `${ptr}/wait`, rule: durationRule(DURATION_BOUNDS.wait), token: durationHint(DURATION_BOUNDS.wait) });
+                if (!durationOk(raw["wait"], DURATION_BOUNDS.wait, true)) {
+                    issue(ctx, { order, code: "R12", path: `${p}.wait`, pointer: `${ptr}/wait`, rule: durationRule(DURATION_BOUNDS.wait, true), token: durationHint(DURATION_BOUNDS.wait) });
                 }
                 break;
             case "until":
@@ -603,13 +672,13 @@ function checkUntil(ctx: Ctx, order: number, p: string, ptr: string, raw: Record
     if (!has(raw, "timeout")) {
         issue(ctx, { order, code: "R14", path: `${p}.timeout`, pointer: ptr, rule: "required on an until step" });
     }
-    else if (!durationOk(raw["timeout"], DURATION_BOUNDS.timeout)) {
+    else if (!durationOk(raw["timeout"], DURATION_BOUNDS.timeout, true)) {
         issue(ctx, {
             order,
             code: "R12",
             path: `${p}.timeout`,
             pointer: `${ptr}/timeout`,
-            rule: durationRule(DURATION_BOUNDS.timeout),
+            rule: durationRule(DURATION_BOUNDS.timeout, true),
             token: durationHint(DURATION_BOUNDS.timeout),
         });
     }
@@ -701,7 +770,9 @@ function checkDo(ctx: Ctx, order: number, p: string, ptr: string, raw: Record<st
                         code: "R13",
                         path: `${p}.with.${quote(k)}`,
                         pointer: `${wp}${jsonPointer(k)}`,
-                        rule: `unknown parameter; ${a} takes ${params.length ? params.join(", ") : "no parameters"}`,
+                        rule: a === "email.send" && Object.hasOwn(EMAIL_REFUSED_KEYS, k)
+                            ? EMAIL_REFUSED_KEYS[k]!
+                            : `unknown parameter; ${a} takes ${params.length ? params.join(", ") : "no parameters"}`,
                     });
                 }
             }
@@ -734,23 +805,33 @@ function checkDo(ctx: Ctx, order: number, p: string, ptr: string, raw: Record<st
     }
     if (!messaging)
         return;
+    const email = a === "email.send";
+    if (email)
+        checkEmailOptions(ctx, order, p, wp, w);
     const voice = a === "voice.send";
-    const textKeys = a === "inmail.send" ? ["subject", "text"] : voice ? ["clip_id"] : ["text"];
-    const checkField = (path: string, pointer: string, parent: string, value: unknown, limit: number): string | null => voice ? checkClipId(ctx, order, path, pointer, parent, value) : checkText(ctx, order, path, pointer, parent, value, limit);
+    const textKeys = a === "inmail.send" ? ["subject", "text"] : voice ? ["clip_id"] : email ? ["subject", "text", "body_html"] : ["text"];
+    const required = email ? ["text"] : textKeys;
+    const checkField = (path: string, pointer: string, parent: string, value: unknown, limit: number): string | null => voice ? checkClipId(ctx, order, path, pointer, parent, value) : checkText(ctx, order, path, pointer, parent, value, limit, email, PIPE_ACTIONS.includes(a));
     const withTextKeys = a === "invite.send" ? ["note"] : textKeys;
     const variants = hasVariants ? raw["variants"] : undefined;
     if (hasVariants && withTextKeys.some((k) => has(w, k) && w[k] !== null)) {
         issue(ctx, { order, code: "R23", path: `${p}.variants`, pointer: vptr, rule: `use either variants or with.${withTextKeys.join(" and with.")}, not both` });
     }
-    const limitOf = (field: string): number => a === "message.send" || voice
-        ? TEXT_LIMITS.message
-        : a === "post.comment"
-            ? TEXT_LIMITS.comment
-            : a === "invite.send"
-                ? TEXT_LIMITS.invite_note
-                : field === "subject"
-                    ? TEXT_LIMITS.inmail_subject
-                    : TEXT_LIMITS.inmail_text;
+    const limitOf = (field: string): number => email
+        ? field === "subject"
+            ? TEXT_LIMITS.email_subject
+            : field === "body_html"
+                ? TEXT_LIMITS.email_body_html
+                : TEXT_LIMITS.email_text
+        : a === "message.send" || voice
+            ? TEXT_LIMITS.message
+            : a === "post.comment"
+                ? TEXT_LIMITS.comment
+                : a === "invite.send"
+                    ? TEXT_LIMITS.invite_note
+                    : field === "subject"
+                        ? TEXT_LIMITS.inmail_subject
+                        : TEXT_LIMITS.inmail_text;
     const texts: {
         path: string;
         pointer: string;
@@ -759,16 +840,13 @@ function checkDo(ctx: Ctx, order: number, p: string, ptr: string, raw: Record<st
     }[] = [];
     if (hasVariants) {
         const n = Array.isArray(variants) ? variants.length : null;
-        if (n !== null && n > MAX_VARIANTS && n <= MAX_VARIANTS_DEPRECATED) {
-            warning(ctx, { order, code: "W13", path: `${p}.variants`, pointer: vptr, rule: `${n} variants; A/B takes exactly ${MAX_VARIANTS}${UNTIL}`, token: `${MAX_VARIANTS} variants` });
-        }
-        else if (n === null || n < MIN_VARIANTS || n > MAX_VARIANTS) {
+        if (n === null || n < MIN_VARIANTS || n > MAX_VARIANTS) {
             issue(ctx, {
                 order,
                 code: "R23",
                 path: `${p}.variants`,
                 pointer: vptr,
-                rule: `needs exactly ${MAX_VARIANTS} variants (A/B)${n === null ? "" : `; found ${n}`}`,
+                rule: `needs ${MIN_VARIANTS} to ${MAX_VARIANTS} variants${n === null ? "" : `; found ${n}`}`,
             });
         }
         (Array.isArray(variants) ? variants : []).forEach((v, j) => {
@@ -794,11 +872,22 @@ function checkDo(ctx: Ctx, order: number, p: string, ptr: string, raw: Record<st
                 vp = `${p}.variants.${vid}`;
             }
             for (const k of keysOf(v)) {
-                if (k !== "id" && !textKeys.includes(k)) {
-                    issue(ctx, { order, code: "R23", path: `${vp}.${quote(k)}`, pointer: `${vptrJ}${jsonPointer(k)}`, rule: `unknown key; a variant holds id and ${textKeys.join(" and ")}` });
+                if (k !== "id" && k !== "weight" && !textKeys.includes(k)) {
+                    issue(ctx, { order, code: "R23", path: `${vp}.${quote(k)}`, pointer: `${vptrJ}${jsonPointer(k)}`, rule: `unknown key; a variant holds id, ${textKeys.join(" and ")} and weight` });
                 }
             }
+            const wt = v["weight"];
+            if (has(v, "weight")) {
+                if (typeof wt !== "number" || !Number.isInteger(wt) || wt < MIN_VARIANT_WEIGHT || wt > MAX_VARIANT_WEIGHT) {
+                    issue(ctx, { order, code: "R23", path: `${vp}.weight`, pointer: `${vptrJ}/weight`, rule: `weight is an integer ${MIN_VARIANT_WEIGHT} to ${MAX_VARIANT_WEIGHT}` });
+                }
+            }
+            else if (Array.isArray(variants) && variants.some((x) => isObject(x) && has(x, "weight"))) {
+                issue(ctx, { order, code: "R23", path: `${vp}.weight`, pointer: vptrJ, rule: "weights on all of a step's variants or none" });
+            }
             for (const field of textKeys) {
+                if (!required.includes(field) && !has(v, field))
+                    continue;
                 const value = checkField(`${vp}.${field}`, `${vptrJ}/${field}`, vptrJ, v[field], limitOf(field));
                 if (value !== null)
                     texts.push({ path: `${vp}.${field}`, pointer: `${vptrJ}/${field}`, field, value });
@@ -816,7 +905,8 @@ function checkDo(ctx: Ctx, order: number, p: string, ptr: string, raw: Record<st
                 }
             }
             else if (!has(w, field)) {
-                issue(ctx, { order, code: "R13", path: `${p}.with.${field}`, pointer: withParent, rule: "required, or use variants" });
+                if (required.includes(field))
+                    issue(ctx, { order, code: "R13", path: `${p}.with.${field}`, pointer: withParent, rule: "required, or use variants" });
             }
             else {
                 const value = checkField(`${p}.with.${field}`, fp, withParent, w[field], limitOf(field));
@@ -845,7 +935,11 @@ function checkDo(ctx: Ctx, order: number, p: string, ptr: string, raw: Record<st
             }
         }
     }
-    const usesVariable = texts.some((t) => hasVariable(t.value));
+    const onMissing = w["on_missing"] ?? "fallback";
+    oneOfOnMissing(ctx, order, a, p, wp, w);
+    const usesVariable = onMissing === "fallback" && texts.some((t) => hasVariable(t.value));
+    const bare = PIPE_ACTIONS.includes(a) ? texts.flatMap((t) => variablesIn(t.value).filter(lacksFallback).map((v) => ({ t, v }))) : [];
+    const bareRule = (also: string) => `${quote(bare[0]!.v.token)} has no fallback: write {{${quote(bare[0]!.v.inner)}|...}}, ${also}`;
     if (a === "invite.send") {
         const fp = `${p}.with.note_fallback`;
         if (has(w, "note_fallback")) {
@@ -873,9 +967,13 @@ function checkDo(ctx: Ctx, order: number, p: string, ptr: string, raw: Record<st
                 checkFallbackText(ctx, order, `${fp}.text`, `${fptr}/text`, fptr, f["text"], TEXT_LIMITS.inmail_text);
             }
         }
-        else if (usesVariable) {
-            issue(ctx, { order, code: "R19", path: fp, pointer: withParent, rule: "required because the subject or text uses a variable: an object with subject and text" });
+        else if (usesVariable && bare.length) {
+            issue(ctx, { order, code: "R19", path: fp, pointer: withParent, rule: bareRule("add the step's fallback (subject and text), or set on_missing to skip") });
         }
+    }
+    else if (email) {
+        if (usesVariable && bare.length)
+            issue(ctx, { order, code: "R19", path: bare[0]!.t.path, pointer: bare[0]!.t.pointer, rule: bareRule("or set on_missing to skip or hold") });
     }
     else {
         const fp = `${p}.with.fallback`;
@@ -886,8 +984,37 @@ function checkDo(ctx: Ctx, order: number, p: string, ptr: string, raw: Record<st
             issue(ctx, { order, code: "R19", path: fp, pointer: withParent, rule: 'required on a comment: text, or "skip"' });
         else if (voice)
             issue(ctx, { order, code: "R19", path: fp, pointer: withParent, rule: "required on a voice note: variable-free text sent when the audio cannot go" });
-        else if (usesVariable)
-            issue(ctx, { order, code: "R19", path: fp, pointer: withParent, rule: "required because the text uses a variable" });
+        else if (usesVariable && (a !== "message.send" || bare.length)) {
+            issue(ctx, { order, code: "R19", path: fp, pointer: withParent, rule: a === "message.send" ? bareRule("add the step's fallback, or set on_missing to skip") : "required because the text uses a variable" });
+        }
+    }
+}
+function oneOfOnMissing(ctx: Ctx, order: number, a: string, p: string, wp: string, w: Record<string, unknown>): void {
+    if (a !== "email.send" && has(w, "on_missing") && !(ON_MISSING as readonly unknown[]).includes(w["on_missing"])) {
+        issue(ctx, { order, code: "R13", path: `${p}.with.on_missing`, pointer: `${wp}/on_missing`, rule: `must be one of ${ON_MISSING.join(", ")}` });
+    }
+}
+function checkEmailOptions(ctx: Ctx, order: number, p: string, wp: string, w: Record<string, unknown>): void {
+    const at = (k: string) => ({ order, code: "R13", path: `${p}.with.${k}`, pointer: `${wp}/${k}` });
+    const oneOf = (k: string, values: readonly unknown[]) => {
+        if (has(w, k) && !values.includes(w[k]))
+            issue(ctx, { ...at(k), rule: `must be one of ${values.join(", ")}` });
+    };
+    oneOf("thread", EMAIL_THREADS);
+    oneOf("opt_out", EMAIL_OPT_OUT_FORMS);
+    oneOf("on_missing", ON_MISSING);
+    if (has(w, "track_opens") && typeof w["track_opens"] !== "boolean")
+        issue(ctx, { ...at("track_opens"), rule: "must be true or false" });
+    if (w["opt_out"] === "none")
+        warning(ctx, { ...at("opt_out"), code: "W18", rule: "no_opt_out: opt_out is none, so this email offers no way to opt out" });
+    for (const k of OPT_OUT_TEXTS) {
+        const v = w[k];
+        if (!has(w, k) || v === null)
+            continue;
+        const t = typeof v === "string" ? v.trim() : null;
+        if (t === null || [...t].length > OPT_OUT_MAX[k] || /[\p{Cc}\u2028\u2029]/u.test(t) || /\{\{|\}\}/.test(t)) {
+            issue(ctx, { ...at(k), rule: `must be one plain line of at most ${OPT_OUT_MAX[k]} characters, without a line break, a variable, {{ or }}; empty uses the Team's text` });
+        }
     }
 }
 function checkPredicate(pred: unknown, path: string, pointer: string, inWhere: boolean, out: Issue[], order = 0, nested = false, ctx?: Ctx): void {
@@ -1113,10 +1240,11 @@ function graph(ctx: Ctx, infos: StepInfo[], ids: Map<string, number>, onReply: s
     const afterInvite = new Array<boolean>(n).fill(false);
     const withoutInvite = new Array<boolean>(n).fill(false);
     const withoutMessage = new Array<boolean>(n).fill(false);
+    const withoutEmail = new Array<boolean>(n).fill(false);
     const fromFirst = new Set<number>(topo(n, edges, [0]));
     for (const r of roots)
         if (r === 0 || !fromFirst.has(r))
-            withoutInvite[r] = withoutMessage[r] = true;
+            withoutInvite[r] = withoutMessage[r] = withoutEmail[r] = true;
     for (const i of order) {
         for (const { from, edge } of preds[i]!) {
             const invited = action(from) === "invite.send" && edge.field === "next";
@@ -1127,6 +1255,9 @@ function graph(ctx: Ctx, infos: StepInfo[], ids: Map<string, number>, onReply: s
             const messaged = isMessageSend(action(from)) && edge.field === "next";
             if (withoutMessage[from] && !messaged)
                 withoutMessage[i] = true;
+            const emailed = action(from) === "email.send" && edge.field === "next";
+            if (withoutEmail[from] && !emailed)
+                withoutEmail[i] = true;
         }
     }
     infos.forEach((info, i) => {
@@ -1152,6 +1283,8 @@ function graph(ctx: Ctx, infos: StepInfo[], ids: Map<string, number>, onReply: s
                 rule: "if message.seen on a path with no message.send or inmail.send before it; it is always false there",
             });
         }
+        if (action(i) === "email.send")
+            emailSubject(ctx, info, withoutEmail[i]!);
         if (info.raw!["until"] === "invite.accepted" && withoutInvite[i]) {
             warning(ctx, { order: i, code: "W6", path: `${info.prefix}.until`, pointer: `${info.ptr}/until`, rule: "until invite.accepted on a path with no invite.send before it" });
         }
@@ -1183,6 +1316,25 @@ function graph(ctx: Ctx, infos: StepInfo[], ids: Map<string, number>, onReply: s
                     q.push(e.to);
         }
     });
+}
+function emailSubject(ctx: Ctx, info: StepInfo, first: boolean): void {
+    const raw = info.raw!;
+    const w = isObject(raw["with"]) ? raw["with"] : {};
+    const need = first ? "a path reaches this step with no earlier email" : w["thread"] === "new" ? "thread new starts its own thread" : null;
+    if (need === null)
+        return;
+    const at = { order: info.index, code: "R13", rule: `required: ${need}` };
+    if (Array.isArray(raw["variants"])) {
+        raw["variants"].forEach((v, j) => {
+            if (!isObject(v) || has(v, "subject"))
+                return;
+            const id = typeof v["id"] === "string" ? `variants.${v["id"]}` : `variants[${j}]`;
+            issue(ctx, { ...at, path: `${info.prefix}.${id}.subject`, pointer: `${info.ptr}/variants/${j}` });
+        });
+    }
+    else if (!has(w, "subject")) {
+        issue(ctx, { ...at, path: `${info.prefix}.with.subject`, pointer: isObject(raw["with"]) ? `${info.ptr}/with` : info.ptr });
+    }
 }
 function messageTexts(info: StepInfo): {
     path: string;

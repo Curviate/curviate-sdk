@@ -563,7 +563,7 @@ export interface paths {
         };
         /**
          * Resolve search filter IDs
-         * @description Resolves human-readable terms (e.g. 'software development') to opaque filter IDs for structured search filters. type selects the category; keywords is required for every type. Paginate with cursor until it returns null.
+         * @description Resolves human-readable terms (e.g. 'software development') to opaque filter IDs for structured search filters. type selects the category; keywords is required for every type. Paginate with cursor until it returns null. Each lookup that reaches LinkedIn counts one on the account's search_parameters counter (no ceiling, never refused); it spends no search line, and a common value served from the cache counts nothing.
          */
         get: operations["getV1AccountIdSearchParameters"];
         put?: never;
@@ -2061,7 +2061,7 @@ export interface paths {
         put?: never;
         /**
          * Resolve search-filter IDs (Recruiter)
-         * @description Resolves human-readable terms to opaque Recruiter filter ids for pipeline, search, and applicant requests. Body is discriminated by source: APPLICANTS/PIPELINE require project_id, others do not. Requires a Recruiter seat.
+         * @description Resolves human-readable terms to opaque Recruiter filter ids for pipeline, search, and applicant requests. Body is discriminated by source: APPLICANTS/PIPELINE require project_id, others do not. Requires a Recruiter seat. Each lookup that reaches LinkedIn counts one on the account's search_parameters counter (no ceiling, never refused); it spends no search line, and a common value served from the cache counts nothing.
          */
         post: operations["postV1AccountIdRecruiterSearchParameters"];
         delete?: never;
@@ -2571,7 +2571,7 @@ export interface paths {
         };
         /**
          * Resolve search-filter IDs (Sales Navigator)
-         * @description Resolves human-readable terms to opaque Sales Navigator filter IDs for people or company search. type selects the filter family; an unrecognized value is rejected with 400. Requires a Sales Navigator seat.
+         * @description Resolves human-readable terms to opaque Sales Navigator filter IDs for people or company search. type selects the filter family; an unrecognized value is rejected with 400. Requires a Sales Navigator seat. Each lookup that reaches LinkedIn counts one on the account's search_parameters counter (no ceiling, never refused); it spends no search line, and a common value served from the cache counts nothing.
          */
         get: operations["getV1AccountIdSalesNavigatorSearchParameters"];
         put?: never;
@@ -3043,7 +3043,7 @@ export interface paths {
         };
         /**
          * List webhook event types
-         * @description Returns the complete canonical event catalogue (37 events) grouped by source: messaging (7), user (2), account_status (12), post (2), campaign (11), plus 3 recruiter/sales_nav events. A local catalogue read: no platform call is made.
+         * @description Returns the complete canonical event catalogue (40 events) grouped by source: messaging (7), user (2), account_status (12), post (2), campaign (14), plus 3 recruiter/sales_nav events. A local catalogue read: no platform call is made.
          */
         get: operations["getV1WebhooksEvents"];
         put?: never;
@@ -3837,7 +3837,7 @@ export interface paths {
         put?: never;
         /**
          * Import leads
-         * @description Imports Leads from rows or CSV text, keyed on LinkedIn identity as POST /v1/leads; re-importing merges. Up to 10000 rows. 500 rows or fewer run in the request (201, per-row report inline); more run in the background (202). A bad value skips its row, a bad structure refuses all. apply_lists: true adds each row's Lead to the Lead lists named in its lists (created by name), so an export re-imports with its lists; the Team's list limit skips the row (list_limit_reached). Needs Automate.
+         * @description Imports Leads from rows or CSV text, keyed on LinkedIn identity as POST /v1/leads; re-importing merges. Up to 10000 rows. 500 rows or fewer run in the request (201, per-row report inline); more run in the background (202). A bad value skips its row, a bad structure refuses all. apply_lists: true adds each row's Lead to the Lead lists named in its lists (created by name), so an export re-imports with its lists; the Team's list limit skips the row (list_limit_reached). source imports from LinkedIn instead: a pasted people search URL (kind people_search, up to 1,000 people) is read on our server from source.account_id, page by page, inside that Account's limits and Active hours and at a human pace (202, days not minutes); each person becomes a Lead from the search result itself, a Lead you have already joins the list as it is. Needs Automate.
          */
         post: operations["postV1LeadsImports"];
         delete?: never;
@@ -4025,7 +4025,7 @@ export interface paths {
         put?: never;
         /**
          * Add a person to the do-not-contact list
-         * @description Adds one person by lead_id or linkedin_url; a URL of someone who is not a Lead yet creates the Lead first, from stored data only. 201 when added; a person already on the list answers 200 with their entry. Any team member may add. For many people, POST /v1/do-not-contact/import takes a file. Needs Automate.
+         * @description Adds one person by lead_id or linkedin_url, with an optional reason and a scope (everything by default; email_only stops email only and leaves LinkedIn untouched); a URL of someone who is not a Lead yet creates the Lead first, from stored data only. 201 when added; a person already on the list answers 200 with their entry. Any team member may add. For many people, POST /v1/do-not-contact/import takes a file. Needs Automate.
          */
         post: operations["postV1DoNotContact"];
         delete?: never;
@@ -4043,7 +4043,7 @@ export interface paths {
         };
         /**
          * Export the do-not-contact list
-         * @description Streams your team's whole do-not-contact list in one download, oldest first, as CSV, JSON or NDJSON (default). No cursor. Each entry has linkedin_url, reason, added_by, via, created_at, id; linkedin_url is empty once the person's Lead was deleted. The file re-imports as it is (POST /v1/do-not-contact/import). Owner and Manager only.
+         * @description Streams your team's whole do-not-contact list in one download, oldest first, as CSV, JSON or NDJSON (default). No cursor. Each entry has linkedin_url, reason, scope, how, added_by, via, created_at, id; linkedin_url is empty once the person's Lead was deleted. The file re-imports as it is (an email_only entry stays email_only) (POST /v1/do-not-contact/import). Owner and Manager only.
          */
         get: operations["getV1DoNotContactExport"];
         put?: never;
@@ -4065,7 +4065,7 @@ export interface paths {
         put?: never;
         /**
          * Import a do-not-contact file
-         * @description Adds the people of a file to the do-not-contact list: rows of linkedin_url and an optional reason, as JSON rows or CSV text, up to 10000 rows. Each row works as POST /v1/do-not-contact: a URL of someone who is not a Lead yet creates the Lead from stored data, and a person already on the list is reported unchanged (their entry and reason stay). The answer is the per-row report. A bad URL or reason skips its row and the others apply; a bad structure refuses the file. A do-not-contact export re-imports as it is. Any team member may import. Needs Automate.
+         * @description Adds the people of a file to the do-not-contact list: rows of linkedin_url and an optional reason and scope (everything or email_only; another scope skips the row as invalid_scope), as JSON rows or CSV text, up to 10000 rows. Each row works as POST /v1/do-not-contact: a URL of someone who is not a Lead yet creates the Lead from stored data, and a person already on the list is reported unchanged (their entry and reason stay). The answer is the per-row report. A bad URL or reason skips its row and the others apply; a bad structure refuses the file. A do-not-contact export re-imports as it is. Any team member may import. Needs Automate.
          */
         post: operations["postV1DoNotContactImport"];
         delete?: never;
@@ -4189,7 +4189,7 @@ export interface paths {
         head?: never;
         /**
          * Update a campaign
-         * @description Partial update in every status but archived. schedule and settings merge key by key; lists, accounts, where and sequence are replaced whole. After start, a sequence edit to text, waits or notes applies in place (sequence_change copy); any other is a new Sequence version (structural). Needs Automate.
+         * @description Partial update in every status but archived. schedule and settings merge key by key; lists, accounts, where and sequence are replaced whole. After start, a sequence edit to text, waits, notes or variant weights applies in place (sequence_change copy); any other is a new Sequence version (structural). Needs Automate.
          */
         patch: operations["patchV1CampaignsId"];
         trace?: never;
@@ -4205,7 +4205,7 @@ export interface paths {
         put?: never;
         /**
          * Start a campaign
-         * @description Starts a draft: active, or scheduled while schedule.start_at is in the future. Needs a Lead list, a sending account that is active with a seat and a Sequence; every gap comes back at once in errors[]. Nothing reaches LinkedIn before this call. Needs Automate.
+         * @description Starts a draft: active, or scheduled while schedule.start_at is in the future. Needs a Lead list, a sending account that is active with a seat and a Sequence; every gap comes back at once in errors[]. Nothing reaches LinkedIn before this call. With an email step it also needs a Lead check at the current sequence_revision (POST /v1/campaigns/{id}/check) and refuses while Leads have no email address, unless the body is {"skip_missing_email": true}. Needs Automate.
          */
         post: operations["postV1CampaignsIdStart"];
         delete?: never;
@@ -4245,7 +4245,7 @@ export interface paths {
         put?: never;
         /**
          * Resume a campaign
-         * @description Resumes a paused Campaign: active, or scheduled before schedule.start_at. Checks what start checks; every gap comes back at once in errors[]. Needs Automate.
+         * @description Resumes a paused Campaign: active, or scheduled before schedule.start_at. Checks what start checks, the Lead check of a Campaign with an email step and {"skip_missing_email": true} included; every gap comes back at once in errors[]. Needs Automate.
          */
         post: operations["postV1CampaignsIdResume"];
         delete?: never;
@@ -4268,6 +4268,26 @@ export interface paths {
          * @description Archives the Campaign. This cannot be undone: it becomes read-only and its open Enrollments end. Its Sequence versions and history are kept.
          */
         post: operations["postV1CampaignsIdArchive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/campaigns/{id}/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check a campaign's leads
+         * @description The Lead check: one count over every Lead the Campaign would enroll (its Lead lists' members not on an exclusion list, and Leads added directly): how many have no usable email address, a bounced one, or are on the Do-not-contact list for email only, and which Lead variables without a fallback they lack. Stored and served as lead_check on the Campaign; start of a Campaign with an email step needs one at the current sequence_revision. In any status. Sends nothing. Needs Automate.
+         */
+        post: operations["postV1CampaignsIdCheck"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4303,7 +4323,7 @@ export interface paths {
         };
         /**
          * Preview a campaign
-         * @description Renders the Sequence for sample Leads and projects how long the list takes, in any status. A read: nothing is sent, saved or spent; what only LinkedIn can answer is unknown. The projection is an estimate.
+         * @description Renders the Sequence for Leads and projects how long the list takes, in any status. limit (1 to 20, default 5; sample is its alias) sets the page size, and next_cursor, passed back as cursor, pages over every Lead the Campaign would enroll, in list order; paths, projection and warnings come on the first page only. lead_ids renders the Leads you name instead, without a cursor. A cursor belongs to its Campaign and Sequence version; any other is a 400 starting cursor. A read: nothing is sent, saved or spent; what only LinkedIn can answer is unknown. The projection is an estimate.
          */
         get: operations["getV1CampaignsIdPreview"];
         put?: never;
@@ -4834,6 +4854,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/billing/subscription/switch-period": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Switch to yearly billing
+         * @description Moves a monthly subscription to yearly billing at its next renewal, at the yearly price for the same seat count. Nothing is charged or prorated now; the renewal bills the full year. A second call while the switch is pending changes nothing. A Team already billed yearly cannot switch, and there is no switch back to monthly. Owners only.
+         */
+        post: operations["postV1BillingSubscriptionSwitchPeriod"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/billing/tier": {
         parameters: {
             query?: never;
@@ -4846,6 +4886,66 @@ export interface paths {
          * @description Returns the Tier the Team has now and where it comes from: the Tier bought, the free trial while it runs, or a Tier Curviate granted, with the features included. Any member can read it. It reports no prices. A Team's first call starts its free trial when one is due.
          */
         get: operations["getV1BillingTier"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/billing/spending-cap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve the spending cap
+         * @description The most seats an agent may bring the team to, what that many seats cost a month, the seats the team has and the room left. Every team has a cap: 100 seats until an Owner sets one in the dashboard. Only an Owner changes it, and only in the dashboard. Owners only.
+         */
+        get: operations["getV1BillingSpendingCap"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/billing/changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List changes
+         * @description Every seat added, every seat removed and every spending cap change on the team, newest first: who made it (a person or an API key), the way it came in, how many seats, the count before and after, and what it adds to the monthly price. Owners only.
+         */
+        get: operations["getV1BillingChanges"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/billing/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Quote seats
+         * @description Prices a number of seats for one period, step by step: each seat costs the price of the step it falls in, so adding a seat never changes what the earlier ones cost. Computed here from the price steps, with no call to the payment provider. Owners only.
+         */
+        get: operations["getV1BillingQuote"];
         put?: never;
         post?: never;
         delete?: never;
@@ -5170,7 +5270,7 @@ export interface components {
         };
         /**
          * Sequence document v1
-         * @description A Campaign's Sequence: a flat steps array run from the first step, ending explicitly in "end". Served documents use this key order: $schema, on_reply, steps; in a step id, the kind key, timeout, save, save_to_lead, variants, with, event, then, else, next, note; in with post, newer_than, reaction, subject, text, note, note_fallback, fallback, withdraw_after; in a variant id, subject, text. A text holds at most 50 variables. Variables: `{{first_name}}` (any standard Lead field), `{{my_first_name}}`, `{{my_last_name}}`, `{{my_full_name}}` (the sending Account), any other `{{<key>}}` is the custom field `lead.extra.<key>`; the long forms `{{lead.<field>}}`, `{{lead.extra.<key>}}` and `{{account.<name>}}` stay valid; `{{enrollment.<name>}}` is a value a save of this Sequence writes. Delays are about their duration: every wait and until timeout gets a small random spread that only ever adds time.
+         * @description A Campaign's Sequence: a flat steps array run from the first step, ending explicitly in "end". Served documents use this key order: $schema, on_reply, steps; in a step id, the kind key, timeout, save, save_to_lead, variants, with, event, then, else, next, note; in with post, newer_than, reaction, subject, text, body_html, note, note_fallback, fallback, withdraw_after, thread, on_missing, opt_out, opt_out_text, opt_out_link_text, opt_out_link_word, track_opens; in a variant id, subject, text, body_html. A text holds at most 50 variables. Variables: `{{first_name}}` (any standard Lead field), `{{my_first_name}}`, `{{my_last_name}}`, `{{my_full_name}}` (the sending Account), any other `{{<key>}}` is the custom field `lead.extra.<key>`; the long forms `{{lead.<field>}}`, `{{lead.extra.<key>}}` and `{{account.<name>}}` stay valid; `{{enrollment.<name>}}` is a value a save of this Sequence writes. Delays are about their duration: every wait and until timeout gets a small random spread that only ever adds time.
          */
         SequenceDocument: {
             /** @constant */
@@ -5231,12 +5331,19 @@ export interface components {
                     note_fallback?: string;
                     /** @description Withdraw the invitation if still pending after this long (14d to 180d). Absent: never. */
                     withdraw_after?: string;
+                    /**
+                     * @description What a missing variable does: fallback (each variable's own {{x|fallback}}, else the step's fallback), skip the step, or hold until the field is filled.
+                     * @enum {string}
+                     */
+                    on_missing?: "fallback" | "skip" | "hold";
                 };
-                /** @description A/B variants: exactly 2, split evenly and sticky per Enrollment. Exclusive with the text in with. More than 2 (up to 5) is deprecated: accepted with warning W13 until 2027-01-19. */
+                /** @description Variants: 2 to 5, each drawn once per Enrollment and kept (sticky). Each may carry an integer weight 1 to 100, all or none of them; shares are weight divided by the sum of weights, equal without weights. Exclusive with the text in with. */
                 variants?: {
                     /** @description Step id, unique in the document. "end" is reserved. */
                     id: string;
                     text: string;
+                    /** @description Relative share of the draw; all variants of the step carry one or none does. */
+                    weight?: number;
                 }[];
                 /** @description Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent. */
                 event?: string;
@@ -5266,16 +5373,23 @@ export interface components {
                 /** @constant */
                 do: "message.send";
                 with?: {
-                    /** @description Message text. Variables need a fallback. */
+                    /** @description Message text. A variable takes its own fallback after |, as {{lead.first_name|there}}; without one it needs the step's fallback or on_missing skip. */
                     text?: string;
                     /** @description Variable-free text used when a variable is missing. */
                     fallback?: string;
+                    /**
+                     * @description What a missing variable does: fallback (each variable's own {{x|fallback}}, else the step's fallback), skip the step, or hold until the field is filled.
+                     * @enum {string}
+                     */
+                    on_missing?: "fallback" | "skip" | "hold";
                 };
-                /** @description A/B variants: exactly 2, split evenly and sticky per Enrollment. Exclusive with the text in with. More than 2 (up to 5) is deprecated: accepted with warning W13 until 2027-01-19. */
+                /** @description Variants: 2 to 5, each drawn once per Enrollment and kept (sticky). Each may carry an integer weight 1 to 100, all or none of them; shares are weight divided by the sum of weights, equal without weights. Exclusive with the text in with. */
                 variants?: {
                     /** @description Step id, unique in the document. "end" is reserved. */
                     id: string;
                     text: string;
+                    /** @description Relative share of the draw; all variants of the step carry one or none does. */
+                    weight?: number;
                 }[];
                 /** @description Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent. */
                 event?: string;
@@ -5293,20 +5407,27 @@ export interface components {
                 with?: {
                     /** @description InMail subject. */
                     subject?: string;
-                    /** @description Message text. Variables need a fallback. */
+                    /** @description Message text. A variable takes its own fallback after |, as {{lead.first_name|there}}; without one it needs the step's fallback or on_missing skip. */
                     text?: string;
                     /** @description Variable-free subject and text, required when either uses a variable. */
                     fallback?: {
                         subject: string;
                         text: string;
                     };
+                    /**
+                     * @description What a missing variable does: fallback (each variable's own {{x|fallback}}, else the step's fallback), skip the step, or hold until the field is filled.
+                     * @enum {string}
+                     */
+                    on_missing?: "fallback" | "skip" | "hold";
                 };
-                /** @description A/B variants: exactly 2, split evenly and sticky per Enrollment. Exclusive with the text in with. More than 2 (up to 5) is deprecated: accepted with warning W13 until 2027-01-19. */
+                /** @description Variants: 2 to 5, each drawn once per Enrollment and kept (sticky). Each may carry an integer weight 1 to 100, all or none of them; shares are weight divided by the sum of weights, equal without weights. Exclusive with the text in with. */
                 variants?: {
                     /** @description Step id, unique in the document. "end" is reserved. */
                     id: string;
                     subject: string;
                     text: string;
+                    /** @description Relative share of the draw; all variants of the step carry one or none does. */
+                    weight?: number;
                 }[];
                 /** @description Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent. */
                 event?: string;
@@ -5327,12 +5448,68 @@ export interface components {
                     /** @description Required. Variable-free text sent instead when the audio cannot go: the clip cannot be read, or the platform states it was not sent and retries are spent. */
                     fallback: string;
                 };
-                /** @description A/B variants: exactly 2, split evenly and sticky per Enrollment. Exclusive with the clip_id in with. More than 2 (up to 5) is deprecated: accepted with warning W13 until 2027-01-19. */
+                /** @description Variants: 2 to 5, each drawn once per Enrollment and kept (sticky). Each may carry an integer weight 1 to 100, all or none of them; shares are weight divided by the sum of weights, equal without weights. Exclusive with the clip_id in with. */
                 variants?: {
                     /** @description Step id, unique in the document. "end" is reserved. */
                     id: string;
                     /** @description A Voice clip of this Team: the id from POST /v1/campaigns/voice-clips. */
                     clip_id: string;
+                    /** @description Relative share of the draw; all variants of the step carry one or none does. */
+                    weight?: number;
+                }[];
+                /** @description Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent. */
+                event?: string;
+                /** @description A step id, or "end". */
+                next?: string;
+                /** @description Taken when the action cannot run or fails. Absent: same as success. */
+                else?: string;
+                /** @description Annotation shown in the builder graph. Never sent. */
+                note?: string;
+            } | {
+                /** @description Step id, unique in the document. "end" is reserved. */
+                id: string;
+                /** @constant */
+                do: "email.send";
+                with?: {
+                    /** @description Email subject. Required where a path reaches this step with no earlier email, and on thread new; on thread same it is used only when no earlier email exists. */
+                    subject?: string;
+                    /** @description The plain-text body. {{mailbox.signature}} renders the sending Mailbox's signature (email only). */
+                    text?: string;
+                    /** @description Optional HTML body, sent beside text. Variables rendered into it are HTML-escaped. */
+                    body_html?: string;
+                    /**
+                     * @description same replies in the thread of the Enrollment's previous email; new starts a thread.
+                     * @enum {string}
+                     */
+                    thread?: "same" | "new";
+                    /**
+                     * @description What a missing variable does: fallback, skip the step, or hold until the field is filled.
+                     * @enum {string}
+                     */
+                    on_missing?: "fallback" | "skip" | "hold";
+                    /**
+                     * @description How the email offers an opt-out: the unsubscribe link, the opt-out line, or none (warning W18). Absent: line until the sending domain's record resolves, then link.
+                     * @enum {string}
+                     */
+                    opt_out?: "link" | "line" | "none";
+                    /** @description The opt-out line. At most 200 characters, one plain line, no variables. Empty or null uses the Team's text. */
+                    opt_out_text?: string | null;
+                    /** @description The text before the unsubscribe link. At most 100 characters, one plain line, no variables. Empty or null uses the Team's text. */
+                    opt_out_link_text?: string | null;
+                    /** @description The unsubscribe link's word. At most 30 characters, one plain line, no variables. Empty or null uses the Team's text. */
+                    opt_out_link_word?: string | null;
+                    /** @description Open tracking, on once the sending domain's record resolves; false switches it off for this step. */
+                    track_opens?: boolean;
+                };
+                /** @description Variants: 2 to 5, each drawn once per Enrollment and kept (sticky). Each may carry an integer weight 1 to 100, all or none of them; shares are weight divided by the sum of weights, equal without weights. Exclusive with the subject, text and body_html in with. */
+                variants?: {
+                    /** @description Step id, unique in the document. "end" is reserved. */
+                    id: string;
+                    subject?: string;
+                    text: string;
+                    body_html?: string;
+                    /** @description Relative share of the draw; all variants of the step carry one or none does. */
+                    weight?: number;
                 }[];
                 /** @description Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent. */
                 event?: string;
@@ -5379,16 +5556,23 @@ export interface components {
                     post?: "latest";
                     /** @description Only a post newer than this (1h to 365d). */
                     newer_than?: string;
-                    /** @description Message text. Variables need a fallback. */
+                    /** @description Message text. A variable takes its own fallback after |, as {{lead.first_name|there}}; without one it needs the step's fallback or on_missing skip. */
                     text?: string;
                     /** @description Variable-free comment, or "skip" to skip the step when a variable is missing. */
                     fallback?: string;
+                    /**
+                     * @description What a missing variable does: fallback (each variable's own {{x|fallback}}, else the step's fallback), skip the step, or hold until the field is filled.
+                     * @enum {string}
+                     */
+                    on_missing?: "fallback" | "skip" | "hold";
                 };
-                /** @description A/B variants: exactly 2, split evenly and sticky per Enrollment. Exclusive with the text in with. More than 2 (up to 5) is deprecated: accepted with warning W13 until 2027-01-19. */
+                /** @description Variants: 2 to 5, each drawn once per Enrollment and kept (sticky). Each may carry an integer weight 1 to 100, all or none of them; shares are weight divided by the sum of weights, equal without weights. Exclusive with the text in with. */
                 variants?: {
                     /** @description Step id, unique in the document. "end" is reserved. */
                     id: string;
                     text: string;
+                    /** @description Relative share of the draw; all variants of the step carry one or none does. */
+                    weight?: number;
                 }[];
                 /** @description Custom event sent once each time this step runs (not when skipped or failed), for example invite_sent. */
                 event?: string;
@@ -5415,7 +5599,7 @@ export interface components {
             } | {
                 /** @description Step id, unique in the document. "end" is reserved. */
                 id: string;
-                /** @description Calendar time to wait, about this long (1m to 365d; a small random spread is added, never subtracted). */
+                /** @description Time to wait, about this long: 1m to 365d of calendar time, or 1bd to 250bd business days (days of the Campaign's schedule, in the sending Account's time zone). A small random spread is added, never subtracted. */
                 wait: string;
                 /** @description A step id, or "end". */
                 next?: string;
@@ -5426,7 +5610,7 @@ export interface components {
                 id: string;
                 /** @description `invite.accepted`, `message.replied`, `message.read`, or `event.<name>` (a custom event an agent sends). `signal.<name>` is the deprecated spelling of `event.<name>`: accepted with warning W13 until 2027-01-19. */
                 until: ("invite.accepted" | "message.replied" | "message.read") | string;
-                /** @description Give up waiting after about this long (1h to 180d; a small random spread is added, never subtracted). */
+                /** @description Give up waiting after about this long: 1h to 180d, or 1bd to 250bd business days (days of the Campaign's schedule). A small random spread is added, never subtracted. */
                 timeout: string;
                 /** @description until event.<name> only: Enrollment values saved from the incoming event, name to path (at most 20). Read them as {{enrollment.<name>}} and if enrollment.<name>; they end with the Enrollment. */
                 save?: {
@@ -20979,10 +21163,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -20997,7 +21181,7 @@ export interface operations {
                          * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
@@ -21025,6 +21209,19 @@ export interface operations {
                         values: {
                             [key: string]: string | number | boolean;
                         };
+                        /** @description What happens next, when and why; null once the Enrollment is finished or skipped. Computed at read from the Enrollment, its waiting, the current Step and the Sequence version it runs on: never stored, never a LinkedIn read. why is the waiting kind (wait, event, queue, budget, account_unavailable, campaign_paused, halt, kill_switch, no_overlap, field_missing, no_mailbox, mailbox_cap, paused_by_user, out_of_office), or due when nothing holds it. at is waiting.until where time decides the step (a wait, an until timeout, a hold's end, a return date), else null. text is one plain sentence naming the Step by number and kind; it holds no Lead value. */
+                        next_action: {
+                            /** @description The Step the sentence names; null when the Sequence has no Step left. */
+                            step_id: string | null;
+                            /** @description That Step's action (message.send, invite.send, ...) or its kind (if, until, wait, tag, emit). */
+                            action: string | null;
+                            /** @description ISO 8601, when time decides; otherwise null. */
+                            at: string | null;
+                            /** @description The waiting kind, or due. */
+                            why: string;
+                            /** @description One plain sentence, for example: Sends Step 4, message, about Wed 18 Nov 10:00 UTC, after the 3-day wait. */
+                            text: string;
+                        } | null;
                     };
                 };
             };
@@ -34726,10 +34923,10 @@ export interface operations {
                                  */
                                 kind: "debit" | "tally" | "gauge";
                                 /**
-                                 * @description Calendar grain this row is counted in. UTC, not account-local. `null` on the gauge, which has no window at all.
+                                 * @description Calendar grain this row is counted in. UTC, not account-local. `rolling`: any 7 days in a row, not the calendar week (the invitation total under the new limits; `window_start` is the oldest of the 7 days and `resets_at` the next midnight, when it leaves). `null` on the gauge, which has no window at all.
                                  * @enum {string|null}
                                  */
-                                window: "day" | "week" | "month" | null;
+                                window: "day" | "week" | "month" | "rolling" | null;
                                 /** @description ISO-8601 UTC start of the current window; `null` on the gauge. */
                                 window_start: string | null;
                                 /** @description ISO-8601 UTC instant the current window rolls over and `used` returns to 0. `null` on the gauge: a backlog falls when invitations are accepted or withdrawn, not at a window edge, so naming an instant would promise something nothing keeps. */
@@ -34804,10 +35001,6 @@ export interface operations {
                                 state?: "none" | "ramping" | "restriction_recovery";
                                 /** @description The multiplier applied to every row's ceiling: the lowest of every applying trigger's. 1 is not ramping. */
                                 factor?: number;
-                                /** @description Which week of the ramp supplies `factor`, counted from the connect or the moment warm-up was turned on, whichever is later. Null when no ramp applies or restriction recovery is lower. */
-                                week?: number | null;
-                                /** @description How many weeks the ramp has (5 today: 0.15, 0.35, 0.60, 0.85, 1.00). Read with `week` (0-based): week 1 is the second of `steps`. */
-                                steps?: number;
                                 /** @description The triggers that apply now: `connect` in the first 28 days after a connect with warm-up on, `switched_on` in the first 28 days after warm-up was turned on, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
                                 triggers?: ("connect" | "switched_on" | "post_restriction")[];
                                 /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. A fact only: it starts no ramp. */
@@ -35013,10 +35206,10 @@ export interface operations {
                              */
                             kind: "debit" | "tally" | "gauge";
                             /**
-                             * @description Calendar grain this row is counted in. UTC, not account-local. `null` on the gauge, which has no window at all.
+                             * @description Calendar grain this row is counted in. UTC, not account-local. `rolling`: any 7 days in a row, not the calendar week (the invitation total under the new limits; `window_start` is the oldest of the 7 days and `resets_at` the next midnight, when it leaves). `null` on the gauge, which has no window at all.
                              * @enum {string|null}
                              */
-                            window: "day" | "week" | "month" | null;
+                            window: "day" | "week" | "month" | "rolling" | null;
                             /** @description ISO-8601 UTC start of the current window; `null` on the gauge. */
                             window_start: string | null;
                             /** @description ISO-8601 UTC instant the current window rolls over and `used` returns to 0. `null` on the gauge: a backlog falls when invitations are accepted or withdrawn, not at a window edge, so naming an instant would promise something nothing keeps. */
@@ -35091,10 +35284,6 @@ export interface operations {
                             state?: "none" | "ramping" | "restriction_recovery";
                             /** @description The multiplier applied to every row's ceiling: the lowest of every applying trigger's. 1 is not ramping. */
                             factor?: number;
-                            /** @description Which week of the ramp supplies `factor`, counted from the connect or the moment warm-up was turned on, whichever is later. Null when no ramp applies or restriction recovery is lower. */
-                            week?: number | null;
-                            /** @description How many weeks the ramp has (5 today: 0.15, 0.35, 0.60, 0.85, 1.00). Read with `week` (0-based): week 1 is the second of `steps`. */
-                            steps?: number;
                             /** @description The triggers that apply now: `connect` in the first 28 days after a connect with warm-up on, `switched_on` in the first 28 days after warm-up was turned on, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
                             triggers?: ("connect" | "switched_on" | "post_restriction")[];
                             /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. A fact only: it starts no ramp. */
@@ -35538,10 +35727,6 @@ export interface operations {
                             state?: "none" | "ramping" | "restriction_recovery";
                             /** @description The multiplier applied to every row's ceiling: the lowest of every applying trigger's. 1 is not ramping. */
                             factor?: number;
-                            /** @description Which week of the ramp supplies `factor`, counted from the connect or the moment warm-up was turned on, whichever is later. Null when no ramp applies or restriction recovery is lower. */
-                            week?: number | null;
-                            /** @description How many weeks the ramp has (5 today: 0.15, 0.35, 0.60, 0.85, 1.00). Read with `week` (0-based): week 1 is the second of `steps`. */
-                            steps?: number;
                             /** @description The triggers that apply now: `connect` in the first 28 days after a connect with warm-up on, `switched_on` in the first 28 days after warm-up was turned on, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
                             triggers?: ("connect" | "switched_on" | "post_restriction")[];
                             /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. A fact only: it starts no ramp. */
@@ -36183,10 +36368,6 @@ export interface operations {
                                 state?: "none" | "ramping" | "restriction_recovery";
                                 /** @description The multiplier applied to every row's ceiling: the lowest of every applying trigger's. 1 is not ramping. */
                                 factor?: number;
-                                /** @description Which week of the ramp supplies `factor`, counted from the connect or the moment warm-up was turned on, whichever is later. Null when no ramp applies or restriction recovery is lower. */
-                                week?: number | null;
-                                /** @description How many weeks the ramp has (5 today: 0.15, 0.35, 0.60, 0.85, 1.00). Read with `week` (0-based): week 1 is the second of `steps`. */
-                                steps?: number;
                             };
                         };
                         /** @description The latest daily snapshot of the account's own numbers, read once a day inside its activity window and stored, never read live on this request. null before the first snapshot. The history is GET /v1/accounts/{account_id}/metrics. null too when you may not operate the account. */
@@ -36236,10 +36417,10 @@ export interface operations {
                                  */
                                 budget_row?: "connection_requests_with_note" | "connection_requests_no_note" | "connection_requests_day" | "messages_first_degree" | "inmail" | "open_profile_inmail" | "profile_views" | "search" | "comments" | "post_likes" | "follows" | "content_poll" | "company_reads" | "limit_probes" | "notification_reads" | "viewer_reads" | "other_reads" | "search_parameters" | "job_poll" | "posts" | "endorsements" | "invite_responses" | "withdrawal_sweep" | "connections_sync" | "inbox_sync" | "profile_snapshot" | "total_actions" | "pending_invites";
                                 /**
-                                 * @description Calendar grain this row is counted in. UTC, not account-local. `null` on the gauge, which has no window at all.
+                                 * @description Calendar grain this row is counted in. UTC, not account-local. `rolling`: any 7 days in a row, not the calendar week (the invitation total under the new limits; `window_start` is the oldest of the 7 days and `resets_at` the next midnight, when it leaves). `null` on the gauge, which has no window at all.
                                  * @enum {string|null}
                                  */
-                                window?: "day" | "week" | "month" | null;
+                                window?: "day" | "week" | "month" | "rolling" | null;
                                 /** @description Where the account stands: actions counted in the current window for a debit row, the summed tally for `total_actions`, the observed backlog for the gauge. A debit row with no activity reports 0, never null. Only the gauge can be `null`, and only before anything has observed it: 0 there would be a backlog nobody looked at. */
                                 used?: number | null;
                                 /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (the first four weeks after warm-up was turned on, at connect or later, or while it recovers from a restriction) the two differ, and in the first week after connect they differ by a factor of about seven. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
@@ -36869,7 +37050,7 @@ export interface operations {
                     user_languages?: string[];
                     /** @description Which Sales Navigator or Recruiter contract this account sends from, for a LinkedIn account that holds several. Selected once the account is active; the answer then carries contract_selected (false: the account is connected but the contract could not be selected). */
                     recruiter_contract_id?: string;
-                    /** @description Optional, new connects only, default false (warm-up off: full limits from the start). true connects this account with warm-up on: its limits start at 15% and rise over 5 weeks, for a new account or one with few connections and little activity. Recovery after a LinkedIn restriction applies either way. Change it later with PATCH /v1/{account_id}/safety-policy and warm_up.enabled. */
+                    /** @description Optional, new connects only, default false (warm-up off: full limits from the start). true connects this account with warm-up on: every limit starts at 30% and reaches 100% on day 14 (the Gradual ramp), for a new account or one with few connections and little activity. Recovery after a LinkedIn restriction applies either way. Change it later with PATCH /v1/{account_id}/safety-policy and warm_up.enabled. */
                     warm_up?: boolean;
                 };
             };
@@ -37896,7 +38077,7 @@ export interface operations {
                 "application/json": {
                     /** @description Omit to ask for a new account. An existing account's id (acc_...) asks for its reconnect. */
                     account_id?: string;
-                    /** @description Optional, new connects only, default false (warm-up off: full limits from the start). true connects this account with warm-up on: its limits start at 15% and rise over 5 weeks, for a new account or one with few connections and little activity. Recovery after a LinkedIn restriction applies either way. Change it later with PATCH /v1/{account_id}/safety-policy and warm_up.enabled. */
+                    /** @description Optional, new connects only, default false (warm-up off: full limits from the start). true connects this account with warm-up on: every limit starts at 30% and reaches 100% on day 14 (the Gradual ramp), for a new account or one with few connections and little activity. Recovery after a LinkedIn restriction applies either way. Change it later with PATCH /v1/{account_id}/safety-policy and warm_up.enabled. */
                     warm_up?: boolean;
                     /** @description Ask for a Mailbox instead of a LinkedIn account (kind mailbox_connect). */
                     mailbox?: {
@@ -38051,7 +38232,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Rate limited, slow down and retry after the hinted delay. */
+            /** @description PLATFORM_RATE_LIMIT: too many failed password tries within the hour: 10 for this address in this team, 10 by this user across teams, or 30 for this address across teams. Nothing was checked; try again in an hour. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -39080,7 +39261,7 @@ export interface operations {
                     /** @description Only deliver events whose data.campaign_id is one of these Campaigns (mot_ ids you own, up to 100). Events that carry no Campaign are then not delivered. Default: no filter. */
                     campaign_ids?: string[];
                     /** @description Campaign events to subscribe to (default: all but the opt-ins step.executed, enrollment.seen and enrollment.reassigned). */
-                    events?: ("campaign.status_changed" | "enrollment.started" | "enrollment.accepted" | "enrollment.replied" | "enrollment.seen" | "enrollment.reassigned" | "enrollment.skipped" | "enrollment.finished" | "step.executed" | "step.failed" | "campaign.custom_event")[];
+                    events?: ("campaign.status_changed" | "enrollment.started" | "enrollment.accepted" | "enrollment.replied" | "enrollment.seen" | "enrollment.reassigned" | "enrollment.skipped" | "enrollment.finished" | "enrollment.email_bounced" | "enrollment.out_of_office" | "enrollment.opted_out" | "step.executed" | "step.failed" | "campaign.custom_event")[];
                     /** @description With campaign.custom_event in events: null (the default) delivers every custom event, a list only those names (up to 50). GET /v1/webhooks/events lists the names your Sequences send under custom_events. */
                     custom_event_names?: string[] | null;
                 };
@@ -40430,10 +40611,6 @@ export interface operations {
                             state?: "none" | "ramping" | "restriction_recovery";
                             /** @description The multiplier applied to every row's ceiling: the lowest of every applying trigger's. 1 is not ramping. */
                             factor?: number;
-                            /** @description Which week of the ramp supplies `factor`, counted from the connect or the moment warm-up was turned on, whichever is later. Null when no ramp applies or restriction recovery is lower. */
-                            week?: number | null;
-                            /** @description How many weeks the ramp has (5 today: 0.15, 0.35, 0.60, 0.85, 1.00). Read with `week` (0-based): week 1 is the second of `steps`. */
-                            steps?: number;
                             /** @description The triggers that apply now: `connect` in the first 28 days after a connect with warm-up on, `switched_on` in the first 28 days after warm-up was turned on, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
                             triggers?: ("connect" | "switched_on" | "post_restriction")[];
                             /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. A fact only: it starts no ramp. */
@@ -41123,10 +41300,6 @@ export interface operations {
                             state?: "none" | "ramping" | "restriction_recovery";
                             /** @description The multiplier applied to every row's ceiling: the lowest of every applying trigger's. 1 is not ramping. */
                             factor?: number;
-                            /** @description Which week of the ramp supplies `factor`, counted from the connect or the moment warm-up was turned on, whichever is later. Null when no ramp applies or restriction recovery is lower. */
-                            week?: number | null;
-                            /** @description How many weeks the ramp has (5 today: 0.15, 0.35, 0.60, 0.85, 1.00). Read with `week` (0-based): week 1 is the second of `steps`. */
-                            steps?: number;
                             /** @description The triggers that apply now: `connect` in the first 28 days after a connect with warm-up on, `switched_on` in the first 28 days after warm-up was turned on, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
                             triggers?: ("connect" | "switched_on" | "post_restriction")[];
                             /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. A fact only: it starts no ramp. */
@@ -46416,6 +46589,17 @@ export interface operations {
                             member_id: string | null;
                             /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. A copy we store, so the link does not expire; show initials when null. */
                             profile_picture_url: string | null;
+                            /** @description The Do-not-contact entry matching this person, read when you ask and never stored on the Lead: null when none. `scope` `everything` (no Campaign or write reaches them) or `email_only` (the person opted out of email only: show "No email"; LinkedIn still reaches them); `reason` why (`unsubscribed`, `asked_to_stop`, ...) or null; `how` it came to be (`unsubscribe_link`, `email_header`, `reply_model`, `person`); `at` when the entry was made. Read-only. */
+                            do_not_contact: {
+                                /** @enum {string} */
+                                scope: "everything" | "email_only";
+                                /** @enum {string|null} */
+                                reason: "asked_to_stop" | "existing_customer" | "competitor" | "partner" | "employee" | "other" | "unsubscribed" | null;
+                                /** @enum {string} */
+                                how: "unsubscribe_link" | "email_header" | "reply_model" | "person";
+                                /** @description ISO 8601. */
+                                at: string;
+                            } | null;
                             /** @description Full name. */
                             full_name: string | null;
                             /** @description First name. */
@@ -46602,6 +46786,17 @@ export interface operations {
                         member_id: string | null;
                         /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. A copy we store, so the link does not expire; show initials when null. */
                         profile_picture_url: string | null;
+                        /** @description The Do-not-contact entry matching this person, read when you ask and never stored on the Lead: null when none. `scope` `everything` (no Campaign or write reaches them) or `email_only` (the person opted out of email only: show "No email"; LinkedIn still reaches them); `reason` why (`unsubscribed`, `asked_to_stop`, ...) or null; `how` it came to be (`unsubscribe_link`, `email_header`, `reply_model`, `person`); `at` when the entry was made. Read-only. */
+                        do_not_contact: {
+                            /** @enum {string} */
+                            scope: "everything" | "email_only";
+                            /** @enum {string|null} */
+                            reason: "asked_to_stop" | "existing_customer" | "competitor" | "partner" | "employee" | "other" | "unsubscribed" | null;
+                            /** @enum {string} */
+                            how: "unsubscribe_link" | "email_header" | "reply_model" | "person";
+                            /** @description ISO 8601. */
+                            at: string;
+                        } | null;
                         /** @description Full name. */
                         full_name: string | null;
                         /** @description First name. */
@@ -46684,6 +46879,17 @@ export interface operations {
                         member_id: string | null;
                         /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. A copy we store, so the link does not expire; show initials when null. */
                         profile_picture_url: string | null;
+                        /** @description The Do-not-contact entry matching this person, read when you ask and never stored on the Lead: null when none. `scope` `everything` (no Campaign or write reaches them) or `email_only` (the person opted out of email only: show "No email"; LinkedIn still reaches them); `reason` why (`unsubscribed`, `asked_to_stop`, ...) or null; `how` it came to be (`unsubscribe_link`, `email_header`, `reply_model`, `person`); `at` when the entry was made. Read-only. */
+                        do_not_contact: {
+                            /** @enum {string} */
+                            scope: "everything" | "email_only";
+                            /** @enum {string|null} */
+                            reason: "asked_to_stop" | "existing_customer" | "competitor" | "partner" | "employee" | "other" | "unsubscribed" | null;
+                            /** @enum {string} */
+                            how: "unsubscribe_link" | "email_header" | "reply_model" | "person";
+                            /** @description ISO 8601. */
+                            at: string;
+                        } | null;
                         /** @description Full name. */
                         full_name: string | null;
                         /** @description First name. */
@@ -46881,6 +47087,17 @@ export interface operations {
                         member_id: string | null;
                         /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. A copy we store, so the link does not expire; show initials when null. */
                         profile_picture_url: string | null;
+                        /** @description The Do-not-contact entry matching this person, read when you ask and never stored on the Lead: null when none. `scope` `everything` (no Campaign or write reaches them) or `email_only` (the person opted out of email only: show "No email"; LinkedIn still reaches them); `reason` why (`unsubscribed`, `asked_to_stop`, ...) or null; `how` it came to be (`unsubscribe_link`, `email_header`, `reply_model`, `person`); `at` when the entry was made. Read-only. */
+                        do_not_contact: {
+                            /** @enum {string} */
+                            scope: "everything" | "email_only";
+                            /** @enum {string|null} */
+                            reason: "asked_to_stop" | "existing_customer" | "competitor" | "partner" | "employee" | "other" | "unsubscribed" | null;
+                            /** @enum {string} */
+                            how: "unsubscribe_link" | "email_header" | "reply_model" | "person";
+                            /** @description ISO 8601. */
+                            at: string;
+                        } | null;
                         /** @description Full name. */
                         full_name: string | null;
                         /** @description First name. */
@@ -47432,17 +47649,50 @@ export interface operations {
                             object: "lead_import";
                             /** @description Import id (imp_...). */
                             id: string;
+                            /**
+                             * @description paused and stopped belong to imports from a LinkedIn source.
+                             * @enum {string}
+                             */
+                            status: "queued" | "running" | "paused" | "stopped" | "completed" | "failed";
                             /** @enum {string} */
-                            status: "queued" | "running" | "completed" | "failed";
-                            /** @enum {string} */
-                            format: "rows" | "csv";
+                            format: "rows" | "csv" | "source";
+                            /** @description Rows sent; for a LinkedIn source, the people read so far. */
                             total_rows: number;
                             counts: {
                                 created: number;
                                 updated: number;
                                 unchanged: number;
                                 skipped: number;
+                                /** @description A LinkedIn source: people read so far. */
+                                found: number;
+                                /** @description A LinkedIn source: people skipped for the Do-not-contact list. */
+                                do_not_contact: number;
+                                /** @description A LinkedIn source: people imported who opted out of email only. */
+                                no_email: number;
                             };
+                            /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
+                            source?: Record<string, never> | null;
+                            /** @description Why no page is being read now: active_hours (outside the Account's Active hours) or budget (the Account's search lines for today are spent, or Campaign work went first), with until the next opening. Null while reading or between paced pages. */
+                            waiting?: {
+                                kind?: string;
+                                until?: string | null;
+                            } | null;
+                            /** @description A range of working days left, from the Account's limits and the conservative search pace; never a time. Null when finished. */
+                            estimate?: {
+                                working_days_min?: number;
+                                working_days_max?: number;
+                            } | null;
+                            /** @description How many people the source holds, when LinkedIn says; null for a people search. */
+                            source_total?: Record<string, never> | null;
+                            /**
+                             * @description Why a LinkedIn import ended: max reached, no more pages, or 3 pages in a row with no new Lead.
+                             * @enum {string|null}
+                             */
+                            finish_reason?: "max_reached" | "source_exhausted" | "no_new_leads" | "stopped" | null;
+                            /** @description A LinkedIn search import that stopped before LinkedIn's 1,000-result ceiling can continue. */
+                            can_continue?: boolean;
+                            /** @description The import this one continues. */
+                            continued_from?: string | null;
                             /** @description The Lead list every row was added to. */
                             list_id: string | null;
                             /** @description Tag names added to every row's Lead. */
@@ -47479,7 +47729,7 @@ export interface operations {
                                  * @description Why a row was skipped.
                                  * @enum {string|null}
                                  */
-                                reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | null;
+                                reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | null;
                                 /** @description The field a field_too_long row names. */
                                 field: string | null;
                                 /** @description An earlier row of this import for the same person. */
@@ -47563,6 +47813,32 @@ export interface operations {
                      * @enum {string}
                      */
                     delimiter?: "," | ";" | "\t";
+                    /** @description A LinkedIn source Curviate reads page by page on its server, from source.account_id, inside that Account's limits and Active hours: answers 202 queued. Send rows, csv or source, exactly one. */
+                    source?: {
+                        /**
+                         * @description What to import: people_search takes a pasted LinkedIn people search URL. The other kinds are not available yet.
+                         * @enum {string}
+                         */
+                        kind: "people_search" | "company_people" | "sales_nav_search" | "sales_nav_lead_list" | "sales_nav_account_list" | "sales_nav_company_people" | "recruiter_search" | "post_engagers" | "group_members";
+                        /** @description The Account that reads the source (acc_...). Its limits, Active hours and pacing apply. */
+                        account_id: string;
+                        /** @description A pasted LinkedIn search URL (people_search: linkedin.com/search/results/people/...). */
+                        url?: string;
+                        /** @description A built search instead of a URL (not available yet). */
+                        filters?: {
+                            [key: string]: unknown;
+                        };
+                        /** @description A Sales Navigator list id (not available yet). */
+                        list_id?: string;
+                        /** @description A post id or URL (not available yet). */
+                        post_id?: string;
+                        /** @description A LinkedIn group id (not available yet). */
+                        group_id?: string;
+                        /** @description Job titles to keep (the company sources; not available yet). */
+                        titles?: string[];
+                        /** @description Stop after this many people (default and maximum: the kind's cap, 1,000 for people_search). */
+                        max?: number;
+                    };
                 };
             };
         };
@@ -47580,17 +47856,50 @@ export interface operations {
                         object: "lead_import";
                         /** @description Import id (imp_...). */
                         id: string;
+                        /**
+                         * @description paused and stopped belong to imports from a LinkedIn source.
+                         * @enum {string}
+                         */
+                        status: "queued" | "running" | "paused" | "stopped" | "completed" | "failed";
                         /** @enum {string} */
-                        status: "queued" | "running" | "completed" | "failed";
-                        /** @enum {string} */
-                        format: "rows" | "csv";
+                        format: "rows" | "csv" | "source";
+                        /** @description Rows sent; for a LinkedIn source, the people read so far. */
                         total_rows: number;
                         counts: {
                             created: number;
                             updated: number;
                             unchanged: number;
                             skipped: number;
+                            /** @description A LinkedIn source: people read so far. */
+                            found: number;
+                            /** @description A LinkedIn source: people skipped for the Do-not-contact list. */
+                            do_not_contact: number;
+                            /** @description A LinkedIn source: people imported who opted out of email only. */
+                            no_email: number;
                         };
+                        /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
+                        source?: Record<string, never> | null;
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours) or budget (the Account's search lines for today are spent, or Campaign work went first), with until the next opening. Null while reading or between paced pages. */
+                        waiting?: {
+                            kind?: string;
+                            until?: string | null;
+                        } | null;
+                        /** @description A range of working days left, from the Account's limits and the conservative search pace; never a time. Null when finished. */
+                        estimate?: {
+                            working_days_min?: number;
+                            working_days_max?: number;
+                        } | null;
+                        /** @description How many people the source holds, when LinkedIn says; null for a people search. */
+                        source_total?: Record<string, never> | null;
+                        /**
+                         * @description Why a LinkedIn import ended: max reached, no more pages, or 3 pages in a row with no new Lead.
+                         * @enum {string|null}
+                         */
+                        finish_reason?: "max_reached" | "source_exhausted" | "no_new_leads" | "stopped" | null;
+                        /** @description A LinkedIn search import that stopped before LinkedIn's 1,000-result ceiling can continue. */
+                        can_continue?: boolean;
+                        /** @description The import this one continues. */
+                        continued_from?: string | null;
                         /** @description The Lead list every row was added to. */
                         list_id: string | null;
                         /** @description Tag names added to every row's Lead. */
@@ -47627,7 +47936,7 @@ export interface operations {
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | null;
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -47636,7 +47945,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description More rows than that: queued and processed in the background. Poll GET /v1/leads/imports/{id}. */
+            /** @description More rows than that, or a source: queued and processed in the background. A source is read page by page from its Account, inside that Account's limits and Active hours, after its Campaign work and at a human pace: expect days, not minutes (estimate). Poll GET /v1/leads/imports/{id}. */
             202: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -47649,17 +47958,50 @@ export interface operations {
                         object: "lead_import";
                         /** @description Import id (imp_...). */
                         id: string;
+                        /**
+                         * @description paused and stopped belong to imports from a LinkedIn source.
+                         * @enum {string}
+                         */
+                        status: "queued" | "running" | "paused" | "stopped" | "completed" | "failed";
                         /** @enum {string} */
-                        status: "queued" | "running" | "completed" | "failed";
-                        /** @enum {string} */
-                        format: "rows" | "csv";
+                        format: "rows" | "csv" | "source";
+                        /** @description Rows sent; for a LinkedIn source, the people read so far. */
                         total_rows: number;
                         counts: {
                             created: number;
                             updated: number;
                             unchanged: number;
                             skipped: number;
+                            /** @description A LinkedIn source: people read so far. */
+                            found: number;
+                            /** @description A LinkedIn source: people skipped for the Do-not-contact list. */
+                            do_not_contact: number;
+                            /** @description A LinkedIn source: people imported who opted out of email only. */
+                            no_email: number;
                         };
+                        /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
+                        source?: Record<string, never> | null;
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours) or budget (the Account's search lines for today are spent, or Campaign work went first), with until the next opening. Null while reading or between paced pages. */
+                        waiting?: {
+                            kind?: string;
+                            until?: string | null;
+                        } | null;
+                        /** @description A range of working days left, from the Account's limits and the conservative search pace; never a time. Null when finished. */
+                        estimate?: {
+                            working_days_min?: number;
+                            working_days_max?: number;
+                        } | null;
+                        /** @description How many people the source holds, when LinkedIn says; null for a people search. */
+                        source_total?: Record<string, never> | null;
+                        /**
+                         * @description Why a LinkedIn import ended: max reached, no more pages, or 3 pages in a row with no new Lead.
+                         * @enum {string|null}
+                         */
+                        finish_reason?: "max_reached" | "source_exhausted" | "no_new_leads" | "stopped" | null;
+                        /** @description A LinkedIn search import that stopped before LinkedIn's 1,000-result ceiling can continue. */
+                        can_continue?: boolean;
+                        /** @description The import this one continues. */
+                        continued_from?: string | null;
                         /** @description The Lead list every row was added to. */
                         list_id: string | null;
                         /** @description Tag names added to every row's Lead. */
@@ -47696,7 +48038,7 @@ export interface operations {
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | null;
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -47705,7 +48047,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Neither or both of rows and csv, no rows, an unknown key or wrong type in a row (the message names rows[n]...), a CSV header problem (duplicate header, two headers on one target, a mapping naming an unknown header or target, no column for the LinkedIn URL), or mapping or delimiter with rows. Nothing is imported. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description Not exactly one of rows, csv and source; a source with a missing, extra or malformed input (the message names source.<key>; a URL of another kind names the kind it belongs to), a kind not available yet, max above the kind's cap, or tags with a source. No rows, an unknown key or wrong type in a row (the message names rows[n]...), a CSV header problem (duplicate header, two headers on one target, a mapping naming an unknown header or target, no column for the LinkedIn URL), or mapping or delimiter with rows. Nothing is imported. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -47732,8 +48074,17 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: list_id is not one of your Lead lists. */
+            /** @description RESOURCE_NOT_FOUND: list_id is not one of your Lead lists. ACCOUNT_NOT_FOUND: source.account_id is not one of your Accounts. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description REAUTH_REQUIRED: source.account_id needs reconnecting before it can read LinkedIn. Reconnect it, or choose another Account. Nothing is created. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -47803,17 +48154,50 @@ export interface operations {
                         object: "lead_import";
                         /** @description Import id (imp_...). */
                         id: string;
+                        /**
+                         * @description paused and stopped belong to imports from a LinkedIn source.
+                         * @enum {string}
+                         */
+                        status: "queued" | "running" | "paused" | "stopped" | "completed" | "failed";
                         /** @enum {string} */
-                        status: "queued" | "running" | "completed" | "failed";
-                        /** @enum {string} */
-                        format: "rows" | "csv";
+                        format: "rows" | "csv" | "source";
+                        /** @description Rows sent; for a LinkedIn source, the people read so far. */
                         total_rows: number;
                         counts: {
                             created: number;
                             updated: number;
                             unchanged: number;
                             skipped: number;
+                            /** @description A LinkedIn source: people read so far. */
+                            found: number;
+                            /** @description A LinkedIn source: people skipped for the Do-not-contact list. */
+                            do_not_contact: number;
+                            /** @description A LinkedIn source: people imported who opted out of email only. */
+                            no_email: number;
                         };
+                        /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
+                        source?: Record<string, never> | null;
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours) or budget (the Account's search lines for today are spent, or Campaign work went first), with until the next opening. Null while reading or between paced pages. */
+                        waiting?: {
+                            kind?: string;
+                            until?: string | null;
+                        } | null;
+                        /** @description A range of working days left, from the Account's limits and the conservative search pace; never a time. Null when finished. */
+                        estimate?: {
+                            working_days_min?: number;
+                            working_days_max?: number;
+                        } | null;
+                        /** @description How many people the source holds, when LinkedIn says; null for a people search. */
+                        source_total?: Record<string, never> | null;
+                        /**
+                         * @description Why a LinkedIn import ended: max reached, no more pages, or 3 pages in a row with no new Lead.
+                         * @enum {string|null}
+                         */
+                        finish_reason?: "max_reached" | "source_exhausted" | "no_new_leads" | "stopped" | null;
+                        /** @description A LinkedIn search import that stopped before LinkedIn's 1,000-result ceiling can continue. */
+                        can_continue?: boolean;
+                        /** @description The import this one continues. */
+                        continued_from?: string | null;
                         /** @description The Lead list every row was added to. */
                         list_id: string | null;
                         /** @description Tag names added to every row's Lead. */
@@ -47850,7 +48234,7 @@ export interface operations {
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | null;
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -47946,7 +48330,7 @@ export interface operations {
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | null;
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -48041,6 +48425,17 @@ export interface operations {
                         member_id: string | null;
                         /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. A copy we store, so the link does not expire; show initials when null. */
                         profile_picture_url: string | null;
+                        /** @description The Do-not-contact entry matching this person, read when you ask and never stored on the Lead: null when none. `scope` `everything` (no Campaign or write reaches them) or `email_only` (the person opted out of email only: show "No email"; LinkedIn still reaches them); `reason` why (`unsubscribed`, `asked_to_stop`, ...) or null; `how` it came to be (`unsubscribe_link`, `email_header`, `reply_model`, `person`); `at` when the entry was made. Read-only. */
+                        do_not_contact: {
+                            /** @enum {string} */
+                            scope: "everything" | "email_only";
+                            /** @enum {string|null} */
+                            reason: "asked_to_stop" | "existing_customer" | "competitor" | "partner" | "employee" | "other" | "unsubscribed" | null;
+                            /** @enum {string} */
+                            how: "unsubscribe_link" | "email_header" | "reply_model" | "person";
+                            /** @description ISO 8601. */
+                            at: string;
+                        } | null;
                         /** @description Full name. */
                         full_name: string | null;
                         /** @description First name. */
@@ -48284,6 +48679,17 @@ export interface operations {
                         member_id: string | null;
                         /** @description The person's LinkedIn photo, read from the profile data your team already holds when you ask, so it costs no LinkedIn call. Read-only, and not part of exports or webhooks. Null when none is held. A copy we store, so the link does not expire; show initials when null. */
                         profile_picture_url: string | null;
+                        /** @description The Do-not-contact entry matching this person, read when you ask and never stored on the Lead: null when none. `scope` `everything` (no Campaign or write reaches them) or `email_only` (the person opted out of email only: show "No email"; LinkedIn still reaches them); `reason` why (`unsubscribed`, `asked_to_stop`, ...) or null; `how` it came to be (`unsubscribe_link`, `email_header`, `reply_model`, `person`); `at` when the entry was made. Read-only. */
+                        do_not_contact: {
+                            /** @enum {string} */
+                            scope: "everything" | "email_only";
+                            /** @enum {string|null} */
+                            reason: "asked_to_stop" | "existing_customer" | "competitor" | "partner" | "employee" | "other" | "unsubscribed" | null;
+                            /** @enum {string} */
+                            how: "unsubscribe_link" | "email_header" | "reply_model" | "person";
+                            /** @description ISO 8601. */
+                            at: string;
+                        } | null;
                         /** @description Full name. */
                         full_name: string | null;
                         /** @description First name. */
@@ -49232,7 +49638,18 @@ export interface operations {
                              * @description Why, from a fixed list.
                              * @enum {string|null}
                              */
-                            reason?: "asked_to_stop" | "existing_customer" | "competitor" | "partner" | "employee" | "other" | null;
+                            reason?: "asked_to_stop" | "existing_customer" | "competitor" | "partner" | "employee" | "other" | "unsubscribed" | null;
+                            /**
+                             * @description What the entry stops: everything, or email_only (email only; LinkedIn Campaigns and writes still reach the person).
+                             * @enum {string}
+                             */
+                            scope?: "everything" | "email_only";
+                            /**
+                             * @description How it was added: unsubscribe_link, email_header, reply_model, or person (a team member).
+                             * @enum {string}
+                             */
+                            how?: "unsubscribe_link" | "email_header" | "reply_model" | "person";
+                            /** @description The team member's surface, set when how is person; null for the other three. */
                             added_by?: {
                                 /** @description The team member who added it, or whose key or connector did. */
                                 user_id?: string | null;
@@ -49243,7 +49660,7 @@ export interface operations {
                                  * @enum {string}
                                  */
                                 via?: "dashboard" | "api" | "mcp";
-                            };
+                            } | null;
                             /** Format: date-time */
                             created_at?: string;
                         }[];
@@ -49303,10 +49720,15 @@ export interface operations {
                     /** @description A LinkedIn profile URL; a person who is not a Lead yet becomes one first. */
                     linkedin_url?: string;
                     /**
-                     * @description Why, from a fixed list: asked_to_stop, existing_customer, competitor, partner, employee or other.
+                     * @description Why, from a fixed list: asked_to_stop, existing_customer, competitor, partner, employee, unsubscribed or other.
                      * @enum {string}
                      */
-                    reason?: "asked_to_stop" | "existing_customer" | "competitor" | "partner" | "employee" | "other";
+                    reason?: "asked_to_stop" | "existing_customer" | "competitor" | "partner" | "employee" | "other" | "unsubscribed";
+                    /**
+                     * @description What the entry stops: everything (default) or email_only (email only; LinkedIn Campaigns and writes still reach the person).
+                     * @enum {string}
+                     */
+                    scope?: "everything" | "email_only";
                 };
             };
         };
@@ -49340,7 +49762,18 @@ export interface operations {
                          * @description Why, from a fixed list.
                          * @enum {string|null}
                          */
-                        reason?: "asked_to_stop" | "existing_customer" | "competitor" | "partner" | "employee" | "other" | null;
+                        reason?: "asked_to_stop" | "existing_customer" | "competitor" | "partner" | "employee" | "other" | "unsubscribed" | null;
+                        /**
+                         * @description What the entry stops: everything, or email_only (email only; LinkedIn Campaigns and writes still reach the person).
+                         * @enum {string}
+                         */
+                        scope?: "everything" | "email_only";
+                        /**
+                         * @description How it was added: unsubscribe_link, email_header, reply_model, or person (a team member).
+                         * @enum {string}
+                         */
+                        how?: "unsubscribe_link" | "email_header" | "reply_model" | "person";
+                        /** @description The team member's surface, set when how is person; null for the other three. */
                         added_by?: {
                             /** @description The team member who added it, or whose key or connector did. */
                             user_id?: string | null;
@@ -49351,7 +49784,7 @@ export interface operations {
                              * @enum {string}
                              */
                             via?: "dashboard" | "api" | "mcp";
-                        };
+                        } | null;
                         /** Format: date-time */
                         created_at?: string;
                     };
@@ -49386,7 +49819,18 @@ export interface operations {
                          * @description Why, from a fixed list.
                          * @enum {string|null}
                          */
-                        reason?: "asked_to_stop" | "existing_customer" | "competitor" | "partner" | "employee" | "other" | null;
+                        reason?: "asked_to_stop" | "existing_customer" | "competitor" | "partner" | "employee" | "other" | "unsubscribed" | null;
+                        /**
+                         * @description What the entry stops: everything, or email_only (email only; LinkedIn Campaigns and writes still reach the person).
+                         * @enum {string}
+                         */
+                        scope?: "everything" | "email_only";
+                        /**
+                         * @description How it was added: unsubscribe_link, email_header, reply_model, or person (a team member).
+                         * @enum {string}
+                         */
+                        how?: "unsubscribe_link" | "email_header" | "reply_model" | "person";
+                        /** @description The team member's surface, set when how is person; null for the other three. */
                         added_by?: {
                             /** @description The team member who added it, or whose key or connector did. */
                             user_id?: string | null;
@@ -49397,13 +49841,13 @@ export interface operations {
                              * @enum {string}
                              */
                             via?: "dashboard" | "api" | "mcp";
-                        };
+                        } | null;
                         /** Format: date-time */
                         created_at?: string;
                     };
                 };
             };
-            /** @description Neither or both of lead_id and linkedin_url, a URL that is not a LinkedIn profile, or a reason outside the list. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description Neither or both of lead_id and linkedin_url, a URL that is not a LinkedIn profile, or a reason or scope outside the list. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -49505,14 +49949,24 @@ export interface operations {
                          * @description Why, from a fixed list.
                          * @enum {string|null}
                          */
-                        reason?: "asked_to_stop" | "existing_customer" | "competitor" | "partner" | "employee" | "other" | null;
+                        reason?: "asked_to_stop" | "existing_customer" | "competitor" | "partner" | "employee" | "other" | "unsubscribed" | null;
+                        /**
+                         * @description everything or email_only.
+                         * @enum {string}
+                         */
+                        scope?: "everything" | "email_only";
+                        /**
+                         * @description How it was added.
+                         * @enum {string}
+                         */
+                        how?: "unsubscribe_link" | "email_header" | "reply_model" | "person";
                         /** @description Name of the team member who added it. */
                         added_by?: string | null;
                         /**
-                         * @description Where it was added.
-                         * @enum {string}
+                         * @description Where a team member added it; null for the other hows.
+                         * @enum {string|null}
                          */
-                        via?: "dashboard" | "api" | "mcp";
+                        via?: "dashboard" | "api" | "mcp" | null;
                         /** Format: date-time */
                         created_at?: string;
                         /** @description Entry id (dnc_...). */
@@ -49576,11 +50030,11 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description The rows: objects with linkedin_url (required) and reason (optional). Send rows or csv, not both. */
+                    /** @description The rows: objects with linkedin_url (required), reason and scope (optional). Send rows or csv, not both. */
                     rows?: {
                         [key: string]: unknown;
                     }[];
-                    /** @description The file as text (RFC 4180, UTF-8) with a header line; a linkedin_url column and optionally a reason column. A do-not-contact export re-imports as it is. Send rows or csv, not both. */
+                    /** @description The file as text (RFC 4180, UTF-8) with a header line; a linkedin_url column and optionally reason and scope columns. A do-not-contact export re-imports as it is. Send rows or csv, not both. */
                     csv?: string;
                     /**
                      * @description csv only: , ; or tab. Default: the most frequent in the header line.
@@ -49630,7 +50084,7 @@ export interface operations {
                              * @description Why the row was skipped.
                              * @enum {string|null}
                              */
-                            skip_reason?: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_reason" | "malformed_row" | "lead_limit_reached" | null;
+                            skip_reason?: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_reason" | "invalid_scope" | "malformed_row" | "lead_limit_reached" | null;
                             /** @description The field a skip is about. */
                             field?: string | null;
                             /** @description The first row of the file that named this person. */
@@ -49735,7 +50189,18 @@ export interface operations {
                          * @description Why, from a fixed list.
                          * @enum {string|null}
                          */
-                        reason?: "asked_to_stop" | "existing_customer" | "competitor" | "partner" | "employee" | "other" | null;
+                        reason?: "asked_to_stop" | "existing_customer" | "competitor" | "partner" | "employee" | "other" | "unsubscribed" | null;
+                        /**
+                         * @description What the entry stops: everything, or email_only (email only; LinkedIn Campaigns and writes still reach the person).
+                         * @enum {string}
+                         */
+                        scope?: "everything" | "email_only";
+                        /**
+                         * @description How it was added: unsubscribe_link, email_header, reply_model, or person (a team member).
+                         * @enum {string}
+                         */
+                        how?: "unsubscribe_link" | "email_header" | "reply_model" | "person";
+                        /** @description The team member's surface, set when how is person; null for the other three. */
                         added_by?: {
                             /** @description The team member who added it, or whose key or connector did. */
                             user_id?: string | null;
@@ -49746,7 +50211,7 @@ export interface operations {
                              * @enum {string}
                              */
                             via?: "dashboard" | "api" | "mcp";
-                        };
+                        } | null;
                         /** Format: date-time */
                         created_at?: string;
                     };
@@ -49891,7 +50356,7 @@ export interface operations {
                      * @description The new reason; null clears it.
                      * @enum {string|null}
                      */
-                    reason: "asked_to_stop" | "existing_customer" | "competitor" | "partner" | "employee" | "other" | null;
+                    reason: "asked_to_stop" | "existing_customer" | "competitor" | "partner" | "employee" | "other" | "unsubscribed" | null;
                 };
             };
         };
@@ -49925,7 +50390,18 @@ export interface operations {
                          * @description Why, from a fixed list.
                          * @enum {string|null}
                          */
-                        reason?: "asked_to_stop" | "existing_customer" | "competitor" | "partner" | "employee" | "other" | null;
+                        reason?: "asked_to_stop" | "existing_customer" | "competitor" | "partner" | "employee" | "other" | "unsubscribed" | null;
+                        /**
+                         * @description What the entry stops: everything, or email_only (email only; LinkedIn Campaigns and writes still reach the person).
+                         * @enum {string}
+                         */
+                        scope?: "everything" | "email_only";
+                        /**
+                         * @description How it was added: unsubscribe_link, email_header, reply_model, or person (a team member).
+                         * @enum {string}
+                         */
+                        how?: "unsubscribe_link" | "email_header" | "reply_model" | "person";
+                        /** @description The team member's surface, set when how is person; null for the other three. */
                         added_by?: {
                             /** @description The team member who added it, or whose key or connector did. */
                             user_id?: string | null;
@@ -49936,7 +50412,7 @@ export interface operations {
                              * @enum {string}
                              */
                             via?: "dashboard" | "api" | "mcp";
-                        };
+                        } | null;
                         /** Format: date-time */
                         created_at?: string;
                     };
@@ -50278,6 +50754,8 @@ export interface operations {
                             exclusion_list_ids: string[];
                             /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                             account_ids: string[];
+                            /** @description Mailboxes shared in your team (mbx_...) that email steps use once a sending account's own Mailboxes are at today's limit. */
+                            shared_mailbox_ids: string[];
                             /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Campaign; changing the Team's hours later does not move it. */
                             schedule: {
                                 days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
@@ -50289,6 +50767,8 @@ export interface operations {
                                 start_at: string | null;
                                 /** @description ISO 8601. */
                                 end_at: string | null;
+                                /** @description Email steps: the least minutes between two emails this Campaign sends from one Mailbox. Default 5; below 2 is warned (W20). */
+                                min_email_gap_minutes: number;
                             };
                             settings: {
                                 accounts_per_lead: number;
@@ -50325,6 +50805,11 @@ export interface operations {
                                 withdraw_on_reply_elsewhere?: boolean;
                                 /** @description Several mode only. The least time between two accounts' starts on one Lead, 1d to 30d. */
                                 account_gap?: string;
+                                /**
+                                 * @description Campaigns with an email step: both (default), a reply on either channel ends the Enrollment; own_channel, it skips only the later steps of its own channel.
+                                 * @enum {string}
+                                 */
+                                reply_scope: "both" | "own_channel";
                             };
                             /** @description lead.* predicates a Lead must all pass to enroll. */
                             where: {
@@ -50336,6 +50821,34 @@ export interface operations {
                             sequence_revision: number;
                             /** @description The user who saved the current Sequence revision. */
                             sequence_updated_by_user_id: string | null;
+                            /** @description The last Lead check (POST /v1/campaigns/{id}/check); null until one ran. Start needs one at the current sequence_revision when the Sequence has an email step. */
+                            lead_check: {
+                                /** @enum {string} */
+                                object: "campaign_check";
+                                /** @description ISO 8601. */
+                                checked_at: string;
+                                /** @description The sequence_revision it was taken at; start needs the current one. */
+                                sequence_revision: number;
+                                /** @description Leads the Campaign would enroll: its Lead lists' members not on an exclusion list, and Leads added directly. */
+                                leads: number;
+                                /** @description Of them, Leads with no usable email address. They are never enrolled in a Campaign with an email step. */
+                                without_email: number;
+                                /** @description Leads whose address bounced; their email steps skip email_bounced. */
+                                email_bounced: number;
+                                /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
+                                no_email: number;
+                                /** @description Lead variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                                fields: {
+                                    /** @description Long form, as lead.first_name or lead.extra.opener. */
+                                    variable: string;
+                                    steps: string[];
+                                    /** @enum {string} */
+                                    on_missing: "fallback" | "skip" | "hold";
+                                    missing: number;
+                                    /** @description Leads for whom it cannot be told before the send; 0 for Lead fields. */
+                                    unknown: number;
+                                }[];
+                            } | null;
                             /** @description Enrollments by state. */
                             counts: {
                                 /** @description Waiting to start. */
@@ -50444,6 +50957,8 @@ export interface operations {
                     exclusion_list_ids?: string[];
                     /** @description Sending accounts (acc_...), up to 100. Replaced whole on update. */
                     account_ids?: string[];
+                    /** @description Mailboxes shared in your team (mbx_...) that email steps use once a sending account's own Mailboxes are at today's limit, up to 100. Replaced whole on update. */
+                    shared_mailbox_ids?: string[];
                     /** @description When actions may run. Merged key by key on update. */
                     schedule?: {
                         /** @description Retired: days and hours are read in each sending account's own time zone. Accepted with warning W13 until 2027-01-25, never stored or returned. */
@@ -50461,6 +50976,8 @@ export interface operations {
                         start_at?: string | null;
                         /** @description ISO 8601 with offset, after start_at. Default null. */
                         end_at?: string | null;
+                        /** @description Email steps: two emails this Campaign sends from one Mailbox are at least this many minutes apart. Default 5. Below 2 is stored with warning email_gap_low (W20). */
+                        min_email_gap_minutes?: number;
                     };
                     /** @description Merged key by key on update. */
                     settings?: {
@@ -50497,6 +51014,11 @@ export interface operations {
                         variables?: {
                             [key: string]: string | null;
                         };
+                        /**
+                         * @description Campaigns with an email step: what a reply ends. both (default): a reply by email or on LinkedIn ends the Enrollment. own_channel: it skips only the later steps of the channel it came on (channel_replied), and the other channel's steps go on.
+                         * @enum {string}
+                         */
+                        reply_scope?: "both" | "own_channel";
                         /**
                          * @description Several mode only (accounts_per_lead above 1; absent and refused otherwise). What a reply to one sending account, or a message sent by hand from it, does to the Lead's Enrollments on the Campaign's other accounts: stop (default) ends them, continue lets them run on.
                          * @enum {string}
@@ -50547,6 +51069,8 @@ export interface operations {
                         exclusion_list_ids: string[];
                         /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                         account_ids: string[];
+                        /** @description Mailboxes shared in your team (mbx_...) that email steps use once a sending account's own Mailboxes are at today's limit. */
+                        shared_mailbox_ids: string[];
                         /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Campaign; changing the Team's hours later does not move it. */
                         schedule: {
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
@@ -50558,6 +51082,8 @@ export interface operations {
                             start_at: string | null;
                             /** @description ISO 8601. */
                             end_at: string | null;
+                            /** @description Email steps: the least minutes between two emails this Campaign sends from one Mailbox. Default 5; below 2 is warned (W20). */
+                            min_email_gap_minutes: number;
                         };
                         settings: {
                             accounts_per_lead: number;
@@ -50594,6 +51120,11 @@ export interface operations {
                             withdraw_on_reply_elsewhere?: boolean;
                             /** @description Several mode only. The least time between two accounts' starts on one Lead, 1d to 30d. */
                             account_gap?: string;
+                            /**
+                             * @description Campaigns with an email step: both (default), a reply on either channel ends the Enrollment; own_channel, it skips only the later steps of its own channel.
+                             * @enum {string}
+                             */
+                            reply_scope: "both" | "own_channel";
                         };
                         /** @description lead.* predicates a Lead must all pass to enroll. */
                         where: {
@@ -50607,6 +51138,34 @@ export interface operations {
                         sequence_revision: number;
                         /** @description The user who saved the current Sequence revision. */
                         sequence_updated_by_user_id: string | null;
+                        /** @description The last Lead check (POST /v1/campaigns/{id}/check); null until one ran. Start needs one at the current sequence_revision when the Sequence has an email step. */
+                        lead_check: {
+                            /** @enum {string} */
+                            object: "campaign_check";
+                            /** @description ISO 8601. */
+                            checked_at: string;
+                            /** @description The sequence_revision it was taken at; start needs the current one. */
+                            sequence_revision: number;
+                            /** @description Leads the Campaign would enroll: its Lead lists' members not on an exclusion list, and Leads added directly. */
+                            leads: number;
+                            /** @description Of them, Leads with no usable email address. They are never enrolled in a Campaign with an email step. */
+                            without_email: number;
+                            /** @description Leads whose address bounced; their email steps skip email_bounced. */
+                            email_bounced: number;
+                            /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
+                            no_email: number;
+                            /** @description Lead variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            fields: {
+                                /** @description Long form, as lead.first_name or lead.extra.opener. */
+                                variable: string;
+                                steps: string[];
+                                /** @enum {string} */
+                                on_missing: "fallback" | "skip" | "hold";
+                                missing: number;
+                                /** @description Leads for whom it cannot be told before the send; 0 for Lead fields. */
+                                unknown: number;
+                            }[];
+                        } | null;
                         /** @description Enrollments by state. */
                         counts: {
                             /** @description Waiting to start. */
@@ -50624,7 +51183,7 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Campaign. They never block a write. */
                         warnings: {
-                            /** @description The warning id, W1 to W17. */
+                            /** @description The warning id, W1 to W21. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -50793,6 +51352,8 @@ export interface operations {
                         exclusion_list_ids: string[];
                         /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                         account_ids: string[];
+                        /** @description Mailboxes shared in your team (mbx_...) that email steps use once a sending account's own Mailboxes are at today's limit. */
+                        shared_mailbox_ids: string[];
                         /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Campaign; changing the Team's hours later does not move it. */
                         schedule: {
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
@@ -50804,6 +51365,8 @@ export interface operations {
                             start_at: string | null;
                             /** @description ISO 8601. */
                             end_at: string | null;
+                            /** @description Email steps: the least minutes between two emails this Campaign sends from one Mailbox. Default 5; below 2 is warned (W20). */
+                            min_email_gap_minutes: number;
                         };
                         settings: {
                             accounts_per_lead: number;
@@ -50840,6 +51403,11 @@ export interface operations {
                             withdraw_on_reply_elsewhere?: boolean;
                             /** @description Several mode only. The least time between two accounts' starts on one Lead, 1d to 30d. */
                             account_gap?: string;
+                            /**
+                             * @description Campaigns with an email step: both (default), a reply on either channel ends the Enrollment; own_channel, it skips only the later steps of its own channel.
+                             * @enum {string}
+                             */
+                            reply_scope: "both" | "own_channel";
                         };
                         /** @description lead.* predicates a Lead must all pass to enroll. */
                         where: {
@@ -50853,6 +51421,34 @@ export interface operations {
                         sequence_revision: number;
                         /** @description The user who saved the current Sequence revision. */
                         sequence_updated_by_user_id: string | null;
+                        /** @description The last Lead check (POST /v1/campaigns/{id}/check); null until one ran. Start needs one at the current sequence_revision when the Sequence has an email step. */
+                        lead_check: {
+                            /** @enum {string} */
+                            object: "campaign_check";
+                            /** @description ISO 8601. */
+                            checked_at: string;
+                            /** @description The sequence_revision it was taken at; start needs the current one. */
+                            sequence_revision: number;
+                            /** @description Leads the Campaign would enroll: its Lead lists' members not on an exclusion list, and Leads added directly. */
+                            leads: number;
+                            /** @description Of them, Leads with no usable email address. They are never enrolled in a Campaign with an email step. */
+                            without_email: number;
+                            /** @description Leads whose address bounced; their email steps skip email_bounced. */
+                            email_bounced: number;
+                            /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
+                            no_email: number;
+                            /** @description Lead variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            fields: {
+                                /** @description Long form, as lead.first_name or lead.extra.opener. */
+                                variable: string;
+                                steps: string[];
+                                /** @enum {string} */
+                                on_missing: "fallback" | "skip" | "hold";
+                                missing: number;
+                                /** @description Leads for whom it cannot be told before the send; 0 for Lead fields. */
+                                unknown: number;
+                            }[];
+                        } | null;
                         /** @description Enrollments by state. */
                         counts: {
                             /** @description Waiting to start. */
@@ -50870,7 +51466,7 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Campaign. They never block a write. */
                         warnings: {
-                            /** @description The warning id, W1 to W17. */
+                            /** @description The warning id, W1 to W21. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -51059,6 +51655,8 @@ export interface operations {
                     exclusion_list_ids?: string[];
                     /** @description Sending accounts (acc_...), up to 100. Replaced whole on update. */
                     account_ids?: string[];
+                    /** @description Mailboxes shared in your team (mbx_...) that email steps use once a sending account's own Mailboxes are at today's limit, up to 100. Replaced whole on update. */
+                    shared_mailbox_ids?: string[];
                     /** @description When actions may run. Merged key by key on update. */
                     schedule?: {
                         /** @description Retired: days and hours are read in each sending account's own time zone. Accepted with warning W13 until 2027-01-25, never stored or returned. */
@@ -51076,6 +51674,8 @@ export interface operations {
                         start_at?: string | null;
                         /** @description ISO 8601 with offset, after start_at. Default null. */
                         end_at?: string | null;
+                        /** @description Email steps: two emails this Campaign sends from one Mailbox are at least this many minutes apart. Default 5. Below 2 is stored with warning email_gap_low (W20). */
+                        min_email_gap_minutes?: number;
                     };
                     /** @description Merged key by key on update. */
                     settings?: {
@@ -51112,6 +51712,11 @@ export interface operations {
                         variables?: {
                             [key: string]: string | null;
                         };
+                        /**
+                         * @description Campaigns with an email step: what a reply ends. both (default): a reply by email or on LinkedIn ends the Enrollment. own_channel: it skips only the later steps of the channel it came on (channel_replied), and the other channel's steps go on.
+                         * @enum {string}
+                         */
+                        reply_scope?: "both" | "own_channel";
                         /**
                          * @description Several mode only (accounts_per_lead above 1; absent and refused otherwise). What a reply to one sending account, or a message sent by hand from it, does to the Lead's Enrollments on the Campaign's other accounts: stop (default) ends them, continue lets them run on.
                          * @enum {string}
@@ -51164,6 +51769,8 @@ export interface operations {
                         exclusion_list_ids: string[];
                         /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                         account_ids: string[];
+                        /** @description Mailboxes shared in your team (mbx_...) that email steps use once a sending account's own Mailboxes are at today's limit. */
+                        shared_mailbox_ids: string[];
                         /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Campaign; changing the Team's hours later does not move it. */
                         schedule: {
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
@@ -51175,6 +51782,8 @@ export interface operations {
                             start_at: string | null;
                             /** @description ISO 8601. */
                             end_at: string | null;
+                            /** @description Email steps: the least minutes between two emails this Campaign sends from one Mailbox. Default 5; below 2 is warned (W20). */
+                            min_email_gap_minutes: number;
                         };
                         settings: {
                             accounts_per_lead: number;
@@ -51211,6 +51820,11 @@ export interface operations {
                             withdraw_on_reply_elsewhere?: boolean;
                             /** @description Several mode only. The least time between two accounts' starts on one Lead, 1d to 30d. */
                             account_gap?: string;
+                            /**
+                             * @description Campaigns with an email step: both (default), a reply on either channel ends the Enrollment; own_channel, it skips only the later steps of its own channel.
+                             * @enum {string}
+                             */
+                            reply_scope: "both" | "own_channel";
                         };
                         /** @description lead.* predicates a Lead must all pass to enroll. */
                         where: {
@@ -51224,6 +51838,34 @@ export interface operations {
                         sequence_revision: number;
                         /** @description The user who saved the current Sequence revision. */
                         sequence_updated_by_user_id: string | null;
+                        /** @description The last Lead check (POST /v1/campaigns/{id}/check); null until one ran. Start needs one at the current sequence_revision when the Sequence has an email step. */
+                        lead_check: {
+                            /** @enum {string} */
+                            object: "campaign_check";
+                            /** @description ISO 8601. */
+                            checked_at: string;
+                            /** @description The sequence_revision it was taken at; start needs the current one. */
+                            sequence_revision: number;
+                            /** @description Leads the Campaign would enroll: its Lead lists' members not on an exclusion list, and Leads added directly. */
+                            leads: number;
+                            /** @description Of them, Leads with no usable email address. They are never enrolled in a Campaign with an email step. */
+                            without_email: number;
+                            /** @description Leads whose address bounced; their email steps skip email_bounced. */
+                            email_bounced: number;
+                            /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
+                            no_email: number;
+                            /** @description Lead variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            fields: {
+                                /** @description Long form, as lead.first_name or lead.extra.opener. */
+                                variable: string;
+                                steps: string[];
+                                /** @enum {string} */
+                                on_missing: "fallback" | "skip" | "hold";
+                                missing: number;
+                                /** @description Leads for whom it cannot be told before the send; 0 for Lead fields. */
+                                unknown: number;
+                            }[];
+                        } | null;
                         /** @description Enrollments by state. */
                         counts: {
                             /** @description Waiting to start. */
@@ -51241,7 +51883,7 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Campaign. They never block a write. */
                         warnings: {
-                            /** @description The warning id, W1 to W17. */
+                            /** @description The warning id, W1 to W21. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -51380,9 +52022,16 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description A Campaign with an email step: true starts it without the Leads that have no email address (they are never enrolled). Default false: start is refused while the last Lead check counts any. */
+                    skip_missing_email?: boolean;
+                };
+            };
+        };
         responses: {
-            /** @description The Campaign, now active or scheduled. */
+            /** @description The Campaign, now active or scheduled. warnings[] carries W21 no_mailbox for a sending account no Mailbox can send for. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -51412,6 +52061,8 @@ export interface operations {
                         exclusion_list_ids: string[];
                         /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                         account_ids: string[];
+                        /** @description Mailboxes shared in your team (mbx_...) that email steps use once a sending account's own Mailboxes are at today's limit. */
+                        shared_mailbox_ids: string[];
                         /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Campaign; changing the Team's hours later does not move it. */
                         schedule: {
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
@@ -51423,6 +52074,8 @@ export interface operations {
                             start_at: string | null;
                             /** @description ISO 8601. */
                             end_at: string | null;
+                            /** @description Email steps: the least minutes between two emails this Campaign sends from one Mailbox. Default 5; below 2 is warned (W20). */
+                            min_email_gap_minutes: number;
                         };
                         settings: {
                             accounts_per_lead: number;
@@ -51459,6 +52112,11 @@ export interface operations {
                             withdraw_on_reply_elsewhere?: boolean;
                             /** @description Several mode only. The least time between two accounts' starts on one Lead, 1d to 30d. */
                             account_gap?: string;
+                            /**
+                             * @description Campaigns with an email step: both (default), a reply on either channel ends the Enrollment; own_channel, it skips only the later steps of its own channel.
+                             * @enum {string}
+                             */
+                            reply_scope: "both" | "own_channel";
                         };
                         /** @description lead.* predicates a Lead must all pass to enroll. */
                         where: {
@@ -51472,6 +52130,34 @@ export interface operations {
                         sequence_revision: number;
                         /** @description The user who saved the current Sequence revision. */
                         sequence_updated_by_user_id: string | null;
+                        /** @description The last Lead check (POST /v1/campaigns/{id}/check); null until one ran. Start needs one at the current sequence_revision when the Sequence has an email step. */
+                        lead_check: {
+                            /** @enum {string} */
+                            object: "campaign_check";
+                            /** @description ISO 8601. */
+                            checked_at: string;
+                            /** @description The sequence_revision it was taken at; start needs the current one. */
+                            sequence_revision: number;
+                            /** @description Leads the Campaign would enroll: its Lead lists' members not on an exclusion list, and Leads added directly. */
+                            leads: number;
+                            /** @description Of them, Leads with no usable email address. They are never enrolled in a Campaign with an email step. */
+                            without_email: number;
+                            /** @description Leads whose address bounced; their email steps skip email_bounced. */
+                            email_bounced: number;
+                            /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
+                            no_email: number;
+                            /** @description Lead variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            fields: {
+                                /** @description Long form, as lead.first_name or lead.extra.opener. */
+                                variable: string;
+                                steps: string[];
+                                /** @enum {string} */
+                                on_missing: "fallback" | "skip" | "hold";
+                                missing: number;
+                                /** @description Leads for whom it cannot be told before the send; 0 for Lead fields. */
+                                unknown: number;
+                            }[];
+                        } | null;
                         /** @description Enrollments by state. */
                         counts: {
                             /** @description Waiting to start. */
@@ -51489,7 +52175,7 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Campaign. They never block a write. */
                         warnings: {
-                            /** @description The warning id, W1 to W17. */
+                            /** @description The warning id, W1 to W21. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -51526,7 +52212,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST: this call takes no query parameters and no request body (none, or {}). Anything else is refused, never ignored. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: the only body key is skip_missing_email, a boolean (none, {} or {"skip_missing_email": true}); any other key or value is refused. No query parameters. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -51571,7 +52257,16 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description CAMPAIGN_NOT_STARTABLE: the draft is not complete. errors[] lists every gap as {path, rule}, for example {path: "sequence", rule: "required"}. */
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description CAMPAIGN_NOT_STARTABLE: the draft is not complete. With an email step in the Sequence: errors[] holds {path: "lead_check", rule: "run the Lead check first"} without a Lead check at the current sequence_revision (POST /v1/campaigns/{id}/check), and {path: "leads", rule: "12 Leads have no email address; ..."} while some lack one, unless the body is {"skip_missing_email": true}. Leads without an address are never enrolled either way. errors[] lists every gap as {path, rule}, for example {path: "sequence", rule: "required"}. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -51641,6 +52336,8 @@ export interface operations {
                         exclusion_list_ids: string[];
                         /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                         account_ids: string[];
+                        /** @description Mailboxes shared in your team (mbx_...) that email steps use once a sending account's own Mailboxes are at today's limit. */
+                        shared_mailbox_ids: string[];
                         /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Campaign; changing the Team's hours later does not move it. */
                         schedule: {
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
@@ -51652,6 +52349,8 @@ export interface operations {
                             start_at: string | null;
                             /** @description ISO 8601. */
                             end_at: string | null;
+                            /** @description Email steps: the least minutes between two emails this Campaign sends from one Mailbox. Default 5; below 2 is warned (W20). */
+                            min_email_gap_minutes: number;
                         };
                         settings: {
                             accounts_per_lead: number;
@@ -51688,6 +52387,11 @@ export interface operations {
                             withdraw_on_reply_elsewhere?: boolean;
                             /** @description Several mode only. The least time between two accounts' starts on one Lead, 1d to 30d. */
                             account_gap?: string;
+                            /**
+                             * @description Campaigns with an email step: both (default), a reply on either channel ends the Enrollment; own_channel, it skips only the later steps of its own channel.
+                             * @enum {string}
+                             */
+                            reply_scope: "both" | "own_channel";
                         };
                         /** @description lead.* predicates a Lead must all pass to enroll. */
                         where: {
@@ -51701,6 +52405,34 @@ export interface operations {
                         sequence_revision: number;
                         /** @description The user who saved the current Sequence revision. */
                         sequence_updated_by_user_id: string | null;
+                        /** @description The last Lead check (POST /v1/campaigns/{id}/check); null until one ran. Start needs one at the current sequence_revision when the Sequence has an email step. */
+                        lead_check: {
+                            /** @enum {string} */
+                            object: "campaign_check";
+                            /** @description ISO 8601. */
+                            checked_at: string;
+                            /** @description The sequence_revision it was taken at; start needs the current one. */
+                            sequence_revision: number;
+                            /** @description Leads the Campaign would enroll: its Lead lists' members not on an exclusion list, and Leads added directly. */
+                            leads: number;
+                            /** @description Of them, Leads with no usable email address. They are never enrolled in a Campaign with an email step. */
+                            without_email: number;
+                            /** @description Leads whose address bounced; their email steps skip email_bounced. */
+                            email_bounced: number;
+                            /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
+                            no_email: number;
+                            /** @description Lead variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            fields: {
+                                /** @description Long form, as lead.first_name or lead.extra.opener. */
+                                variable: string;
+                                steps: string[];
+                                /** @enum {string} */
+                                on_missing: "fallback" | "skip" | "hold";
+                                missing: number;
+                                /** @description Leads for whom it cannot be told before the send; 0 for Lead fields. */
+                                unknown: number;
+                            }[];
+                        } | null;
                         /** @description Enrollments by state. */
                         counts: {
                             /** @description Waiting to start. */
@@ -51718,7 +52450,7 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Campaign. They never block a write. */
                         warnings: {
-                            /** @description The warning id, W1 to W17. */
+                            /** @description The warning id, W1 to W21. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -51829,7 +52561,14 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description A Campaign with an email step: true starts it without the Leads that have no email address (they are never enrolled). Default false: start is refused while the last Lead check counts any. */
+                    skip_missing_email?: boolean;
+                };
+            };
+        };
         responses: {
             /** @description The Campaign, now active or scheduled. */
             200: {
@@ -51861,6 +52600,8 @@ export interface operations {
                         exclusion_list_ids: string[];
                         /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                         account_ids: string[];
+                        /** @description Mailboxes shared in your team (mbx_...) that email steps use once a sending account's own Mailboxes are at today's limit. */
+                        shared_mailbox_ids: string[];
                         /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Campaign; changing the Team's hours later does not move it. */
                         schedule: {
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
@@ -51872,6 +52613,8 @@ export interface operations {
                             start_at: string | null;
                             /** @description ISO 8601. */
                             end_at: string | null;
+                            /** @description Email steps: the least minutes between two emails this Campaign sends from one Mailbox. Default 5; below 2 is warned (W20). */
+                            min_email_gap_minutes: number;
                         };
                         settings: {
                             accounts_per_lead: number;
@@ -51908,6 +52651,11 @@ export interface operations {
                             withdraw_on_reply_elsewhere?: boolean;
                             /** @description Several mode only. The least time between two accounts' starts on one Lead, 1d to 30d. */
                             account_gap?: string;
+                            /**
+                             * @description Campaigns with an email step: both (default), a reply on either channel ends the Enrollment; own_channel, it skips only the later steps of its own channel.
+                             * @enum {string}
+                             */
+                            reply_scope: "both" | "own_channel";
                         };
                         /** @description lead.* predicates a Lead must all pass to enroll. */
                         where: {
@@ -51921,6 +52669,34 @@ export interface operations {
                         sequence_revision: number;
                         /** @description The user who saved the current Sequence revision. */
                         sequence_updated_by_user_id: string | null;
+                        /** @description The last Lead check (POST /v1/campaigns/{id}/check); null until one ran. Start needs one at the current sequence_revision when the Sequence has an email step. */
+                        lead_check: {
+                            /** @enum {string} */
+                            object: "campaign_check";
+                            /** @description ISO 8601. */
+                            checked_at: string;
+                            /** @description The sequence_revision it was taken at; start needs the current one. */
+                            sequence_revision: number;
+                            /** @description Leads the Campaign would enroll: its Lead lists' members not on an exclusion list, and Leads added directly. */
+                            leads: number;
+                            /** @description Of them, Leads with no usable email address. They are never enrolled in a Campaign with an email step. */
+                            without_email: number;
+                            /** @description Leads whose address bounced; their email steps skip email_bounced. */
+                            email_bounced: number;
+                            /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
+                            no_email: number;
+                            /** @description Lead variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            fields: {
+                                /** @description Long form, as lead.first_name or lead.extra.opener. */
+                                variable: string;
+                                steps: string[];
+                                /** @enum {string} */
+                                on_missing: "fallback" | "skip" | "hold";
+                                missing: number;
+                                /** @description Leads for whom it cannot be told before the send; 0 for Lead fields. */
+                                unknown: number;
+                            }[];
+                        } | null;
                         /** @description Enrollments by state. */
                         counts: {
                             /** @description Waiting to start. */
@@ -51938,7 +52714,7 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Campaign. They never block a write. */
                         warnings: {
-                            /** @description The warning id, W1 to W17. */
+                            /** @description The warning id, W1 to W21. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -51975,7 +52751,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST: this call takes no query parameters and no request body (none, or {}). Anything else is refused, never ignored. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: the only body key is skip_missing_email, a boolean (none, {} or {"skip_missing_email": true}); any other key or value is refused. No query parameters. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -52020,7 +52796,16 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description CAMPAIGN_NOT_STARTABLE: the Campaign no longer passes what start checks. errors[] lists every gap as {path, rule}, for example {path: "sequence", rule: "required"}. */
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description CAMPAIGN_NOT_STARTABLE: the Campaign no longer passes what start checks. With an email step in the Sequence: errors[] holds {path: "lead_check", rule: "run the Lead check first"} without a Lead check at the current sequence_revision (POST /v1/campaigns/{id}/check), and {path: "leads", rule: "12 Leads have no email address; ..."} while some lack one, unless the body is {"skip_missing_email": true}. Leads without an address are never enrolled either way. errors[] lists every gap as {path, rule}, for example {path: "sequence", rule: "required"}. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -52090,6 +52875,8 @@ export interface operations {
                         exclusion_list_ids: string[];
                         /** @description Sending accounts (acc_...). An account that is removed or archived leaves this list. */
                         account_ids: string[];
+                        /** @description Mailboxes shared in your team (mbx_...) that email steps use once a sending account's own Mailboxes are at today's limit. */
+                        shared_mailbox_ids: string[];
                         /** @description Days and hours default, at creation, to the Team's Active hours (Monday to Friday, 07:00 to 22:00 until the Team sets its own) and are then stored on the Campaign; changing the Team's hours later does not move it. */
                         schedule: {
                             days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
@@ -52101,6 +52888,8 @@ export interface operations {
                             start_at: string | null;
                             /** @description ISO 8601. */
                             end_at: string | null;
+                            /** @description Email steps: the least minutes between two emails this Campaign sends from one Mailbox. Default 5; below 2 is warned (W20). */
+                            min_email_gap_minutes: number;
                         };
                         settings: {
                             accounts_per_lead: number;
@@ -52137,6 +52926,11 @@ export interface operations {
                             withdraw_on_reply_elsewhere?: boolean;
                             /** @description Several mode only. The least time between two accounts' starts on one Lead, 1d to 30d. */
                             account_gap?: string;
+                            /**
+                             * @description Campaigns with an email step: both (default), a reply on either channel ends the Enrollment; own_channel, it skips only the later steps of its own channel.
+                             * @enum {string}
+                             */
+                            reply_scope: "both" | "own_channel";
                         };
                         /** @description lead.* predicates a Lead must all pass to enroll. */
                         where: {
@@ -52150,6 +52944,34 @@ export interface operations {
                         sequence_revision: number;
                         /** @description The user who saved the current Sequence revision. */
                         sequence_updated_by_user_id: string | null;
+                        /** @description The last Lead check (POST /v1/campaigns/{id}/check); null until one ran. Start needs one at the current sequence_revision when the Sequence has an email step. */
+                        lead_check: {
+                            /** @enum {string} */
+                            object: "campaign_check";
+                            /** @description ISO 8601. */
+                            checked_at: string;
+                            /** @description The sequence_revision it was taken at; start needs the current one. */
+                            sequence_revision: number;
+                            /** @description Leads the Campaign would enroll: its Lead lists' members not on an exclusion list, and Leads added directly. */
+                            leads: number;
+                            /** @description Of them, Leads with no usable email address. They are never enrolled in a Campaign with an email step. */
+                            without_email: number;
+                            /** @description Leads whose address bounced; their email steps skip email_bounced. */
+                            email_bounced: number;
+                            /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
+                            no_email: number;
+                            /** @description Lead variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            fields: {
+                                /** @description Long form, as lead.first_name or lead.extra.opener. */
+                                variable: string;
+                                steps: string[];
+                                /** @enum {string} */
+                                on_missing: "fallback" | "skip" | "hold";
+                                missing: number;
+                                /** @description Leads for whom it cannot be told before the send; 0 for Lead fields. */
+                                unknown: number;
+                            }[];
+                        } | null;
                         /** @description Enrollments by state. */
                         counts: {
                             /** @description Waiting to start. */
@@ -52167,7 +52989,7 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Campaign. They never block a write. */
                         warnings: {
-                            /** @description The warning id, W1 to W17. */
+                            /** @description The warning id, W1 to W21. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -52242,6 +53064,110 @@ export interface operations {
             };
             /** @description CAMPAIGN_STATUS_CONFLICT: the Campaign is already archived. The message names the current status and the operations it allows. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1CampaignsIdCheck: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Campaign id (mot_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The Lead check, also stored and served as lead_check on the Campaign. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "campaign_check";
+                        /** @description ISO 8601. */
+                        checked_at: string;
+                        /** @description The sequence_revision it was taken at; start needs the current one. */
+                        sequence_revision: number;
+                        /** @description Leads the Campaign would enroll: its Lead lists' members not on an exclusion list, and Leads added directly. */
+                        leads: number;
+                        /** @description Of them, Leads with no usable email address. They are never enrolled in a Campaign with an email step. */
+                        without_email: number;
+                        /** @description Leads whose address bounced; their email steps skip email_bounced. */
+                        email_bounced: number;
+                        /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
+                        no_email: number;
+                        /** @description Lead variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                        fields: {
+                            /** @description Long form, as lead.first_name or lead.extra.opener. */
+                            variable: string;
+                            steps: string[];
+                            /** @enum {string} */
+                            on_missing: "fallback" | "skip" | "hold";
+                            missing: number;
+                            /** @description Leads for whom it cannot be told before the send; 0 for Lead fields. */
+                            unknown: number;
+                        }[];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: this call takes no query parameters and no request body (none, or {}). Anything else is refused, never ignored. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Campaign's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Campaign sends from to pause or archive, and removes only their own. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Campaign. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -52348,8 +53274,12 @@ export interface operations {
     getV1CampaignsIdPreview: {
         parameters: {
             query?: {
-                /** @description How many Leads to render, the first enrollable ones by list order. 1 to 20, default 5. Not with lead_ids. */
+                /** @description Alias of limit. Not with limit or lead_ids. */
                 sample?: number;
+                /** @description How many Leads this page renders. 1 to 20, default 5. Not with lead_ids. */
+                limit?: number;
+                /** @description next_cursor from the previous page, passed back verbatim; the pages run over every Lead the Campaign would enroll. A cursor belongs to its Campaign and Sequence version. Not with lead_ids. */
+                cursor?: string;
                 /** @description Lead ids (con_...) to render, up to 20, in the order given. Not with sample. Repeat the key, comma-separate or mix; empties ignored. */
                 lead_ids?: string[];
             };
@@ -52383,19 +53313,21 @@ export interface operations {
                         object: "campaign_preview";
                         /** @description The Sequence version previewed. */
                         sequence_version: number;
-                        /** @description Every distinct route through the Sequence, from the first step and from on_reply, as step ids in order. A step that branched carries the exit taken (has_post:then). Every route ends with end. */
-                        paths: string[][];
-                        /** @description true when there are more routes than the 200 listed, or when some rendered text was omitted (a response carries at most 1 MiB of it). */
+                        /** @description First page only. Every distinct route through the Sequence, from the first step and from on_reply, as step ids in order. A step that branched carries the exit taken (has_post:then). Every route ends with end. */
+                        paths?: string[][];
+                        /** @description true when there are more routes than the 200 listed (first page only), or when some rendered text was omitted (a page carries at most 1 MiB of it). */
                         truncated: boolean;
+                        /** @description Pass as cursor to get the next page of Leads; null on the last page, and with lead_ids. Pages run over every Lead the Campaign would enroll, in list order. */
+                        next_cursor: string | null;
                         samples: {
                             lead_id: string;
                             /** @description A sending account to render this sample with, not a promise: the account is set when one takes the Lead. null when none can act or assignment needs LinkedIn. */
                             account_id: string | null;
                             /**
-                             * @description Why the Lead would not be enrolled, from stored data: the Team's do-not-contact list holds it, an Exclusion list holds it, it is or was within 90 days in another Campaign, an account already chats with it, or an account of the team has a pending invitation to it. null: nothing excludes it.
+                             * @description Why the Lead would not be enrolled, from stored data: the Team's do-not-contact list holds it, an Exclusion list holds it, it is or was within 90 days in another Campaign, an account already chats with it, an account of the team has a pending invitation to it, or the Campaign has an email step and it has no usable email address. null: nothing excludes it.
                              * @enum {string|null}
                              */
-                            excluded: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | null;
+                            excluded: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "no_email_address" | null;
                             filters: {
                                 index: number;
                                 /**
@@ -52428,9 +53360,9 @@ export interface operations {
                                 fallback?: string | null;
                             }[];
                         }[];
-                        /** @description An estimate of how long the list takes, from each account's current budget ceilings (warm-up applied). Each Lead is enrolled on min(accounts_per_lead, accounts that can act) accounts; those Enrollments split evenly over the accounts. It ignores what other Campaigns spend. */
-                        projection: {
-                            /** @description The Leads of the source lists, counted from stored data (nothing is read from LinkedIn), each once. A Lead that would be skipped for several reasons counts under the first: do_not_contact, excluded, other_campaign, known_chat, pending_invite, filtered, not_connected. Present even when the Campaign has no Sequence. */
+                        /** @description First page only. An estimate of how long the list takes, from each account's current budget ceilings (warm-up applied). Each Lead is enrolled on min(accounts_per_lead, accounts that can act) accounts; those Enrollments split evenly over the accounts. It ignores what other Campaigns spend. */
+                        projection?: {
+                            /** @description The Leads of the source lists, counted from stored data (nothing is read from LinkedIn), each once. A Lead that would be skipped for several reasons counts under the first: do_not_contact, excluded, other_campaign, known_chat, pending_invite, no_email_address, filtered, not_connected. Present even when the Campaign has no Sequence. */
                             audience: {
                                 /** @description Leads in the Campaign's source lists, each counted once. */
                                 total: number;
@@ -52447,6 +53379,8 @@ export interface operations {
                                     pending_invite: number;
                                     /** @description Fail a where filter on stored Lead data (fields, extra fields, tags). A filter only LinkedIn can answer, such as degree or premium, is checked when the Lead enrolls and does not count here. */
                                     filtered: number;
+                                    /** @description The Campaign has an email step and the Lead has no usable email address: never enrolled. */
+                                    no_email_address: number;
                                     /** @description With settings.assign already_connected: no sending account is connected to them, so the Campaign will skip them. 0 for any other assign, and while a sending account has not finished reading its Connections. */
                                     not_connected: number;
                                 };
@@ -52466,7 +53400,7 @@ export interface operations {
                                 /** @description The LinkedIn actions a day this Campaign is expected to make on this account. A draft: the mean daily invitations, messages and InMails of the first 7 days of its forecast, as if turned on now (the same simulation as include=forecast on GET /v1/analytics/campaigns/{campaign_id}). A started Campaign: at that pace, every budgeted step of the costliest route counted. An estimate; 0 when the account carries no Lead. */
                                 expected_actions_per_day: number;
                             }[];
-                            /** @description Calendar days of waits and timeouts on the longest route, rounded up. null when the Campaign has no Sequence. */
+                            /** @description Calendar days of waits and timeouts on the longest route, rounded up; a business-day duration (bd) counts as its n days. null when the Campaign has no Sequence. */
                             longest_path_days: number | null;
                             /** @description Schedule days until the last Lead finishes: the slowest account's enroll_days plus the longest route in schedule days, plus, with accounts_per_lead above 1, settings.account_gap (default 1d) in schedule days for each further account a Lead is enrolled on. null when nothing can run. */
                             finish_working_days: number | null;
@@ -52493,9 +53427,9 @@ export interface operations {
                             /** @description One line that says it is an estimate at the account's steady-state pace, for example: 100 Leads finish in 27 working days; bound by invitations (an estimate at each Account's steady-state pace). When fits_before_end_at is false it says the Campaign ends first and how many Leads can enroll by then. */
                             summary: string;
                         };
-                        /** @description Lint warnings, as on the Campaign. */
-                        warnings: {
-                            /** @description The warning id, W1 to W17. */
+                        /** @description First page only. Lint warnings, as on the Campaign. */
+                        warnings?: {
+                            /** @description The warning id, W1 to W21. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -52600,9 +53534,12 @@ export interface operations {
                         object: "campaign_leads_result";
                         results: {
                             lead_id: string;
-                            /** @enum {string} */
-                            outcome: "queued" | "already_enrolled" | "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered_out" | "not_found";
-                            /** @description The Lead's Enrollments this answer is about; empty for not_found. */
+                            /**
+                             * @description no_email_address: the Campaign has an email step and the Lead has no usable address; no Enrollment is written.
+                             * @enum {string}
+                             */
+                            outcome: "queued" | "already_enrolled" | "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "no_email_address" | "filtered_out" | "not_found";
+                            /** @description The Lead's Enrollments this answer is about; empty for not_found, filtered_out and no_email_address. */
                             enrollment_ids: string[];
                         }[];
                     };
@@ -52802,7 +53739,7 @@ export interface operations {
                 /** @description With done_step only: how that Step ended. The 200 response description defines each value. */
                 outcome?: "executed" | "skipped" | "failed" | "accepted" | "not_accepted" | "replied" | "no_reply" | "seen";
                 /** @description Catalogue reason codes: skip, finish or Step reasons (on done_step when given). Repeat the key, comma-separate or mix; empties ignored. */
-                reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit")[];
+                reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "no_email_address" | "email_bounced" | "no_email" | "field_missing" | "channel_replied" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit")[];
                 /** @description Only Enrollments whose variant on that variant's Step is this one. */
                 variant_id?: string;
                 /** @description Relationship to the account at the start: connected, not_connected, invite_pending, unknown. Repeat the key, comma-separate or mix; empties ignored. */
@@ -52857,10 +53794,10 @@ export interface operations {
                             status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                             /** @description The Step it is at; null before it starts. */
                             current_step_id: string | null;
-                            /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
+                            /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. */
                             waiting: {
                                 /** @enum {string} */
-                                kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
+                                kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable";
                                 /** @description The Step it waits at; null before it starts. */
                                 step_id: string | null;
                                 /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -52875,7 +53812,7 @@ export interface operations {
                              * @description Why the Lead was not enrolled; null unless status is skipped.
                              * @enum {string|null}
                              */
-                            skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                            skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | null;
                             /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                             finish_message: string | null;
                             /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
@@ -52903,6 +53840,19 @@ export interface operations {
                             values: {
                                 [key: string]: string | number | boolean;
                             };
+                            /** @description What happens next, when and why; null once the Enrollment is finished or skipped. Computed at read from the Enrollment, its waiting, the current Step and the Sequence version it runs on: never stored, never a LinkedIn read. why is the waiting kind (wait, event, queue, budget, account_unavailable, campaign_paused, halt, kill_switch, no_overlap, field_missing, no_mailbox, mailbox_cap, paused_by_user, out_of_office), or due when nothing holds it. at is waiting.until where time decides the step (a wait, an until timeout, a hold's end, a return date), else null. text is one plain sentence naming the Step by number and kind; it holds no Lead value. */
+                            next_action: {
+                                /** @description The Step the sentence names; null when the Sequence has no Step left. */
+                                step_id: string | null;
+                                /** @description That Step's action (message.send, invite.send, ...) or its kind (if, until, wait, tag, emit). */
+                                action: string | null;
+                                /** @description ISO 8601, when time decides; otherwise null. */
+                                at: string | null;
+                                /** @description The waiting kind, or due. */
+                                why: string;
+                                /** @description One plain sentence, for example: Sends Step 4, message, about Wed 18 Nov 10:00 UTC, after the 3-day wait. */
+                                text: string;
+                            } | null;
                         }[];
                         /** @description Pass back as cursor for the next page; null on the last page. */
                         cursor: string | null;
@@ -53007,10 +53957,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -53025,7 +53975,7 @@ export interface operations {
                          * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
@@ -53053,6 +54003,19 @@ export interface operations {
                         values: {
                             [key: string]: string | number | boolean;
                         };
+                        /** @description What happens next, when and why; null once the Enrollment is finished or skipped. Computed at read from the Enrollment, its waiting, the current Step and the Sequence version it runs on: never stored, never a LinkedIn read. why is the waiting kind (wait, event, queue, budget, account_unavailable, campaign_paused, halt, kill_switch, no_overlap, field_missing, no_mailbox, mailbox_cap, paused_by_user, out_of_office), or due when nothing holds it. at is waiting.until where time decides the step (a wait, an until timeout, a hold's end, a return date), else null. text is one plain sentence naming the Step by number and kind; it holds no Lead value. */
+                        next_action: {
+                            /** @description The Step the sentence names; null when the Sequence has no Step left. */
+                            step_id: string | null;
+                            /** @description That Step's action (message.send, invite.send, ...) or its kind (if, until, wait, tag, emit). */
+                            action: string | null;
+                            /** @description ISO 8601, when time decides; otherwise null. */
+                            at: string | null;
+                            /** @description The waiting kind, or due. */
+                            why: string;
+                            /** @description One plain sentence, for example: Sends Step 4, message, about Wed 18 Nov 10:00 UTC, after the 3-day wait. */
+                            text: string;
+                        } | null;
                         history: {
                             /** @description The Step; null for requeued. */
                             step_id: string | null;
@@ -53073,7 +54036,7 @@ export interface operations {
                              * @description Why it was skipped or failed: a code of the reasons catalogue, https://docs.curviate.com/reference/campaign-reasons.
                              * @enum {string|null}
                              */
-                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit" | null;
+                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "no_email_address" | "email_bounced" | "no_email" | "field_missing" | "channel_replied" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit" | null;
                             /** @description The catalogue's one-line sentence for reason; null when reason is. */
                             reason_message: string | null;
                             /** @description The account that ran it; null for an entry no account ran (requeued). */
@@ -53175,10 +54138,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -53193,7 +54156,7 @@ export interface operations {
                          * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
@@ -53221,6 +54184,19 @@ export interface operations {
                         values: {
                             [key: string]: string | number | boolean;
                         };
+                        /** @description What happens next, when and why; null once the Enrollment is finished or skipped. Computed at read from the Enrollment, its waiting, the current Step and the Sequence version it runs on: never stored, never a LinkedIn read. why is the waiting kind (wait, event, queue, budget, account_unavailable, campaign_paused, halt, kill_switch, no_overlap, field_missing, no_mailbox, mailbox_cap, paused_by_user, out_of_office), or due when nothing holds it. at is waiting.until where time decides the step (a wait, an until timeout, a hold's end, a return date), else null. text is one plain sentence naming the Step by number and kind; it holds no Lead value. */
+                        next_action: {
+                            /** @description The Step the sentence names; null when the Sequence has no Step left. */
+                            step_id: string | null;
+                            /** @description That Step's action (message.send, invite.send, ...) or its kind (if, until, wait, tag, emit). */
+                            action: string | null;
+                            /** @description ISO 8601, when time decides; otherwise null. */
+                            at: string | null;
+                            /** @description The waiting kind, or due. */
+                            why: string;
+                            /** @description One plain sentence, for example: Sends Step 4, message, about Wed 18 Nov 10:00 UTC, after the 3-day wait. */
+                            text: string;
+                        } | null;
                     };
                 };
             };
@@ -53331,10 +54307,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -53349,7 +54325,7 @@ export interface operations {
                          * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
@@ -53377,6 +54353,19 @@ export interface operations {
                         values: {
                             [key: string]: string | number | boolean;
                         };
+                        /** @description What happens next, when and why; null once the Enrollment is finished or skipped. Computed at read from the Enrollment, its waiting, the current Step and the Sequence version it runs on: never stored, never a LinkedIn read. why is the waiting kind (wait, event, queue, budget, account_unavailable, campaign_paused, halt, kill_switch, no_overlap, field_missing, no_mailbox, mailbox_cap, paused_by_user, out_of_office), or due when nothing holds it. at is waiting.until where time decides the step (a wait, an until timeout, a hold's end, a return date), else null. text is one plain sentence naming the Step by number and kind; it holds no Lead value. */
+                        next_action: {
+                            /** @description The Step the sentence names; null when the Sequence has no Step left. */
+                            step_id: string | null;
+                            /** @description That Step's action (message.send, invite.send, ...) or its kind (if, until, wait, tag, emit). */
+                            action: string | null;
+                            /** @description ISO 8601, when time decides; otherwise null. */
+                            at: string | null;
+                            /** @description The waiting kind, or due. */
+                            why: string;
+                            /** @description One plain sentence, for example: Sends Step 4, message, about Wed 18 Nov 10:00 UTC, after the 3-day wait. */
+                            text: string;
+                        } | null;
                     };
                 };
             };
@@ -53494,10 +54483,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -53512,7 +54501,7 @@ export interface operations {
                          * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
@@ -53540,6 +54529,19 @@ export interface operations {
                         values: {
                             [key: string]: string | number | boolean;
                         };
+                        /** @description What happens next, when and why; null once the Enrollment is finished or skipped. Computed at read from the Enrollment, its waiting, the current Step and the Sequence version it runs on: never stored, never a LinkedIn read. why is the waiting kind (wait, event, queue, budget, account_unavailable, campaign_paused, halt, kill_switch, no_overlap, field_missing, no_mailbox, mailbox_cap, paused_by_user, out_of_office), or due when nothing holds it. at is waiting.until where time decides the step (a wait, an until timeout, a hold's end, a return date), else null. text is one plain sentence naming the Step by number and kind; it holds no Lead value. */
+                        next_action: {
+                            /** @description The Step the sentence names; null when the Sequence has no Step left. */
+                            step_id: string | null;
+                            /** @description That Step's action (message.send, invite.send, ...) or its kind (if, until, wait, tag, emit). */
+                            action: string | null;
+                            /** @description ISO 8601, when time decides; otherwise null. */
+                            at: string | null;
+                            /** @description The waiting kind, or due. */
+                            why: string;
+                            /** @description One plain sentence, for example: Sends Step 4, message, about Wed 18 Nov 10:00 UTC, after the 3-day wait. */
+                            text: string;
+                        } | null;
                     };
                 };
             };
@@ -53666,10 +54668,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -53684,7 +54686,7 @@ export interface operations {
                          * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
@@ -53712,6 +54714,19 @@ export interface operations {
                         values: {
                             [key: string]: string | number | boolean;
                         };
+                        /** @description What happens next, when and why; null once the Enrollment is finished or skipped. Computed at read from the Enrollment, its waiting, the current Step and the Sequence version it runs on: never stored, never a LinkedIn read. why is the waiting kind (wait, event, queue, budget, account_unavailable, campaign_paused, halt, kill_switch, no_overlap, field_missing, no_mailbox, mailbox_cap, paused_by_user, out_of_office), or due when nothing holds it. at is waiting.until where time decides the step (a wait, an until timeout, a hold's end, a return date), else null. text is one plain sentence naming the Step by number and kind; it holds no Lead value. */
+                        next_action: {
+                            /** @description The Step the sentence names; null when the Sequence has no Step left. */
+                            step_id: string | null;
+                            /** @description That Step's action (message.send, invite.send, ...) or its kind (if, until, wait, tag, emit). */
+                            action: string | null;
+                            /** @description ISO 8601, when time decides; otherwise null. */
+                            at: string | null;
+                            /** @description The waiting kind, or due. */
+                            why: string;
+                            /** @description One plain sentence, for example: Sends Step 4, message, about Wed 18 Nov 10:00 UTC, after the 3-day wait. */
+                            text: string;
+                        } | null;
                     };
                 };
             };
@@ -53838,10 +54853,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -53856,7 +54871,7 @@ export interface operations {
                          * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
@@ -53884,6 +54899,19 @@ export interface operations {
                         values: {
                             [key: string]: string | number | boolean;
                         };
+                        /** @description What happens next, when and why; null once the Enrollment is finished or skipped. Computed at read from the Enrollment, its waiting, the current Step and the Sequence version it runs on: never stored, never a LinkedIn read. why is the waiting kind (wait, event, queue, budget, account_unavailable, campaign_paused, halt, kill_switch, no_overlap, field_missing, no_mailbox, mailbox_cap, paused_by_user, out_of_office), or due when nothing holds it. at is waiting.until where time decides the step (a wait, an until timeout, a hold's end, a return date), else null. text is one plain sentence naming the Step by number and kind; it holds no Lead value. */
+                        next_action: {
+                            /** @description The Step the sentence names; null when the Sequence has no Step left. */
+                            step_id: string | null;
+                            /** @description That Step's action (message.send, invite.send, ...) or its kind (if, until, wait, tag, emit). */
+                            action: string | null;
+                            /** @description ISO 8601, when time decides; otherwise null. */
+                            at: string | null;
+                            /** @description The waiting kind, or due. */
+                            why: string;
+                            /** @description One plain sentence, for example: Sends Step 4, message, about Wed 18 Nov 10:00 UTC, after the 3-day wait. */
+                            text: string;
+                        } | null;
                         warnings: {
                             code: string;
                             path: string;
@@ -54019,10 +55047,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -54037,7 +55065,7 @@ export interface operations {
                          * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
@@ -54065,6 +55093,19 @@ export interface operations {
                         values: {
                             [key: string]: string | number | boolean;
                         };
+                        /** @description What happens next, when and why; null once the Enrollment is finished or skipped. Computed at read from the Enrollment, its waiting, the current Step and the Sequence version it runs on: never stored, never a LinkedIn read. why is the waiting kind (wait, event, queue, budget, account_unavailable, campaign_paused, halt, kill_switch, no_overlap, field_missing, no_mailbox, mailbox_cap, paused_by_user, out_of_office), or due when nothing holds it. at is waiting.until where time decides the step (a wait, an until timeout, a hold's end, a return date), else null. text is one plain sentence naming the Step by number and kind; it holds no Lead value. */
+                        next_action: {
+                            /** @description The Step the sentence names; null when the Sequence has no Step left. */
+                            step_id: string | null;
+                            /** @description That Step's action (message.send, invite.send, ...) or its kind (if, until, wait, tag, emit). */
+                            action: string | null;
+                            /** @description ISO 8601, when time decides; otherwise null. */
+                            at: string | null;
+                            /** @description The waiting kind, or due. */
+                            why: string;
+                            /** @description One plain sentence, for example: Sends Step 4, message, about Wed 18 Nov 10:00 UTC, after the 3-day wait. */
+                            text: string;
+                        } | null;
                         warnings: {
                             /**
                              * @description A reason code of the catalogue: the Step will be skipped with it.
@@ -54207,10 +55248,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -54225,7 +55266,7 @@ export interface operations {
                          * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
@@ -54253,6 +55294,19 @@ export interface operations {
                         values: {
                             [key: string]: string | number | boolean;
                         };
+                        /** @description What happens next, when and why; null once the Enrollment is finished or skipped. Computed at read from the Enrollment, its waiting, the current Step and the Sequence version it runs on: never stored, never a LinkedIn read. why is the waiting kind (wait, event, queue, budget, account_unavailable, campaign_paused, halt, kill_switch, no_overlap, field_missing, no_mailbox, mailbox_cap, paused_by_user, out_of_office), or due when nothing holds it. at is waiting.until where time decides the step (a wait, an until timeout, a hold's end, a return date), else null. text is one plain sentence naming the Step by number and kind; it holds no Lead value. */
+                        next_action: {
+                            /** @description The Step the sentence names; null when the Sequence has no Step left. */
+                            step_id: string | null;
+                            /** @description That Step's action (message.send, invite.send, ...) or its kind (if, until, wait, tag, emit). */
+                            action: string | null;
+                            /** @description ISO 8601, when time decides; otherwise null. */
+                            at: string | null;
+                            /** @description The waiting kind, or due. */
+                            why: string;
+                            /** @description One plain sentence, for example: Sends Step 4, message, about Wed 18 Nov 10:00 UTC, after the 3-day wait. */
+                            text: string;
+                        } | null;
                     };
                 };
             };
@@ -54377,7 +55431,7 @@ export interface operations {
                          */
                         outcome?: "executed" | "skipped" | "failed" | "accepted" | "not_accepted" | "replied" | "no_reply" | "seen";
                         /** @description Catalogue reason codes. */
-                        reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit")[];
+                        reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "no_email_address" | "email_bounced" | "no_email" | "field_missing" | "channel_replied" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit")[];
                         /** @description Only Enrollments whose variant on that variant's Step is this one. */
                         variant_id?: string;
                         /** @description Any of connected, not_connected, invite_pending, unknown. */
@@ -56903,10 +57957,10 @@ export interface operations {
                                  */
                                 kind: "debit" | "tally" | "gauge";
                                 /**
-                                 * @description Calendar grain this row is counted in. UTC, not account-local. `null` on the gauge, which has no window at all.
+                                 * @description Calendar grain this row is counted in. UTC, not account-local. `rolling`: any 7 days in a row, not the calendar week (the invitation total under the new limits; `window_start` is the oldest of the 7 days and `resets_at` the next midnight, when it leaves). `null` on the gauge, which has no window at all.
                                  * @enum {string|null}
                                  */
-                                window: "day" | "week" | "month" | null;
+                                window: "day" | "week" | "month" | "rolling" | null;
                                 /** @description ISO-8601 UTC start of the current window; `null` on the gauge. */
                                 window_start: string | null;
                                 /** @description ISO-8601 UTC instant the current window rolls over and `used` returns to 0. `null` on the gauge: a backlog falls when invitations are accepted or withdrawn, not at a window edge, so naming an instant would promise something nothing keeps. */
@@ -57098,7 +58152,7 @@ export interface operations {
                              * @description Why a step was skipped or failed, as a code of the reasons catalogue (https://docs.curviate.com/reference/campaign-reasons); null otherwise.
                              * @enum {string|null}
                              */
-                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit" | null;
+                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "no_email_address" | "email_bounced" | "no_email" | "field_missing" | "channel_replied" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "outcome_unknown" | "tag_limit" | null;
                             /** @description The catalogue's one-line plain-words sentence for reason; null when reason is. */
                             reason_message: string | null;
                             /** @description The person, read live; null once the Lead is deleted. */
@@ -58360,6 +59414,105 @@ export interface operations {
             };
         };
     };
+    postV1BillingSubscriptionSwitchPeriod: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @constant */
+                    to: "annual";
+                };
+            };
+        };
+        responses: {
+            /** @description The switch is scheduled. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * Format: date-time
+                         * @description When yearly billing starts: the end of the current monthly period.
+                         */
+                        scheduled_at: string;
+                        /** @description Always null. Read the amount from GET /v1/billing/quote. */
+                        annual_total_eur: null;
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: the Team is already billed yearly, or the body is not {"to": "annual"}. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description SUBSCRIPTION_NOT_FOUND: the Team has no active subscription. */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: only an Owner of the Team switches the billing period. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     getV1BillingTier: {
         parameters: {
             query?: never;
@@ -58436,6 +59589,323 @@ export interface operations {
             };
             /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1BillingSpendingCap: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The team's spending cap. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "spending_cap";
+                        /** @description The highest seat count an agent may bring the team to. 100 until an Owner sets one. */
+                        cap_seats: number;
+                        /** @description True until an Owner sets a cap. */
+                        is_default: boolean;
+                        /** @description The team's paid seats now, seats lent to other teams included. */
+                        seats: number;
+                        /** @description How many more seats an agent may add: the cap minus the seats, never below 0. */
+                        room_seats: number;
+                        /** @description What the cap's seats cost a month, in the currency's minor unit (cents). For a yearly team, the yearly total divided by 12. */
+                        monthly_amount: number;
+                        /**
+                         * @description Three-letter ISO currency code, lowercase.
+                         * @enum {string}
+                         */
+                        currency: "usd";
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: only an Owner of the team reads its spending cap. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: the team was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1BillingChanges: {
+        parameters: {
+            query?: {
+                /** @description Max items per page (1-100, default 20). */
+                limit?: number;
+                /** @description Pagination cursor from a previous response of this team; pass it back verbatim. */
+                cursor?: string;
+            };
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of changes, newest first. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "billing_change_list";
+                        items: {
+                            /**
+                             * @description Response type discriminator.
+                             * @enum {string}
+                             */
+                            object: "billing_change";
+                            /** @description The entry's id. Newer entries have larger ids. */
+                            id: string;
+                            /**
+                             * @description seat_add; seat_remove; cap_change (an Owner set the spending cap); mailbox_purchase. Accept values you do not know.
+                             * @enum {string}
+                             */
+                            change: "seat_add" | "seat_remove" | "cap_change" | "mailbox_purchase";
+                            /** @description How many seats or Mailboxes the change moved. Null for a cap change. */
+                            quantity: number | null;
+                            /** @description The seat count before the change; for a cap change, the cap before. */
+                            before: number;
+                            /** @description The seat count after the change; for a cap change, the cap after. */
+                            after: number;
+                            /** @description In the currency's minor unit (cents), a month, from the price ladder. A seat change: what it adds to or takes off the monthly price (a yearly team's yearly figure divided by 12). A cap change: the new cap's monthly price. */
+                            amount: number;
+                            /** @description Three-letter ISO currency code, lowercase. */
+                            currency: string;
+                            /** @description Who made the change: a person, or an API key. */
+                            actor: {
+                                /**
+                                 * @description user: a person, in the dashboard or through an AI app's grant. api_key: an API key.
+                                 * @enum {string}
+                                 */
+                                type: "user" | "api_key";
+                                /** @description The user id or the API key id. */
+                                id: string;
+                            };
+                            /**
+                             * @description The way the change came in. The SDK counts as rest.
+                             * @enum {string}
+                             */
+                            surface: "dashboard" | "rest" | "cli" | "mcp";
+                            /** @description When the change was made (UTC). */
+                            created_at: string;
+                        }[];
+                        /** @description Pass back as cursor for the next page; null on the last page. */
+                        cursor: string | null;
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: limit out of range, or a cursor that is not from a previous response. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: only an Owner of the team reads its change log. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1BillingQuote: {
+        parameters: {
+            query: {
+                /** @description How many seats to price: a whole number, 1 or more. */
+                seats: number;
+                /** @description monthly or annual. */
+                period: "monthly" | "annual";
+            };
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The total and the steps it is made of. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "quote";
+                        /** @description The seats priced. */
+                        seats: number;
+                        /**
+                         * @description The period the amounts cover.
+                         * @enum {string}
+                         */
+                        period: "monthly" | "annual";
+                        /**
+                         * @description Three-letter ISO currency code, lowercase.
+                         * @enum {string}
+                         */
+                        currency: "usd";
+                        /** @description The total for the period, net of tax, in the currency's minor unit (cents). */
+                        total: number;
+                        /** @description Every step of the price list, in order: how many of the priced seats fall in it (0 for a step they do not reach) and what they come to. The amounts add up to the total. */
+                        steps: {
+                            /** @description The first seat of the step. */
+                            from: number;
+                            /** @description The last seat of the step. Null for the last step, which has no end. */
+                            up_to: number | null;
+                            /** @description What each seat in this step costs for the period, in minor units. */
+                            unit_amount: number;
+                            /** @description How many of the priced seats fall in this step. 0 when the order stops short of it. */
+                            seats: number;
+                            /** @description seats times unit_amount. */
+                            amount: number;
+                        }[];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: seats is not a whole number of 1 or more, or period is not monthly or annual. The message names the field. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: only an Owner of the team reads a quote. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

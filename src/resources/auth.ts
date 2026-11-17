@@ -207,8 +207,8 @@ export class AuthResource {
    * `timezone` is deprecated and ignored.
    *
    * Warm-up is off by default: a new account gets full limits from the start.
-   * `warm_up: true` connects a NEW account with warm-up on (limits start at 15%
-   * and rise to full over 5 weeks); recovery after a LinkedIn restriction
+   * `warm_up: true` connects a NEW account with warm-up on (the Gradual ramp:
+   * 30% of its limits on day 1, rising to 100% on day 14 of its sending days); recovery after a LinkedIn restriction
    * applies either way. Sent with `account_id` it is `400 INVALID_REQUEST`:
    * change an existing account's switch on its safety policy instead.
    *

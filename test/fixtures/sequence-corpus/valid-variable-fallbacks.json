@@ -1,0 +1,16 @@
+{
+  "about": "per-variable fallbacks render on message.send, inmail.send and email.send; on_missing skip needs none",
+  "rules": [],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      { "id": "m", "do": "message.send", "with": { "text": "Hi {{lead.first_name|there}}, {{lead.company|your team}}" }, "next": "i" },
+      { "id": "i", "do": "inmail.send", "with": { "subject": "For {{lead.company|you}}", "text": "Hi {{first_name|there}}" }, "next": "s" },
+      { "id": "s", "do": "message.send", "with": { "text": "Hi {{lead.first_name}}", "on_missing": "skip" }, "next": "e" },
+      { "id": "e", "do": "email.send", "with": { "subject": "Hi {{lead.first_name|there}}", "text": "Hello {{lead.first_name|there}}\n{{mailbox.signature}}", "opt_out": "line" }, "next": "end" }
+    ]
+  },
+  "errors": [],
+  "warnings": []
+}

@@ -25,7 +25,7 @@
       "code": "R19",
       "message": "a fallback must not be empty",
       "pointer": "/steps/0/with/fallback",
-      "hint": "Add a variable-free fallback: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment.",
+      "hint": "Give each variable its own fallback ({{lead.first_name|there}}), or add a variable-free one on the step: with.fallback, with.note_fallback (or \"drop\") on an invitation, \"skip\" on a comment; or set on_missing to skip.",
       "docs_url": "https://docs.curviate.com/reference/sequence-rules#r19",
       "severity": "error"
     }

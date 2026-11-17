@@ -16,6 +16,7 @@ import openapiTS, { astToString } from "openapi-typescript";
 import {
   stripLocalDiscriminatorMappings,
   sequenceTypegenFixups,
+  dropRetiredFields,
   sequenceSchemaJson,
   forbiddenVendorPattern,
   GENERATED_HEADER as HEADER,
@@ -53,6 +54,7 @@ async function loadDocument() {
 const doc = await loadDocument();
 const schemaJson = sequenceSchemaJson(doc);
 sequenceTypegenFixups(doc);
+dropRetiredFields(doc);
 const stripped = stripLocalDiscriminatorMappings(doc);
 if (stripped > 0 && !useFixture) {
   console.error(`note: stripped ${stripped} unresolvable discriminator mapping(s) from the document`);

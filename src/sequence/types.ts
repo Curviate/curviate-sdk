@@ -45,6 +45,8 @@ export type BooleanPredicate = GenSingle extends infer P ? (P extends unknown ? 
 
 /** `<number><m|h|d>`, like `30d`. */
 export type Duration = `${number}${"m" | "h" | "d"}`;
+/** A `wait` or an `until` timeout also takes business days, `<n>bd` (1 to 250): the sending account's schedule days. */
+export type WaitDuration = Duration | `${number}bd`;
 type Scalar = string | number | boolean;
 type Degree = 1 | 2 | 3;
 
@@ -63,6 +65,9 @@ type BasePredicate =
 /** An `if` predicate: one key, `lead.*`, `account.*`, `enrollment.*` or `message.seen`, optionally wrapped in one `not`. */
 export type Predicate = BasePredicate | { not: BasePredicate };
 
+/** What a messaging step does when a variable has no value at send time: use the fallbacks [default], skip the step, or hold the Enrollment until the field is filled (skipped after 14 days). */
+export type OnMissing = "fallback" | "skip" | "hold";
+
 /** `with` of each action, keys as the document writes them. */
 export interface ActionParams {
   "profile.view": Record<string, never>;
@@ -70,23 +75,43 @@ export interface ActionParams {
   "profile.unfollow": Record<string, never>;
   "invite.withdraw": Record<string, never>;
   "skill.endorse": Record<string, never>;
-  "invite.send": { note?: string | null; note_fallback?: string; withdraw_after?: string };
-  "message.send": { text?: string; fallback?: string };
+  "invite.send": { note?: string | null; note_fallback?: string; withdraw_after?: string; on_missing?: OnMissing };
+  "message.send": { text?: string; fallback?: string; on_missing?: OnMissing };
   "voice.send": { clip_id?: string; fallback?: string };
-  "inmail.send": { subject?: string; text?: string; fallback?: { subject: string; text: string } };
+  "inmail.send": { subject?: string; text?: string; fallback?: { subject: string; text: string }; on_missing?: OnMissing };
+  /**
+   * An email from the sending Account's Mailbox to the Lead's address. `subject` is required where no earlier email
+   * runs before it; `thread: "same"` (default) replies in the Lead's thread. No whole-message fallback: each variable
+   * carries its own, `{{lead.first_name|there}}`, or `on_missing` is `skip` or `hold`. `{{mailbox.signature}}` is the
+   * Mailbox's signature. `opt_out` (`link`, `line` or `none`) and its three texts default to the Team's.
+   */
+  "email.send": {
+    subject?: string;
+    text?: string;
+    body_html?: string;
+    thread?: "same" | "new";
+    on_missing?: OnMissing;
+    opt_out?: "link" | "line" | "none";
+    opt_out_text?: string;
+    opt_out_link_text?: string;
+    opt_out_link_word?: string;
+    track_opens?: boolean;
+  };
   "post.react": { post?: "latest"; newer_than?: string; reaction?: Reaction };
-  "post.comment": { post?: "latest"; newer_than?: string; text?: string; fallback?: string };
+  "post.comment": { post?: "latest"; newer_than?: string; text?: string; fallback?: string; on_missing?: OnMissing };
 }
-/** One A/B variant of a messaging step. */
-export type Variant<A extends Action = Action> = A extends "inmail.send"
+/**
+ * One variant of a messaging step. `weight` (an integer 1 to 100) sets its share of the draw; give it on every
+ * variant of the step or on none (none: an even split).
+ */
+export type Variant<A extends Action = Action> = (A extends "inmail.send"
   ? { id: string; subject: string; text: string }
   : A extends "voice.send"
     ? { id: string; clip_id: string }
-    : { id: string; text: string };
-/**
- * A/B: exactly 2. 3 to 5 still compile: the API accepts them with warning W13
- * until 2027-01-19 (never over-report).
- */
+    : A extends "email.send"
+      ? { id: string; subject?: string; text: string; body_html?: string }
+      : { id: string; text: string }) & { weight?: number };
+/** 2 to 5 variants; each Enrollment keeps the one it drew. */
 type Variants<A extends Action> =
   | readonly [Variant<A>, Variant<A>]
   | readonly [Variant<A>, Variant<A>, Variant<A>]
@@ -155,9 +180,12 @@ type ShortOk<S extends string> = S extends `${Lower}${infer R}`
       : true
     : false
   : false;
-type VarOk<I extends string> = I extends `${string}|${string}`
-  ? false
-  : Trim<I> extends `lead.extra.${infer K}`
+/** `{{name|fallback}}`: the name is checked; whether this action takes a `|` fallback is left to run time. */
+type VarOk<I extends string> = I extends `${infer N}|${string}`
+  ? VarOk<N>
+  : Trim<I> extends "mailbox.signature"
+    ? true
+    : Trim<I> extends `lead.extra.${infer K}`
     ? K extends "" ? false : true
     : Trim<I> extends `lead.${infer F}`
       ? F extends StandardField ? true : false
@@ -173,26 +201,34 @@ type BadVar<S extends string> = Inners<S> extends infer I ? (I extends string ? 
 type CheckVars<S> = IsLiteral<S> extends true
   ? [BadVar<S & string>] extends [never]
     ? unknown
-    : SequenceTypeError<`{{${BadVar<S & string>}}} is not a v1 variable; use {{first_name}}, {{my_first_name}}, a custom field {{opener}}, or lead.<field>, lead.extra.<key>, account.first_name|last_name|full_name, without a default`>
+    : SequenceTypeError<`{{${BadVar<S & string>}}} is not a v1 variable; use {{first_name}}, {{my_first_name}}, a custom field {{opener}}, or lead.<field>, lead.extra.<key>, account.first_name|last_name|full_name, mailbox.signature, with an optional fallback after |`>
   : unknown;
 /** G8: a literal fallback holds no variable. */
 type CheckFallback<S> = HasVar<S> extends true ? SequenceTypeError<"a fallback must not contain a variable"> : CheckVars<S>;
 /** G11: a literal duration is `<number><m|h|d>`. */
 export type CheckDuration<S> = IsLiteral<S> extends true ? (S extends Duration ? unknown : SequenceTypeError<"a duration is a number then m, h or d, like 30d">) : unknown;
+/** G11 for a `wait` and an `until` timeout: also `<number>bd`, business days. */
+export type CheckWaitDuration<S> = IsLiteral<S> extends true
+  ? (S extends WaitDuration ? unknown : SequenceTypeError<"a duration is a number then m, h, d or bd (business days), like 30d or 5bd">)
+  : unknown;
 /** G12: a literal step id is not `"end"`. */
 export type CheckId<S> = S extends "end" ? SequenceTypeError<'"end" is reserved'> : unknown;
 
 export type Get<T, K extends PropertyKey> = T extends { readonly [P in K]?: infer V } ? V : undefined;
-type VariantTexts<F> = Get<F, "variants"> extends readonly (infer V)[] ? Get<V, "text"> | Get<V, "subject"> : never;
+type VariantTexts<F> = Get<F, "variants"> extends readonly (infer V)[] ? Get<V, "text"> | Get<V, "subject"> | Get<V, "body_html"> : never;
 /** The literal texts of a messaging step: `with` text fields and every variant's. */
 type Texts<A extends Action, W> =
   (A extends "invite.send" ? Get<W, "note"> : A extends "inmail.send" ? Get<W, "subject"> | Get<W, "text"> : Get<W, "text">);
 type AnyVar<T> = T extends unknown ? HasVar<T> : never;
+/** A variable that can be missing at send time and carries no `|` fallback of its own. */
+type Bare<I> = I extends `${string}|${string}` ? never : Trim<I & string> extends "mailbox.signature" | `campaign.${string}` ? never : I;
+type HasBareVar<S> = IsLiteral<S> extends true ? ([Bare<Inners<S & string>>] extends [never] ? false : true) : false;
+type AnyBareVar<T> = T extends unknown ? HasBareVar<T> : never;
 
 export type Exact<T, Allowed extends PropertyKey> = { [K in Exclude<keyof T, Allowed>]: SequenceTypeError<`unknown key ${K & string}`> };
 
 type DoKeys = "with" | "variants" | "event" | "next" | "else" | "note";
-type TextFields = "text" | "subject" | "note";
+type TextFields = "text" | "subject" | "note" | "body_html";
 
 /** G4, G6-G11 on the `fields` of `step.do`. */
 export type CheckDo<A extends Action, F> = Exact<F, A extends MessagingAction ? DoKeys : Exclude<DoKeys, "variants">> &
@@ -218,12 +254,20 @@ type CheckWith<A extends Action, F, W> = {
 type CheckMessaging<A extends Action, F> = (Get<F, "variants"> extends readonly unknown[]
   ? { variants: { [I in keyof Get<F, "variants">]: { [P in keyof Get<F, "variants">[I]]: P extends "id" ? unknown : CheckVars<Get<F, "variants">[I][P]> } } }
   : unknown) &
-  // G7: a variable in a literal text needs its fallback; a comment always needs one.
+  // G7: a comment always needs its fallback. With `on_missing` fallback (the default), a note using a variable needs
+  // `note_fallback`, a message or InMail with a variable lacking its own `|` fallback needs the step's. The email step's
+  // per-variable rule is left to run time.
   (A extends "post.comment"
     ? { with: { fallback: string } }
-    : true extends AnyVar<Texts<A, Get<F, "with">> | VariantTexts<F>>
-      ? { with: A extends "invite.send" ? { note_fallback: string } : A extends "inmail.send" ? { fallback: { subject: string; text: string } } : { fallback: string } }
-      : unknown);
+    : Get<Get<F, "with">, "on_missing"> extends "skip" | "hold"
+      ? unknown
+      : A extends "invite.send"
+        ? true extends AnyVar<Texts<A, Get<F, "with">> | VariantTexts<F>> ? { with: { note_fallback: string } } : unknown
+        : A extends "message.send" | "inmail.send"
+          ? true extends AnyBareVar<Texts<A, Get<F, "with">> | VariantTexts<F>>
+            ? { with: A extends "inmail.send" ? { fallback: { subject: string; text: string } } : { fallback: string } }
+            : unknown
+          : unknown);
 
 /** Fields of `step.do`, per action. */
 export type DoFields<A extends Action> = {

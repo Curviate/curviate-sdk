@@ -111,6 +111,33 @@ export function sequenceTypegenFixups(doc) {
 }
 
 /**
+ * Fields the server still serves for compatibility but the SDK no longer
+ * types: `warm_up.week` (always null) and `warm_up.steps` (always 5), left
+ * over from the week ramp. Dropped from every warm-up object schema (one
+ * carrying `factor`, `week` and `steps`) before type generation.
+ * Remove this once the served document no longer has them.
+ * @param {any} doc the OpenAPI document, mutated
+ * @returns {number} schemas rewritten
+ */
+export function dropRetiredFields(doc) {
+  let rewritten = 0;
+  const visit = (n) => {
+    if (!n || typeof n !== "object") return;
+    if (Array.isArray(n)) return void n.forEach(visit);
+    const p = n.properties;
+    if (p && typeof p === "object" && "week" in p && "steps" in p && "factor" in p) {
+      delete p.week;
+      delete p.steps;
+      if (Array.isArray(n.required)) n.required = n.required.filter((k) => k !== "week" && k !== "steps");
+      rewritten += 1;
+    }
+    for (const key of Object.keys(n)) visit(n[key]);
+  };
+  visit(doc);
+  return rewritten;
+}
+
+/**
  * The Sequence document v1 JSON Schema as `src/sequence/schema.v1.json` holds
  * it: `components.schemas.SequenceDocument` of the OpenAPI document, key for
  * key. Read before any transform above mutates the document.

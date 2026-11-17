@@ -1,0 +1,35 @@
+{
+  "about": "W18: opt_out none carries the no_opt_out warning and never blocks",
+  "rules": [
+    "W18"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "mail",
+        "do": "email.send",
+        "with": {
+          "subject": "Hi",
+          "text": "Hi there",
+          "opt_out": "none"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "path": "mail.with.opt_out",
+      "rule": "no_opt_out: opt_out is none, so this email offers no way to opt out",
+      "code": "W18",
+      "message": "no_opt_out: opt_out is none, so this email offers no way to opt out",
+      "pointer": "/steps/0/with/opt_out",
+      "hint": "Set opt_out to link or line: an email without a way to opt out invites spam complaints, which hurt the Mailbox's delivery.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w18",
+      "severity": "warning"
+    }
+  ]
+}

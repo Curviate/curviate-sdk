@@ -1,0 +1,31 @@
+{
+  "about": "3 variants, no weights: valid, equal shares",
+  "rules": [],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "variants": [
+          {
+            "id": "v0",
+            "text": "Hi"
+          },
+          {
+            "id": "v1",
+            "text": "Hi"
+          },
+          {
+            "id": "v2",
+            "text": "Hi"
+          }
+        ],
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": []
+}

@@ -166,11 +166,12 @@ export interface PostPublishFailedPayload extends EventPayloadBase {
 }
 
 /**
- * Payload of the eleven `campaign` events (`campaign.status_changed`,
+ * Payload of the fourteen `campaign` events (`campaign.status_changed`,
  * `enrollment.started`, `enrollment.accepted`, `enrollment.replied`,
  * `enrollment.seen`, `enrollment.reassigned`, `enrollment.skipped`,
- * `enrollment.finished`, `step.executed`, `step.failed`,
- * `campaign.custom_event`). Each carries `campaign_id` and is self-contained:
+ * `enrollment.finished`, `enrollment.email_bounced`,
+ * `enrollment.out_of_office`, `enrollment.opted_out`, `step.executed`,
+ * `step.failed`, `campaign.custom_event`). Each carries `campaign_id` and is self-contained:
  * `campaign_name`, `account_name`, the step keys (`step_id`, `action`,
  * `variant_id`, `step_event`: the step's custom event name, while `event` stays
  * the event type) and `reason_message` beside every `reason`. The rest varies
@@ -178,6 +179,13 @@ export interface PostPublishFailedPayload extends EventPayloadBase {
  * https://docs.curviate.com/reference/webhooks/catalogue (`lead` is the
  * Lead record, `null` once deleted). No payload carries the text Curviate
  * sent.
+ *
+ * `enrollment.replied` carries `channel`: `linkedin` or `email`.
+ * `enrollment.email_bounced` carries `lead_id`, `mailbox_id` and `status` (the
+ * delivery report's `x.y.z`); `enrollment.out_of_office` carries `until` (the
+ * stated end, or `null`); `enrollment.opted_out` carries `lead_id`, `scope`
+ * (`everything` or `email_only`) and `how` (`unsubscribe_link`,
+ * `email_header`, `reply_model` or `person`): see {@link EnrollmentOptedOutPayload}.
  *
  * `campaign.custom_event` fires once when a step carrying an `event` ran or an
  * `emit` step is reached.
@@ -196,6 +204,30 @@ export interface CampaignPayload {
   event: string;
   occurred_at: string;
   [key: string]: unknown;
+}
+
+/** `enrollment.replied`: the reply's channel is typed; the rest as {@link CampaignPayload}. */
+export interface EnrollmentRepliedPayload extends CampaignPayload {
+  channel: "linkedin" | "email";
+}
+
+/** `enrollment.email_bounced`: an email of the Enrollment bounced; `status` is the delivery report's `x.y.z`. */
+export interface EnrollmentEmailBouncedPayload extends CampaignPayload {
+  lead_id: string;
+  mailbox_id: string;
+  status: string;
+}
+
+/** `enrollment.out_of_office`: the Lead answered with an out-of-office reply; `until` its stated end, or `null`. */
+export interface EnrollmentOutOfOfficePayload extends CampaignPayload {
+  until: string | null;
+}
+
+/** `enrollment.opted_out`: the Lead opted out; the Do-not-contact entry's `scope` and `how`. */
+export interface EnrollmentOptedOutPayload extends CampaignPayload {
+  lead_id: string;
+  scope: "everything" | "email_only";
+  how: "unsubscribe_link" | "email_header" | "reply_model" | "person";
 }
 
 /**
@@ -293,11 +325,14 @@ export type CurviateEvent = CurviateEventEnvelope &
     | { event: "campaign.status_changed"; data: CampaignPayload }
     | { event: "enrollment.started"; data: CampaignPayload }
     | { event: "enrollment.accepted"; data: CampaignPayload }
-    | { event: "enrollment.replied"; data: CampaignPayload }
+    | { event: "enrollment.replied"; data: EnrollmentRepliedPayload }
     | { event: "enrollment.seen"; data: CampaignPayload }
     | { event: "enrollment.reassigned"; data: CampaignPayload }
     | { event: "enrollment.skipped"; data: CampaignPayload }
     | { event: "enrollment.finished"; data: CampaignPayload }
+    | { event: "enrollment.email_bounced"; data: EnrollmentEmailBouncedPayload }
+    | { event: "enrollment.out_of_office"; data: EnrollmentOutOfOfficePayload }
+    | { event: "enrollment.opted_out"; data: EnrollmentOptedOutPayload }
     | { event: "step.executed"; data: CampaignPayload }
     | { event: "step.failed"; data: CampaignPayload }
     | { event: "campaign.custom_event"; data: CampaignPayload }

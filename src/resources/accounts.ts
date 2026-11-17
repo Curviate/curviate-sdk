@@ -242,10 +242,12 @@ export class AccountsResource {
    * set it with `PATCH /v1/{account_id}/safety-policy` and
    * `warm_up: { enabled }`), `dormant` (no action for more than 30 days; a
    * fact only, it starts no ramp), `state` and the `triggers` that apply now
-   * (`connect`, `switched_on`, `post_restriction`). On ramps the limits from
-   * 15% to full over 5 weeks, from connect or from the moment it is turned on;
-   * off is full limits. Recovery after a LinkedIn restriction applies either
-   * way.
+   * (`connect`, `switched_on`, `post_restriction`), `factor`, the ramp
+   * (`preset`: `gradual` or `custom` with `start`, `step`, `every`) and its
+   * `day`. On ramps the limits in the account's sending days from connect or
+   * from the moment it is turned on (Gradual: 30% on day 1 to 100% on day
+   * 14); off is full limits. Recovery after a LinkedIn restriction applies
+   * either way.
    *
    * `connection_location` carries `checked_at` (the last location check, or
    * `null`), `detected_country` (where your own proxy was found to connect
@@ -465,7 +467,8 @@ export class AccountsResource {
   /**
    * Read an account's safety policy: every configurable field for every
    * budget row, and where each value was inherited from. Also carries the
-   * derived `warm_up` (`enabled`, `dormant`, `state`, `factor`, `triggers`)
+   * derived `warm_up` (`enabled`, `dormant`, `state`, `factor`, `triggers`,
+   * `preset`, `start`, `step`, `every`, `day`)
    * and `activity_window` (the zone the hours are read in, from where the
    * account connects) and `auto_withdraw` (default `true`: Curviate withdraws
    * its own invitations older than 14 days once more than 400 are pending;
@@ -506,9 +509,11 @@ export class AccountsResource {
    * `activity_level_reason`. Whoever may change the account's active hours may
    * set it; a change is ledgered. A row's `green` is its
    * target. `warm_up: { enabled }` turns the account's warm-up ramp on or off
-   * (default off). On starts the ramp at week 1 (15%) from now, rising to full
-   * limits over 5 weeks; off is full limits at once. Recovery after a LinkedIn
-   * restriction applies either way. `active_hours` sets the account's own days and
+   * (default off); `preset` picks the ramp: `gradual` (the default, 30% on day
+   * 1 to 100% on day 14 in the account's sending days) or `custom` (`start`
+   * 5 to 90 percent, `step` 1 to 50 points every `every` 1 to 7 sending days).
+   * On starts the ramp from now; off is full limits at once. Recovery after a
+   * LinkedIn restriction applies either way. `active_hours` sets the account's own days and
    * local hours for Campaigns and other live writes (direct messaging ignores
    * them); a row's own `activity_window_start` / `activity_window_end` win over
    * it. Read-only fields (`activity_window`, a row's

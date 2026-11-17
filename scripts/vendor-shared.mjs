@@ -29,6 +29,9 @@ const FILES = [
   "sequence/paths.ts",
   "sequence/references.ts",
   "sequence/rules.ts",
+  // Outside src/shared: a pure constants module sequence/limits.ts imports. Vendored to the same
+  // relative place (src/lib/mail/) so the import path needs no rewrite.
+  "../lib/mail/constants.ts",
 ];
 const HEADER = "// Vendored from the API by scripts/vendor-shared.mjs. Do not edit: change the API and re-run.\n";
 const printer = ts.createPrinter({ removeComments: true });
