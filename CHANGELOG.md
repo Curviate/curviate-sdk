@@ -7,7 +7,7 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
-## [Unreleased]
+## [0.51.0] - 2026-11-17
 
 ### Breaking: Contacts become Leads, Motions become Campaigns
 
@@ -22,8 +22,6 @@ The old names are removed, not aliased: there is no deprecation window. Rename o
 - **Regenerated** `fixtures/openapi.json` and the generated types from the rename branch's served document, so the types also carry what that document serves beyond the rename.
 
 ### Mailboxes, domains and the Mailbox Connect request
-
-Proposed bump: 0.51.0 (additive). Not applied, not published: the Mailbox surface stays off the registry until the Mailboxes rollout is on.
 
 - **`curviate.mailboxes`**: `list` (one HTTP call per page; filters `state`, `sends_for`, `domain`), `get`, `update` (`daily_cap`, `signature`, `sends_for`: `{ kind: "account", account_id }`, `{ kind: "shared" }` or `null`), `pause`, `resume`, `remove` and `discover(address)` (the IMAP and SMTP settings for an address, to confirm before connecting).
 - **`curviate.domains.check(domain, { now? })`**: a sending domain's MX, SPF, DKIM, DMARC and tracking checks as last run (`GET`), or run now (`{ now: true }`, `POST`).
