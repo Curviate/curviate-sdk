@@ -95,6 +95,8 @@ export type {
   TeamListPage,
   TeamUpdateBody,
   TeamUpdateResult,
+  ReplyLabelSettings,
+  ReplyLabelSettingsUpdateBody,
   TeamMemberListParams,
   TeamMemberListPage,
   TeamMemberUpdateBody,
@@ -130,6 +132,7 @@ export type {
   LeadImportGetResult,
   LeadImportRowsParams,
   LeadImportRowsPage,
+  LeadImportControlResult,
 } from "./resources/leads.js";
 
 export type {
@@ -215,7 +218,33 @@ export type {
   UniboxAccount,
   UniboxAccountList,
   UniboxAccountUpdateBody,
+  ReplyLabel,
+  ReplyLabelHistory,
+  ReplyLabelUpdateBody,
+  ReplyLabelUpdateResult,
 } from "./resources/unibox.js";
+
+export type {
+  Signal,
+  SignalListParams,
+  SignalListPage,
+  SignalKindList,
+  SignalWatchStatus,
+  SignalSettings,
+  SignalSettingsUpdateBody,
+  SignalRule,
+  SignalRuleListParams,
+  SignalRuleListPage,
+  SignalRuleCreateBody,
+  SignalRuleUpdateBody,
+} from "./resources/signals.js";
+
+export type {
+  CompanyGetQuery,
+  CompanyRecord,
+  CompanyRecordUpdateBody,
+  CompanyRecordUpdateResult,
+} from "./resources/companies.js";
 
 export type {
   CampaignAnalyticsParams,
@@ -229,6 +258,8 @@ export type {
   AnalyticsEventListPage,
   BudgetRow,
   AnalyticsExportParams,
+  EmailAnalyticsParams,
+  EmailAnalytics,
 } from "./resources/analytics.js";
 
 export type { ExportCreateBody, Export, ExportGetResult } from "./resources/exports.js";
@@ -240,6 +271,14 @@ export type {
   InvoiceListParams,
   InvoiceListPage,
   Invoice,
+  Quote,
+  QuoteParams,
+  SpendingCap,
+  BillingChange,
+  BillingChangeListParams,
+  BillingChangeListPage,
+  SwitchPeriodResult,
+  MoveToCurrentPriceResult,
 } from "./resources/billing.js";
 
 export type {

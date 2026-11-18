@@ -1,0 +1,39 @@
+{
+  "about": "an unknown company variable names the nearest company fields",
+  "rules": [
+    "R16"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{company.revenue}}",
+          "fallback": "Hi"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "m.with.text",
+      "rule": "unknown company variable {{company.revenue}}; use company.name, company.industry, company.website, company.size, company.headcount_growth, company.location or a company custom field company.extra.<key>",
+      "code": "R16",
+      "message": "unknown company variable {{company.revenue}}; use company.name, company.industry, company.website, company.size, company.headcount_growth, company.location or a company custom field company.extra.<key>",
+      "pointer": "/steps/0/with/text",
+      "hint": "Write a variable as {{first_name}}, {{my_first_name}} or a custom field {{opener}}; the long forms {{lead.first_name}}, {{lead.extra.opener}} and {{account.first_name}} work too.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r16",
+      "severity": "error",
+      "candidates": [
+        "{{company.website}}",
+        "{{company.name}}",
+        "{{company.size}}"
+      ]
+    }
+  ],
+  "warnings": []
+}

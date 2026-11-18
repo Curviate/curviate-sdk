@@ -111,6 +111,49 @@ export type CompanySendMessageBody =
 export type CompanySendMessageResult =
   paths["/v1/{account_id}/companies/{identifier}/chats/{chat_id}/messages"]["post"]["responses"]["201"]["content"]["application/json"];
 
+export type CompanyGetQuery = NonNullable<paths["/v1/{account_id}/companies/{identifier}"]["get"]["parameters"]["query"]>;
+export type CompanyRecord = paths["/v1/companies/{company_id}"]["get"]["responses"]["200"]["content"]["application/json"];
+export type CompanyRecordUpdateBody = NonNullable<paths["/v1/companies/{company_id}"]["patch"]["requestBody"]>["content"]["application/json"];
+export type CompanyRecordUpdateResult = paths["/v1/companies/{company_id}"]["patch"]["responses"]["200"]["content"]["application/json"];
+
+/**
+ * `curviate.companies` (root): what your Team holds for one company, by
+ * LinkedIn's numeric company id (the `id` of a company read). Stored data
+ * only: no LinkedIn call, no budget. The company profile itself is read with
+ * `curviate.account(id).companies.get`.
+ */
+export class CompanyRecordsResource {
+  constructor(private readonly ctx: RequestContext) {}
+
+  /**
+   * The stored company record (name, industry, website, size, headcount
+   * growth, location, `read_at`; all `null` when the company was never read)
+   * and your Team's own `extra` fields. Every role reads.
+   * `GET /v1/companies/{company_id}`
+   *
+   * @example
+   * const { name, extra } = await curviate.companies.get("1234567");
+   */
+  get(companyId: string): Promise<CompanyRecord> {
+    return this.ctx.request<CompanyRecord>({ method: "GET", path: apiPath`/v1/companies/${companyId}` });
+  }
+
+  /**
+   * Merge your Team's company fields by key: a value sets the key, `null`
+   * removes it, keys left out stay. Set once for every Lead who works at the
+   * company; a Sequence reads them as `{{company.extra.<key>}}`. Keys match
+   * `^[A-Za-z0-9_]{1,64}$`; `""` is refused (send `null`). At most 100 keys
+   * and 32,768 bytes once merged.
+   * `PATCH /v1/companies/{company_id}`
+   *
+   * @example
+   * await curviate.companies.update("1234567", { extra: { tier: "A", owner: null } });
+   */
+  update(companyId: string, body: CompanyRecordUpdateBody): Promise<CompanyRecordUpdateResult> {
+    return this.ctx.request<CompanyRecordUpdateResult>({ method: "PATCH", path: apiPath`/v1/companies/${companyId}`, body });
+  }
+}
+
 // ─── Resource class ───────────────────────────────────────────────────────────
 
 export class CompaniesResource {
@@ -122,11 +165,16 @@ export class CompaniesResource {
    *
    * Accepts a public handle (the slug in `linkedin.com/company/<handle>`,
    * e.g. `t-systems`) or a numeric id (e.g. `1234567`). A URN is not accepted.
+   *
+   * A store-servable read: `{ mode, max_age }` says how willing it is to reach
+   * LinkedIn, and the response's `source` says which way the answer came. See
+   * "Retrieval modes" in the README.
    */
-  get(identifier: string): Promise<CompanyProfile> {
+  get(identifier: string, params?: CompanyGetQuery): Promise<CompanyProfile> {
     return this.ctx.request<CompanyProfile>({
       method: "GET",
       path: apiPath`/v1/{account_id}/companies/${identifier}`,
+      ...(params ? { query: params } : {}),
     });
   }
 

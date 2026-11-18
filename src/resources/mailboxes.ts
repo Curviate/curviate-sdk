@@ -65,7 +65,9 @@ export class MailboxesResource {
 
   /**
    * Set the daily cap (1 to 50), the signature (plain text, at most 2,000
-   * characters, `null` clears it) and/or `sends_for`: `{ kind: "account",
+   * characters, `null` clears it), the From name `display_name` (one line, at
+   * most 100 characters; `null` sends with the name of the Account it sends
+   * for) and/or `sends_for`: `{ kind: "account",
    * account_id }` (sends only for that one Account), `{ kind: "shared" }` (any
    * Account of the Team may send from it) or `null` (sends nothing until
    * linked). One Account, never a list. Owners and Managers change any Mailbox;
@@ -134,7 +136,9 @@ export class MailboxesResource {
   /**
    * Find the IMAP and SMTP settings for an email address, to show the person
    * and confirm before connecting (`confirm_required` marks settings that
-   * arrived unencrypted). The call takes no password and the answer holds none.
+   * arrived unencrypted or are a guess). A domain with nothing usable answers
+   * `source: "none"` with no settings. The call takes no password and the
+   * answer holds none.
    * `GET /v1/mailboxes/discover`
    *
    * @example

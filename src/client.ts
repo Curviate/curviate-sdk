@@ -33,6 +33,8 @@ import {
   type TeamsResource,
   type NotificationsResource,
   type LeadsResource,
+  type CompanyRecordsResource,
+  type SignalsResource,
   type LeadListsResource,
   type TagsResource,
   type CampaignsResource,
@@ -70,6 +72,10 @@ export class Curviate {
   readonly notifications: NotificationsResource;
   /** Your team's Leads; `leads.imports` for bulk imports. */
   readonly leads: LeadsResource;
+  /** Your Team's company records and company fields; a company profile is `account(id).companies.get`. */
+  readonly companies: CompanyRecordsResource;
+  /** Signals: what people did around your Accounts (7 days), and the rules that act on it. */
+  readonly signals: SignalsResource;
   readonly leadLists: LeadListsResource;
   readonly tags: TagsResource;
   /** Campaigns: a Sequence run for Leads; accepts a `Sequence` builder. */
@@ -111,6 +117,8 @@ export class Curviate {
     this.teams = ns.teams;
     this.notifications = ns.notifications;
     this.leads = ns.leads;
+    this.companies = ns.companies;
+    this.signals = ns.signals;
     this.leadLists = ns.leadLists;
     this.tags = ns.tags;
     this.campaigns = ns.campaigns;

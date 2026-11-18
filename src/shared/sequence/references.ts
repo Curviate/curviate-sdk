@@ -23,7 +23,7 @@ export function awaitedEventName(until: unknown): string | null {
     const m = typeof until === "string" ? /^(?:event|signal)\.(.+)$/s.exec(until) : null;
     return m ? m[1]! : null;
 }
-export function awaitedSignals(doc: unknown): string[] {
+export function awaitedCustomEvents(doc: unknown): string[] {
     const names = steps(doc).flatMap((s) => {
         const n = awaitedEventName(s["until"]);
         return n === null ? [] : [n];

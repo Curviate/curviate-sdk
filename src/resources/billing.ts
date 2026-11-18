@@ -1,5 +1,6 @@
 /**
- * Billing (root-scoped): the plan (`quote`, `switchPeriod`), the spending cap
+ * Billing (root-scoped): the plan (`quote`, `switchPeriod`,
+ * `moveToCurrentPrice`), the spending cap
  * (`spendingCap`), the change log (`changes`), `curviate.billing.seats`
  * (2 methods) and `curviate.billing.invoices` (2 methods). Owners only.
  *
@@ -25,6 +26,7 @@ export type BillingChangeListParams = NonNullable<paths["/v1/billing/changes"]["
 export type BillingChangeListPage = paths["/v1/billing/changes"]["get"]["responses"]["200"]["content"]["application/json"];
 export type BillingChange = BillingChangeListPage["items"][number];
 export type SwitchPeriodResult = paths["/v1/billing/subscription/switch-period"]["post"]["responses"]["200"]["content"]["application/json"];
+export type MoveToCurrentPriceResult = paths["/v1/billing/subscription/move-to-current-price"]["post"]["responses"]["200"]["content"]["application/json"];
 
 /** `curviate.billing.seats`: lend an unused seat to another of your Teams. */
 export class BillingSeatsResource {
@@ -170,5 +172,22 @@ export class BillingResource {
    */
   switchPeriod(): Promise<SwitchPeriodResult> {
     return this.ctx.request<SwitchPeriodResult>({ method: "POST", path: "/v1/billing/subscription/switch-period" });
+  }
+
+  /**
+   * Move a subscription on a previous price (Build, Automate or Seat) to the
+   * current price now, for the same seats and billing period. This charges
+   * money: the unused time on the previous price is credited and the current
+   * price is charged for the rest of the period, monthly on the next invoice,
+   * yearly today (`charged_today`, in cents, tax included). A Team already on
+   * the current price is refused (`INVALID_REQUEST`) and nothing is charged.
+   * Read the price first with `quote`. Owners only.
+   * `POST /v1/billing/subscription/move-to-current-price`
+   *
+   * @example
+   * const { period, charged_today } = await curviate.billing.moveToCurrentPrice();
+   */
+  moveToCurrentPrice(): Promise<MoveToCurrentPriceResult> {
+    return this.ctx.request<MoveToCurrentPriceResult>({ method: "POST", path: "/v1/billing/subscription/move-to-current-price" });
   }
 }

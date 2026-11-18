@@ -1,10 +1,13 @@
 /**
  * Notifications resource: 4 methods (root-scoped), `curviate.notifications`.
  *
- * What Curviate needs you to know: an account needs reconnecting, a Campaign
- * paused, an import finished, someone joined or left the team. Each person has
- * their own list and read state, per team. Check `unreadCount()` at session
- * start.
+ * What Curviate needs you to know: an account needs reconnecting, a Mailbox
+ * paused, a sending domain failing a check, a Campaign paused, an import
+ * finished, someone joined or left the team. Each person has their own list
+ * and read state, per team. `list({ channel })` keeps one channel (`email`,
+ * `linkedin`, `team`); each item carries its `channel`. Problems that stop
+ * sending arrive unread, advice arrives read. Check `unreadCount()` at
+ * session start.
  *
  * Not an account's LinkedIn notifications: those are account-scoped,
  * `curviate.account(id).notifications`.

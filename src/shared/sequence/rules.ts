@@ -51,6 +51,7 @@ const HINTS: Record<string, (token: string) => string> = {
     W19: () => "Remove on_reply, or set it to end: in a Campaign with an email step a reply ends the Enrollment by settings.reply_scope.",
     W20: () => "Set schedule.min_email_gap_minutes to 5 or more, the default.",
     W21: () => "Connect a Mailbox for the Account, or add a shared Mailbox to the Campaign's shared_mailbox_ids.",
+    W22: () => "Fix what the warning names for one Account (reconnect it, attach a seat, settle the payment), or add a sending Account that can run.",
 };
 const TITLES: Record<string, string> = {
     R1: "Top-level keys and $schema",
@@ -102,6 +103,7 @@ const TITLES: Record<string, string> = {
     W19: "Reply route not taken (on_reply_ignored)",
     W20: "Short gap between emails (email_gap_low)",
     W21: "Account without a Mailbox (no_mailbox)",
+    W22: "No sending Account can run (no_sending_account)",
 };
 export const SEQUENCE_RULE_CODES: readonly string[] = Object.keys(HINTS);
 export function sequenceRuleDocs(): {
@@ -175,6 +177,7 @@ const PROBLEMS: Record<string, {
     W19: { sentence: "A reply ends this Campaign because it has an email step, so the reply route is not taken.", short: "Reply route not taken" },
     W20: { sentence: "Emails from one Mailbox go out less than 2 minutes apart.", short: "Short email gap" },
     W21: { sentence: "A sending Account has no Mailbox, so its Leads wait at their email steps.", short: "No Mailbox" },
+    W22: { sentence: "No sending Account can run, so this Campaign sends nothing.", short: "No sending Account" },
 };
 export const SEQUENCE_PROBLEM_CODES: readonly string[] = Object.keys(PROBLEMS);
 const fieldWords = (k: string) => {

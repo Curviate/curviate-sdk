@@ -1,0 +1,23 @@
+{
+  "about": "the six company fields and a company custom field, with and without a fallback",
+  "rules": [
+    "R16"
+  ],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "m",
+        "do": "message.send",
+        "with": {
+          "text": "Hi {{first_name}}, how is {{company.industry|your industry}} at {{company.name}}? {{company.size}}, {{company.headcount_growth}}, {{company.location}}, {{company.website}}. {{company.extra.case_study}}",
+          "fallback": "Hi"
+        },
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": []
+}

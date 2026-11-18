@@ -71,5 +71,8 @@ describe("builder and embedded schema speak Lead and Campaign", () => {
     // @ts-expect-error a message variable without its own fallback needs the step's
     step.do("y", "message.send", { with: { text: "Hi {{lead.first_name}}" } });
     step.do("z", "message.send", { with: { text: "Hi {{lead.first_name}}", on_missing: "hold" } });
+    step.do("c", "message.send", { with: { text: "At {{company.name|your team}} ({{company.extra.tier|A}})" } });
+    // @ts-expect-error company.<field> is one of the six company fields
+    step.do("d", "message.send", { with: { text: "At {{company.nme|you}}" } });
   });
 });

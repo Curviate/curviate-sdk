@@ -1,5 +1,5 @@
 /**
- * Teams resource: 13 methods (root-scoped), `curviate.teams`.
+ * Teams resource: 15 methods (root-scoped), `curviate.teams`.
  *
  * A team is the workspace your accounts, Drafts, webhooks and billing belong
  * to. A person can belong to several teams, with a role in each (`owner`,
@@ -26,6 +26,8 @@ export type TeamListPage = paths["/v1/teams"]["get"]["responses"]["200"]["conten
 export type Team = paths["/v1/teams/current"]["get"]["responses"]["200"]["content"]["application/json"];
 export type TeamUpdateBody = NonNullable<paths["/v1/teams/current"]["patch"]["requestBody"]>["content"]["application/json"];
 export type TeamUpdateResult = paths["/v1/teams/current"]["patch"]["responses"]["200"]["content"]["application/json"];
+export type ReplyLabelSettings = paths["/v1/teams/current/reply-labels"]["get"]["responses"]["200"]["content"]["application/json"];
+export type ReplyLabelSettingsUpdateBody = NonNullable<paths["/v1/teams/current/reply-labels"]["patch"]["requestBody"]>["content"]["application/json"];
 
 export type TeamMemberListParams = NonNullable<
   paths["/v1/teams/current/members"]["get"]["parameters"]["query"]
@@ -106,6 +108,33 @@ export class TeamsResource {
    */
   getCurrent(): Promise<Team> {
     return this.ctx.request<Team>({ method: "GET", path: "/v1/teams/current" });
+  }
+
+  /**
+   * The current team's Reply label settings: whether Curviate labels each
+   * reply to your Campaigns (`enabled`, off until an Owner or a Manager turns
+   * it on), whether `not_interested` puts the person on the Do-not-contact
+   * list, and the Tag id added per label (`null` for none). Every role reads.
+   * `GET /v1/teams/current/reply-labels`
+   *
+   * @example
+   * const { enabled, tags } = await curviate.teams.getReplyLabels();
+   */
+  getReplyLabels(): Promise<ReplyLabelSettings> {
+    return this.ctx.request<ReplyLabelSettings>({ method: "GET", path: "/v1/teams/current/reply-labels" });
+  }
+
+  /**
+   * Change the Reply label settings; a key left out stays as it is. `tags`
+   * takes a Tag id of your team per label (`null` removes it). Turning labels on changes
+   * only what the next Campaign reply gets. Owners and Managers.
+   * `PATCH /v1/teams/current/reply-labels`
+   *
+   * @example
+   * await curviate.teams.updateReplyLabels({ enabled: true, tags: { interested: "tag_123" } });
+   */
+  updateReplyLabels(body: ReplyLabelSettingsUpdateBody): Promise<ReplyLabelSettings> {
+    return this.ctx.request<ReplyLabelSettings>({ method: "PATCH", path: "/v1/teams/current/reply-labels", body });
   }
 
   /**

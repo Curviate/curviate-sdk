@@ -494,6 +494,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/companies/{company_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve your Team's company record
+         * @description Returns what your Team holds for one company: the stored record (name, industry, website, size, headcount growth, location, read_at, all null when the company was never read) and your Team's own extra fields. Stored data only: this makes no LinkedIn call and spends no budget. Every role of the Team can read.
+         */
+        get: operations["getV1CompaniesCompanyId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update your Team's company fields
+         * @description Merges extra by key: a value sets the key, null removes it, keys left out are untouched. The fields are set once for every Lead who works at the company and read in a Sequence as {{company.extra.<key>}}. Keys match ^[A-Za-z0-9_]{1,64}$; values are any JSON, and "" is refused (use null).
+         */
+        patch: operations["patchV1CompaniesCompanyId"];
+        trace?: never;
+    };
     "/v1/{account_id}/profile/groups": {
         parameters: {
             query?: never;
@@ -1494,6 +1518,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/unibox/messages/{message_id}/reply-label": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read a message's Reply labels
+         * @description Returns the Reply label of one message: current, and every label it has had, newest first. A person's correction is a new entry; the earlier ones stay. From what Curviate has stored: no LinkedIn call.
+         */
+        get: operations["getV1UniboxMessagesMessageIdReplyLabel"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/unibox/messages/{message_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Set or correct a message's Reply label
+         * @description Sets the Reply label of a reply to a Campaign, corrects one, or resolves unsure. Stored as a correction: who set it, and the label it replaces, which stays in the history. The label acts as it does when Curviate sets it: opt_out puts the person on your Do-not-contact list (a later correction leaves the entry; remove it with DELETE /v1/do-not-contact/{id}); not_interested does too when your team turned that on; out_of_office makes the Lead wait 7 days, then the Campaign goes on, and correcting it away ends the wait and counts the reply; your team's Tag for the label is added to the Lead. interested, not_now, referral and other inform. No LinkedIn call. Needs Automate.
+         */
+        patch: operations["patchV1UniboxMessagesMessageId"];
+        trace?: never;
+    };
     "/v1/{account_id}/jobs": {
         parameters: {
             query?: never;
@@ -1919,7 +1983,7 @@ export interface paths {
         };
         /**
          * List your notifications
-         * @description What Curviate needs you to know: an account needs reconnecting, a Campaign paused, an import finished. Each person has their own list and read state, per team. Check unread at session start. Not an account's LinkedIn notifications (/v1/{account_id}/notifications), and not webhook events.
+         * @description What Curviate needs you to know: an account needs reconnecting, a Mailbox paused, a sending domain failing a check, a Campaign paused, an import finished. Each person has their own list and read state, per team. Filter by channel (email, linkedin, team). Problems that stop sending arrive unread; advice arrives read. Check unread at session start. Not an account's LinkedIn notifications (/v1/{account_id}/notifications), and not webhook events.
          */
         get: operations["getV1Notifications"];
         put?: never;
@@ -3342,6 +3406,30 @@ export interface paths {
         patch: operations["patchV1TeamsCurrent"];
         trace?: never;
     };
+    "/v1/teams/current/reply-labels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the team's Reply label settings
+         * @description Whether Reply labels are on for the team, whether Not interested puts the person on the Do-not-contact list, and the Tag per label. Every role may read it.
+         */
+        get: operations["getV1TeamsCurrentReplyLabels"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update the team's Reply label settings
+         * @description Turns Reply labels on or off, lets Not interested put the person on the Do-not-contact list, and sets the Tag per label. A key left out stays as it is. Turning labels on changes only what the next Campaign reply gets: nothing runs until one arrives. Owners and Managers.
+         */
+        patch: operations["patchV1TeamsCurrentReplyLabels"];
+        trace?: never;
+    };
     "/v1/teams/current/logo": {
         parameters: {
             query?: never;
@@ -3595,7 +3683,7 @@ export interface paths {
         };
         /**
          * Find a Mailbox's settings from its address
-         * @description Finds the IMAP and SMTP settings for an email address, in this order: well-known hosts, the provider's own published settings, a public settings database, the address's mail exchangers, DNS service records, then a guess. An address on Google or Microsoft answers with its connection. Show the settings to the person and confirm them before connecting; `confirm_required` marks a result that arrived unencrypted. The request takes no password and the response holds none.
+         * @description Finds the IMAP and SMTP settings for an email address, in this order: well-known hosts, the domain's mail exchanger on a known mail host, the provider's own published settings, a public settings database, the mail exchanger's published settings, DNS service records, then a guess only when the guessed names resolve. A domain with nothing usable answers `source: none` with no settings. An address on Google or Microsoft answers with its connection. Show the settings to the person and confirm them before connecting; `confirm_required` marks a result that arrived unencrypted or is a guess. The request takes no password and the response holds none.
          */
         get: operations["getV1MailboxesDiscover"];
         put?: never;
@@ -3635,7 +3723,7 @@ export interface paths {
         };
         /**
          * Get a Mailbox
-         * @description One Mailbox of this team. An unknown id and another team's id answer the same `404 MAILBOX_NOT_FOUND`.
+         * @description One Mailbox of this team. An unknown id and another team's id answer the same `404 MAILBOX_NOT_FOUND`; a path segment that is no Mailbox id answers `404 RESOURCE_NOT_FOUND`.
          */
         get: operations["getV1MailboxesId"];
         put?: never;
@@ -3649,7 +3737,7 @@ export interface paths {
         head?: never;
         /**
          * Update a Mailbox
-         * @description Sets the daily cap (1 to 50, a hard maximum for every caller), the signature (plain text, at most 2,000 characters, `null` clears it) and/or `sends_for`: `{kind: "account", account_id}` (this Mailbox sends only for that one Account), `{kind: "shared"}` (any Account of the team may send from it) or `null` (it sends nothing until linked). A Mailbox claimed for a person sends for exactly that person's Account; a list of Accounts is `400`, an Account outside the team `404 ACCOUNT_NOT_FOUND`. A change of the link leaves the Mailbox's open threads on it. Owners and Managers change any Mailbox; a Member only the ones they connected.
+         * @description Sets the daily cap (1 to 50, a hard maximum for every caller), the signature (plain text, at most 2,000 characters, `null` clears it), the From name `display_name` (one line, at most 100 characters; `null` clears it, and the Mailbox then sends with the name of the Account it sends for) and/or `sends_for`: `{kind: "account", account_id}` (this Mailbox sends only for that one Account), `{kind: "shared"}` (any Account of the team may send from it) or `null` (it sends nothing until linked). A Mailbox claimed for a person sends for exactly that person's Account; a list of Accounts is `400`, an Account outside the team `404 ACCOUNT_NOT_FOUND`. A change of the link leaves the Mailbox's open threads on it. Owners and Managers change any Mailbox; a Member only the ones they connected.
          */
         patch: operations["patchV1MailboxesId"];
         trace?: never;
@@ -3703,13 +3791,13 @@ export interface paths {
         };
         /**
          * Get a domain's checks
-         * @description The checks of a sending domain of this team: MX, SPF, DKIM, DMARC and the tracking record, each `pass`, `fail` or `unknown`, as last run (daily, or by Check now), with the record to add for tracking. A check warns and never stops sending. A domain with no Mailbox of this team, and another team's domain, answer the same `404 DOMAIN_NOT_FOUND`.
+         * @description The checks of a sending domain of this team: MX, SPF, DKIM, DMARC and the tracking record, each `pass`, `fail` or `unknown`, as last run (daily, or by Check now), with the record to add for tracking and the DKIM selector found. A check warns and never stops sending. A domain this team has no Mailbox on and has not checked, and another team's domain, answer the same `404 DOMAIN_NOT_FOUND`.
          */
         get: operations["getV1DomainsDomainChecks"];
         put?: never;
         /**
          * Check a domain now
-         * @description Runs the domain's checks now and returns the domain with the result. DNS lookups only; it sends nothing and connects to no Mailbox.
+         * @description Runs the domain's checks now and returns the domain with the result. Any domain this team names, before its first Mailbox there too, so the records can be set up first; the result is this team's own. A public email provider's domain answers `404 DOMAIN_NOT_FOUND`. DNS lookups only; it sends nothing and connects to no Mailbox.
          */
         post: operations["postV1DomainsDomainChecks"];
         delete?: never;
@@ -3860,6 +3948,66 @@ export interface paths {
         get: operations["getV1LeadsImportsId"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/leads/imports/{id}/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pause a lead import
+         * @description Pauses an import from a LinkedIn source: no page is read until it resumes; a page in flight is stored. The Account is free for its next import meanwhile. 409 IMPORT_STATUS_CONFLICT unless queued or running. Needs Automate.
+         */
+        post: operations["postV1LeadsImportsIdPause"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/leads/imports/{id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resume a lead import
+         * @description Resumes a paused import: it reads on from where it stopped, after the Account's running import if there is one, at the same pace (no burst). 409 IMPORT_STATUS_CONFLICT unless paused. Needs Automate.
+         */
+        post: operations["postV1LeadsImportsIdResume"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/leads/imports/{id}/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Stop a lead import
+         * @description Stops an import for good: the people found so far stay, the position is kept, so a new import of the same source with continue_from reads on from there. No Notification. 409 IMPORT_STATUS_CONFLICT once finished. Needs Automate.
+         */
+        post: operations["postV1LeadsImportsIdStop"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4100,6 +4248,158 @@ export interface paths {
          * @description Sets the entry's reason, from the fixed list; null clears it. Any team member may change it. Needs Automate.
          */
         patch: operations["patchV1DoNotContactId"];
+        trace?: never;
+    };
+    "/v1/signals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Signals
+         * @description The Signals of the Accounts you may operate, newest first: someone reacted to or commented on a post, viewed a profile, followed, mentioned an Account, reposted, posted in its network, or became a Connection. Only Signals at most 7 days old are served, and only for Accounts whose Signal watch is on. Filter by `kind`, `account_id`, `match` (lead, connection, followed, unknown, anonymous), `listed` (on your do-not-contact list) and `since` (written after a time). Cursor-paginated. It reads Curviate's own store and makes no LinkedIn call.
+         */
+        get: operations["getV1Signals"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/signals/kinds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Signal kinds
+         * @description Every Signal kind with its sub-kinds, the follow-up read a card of that kind can trigger (`engagers`, `viewers` or `none`), whether that read is on for your team, and the limit rows it uses.
+         */
+        get: operations["getV1SignalsKinds"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/signals/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Change Signal settings
+         * @description Sets the follow-up reads for the whole team, `follow_up.post_engaged` and `follow_up.profile_viewed`, both on by default. Switched off, a card gives only its first person (post_engaged) or no viewer beyond the card (profile_viewed). Owners and Managers only. Any other key, or a value that is not true or false, is a `400`.
+         */
+        patch: operations["patchV1SignalsSettings"];
+        trace?: never;
+    };
+    "/v1/signals/watch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the Signal watch status
+         * @description For each Account you may operate: whether its Signal watch is on, its `state` (`watching`, `paused` with a `pause_reason`, or `off`, the default), its last visit and today's visits and reads. Served from Curviate's own records; it makes no LinkedIn call.
+         */
+        get: operations["getV1SignalsWatch"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/signals/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Signal rules
+         * @description This team's Signal rules, newest first, every role. Filter by `enabled`. A rule says what happens to a person when a Signal of a kind arrives on an Account. Cursor-paginated.
+         */
+        get: operations["getV1SignalsRules"];
+        put?: never;
+        /**
+         * Create a Signal rule
+         * @description Creates a rule: for these `kinds` on these Accounts (`account_ids`, null for every Account), do its `outcomes` (1 to 3, each type once): `add_to_list` adds the person to a Lead list, `send_event` sends `signal.matched` to your webhooks. `unknown_people` is `skip` (default) or `visit_profile`, which reads the profile of a person Curviate does not know, once, and the person may see the visit. The answer carries a `summary`, the rule as one plain sentence. A rule needs what its outcomes need: adding Leads to that Lead list.
+         */
+        post: operations["postV1SignalsRules"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/signals/rules/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a Signal rule
+         * @description One rule of this team.
+         */
+        get: operations["getV1SignalsRulesId"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a Signal rule
+         * @description Deletes the rule. What it did stays: the Leads, their list memberships and the records of its actions.
+         */
+        delete: operations["deleteV1SignalsRulesId"];
+        options?: never;
+        head?: never;
+        /**
+         * Change a Signal rule
+         * @description Changes any field of a rule; send only what changes. `{enabled: false}` switches it off and `{enabled: true}` on again.
+         */
+        patch: operations["patchV1SignalsRulesId"];
+        trace?: never;
+    };
+    "/v1/signals/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a Signal
+         * @description One Signal, while it is at most 7 days old. An older one, an unknown id, another team's and one on an Account you may not operate all answer `404 RESOURCE_NOT_FOUND`.
+         */
+        get: operations["getV1SignalsId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/v1/campaigns/voice-clips": {
@@ -4505,7 +4805,7 @@ export interface paths {
         put?: never;
         /**
          * Send a signal to an enrollment (deprecated)
-         * @description Deprecated, accepted until 2027-01-19: use POST /v1/enrollments/{id}/events, which this answers identically, plus a Deprecation header and a W13 warning. Needs Automate.
+         * @description Deprecated, accepted until 2027-01-19: use POST /v1/enrollments/{id}/events, which this answers identically, plus a Deprecation header and a W13 warning. It sends a custom event, never a Signal. Needs Automate.
          */
         post: operations["postV1EnrollmentsIdSignal"];
         delete?: never;
@@ -4646,6 +4946,26 @@ export interface paths {
          * @description Recent Campaign events, newest first: steps executed, skipped or failed, invitations accepted and replies, with the person's name. Messages and replies only from chats you may read. Reaches back 12 months (the raw reach); older activity is in the daily counts of GET /v1/analytics/campaigns. Keyset paging: events recorded after your first page never shift later pages. Read-only, no LinkedIn call.
          */
         get: operations["getV1AnalyticsEvents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/analytics/email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Email analytics
+         * @description Email results of your Campaigns: emails sent, the reply, open, bounce and opt-out rates, and their splits. Filter by Campaign, account and window. Read from a rollup per hour of each send; no email or inbox is read. Read-only.
+         */
+        get: operations["getV1AnalyticsEmail"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4874,6 +5194,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/billing/subscription/move-to-current-price": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Move to the current price
+         * @description Moves a subscription on a previous price (Build, Automate or Seat) to the current price now, for the same seats and billing period. The unused time on the previous price is credited and the current price is charged for the rest of the period: monthly on the next invoice, yearly charged today. A Team already on the current price is refused and nothing is charged. Owners only.
+         */
+        post: operations["postV1BillingSubscriptionMoveToCurrentPrice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/billing/tier": {
         parameters: {
             query?: never;
@@ -4883,7 +5223,7 @@ export interface paths {
         };
         /**
          * Retrieve the Team's Tier
-         * @description Returns the Tier the Team has now and where it comes from: the Tier bought, the free trial while it runs, or a Tier Curviate granted, with the features included. Any member can read it. It reports no prices. A Team's first call starts its free trial when one is due.
+         * @description Returns whether the Team holds the plan now and where it comes from: its subscription, the free trial while it runs, or a grant from Curviate, with the features included. Holding the plan includes every feature. Any member can read it. It reports no prices. A Team's first call starts its free trial when one is due.
          */
         get: operations["getV1BillingTier"];
         put?: never;
@@ -5270,7 +5610,7 @@ export interface components {
         };
         /**
          * Sequence document v1
-         * @description A Campaign's Sequence: a flat steps array run from the first step, ending explicitly in "end". Served documents use this key order: $schema, on_reply, steps; in a step id, the kind key, timeout, save, save_to_lead, variants, with, event, then, else, next, note; in with post, newer_than, reaction, subject, text, body_html, note, note_fallback, fallback, withdraw_after, thread, on_missing, opt_out, opt_out_text, opt_out_link_text, opt_out_link_word, track_opens; in a variant id, subject, text, body_html. A text holds at most 50 variables. Variables: `{{first_name}}` (any standard Lead field), `{{my_first_name}}`, `{{my_last_name}}`, `{{my_full_name}}` (the sending Account), any other `{{<key>}}` is the custom field `lead.extra.<key>`; the long forms `{{lead.<field>}}`, `{{lead.extra.<key>}}` and `{{account.<name>}}` stay valid; `{{enrollment.<name>}}` is a value a save of this Sequence writes. Delays are about their duration: every wait and until timeout gets a small random spread that only ever adds time.
+         * @description A Campaign's Sequence: a flat steps array run from the first step, ending explicitly in "end". Served documents use this key order: $schema, on_reply, steps; in a step id, the kind key, timeout, save, save_to_lead, variants, with, event, then, else, next, note; in with post, newer_than, reaction, subject, text, body_html, note, note_fallback, fallback, withdraw_after, thread, on_missing, opt_out, opt_out_text, opt_out_link_text, opt_out_link_word, track_opens; in a variant id, subject, text, body_html. A text holds at most 50 variables. Variables: `{{first_name}}` (any standard Lead field), `{{my_first_name}}`, `{{my_last_name}}`, `{{my_full_name}}` (the sending Account), any other `{{<key>}}` is the custom field `lead.extra.<key>`; the long forms `{{lead.<field>}}`, `{{lead.extra.<key>}}` and `{{account.<name>}}` stay valid; `{{enrollment.<name>}}` is a value a save of this Sequence writes; `{{company.name}}`, `{{company.industry}}`, `{{company.website}}`, `{{company.size}}`, `{{company.headcount_growth}}` and `{{company.location}}` come from the Lead's company page (read once before a step that uses one when the stored copy is missing or over 30 days old), `{{company.extra.<key>}}` from your company custom fields. Delays are about their duration: every wait and until timeout gets a small random spread that only ever adds time.
          */
         SequenceDocument: {
             /** @constant */
@@ -5608,7 +5948,7 @@ export interface components {
             } | {
                 /** @description Step id, unique in the document. "end" is reserved. */
                 id: string;
-                /** @description `invite.accepted`, `message.replied`, `message.read`, or `event.<name>` (a custom event an agent sends). `signal.<name>` is the deprecated spelling of `event.<name>`: accepted with warning W13 until 2027-01-19. */
+                /** @description `invite.accepted`, `message.replied`, `message.read`, or `event.<name>` (a custom event an agent sends). `signal.<name>` is the deprecated spelling of `event.<name>`, a custom event, never a Signal: accepted with warning W13 until 2027-01-19. */
                 until: ("invite.accepted" | "message.replied" | "message.read") | string;
                 /** @description Give up waiting after about this long: 1h to 180d, or 1bd to 250bd business days (days of the Campaign's schedule). A small random spread is added, never subtracted. */
                 timeout: string;
@@ -8612,7 +8952,12 @@ export interface operations {
     };
     getV1AccountIdCompaniesIdentifier: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description How willing this read is to reach LinkedIn: auto (default), live, refill, or cache_only. Details: /reference/getting-started/cache. */
+                mode?: "live" | "auto" | "refill" | "cache_only";
+                /** @description Maximum age in seconds of a stored copy this read accepts; overrides mode in both directions. Not with cache_only. Details: /reference/getting-started/cache. */
+                max_age?: number;
+            };
             header?: {
                 /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
                 "X-Curviate-Team"?: string;
@@ -8629,11 +8974,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The company's LinkedIn profile. follower_count is the audience-size signal that replaces the retired company followers list. */
+            /** @description The company's LinkedIn profile. follower_count is the audience-size signal that replaces the retired company followers list. A record your Team read in the last 30 days is answered from the Team's store with no LinkedIn call (source is store); mode=live always reads. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     RateLimit: components["headers"]["RateLimit"];
+                    /** @description Seconds since this data was observed on LinkedIn. Present only when source is `store`; a live fetch sets no Age header at all. */
+                    Age?: number;
                     [name: string]: unknown;
                 };
                 content: {
@@ -11031,6 +11378,218 @@ export interface operations {
             /** @description Gateway timeout. */
             504: {
                 headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1CompaniesCompanyId: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description LinkedIn's numeric company id (the id field of a company read, e.g. 1234567). */
+                company_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The company as your Team holds it. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "company";
+                        /** @description LinkedIn's numeric company id. */
+                        id: string;
+                        /** @description The company's LinkedIn page. */
+                        linkedin_url: string;
+                        /** @description The company's name, from the record your Team holds. Null when your Team has never read it. */
+                        name: string | null;
+                        /** @description The first industry listed. */
+                        industry: string | null;
+                        /** @description The website as LinkedIn states it, without tracking parameters. */
+                        website: string | null;
+                        /** @description LinkedIn's headcount band, for example `51-200 employees`. */
+                        size: string | null;
+                        /** @description The change in headcount over the last 12 months, a whole percent such as `+18%`. */
+                        headcount_growth: string | null;
+                        /** @description The headquarters as `City, Country`. */
+                        location: string | null;
+                        /** @description When the record was last read from LinkedIn. Null when your Team has never read this company. */
+                        read_at: string | null;
+                        /** @description Your Team's own fields for this company. */
+                        extra: {
+                            [key: string]: unknown;
+                        };
+                    };
+                };
+            };
+            /** @description The company id is not numeric. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description A malformed company id is 400. A company that no Lead of your Team works at and your Team never read is 404 RESOURCE_NOT_FOUND. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    patchV1CompaniesCompanyId: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description LinkedIn's numeric company id (the id field of a company read, e.g. 1234567). */
+                company_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Your own fields for this company, shared by every Lead who works there. Keys left out are untouched; a key set to null is removed. At most 100 keys and 32768 bytes once merged. */
+                    extra: {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+        responses: {
+            /** @description The company with the merged fields. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "company";
+                        /** @description LinkedIn's numeric company id. */
+                        id: string;
+                        /** @description The company's LinkedIn page. */
+                        linkedin_url: string;
+                        /** @description The company's name, from the record your Team holds. Null when your Team has never read it. */
+                        name: string | null;
+                        /** @description The first industry listed. */
+                        industry: string | null;
+                        /** @description The website as LinkedIn states it, without tracking parameters. */
+                        website: string | null;
+                        /** @description LinkedIn's headcount band, for example `51-200 employees`. */
+                        size: string | null;
+                        /** @description The change in headcount over the last 12 months, a whole percent such as `+18%`. */
+                        headcount_growth: string | null;
+                        /** @description The headquarters as `City, Country`. */
+                        location: string | null;
+                        /** @description When the record was last read from LinkedIn. Null when your Team has never read this company. */
+                        read_at: string | null;
+                        /** @description Your Team's own fields for this company. */
+                        extra: {
+                            [key: string]: unknown;
+                        };
+                    };
+                };
+            };
+            /** @description The company id is not numeric, an unknown body key, a key outside the pattern, an empty string, or more than the key or byte cap once merged. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description A malformed company id is 400. A company that no Lead of your Team works at and your Team never read is 404 RESOURCE_NOT_FOUND. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -20403,6 +20962,8 @@ export interface operations {
                 person?: string;
                 /** @description Only chats whose Lead has any of these Tags (names, case-insensitive). Repeat the key, comma-separate or mix; empties ignored. */
                 tags?: string[];
+                /** @description Only chats whose latest Reply label is any of these: interested, not_now, not_interested, opt_out, out_of_office, referral, other, unsure. none: also (or alone) the chats with no label, a direct conversation included. Repeat the key, comma-separate or mix; empties ignored. */
+                reply_label?: string[];
                 /** @description true: only unread chats. false: only read chats. Omitted: both. */
                 unread?: boolean;
                 /** @description me: the last message is yours. them: the other person wrote last, so it may wait for your answer. */
@@ -20552,6 +21113,47 @@ export interface operations {
                                 /** @description The action of its last executed message or invitation Step, such as voice.send. Null before any. */
                                 action: string | null;
                             } | null;
+                            /** @description The chat's latest Reply label, what a reply to a Campaign needs next. Null: no label yet, and always null for a direct conversation. interested, not_now, not_interested and other inform. opt_out puts the person on your Do-not-contact list. out_of_office is not a reply: the Lead waits for the return date. referral names someone else to talk to. unsure: Curviate could not tell, a person decides. */
+                            reply_label: {
+                                /**
+                                 * @description The label.
+                                 * @enum {string}
+                                 */
+                                label: "interested" | "not_now" | "not_interested" | "opt_out" | "out_of_office" | "referral" | "other" | "unsure";
+                                /**
+                                 * @description rule: a message header said so. curviate: Curviate read the reply. user: a person or an agent set it.
+                                 * @enum {string}
+                                 */
+                                source: "rule" | "curviate" | "user";
+                                /** @description How sure Curviate is, as a whole percent from 0 to 100. Null for a label a rule or a person set, and for unsure. */
+                                confidence: number | null;
+                                /** @description Who set the label, only when source is user. */
+                                set_by: {
+                                    /** @description The user. */
+                                    user_id: string;
+                                    /** @description Their name. */
+                                    name: string | null;
+                                    /**
+                                     * @description dashboard, api or mcp.
+                                     * @enum {string}
+                                     */
+                                    via: "dashboard" | "api" | "mcp";
+                                } | null;
+                                /**
+                                 * @description The label this one replaced on the same message. Null for the first.
+                                 * @enum {string|null}
+                                 */
+                                previous_label: "interested" | "not_now" | "not_interested" | "opt_out" | "out_of_office" | "referral" | "other" | "unsure" | null;
+                                /** @description When the label was set. */
+                                set_at: string;
+                                /** @description Out of office: the day the person is back (YYYY-MM-DD). Null when the reply names none. */
+                                return_date: string | null;
+                                /** @description Referral: who the reply points to. Null otherwise. */
+                                referral: {
+                                    /** @description Their name, as the reply gives it. */
+                                    name: string;
+                                } | null;
+                            } | null;
                         }[];
                         /** @description Pass it back as cursor, with the same filters, for the next page. Null on the last page. */
                         cursor: string | null;
@@ -20569,7 +21171,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST: an unknown value for unread, type, last_message_from or include_total, more than one person, q under 3 characters, limit outside 1 to 100, or a cursor that is not one of ours. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: an unknown value for unread, type, last_message_from, reply_label or include_total, more than one person, q under 3 characters, limit outside 1 to 100, or a cursor that is not one of ours. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -20744,6 +21346,47 @@ export interface operations {
                             variant_id: string | null;
                             /** @description The action of its last executed message or invitation Step, such as voice.send. Null before any. */
                             action: string | null;
+                        } | null;
+                        /** @description The chat's latest Reply label, what a reply to a Campaign needs next. Null: no label yet, and always null for a direct conversation. interested, not_now, not_interested and other inform. opt_out puts the person on your Do-not-contact list. out_of_office is not a reply: the Lead waits for the return date. referral names someone else to talk to. unsure: Curviate could not tell, a person decides. */
+                        reply_label: {
+                            /**
+                             * @description The label.
+                             * @enum {string}
+                             */
+                            label: "interested" | "not_now" | "not_interested" | "opt_out" | "out_of_office" | "referral" | "other" | "unsure";
+                            /**
+                             * @description rule: a message header said so. curviate: Curviate read the reply. user: a person or an agent set it.
+                             * @enum {string}
+                             */
+                            source: "rule" | "curviate" | "user";
+                            /** @description How sure Curviate is, as a whole percent from 0 to 100. Null for a label a rule or a person set, and for unsure. */
+                            confidence: number | null;
+                            /** @description Who set the label, only when source is user. */
+                            set_by: {
+                                /** @description The user. */
+                                user_id: string;
+                                /** @description Their name. */
+                                name: string | null;
+                                /**
+                                 * @description dashboard, api or mcp.
+                                 * @enum {string}
+                                 */
+                                via: "dashboard" | "api" | "mcp";
+                            } | null;
+                            /**
+                             * @description The label this one replaced on the same message. Null for the first.
+                             * @enum {string|null}
+                             */
+                            previous_label: "interested" | "not_now" | "not_interested" | "opt_out" | "out_of_office" | "referral" | "other" | "unsure" | null;
+                            /** @description When the label was set. */
+                            set_at: string;
+                            /** @description Out of office: the day the person is back (YYYY-MM-DD). Null when the reply names none. */
+                            return_date: string | null;
+                            /** @description Referral: who the reply points to. Null otherwise. */
+                            referral: {
+                                /** @description Their name, as the reply gives it. */
+                                name: string;
+                            } | null;
                         } | null;
                     };
                 };
@@ -21163,10 +21806,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. field_missing: a step set to hold for a missing Lead field (`on_missing: hold`) waits until the field is filled, at most 14 days (`until`), then skips the step and goes on. out_of_office: the Lead is away (an automatic reply to a Campaign email, or the Out of office Reply label); nothing runs and no timeout is decided until the start of the return date in the account's zone (`until`; 7 days on when the reply names none), then the Sequence goes on where it was. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable" | "field_missing" | "out_of_office";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -21280,6 +21923,308 @@ export interface operations {
                 };
             };
             /** @description CHAT_NOT_ONE_TO_ONE: a group chat, or a chat with a company page, has no one person to add. LEAD_LIMIT_REACHED: a new Lead would pass your team's Lead limit. LEAD_NOT_ENROLLABLE: reason already_enrolled, do_not_contact (on the Team's do-not-contact list), in_exclusion_list, in_other_campaign or filtered_out (the person does not pass the Campaign's filters); no Lead or Enrollment was made. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1UniboxMessagesMessageIdReplyLabel: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description The message id, as the chat's messages list it. */
+                message_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The message's labels. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "reply_label_history";
+                        /** @description The newest label. */
+                        current: {
+                            /**
+                             * @description The label.
+                             * @enum {string}
+                             */
+                            label: "interested" | "not_now" | "not_interested" | "opt_out" | "out_of_office" | "referral" | "other" | "unsure";
+                            /**
+                             * @description rule: a message header said so. curviate: Curviate read the reply. user: a person or an agent set it.
+                             * @enum {string}
+                             */
+                            source: "rule" | "curviate" | "user";
+                            /** @description How sure Curviate is, as a whole percent from 0 to 100. Null for a label a rule or a person set, and for unsure. */
+                            confidence: number | null;
+                            /** @description Who set the label, only when source is user. */
+                            set_by: {
+                                /** @description The user. */
+                                user_id: string;
+                                /** @description Their name. */
+                                name: string | null;
+                                /**
+                                 * @description dashboard, api or mcp.
+                                 * @enum {string}
+                                 */
+                                via: "dashboard" | "api" | "mcp";
+                            } | null;
+                            /**
+                             * @description The label this one replaced on the same message. Null for the first.
+                             * @enum {string|null}
+                             */
+                            previous_label: "interested" | "not_now" | "not_interested" | "opt_out" | "out_of_office" | "referral" | "other" | "unsure" | null;
+                            /** @description When the label was set. */
+                            set_at: string;
+                            /** @description Out of office: the day the person is back (YYYY-MM-DD). Null when the reply names none. */
+                            return_date: string | null;
+                            /** @description Referral: who the reply points to. Null otherwise. */
+                            referral: {
+                                /** @description Their name, as the reply gives it. */
+                                name: string;
+                            } | null;
+                        } | null;
+                        /** @description Every label, newest first. */
+                        history: {
+                            /**
+                             * @description The label.
+                             * @enum {string}
+                             */
+                            label: "interested" | "not_now" | "not_interested" | "opt_out" | "out_of_office" | "referral" | "other" | "unsure";
+                            /**
+                             * @description rule: a message header said so. curviate: Curviate read the reply. user: a person or an agent set it.
+                             * @enum {string}
+                             */
+                            source: "rule" | "curviate" | "user";
+                            /** @description How sure Curviate is, as a whole percent from 0 to 100. Null for a label a rule or a person set, and for unsure. */
+                            confidence: number | null;
+                            /** @description Who set the label, only when source is user. */
+                            set_by: {
+                                /** @description The user. */
+                                user_id: string;
+                                /** @description Their name. */
+                                name: string | null;
+                                /**
+                                 * @description dashboard, api or mcp.
+                                 * @enum {string}
+                                 */
+                                via: "dashboard" | "api" | "mcp";
+                            } | null;
+                            /**
+                             * @description The label this one replaced on the same message. Null for the first.
+                             * @enum {string|null}
+                             */
+                            previous_label: "interested" | "not_now" | "not_interested" | "opt_out" | "out_of_office" | "referral" | "other" | "unsure" | null;
+                            /** @description When the label was set. */
+                            set_at: string;
+                            /** @description Out of office: the day the person is back (YYYY-MM-DD). Null when the reply names none. */
+                            return_date: string | null;
+                            /** @description Referral: who the reply points to. Null otherwise. */
+                            referral: {
+                                /** @description Their name, as the reply gives it. */
+                                name: string;
+                            } | null;
+                        }[];
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: Curviate holds no label for this message in your Unibox, the same answer for an unknown id and for a chat you cannot see. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    patchV1UniboxMessagesMessageId: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description The message id, as the chat's messages list it. */
+                message_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description The label: interested, not_now, not_interested, opt_out, out_of_office, referral, other.
+                     * @enum {string}
+                     */
+                    reply_label: "interested" | "not_now" | "not_interested" | "opt_out" | "out_of_office" | "referral" | "other";
+                };
+            };
+        };
+        responses: {
+            /** @description The label now in force. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description The label.
+                         * @enum {string}
+                         */
+                        label: "interested" | "not_now" | "not_interested" | "opt_out" | "out_of_office" | "referral" | "other" | "unsure";
+                        /**
+                         * @description rule: a message header said so. curviate: Curviate read the reply. user: a person or an agent set it.
+                         * @enum {string}
+                         */
+                        source: "rule" | "curviate" | "user";
+                        /** @description How sure Curviate is, as a whole percent from 0 to 100. Null for a label a rule or a person set, and for unsure. */
+                        confidence: number | null;
+                        /** @description Who set the label, only when source is user. */
+                        set_by: {
+                            /** @description The user. */
+                            user_id: string;
+                            /** @description Their name. */
+                            name: string | null;
+                            /**
+                             * @description dashboard, api or mcp.
+                             * @enum {string}
+                             */
+                            via: "dashboard" | "api" | "mcp";
+                        } | null;
+                        /**
+                         * @description The label this one replaced on the same message. Null for the first.
+                         * @enum {string|null}
+                         */
+                        previous_label: "interested" | "not_now" | "not_interested" | "opt_out" | "out_of_office" | "referral" | "other" | "unsure" | null;
+                        /** @description When the label was set. */
+                        set_at: string;
+                        /** @description Out of office: the day the person is back (YYYY-MM-DD). Null when the reply names none. */
+                        return_date: string | null;
+                        /** @description Referral: who the reply points to. Null otherwise. */
+                        referral: {
+                            /** @description Their name, as the reply gives it. */
+                            name: string;
+                        } | null;
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: reply_label is missing, unsure, or not one of interested, not_now, not_interested, opt_out, out_of_office, referral, other; or the body has another field. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team's Tier does not include Unibox (Unibox is part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such message in your Unibox, the same answer for an unknown id and for a chat you cannot see. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description REPLY_NOT_LABELLABLE: the message takes no label: a message of a direct conversation (no Campaign in it), your own message, or a warm-up message. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -26138,6 +27083,8 @@ export interface operations {
             query?: {
                 /** @description all (default): not archived. unread: not archived and not read. archived: archived only. */
                 filter?: "all" | "unread" | "archived";
+                /** @description Only this channel: email (Mailbox, domain and email-step problems), linkedin (an account's LinkedIn trouble) or team. Default: every channel. Combines with filter. */
+                channel?: "email" | "linkedin" | "team";
                 /** @description Max items per page (1-100, default 20). */
                 limit?: number;
                 /** @description Pagination cursor from a previous response; pass it back verbatim with the same filter. */
@@ -26177,15 +27124,20 @@ export interface operations {
                             object: "curviate_notification";
                             /** @description Notification id (ntf_...). Valid for you only. */
                             id: string;
-                            /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, account.campaign_work_paused, account.health_worsened, account.activity_level_fallback, campaign.auto_paused, campaign.no_sending_account, campaign.completed, leads.import_finished, export.finished, billing.spending_cap_reached, team.invite_accepted, team.member_left. */
+                            /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, account.campaign_work_paused, account.health_worsened, account.activity_level_fallback, campaign.auto_paused, campaign.no_sending_account, campaign.completed, leads.import_finished, export.finished, billing.spending_cap_reached, mailbox.auto_paused, mailbox.provider_paused, mailbox.reconnect_needed, domain.dmarc_missing, domain.dkim_failing, provider.spam_high, account.no_mailbox, mailbox.warm_up_off, campaign.variant_behind, campaign.emails_too_close, team.invite_accepted, team.member_left. Advice arrives already read and never counts as unread: mailbox.warm_up_off, campaign.variant_behind, campaign.emails_too_close. */
                             type: string;
+                            /**
+                             * @description Where it comes from: email (a Mailbox, a sending domain or an email step), linkedin (an account's LinkedIn trouble) or team (everything else).
+                             * @enum {string}
+                             */
+                            channel: "email" | "linkedin" | "team";
                             /** @description What the Notification is about. */
                             subject: {
                                 /**
                                  * @description The kind of subject.
                                  * @enum {string}
                                  */
-                                type: "account" | "campaign" | "lead_import" | "team_member" | "export" | "team";
+                                type: "account" | "campaign" | "lead_import" | "team_member" | "export" | "team" | "mailbox" | "domain";
                                 /** @description The subject's id. */
                                 id: string;
                                 /** @description Whether you can open the subject now. false when it is gone or you no longer have access to it. */
@@ -26215,7 +27167,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST: an unknown filter, limit out of range, or a cursor that is not from a previous response. The message names the parameter. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: an unknown filter or channel, limit out of range, or a cursor that is not from a previous response. The message names the parameter. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -26439,15 +27391,20 @@ export interface operations {
                         object: "curviate_notification";
                         /** @description Notification id (ntf_...). Valid for you only. */
                         id: string;
-                        /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, account.campaign_work_paused, account.health_worsened, account.activity_level_fallback, campaign.auto_paused, campaign.no_sending_account, campaign.completed, leads.import_finished, export.finished, billing.spending_cap_reached, team.invite_accepted, team.member_left. */
+                        /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, account.campaign_work_paused, account.health_worsened, account.activity_level_fallback, campaign.auto_paused, campaign.no_sending_account, campaign.completed, leads.import_finished, export.finished, billing.spending_cap_reached, mailbox.auto_paused, mailbox.provider_paused, mailbox.reconnect_needed, domain.dmarc_missing, domain.dkim_failing, provider.spam_high, account.no_mailbox, mailbox.warm_up_off, campaign.variant_behind, campaign.emails_too_close, team.invite_accepted, team.member_left. Advice arrives already read and never counts as unread: mailbox.warm_up_off, campaign.variant_behind, campaign.emails_too_close. */
                         type: string;
+                        /**
+                         * @description Where it comes from: email (a Mailbox, a sending domain or an email step), linkedin (an account's LinkedIn trouble) or team (everything else).
+                         * @enum {string}
+                         */
+                        channel: "email" | "linkedin" | "team";
                         /** @description What the Notification is about. */
                         subject: {
                             /**
                              * @description The kind of subject.
                              * @enum {string}
                              */
-                            type: "account" | "campaign" | "lead_import" | "team_member" | "export" | "team";
+                            type: "account" | "campaign" | "lead_import" | "team_member" | "export" | "team" | "mailbox" | "domain";
                             /** @description The subject's id. */
                             id: string;
                             /** @description Whether you can open the subject now. false when it is gone or you no longer have access to it. */
@@ -34935,7 +35892,7 @@ export interface operations {
                                 used: number | null;
                                 /** @description What this account is allowed on this row in this window, as configured. `null` where the row deliberately has no ceiling: the tally is reported and never enforced, and an uncalibrated row has no figure at all. Change it on the safety policy; Curviate never clamps what you set. */
                                 ceiling: number | null;
-                                /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (the first four weeks after warm-up was turned on, at connect or later, or while it recovers from a restriction) the two differ, and in the first week after connect they differ by a factor of about seven. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
+                                /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (its ramp after warm-up was turned on, at connect or later, or while it recovers from a restriction) the two differ: on the ramp's first day the effective ceiling is 30 percent of `ceiling`. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
                                 effective_ceiling?: number | null;
                                 /** @description What the account aims at today on this row: the engine's own figure for the account-day, drawn from the account's limit and green figure at the level in force (`normal` about midway, `increased` close to the limit), never past the limit; it differs from day to day. On InMail it is the green figure. Null where the row has no limit to aim at. */
                                 target?: number | null;
@@ -34990,23 +35947,23 @@ export interface operations {
                              * @enum {string|null}
                              */
                             status_reason?: "trial_ended" | "proxy" | null;
-                            /** @description The account's ACTIVE warm-up, derived on every read. While warm-up holds an account back, every row's effective ceiling is its configured ceiling multiplied by `factor`, so a `factor` of 0.15 means the account is held to 15 percent of the numbers the rows report. Only `enabled` is settable (PATCH with `warm_up: {enabled}`); the other keys are derived, and sent back on a write they are accepted and ignored. This is separate from the per-row `warm_up_state` and `warm_up_factor`, which report what is active on that row: set `warm_up_factor` on a row to override the ramps (recovery after a restriction still caps it). Every warm-up number is inferred; none is published by LinkedIn. Curviate infers no account age. */
+                            /** @description The account's ACTIVE warm-up, derived on every read. While warm-up holds an account back, every row's effective ceiling is its configured ceiling multiplied by `factor`, so a `factor` of 0.30 means the account is held to 30 percent of the numbers the rows report. `enabled`, `preset`, `start`, `step` and `every` are settable (PATCH with `warm_up: {...}`); the other keys are derived, and sent back on a write they are accepted and ignored. This is separate from the per-row `warm_up_state` and `warm_up_factor`, which report what is active on that row: set `warm_up_factor` on a row to override the ramps (recovery after a restriction still caps it). Every warm-up number is inferred; none is published by LinkedIn. Curviate infers no account age. */
                             warm_up?: {
-                                /** @description The account's warm-up switch, default false. On ramps the account's limits from 0.15 at week 1 to full over 5 weeks, from connect or from the moment it is turned on; off is full limits. Recovery after a LinkedIn restriction applies either way. Set it with PATCH /v1/{account_id}/safety-policy and `warm_up: {enabled}`, or with `warm_up` at connect. */
+                                /** @description The account's warm-up switch, default false. On ramps the account's limits by `preset` in its sending days, from connect or from the moment it is turned on (Gradual: 30% on day 1 to 100% on day 14); off is full limits. Recovery after a LinkedIn restriction applies either way. Set it with PATCH /v1/{account_id}/safety-policy and `warm_up: {enabled}`, or with `warm_up` at connect. */
                                 enabled?: boolean;
                                 /**
-                                 * @description `none` is an account at full speed. `ramping` is an account climbing 0.15, 0.35, 0.60, 0.85 to 1.00 by week after warm-up was turned on, at connect or later. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: it holds at 0 for seven days after the restriction lifts, resumes at 0.40, then steps up 0.15 every four days.
+                                 * @description `none` is an account at full speed. `ramping` is an account climbing its ramp (`preset`, `day`) after warm-up was turned on, at connect or later. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: 0 while it is in force, then from the lift the Gradual ramp (30% on day 1 to 100% on day 14, in its sending days), whether warm-up is on or off.
                                  * @enum {string}
                                  */
                                 state?: "none" | "ramping" | "restriction_recovery";
                                 /** @description The multiplier applied to every row's ceiling: the lowest of every applying trigger's. 1 is not ramping. */
                                 factor?: number;
-                                /** @description The triggers that apply now: `connect` in the first 28 days after a connect with warm-up on, `switched_on` in the first 28 days after warm-up was turned on, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
+                                /** @description The triggers that apply now: `connect` while the ramp begun at a connect with warm-up on is below 100%, `switched_on` while the ramp begun when warm-up was turned on is below 100%, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
                                 triggers?: ("connect" | "switched_on" | "post_restriction")[];
                                 /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. A fact only: it starts no ramp. */
                                 dormant?: boolean;
                                 /**
-                                 * @description Where the limits update is on: the ramp, `gradual` (30% on day 1 rising to 100% on day 14, the default when warm-up is turned on) or `custom` (`start`, `step`, `every`). Settable with `warm_up: {preset}`. Absent where it is not on.
+                                 * @description The ramp: `gradual` (30% on day 1 rising to 100% on day 14, the default when warm-up is turned on) or `custom` (`start`, `step`, `every`). Settable with `warm_up: {preset}`.
                                  * @enum {string|null}
                                  */
                                 preset?: "gradual" | "custom" | null;
@@ -35218,7 +36175,7 @@ export interface operations {
                             used: number | null;
                             /** @description What this account is allowed on this row in this window, as configured. `null` where the row deliberately has no ceiling: the tally is reported and never enforced, and an uncalibrated row has no figure at all. Change it on the safety policy; Curviate never clamps what you set. */
                             ceiling: number | null;
-                            /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (the first four weeks after warm-up was turned on, at connect or later, or while it recovers from a restriction) the two differ, and in the first week after connect they differ by a factor of about seven. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
+                            /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (its ramp after warm-up was turned on, at connect or later, or while it recovers from a restriction) the two differ: on the ramp's first day the effective ceiling is 30 percent of `ceiling`. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
                             effective_ceiling?: number | null;
                             /** @description What the account aims at today on this row: the engine's own figure for the account-day, drawn from the account's limit and green figure at the level in force (`normal` about midway, `increased` close to the limit), never past the limit; it differs from day to day. On InMail it is the green figure. Null where the row has no limit to aim at. */
                             target?: number | null;
@@ -35273,23 +36230,23 @@ export interface operations {
                          * @enum {string|null}
                          */
                         status_reason?: "trial_ended" | "proxy" | null;
-                        /** @description The account's ACTIVE warm-up, derived on every read. While warm-up holds an account back, every row's effective ceiling is its configured ceiling multiplied by `factor`, so a `factor` of 0.15 means the account is held to 15 percent of the numbers the rows report. Only `enabled` is settable (PATCH with `warm_up: {enabled}`); the other keys are derived, and sent back on a write they are accepted and ignored. This is separate from the per-row `warm_up_state` and `warm_up_factor`, which report what is active on that row: set `warm_up_factor` on a row to override the ramps (recovery after a restriction still caps it). Every warm-up number is inferred; none is published by LinkedIn. Curviate infers no account age. */
+                        /** @description The account's ACTIVE warm-up, derived on every read. While warm-up holds an account back, every row's effective ceiling is its configured ceiling multiplied by `factor`, so a `factor` of 0.30 means the account is held to 30 percent of the numbers the rows report. `enabled`, `preset`, `start`, `step` and `every` are settable (PATCH with `warm_up: {...}`); the other keys are derived, and sent back on a write they are accepted and ignored. This is separate from the per-row `warm_up_state` and `warm_up_factor`, which report what is active on that row: set `warm_up_factor` on a row to override the ramps (recovery after a restriction still caps it). Every warm-up number is inferred; none is published by LinkedIn. Curviate infers no account age. */
                         warm_up?: {
-                            /** @description The account's warm-up switch, default false. On ramps the account's limits from 0.15 at week 1 to full over 5 weeks, from connect or from the moment it is turned on; off is full limits. Recovery after a LinkedIn restriction applies either way. Set it with PATCH /v1/{account_id}/safety-policy and `warm_up: {enabled}`, or with `warm_up` at connect. */
+                            /** @description The account's warm-up switch, default false. On ramps the account's limits by `preset` in its sending days, from connect or from the moment it is turned on (Gradual: 30% on day 1 to 100% on day 14); off is full limits. Recovery after a LinkedIn restriction applies either way. Set it with PATCH /v1/{account_id}/safety-policy and `warm_up: {enabled}`, or with `warm_up` at connect. */
                             enabled?: boolean;
                             /**
-                             * @description `none` is an account at full speed. `ramping` is an account climbing 0.15, 0.35, 0.60, 0.85 to 1.00 by week after warm-up was turned on, at connect or later. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: it holds at 0 for seven days after the restriction lifts, resumes at 0.40, then steps up 0.15 every four days.
+                             * @description `none` is an account at full speed. `ramping` is an account climbing its ramp (`preset`, `day`) after warm-up was turned on, at connect or later. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: 0 while it is in force, then from the lift the Gradual ramp (30% on day 1 to 100% on day 14, in its sending days), whether warm-up is on or off.
                              * @enum {string}
                              */
                             state?: "none" | "ramping" | "restriction_recovery";
                             /** @description The multiplier applied to every row's ceiling: the lowest of every applying trigger's. 1 is not ramping. */
                             factor?: number;
-                            /** @description The triggers that apply now: `connect` in the first 28 days after a connect with warm-up on, `switched_on` in the first 28 days after warm-up was turned on, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
+                            /** @description The triggers that apply now: `connect` while the ramp begun at a connect with warm-up on is below 100%, `switched_on` while the ramp begun when warm-up was turned on is below 100%, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
                             triggers?: ("connect" | "switched_on" | "post_restriction")[];
                             /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. A fact only: it starts no ramp. */
                             dormant?: boolean;
                             /**
-                             * @description Where the limits update is on: the ramp, `gradual` (30% on day 1 rising to 100% on day 14, the default when warm-up is turned on) or `custom` (`start`, `step`, `every`). Settable with `warm_up: {preset}`. Absent where it is not on.
+                             * @description The ramp: `gradual` (30% on day 1 rising to 100% on day 14, the default when warm-up is turned on) or `custom` (`start`, `step`, `every`). Settable with `warm_up: {preset}`.
                              * @enum {string|null}
                              */
                             preset?: "gradual" | "custom" | null;
@@ -35716,23 +36673,23 @@ export interface operations {
                          * @enum {string|null}
                          */
                         status_reason?: "trial_ended" | "proxy" | null;
-                        /** @description The account's ACTIVE warm-up, derived on every read. While warm-up holds an account back, every row's effective ceiling is its configured ceiling multiplied by `factor`, so a `factor` of 0.15 means the account is held to 15 percent of the numbers the rows report. Only `enabled` is settable (PATCH with `warm_up: {enabled}`); the other keys are derived, and sent back on a write they are accepted and ignored. This is separate from the per-row `warm_up_state` and `warm_up_factor`, which report what is active on that row: set `warm_up_factor` on a row to override the ramps (recovery after a restriction still caps it). Every warm-up number is inferred; none is published by LinkedIn. Curviate infers no account age. */
+                        /** @description The account's ACTIVE warm-up, derived on every read. While warm-up holds an account back, every row's effective ceiling is its configured ceiling multiplied by `factor`, so a `factor` of 0.30 means the account is held to 30 percent of the numbers the rows report. `enabled`, `preset`, `start`, `step` and `every` are settable (PATCH with `warm_up: {...}`); the other keys are derived, and sent back on a write they are accepted and ignored. This is separate from the per-row `warm_up_state` and `warm_up_factor`, which report what is active on that row: set `warm_up_factor` on a row to override the ramps (recovery after a restriction still caps it). Every warm-up number is inferred; none is published by LinkedIn. Curviate infers no account age. */
                         warm_up?: {
-                            /** @description The account's warm-up switch, default false. On ramps the account's limits from 0.15 at week 1 to full over 5 weeks, from connect or from the moment it is turned on; off is full limits. Recovery after a LinkedIn restriction applies either way. Set it with PATCH /v1/{account_id}/safety-policy and `warm_up: {enabled}`, or with `warm_up` at connect. */
+                            /** @description The account's warm-up switch, default false. On ramps the account's limits by `preset` in its sending days, from connect or from the moment it is turned on (Gradual: 30% on day 1 to 100% on day 14); off is full limits. Recovery after a LinkedIn restriction applies either way. Set it with PATCH /v1/{account_id}/safety-policy and `warm_up: {enabled}`, or with `warm_up` at connect. */
                             enabled?: boolean;
                             /**
-                             * @description `none` is an account at full speed. `ramping` is an account climbing 0.15, 0.35, 0.60, 0.85 to 1.00 by week after warm-up was turned on, at connect or later. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: it holds at 0 for seven days after the restriction lifts, resumes at 0.40, then steps up 0.15 every four days.
+                             * @description `none` is an account at full speed. `ramping` is an account climbing its ramp (`preset`, `day`) after warm-up was turned on, at connect or later. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: 0 while it is in force, then from the lift the Gradual ramp (30% on day 1 to 100% on day 14, in its sending days), whether warm-up is on or off.
                              * @enum {string}
                              */
                             state?: "none" | "ramping" | "restriction_recovery";
                             /** @description The multiplier applied to every row's ceiling: the lowest of every applying trigger's. 1 is not ramping. */
                             factor?: number;
-                            /** @description The triggers that apply now: `connect` in the first 28 days after a connect with warm-up on, `switched_on` in the first 28 days after warm-up was turned on, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
+                            /** @description The triggers that apply now: `connect` while the ramp begun at a connect with warm-up on is below 100%, `switched_on` while the ramp begun when warm-up was turned on is below 100%, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
                             triggers?: ("connect" | "switched_on" | "post_restriction")[];
                             /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. A fact only: it starts no ramp. */
                             dormant?: boolean;
                             /**
-                             * @description Where the limits update is on: the ramp, `gradual` (30% on day 1 rising to 100% on day 14, the default when warm-up is turned on) or `custom` (`start`, `step`, `every`). Settable with `warm_up: {preset}`. Absent where it is not on.
+                             * @description The ramp: `gradual` (30% on day 1 rising to 100% on day 14, the default when warm-up is turned on) or `custom` (`start`, `step`, `every`). Settable with `warm_up: {preset}`.
                              * @enum {string|null}
                              */
                             preset?: "gradual" | "custom" | null;
@@ -36359,10 +37316,10 @@ export interface operations {
                             limit_profile?: "basic" | "premium" | "sales_navigator" | "recruiter";
                             /** @description ISO-8601 UTC connection timestamp. */
                             connected_at?: string | null;
-                            /** @description The account's ACTIVE warm-up, derived on every read. While warm-up holds an account back, every row's effective ceiling is its configured ceiling multiplied by `factor`, so a `factor` of 0.15 means the account is held to 15 percent of the numbers the rows report. Only `enabled` is settable (PATCH with `warm_up: {enabled}`); the other keys are derived, and sent back on a write they are accepted and ignored. This is separate from the per-row `warm_up_state` and `warm_up_factor`, which report what is active on that row: set `warm_up_factor` on a row to override the ramps (recovery after a restriction still caps it). Every warm-up number is inferred; none is published by LinkedIn. Curviate infers no account age. */
+                            /** @description The account's ACTIVE warm-up, derived on every read. While warm-up holds an account back, every row's effective ceiling is its configured ceiling multiplied by `factor`, so a `factor` of 0.30 means the account is held to 30 percent of the numbers the rows report. `enabled`, `preset`, `start`, `step` and `every` are settable (PATCH with `warm_up: {...}`); the other keys are derived, and sent back on a write they are accepted and ignored. This is separate from the per-row `warm_up_state` and `warm_up_factor`, which report what is active on that row: set `warm_up_factor` on a row to override the ramps (recovery after a restriction still caps it). Every warm-up number is inferred; none is published by LinkedIn. Curviate infers no account age. */
                             warm_up?: {
                                 /**
-                                 * @description `none` is an account at full speed. `ramping` is an account climbing 0.15, 0.35, 0.60, 0.85 to 1.00 by week after warm-up was turned on, at connect or later. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: it holds at 0 for seven days after the restriction lifts, resumes at 0.40, then steps up 0.15 every four days.
+                                 * @description `none` is an account at full speed. `ramping` is an account climbing its ramp (`preset`, `day`) after warm-up was turned on, at connect or later. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: 0 while it is in force, then from the lift the Gradual ramp (30% on day 1 to 100% on day 14, in its sending days), whether warm-up is on or off.
                                  * @enum {string}
                                  */
                                 state?: "none" | "ramping" | "restriction_recovery";
@@ -36423,7 +37380,7 @@ export interface operations {
                                 window?: "day" | "week" | "month" | "rolling" | null;
                                 /** @description Where the account stands: actions counted in the current window for a debit row, the summed tally for `total_actions`, the observed backlog for the gauge. A debit row with no activity reports 0, never null. Only the gauge can be `null`, and only before anything has observed it: 0 there would be a backlog nobody looked at. */
                                 used?: number | null;
-                                /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (the first four weeks after warm-up was turned on, at connect or later, or while it recovers from a restriction) the two differ, and in the first week after connect they differ by a factor of about seven. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
+                                /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (its ramp after warm-up was turned on, at connect or later, or while it recovers from a restriction) the two differ: on the ramp's first day the effective ceiling is 30 percent of `ceiling`. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
                                 effective_ceiling?: number | null;
                                 /** @description `effective_ceiling` minus `used`, never below 0: what this account can still do on this row in the current window. Null when the row has no ceiling (`total_actions`) or no level yet (`pending_invites` before it was read). */
                                 remaining?: number | null;
@@ -38088,6 +39045,8 @@ export interface operations {
                         connection: "google_app_password" | "imap_smtp" | "microsoft_sign_in" | "google_sign_in";
                         /** @description The Mailbox's email address. */
                         address: string;
+                        /** @description The name recipients see in From ("Name" <address>), at most 100 characters, one line. Not set: the name of the Account the Mailbox sends for, else the bare address. */
+                        display_name?: string;
                         /** @description Only for imap_smtp, and required there: the IMAP settings from GET /v1/mailboxes/discover, as the person confirmed them. */
                         imap?: {
                             /** @description The IMAP host. */
@@ -40600,23 +41559,23 @@ export interface operations {
                          * @description When Curviate last read `limit_profile` from LinkedIn, whether or not the value changed. Null until it has. Curviate re-reads it on connect and, at most once a day, on an account read, so a subscription change reaches the numbers without a reconnect. While `limit_profile_source` is `operator` neither the value nor this timestamp moves, until you release the pin.
                          */
                         limit_profile_detected_at?: string | null;
-                        /** @description The account's ACTIVE warm-up, derived on every read. While warm-up holds an account back, every row's effective ceiling is its configured ceiling multiplied by `factor`, so a `factor` of 0.15 means the account is held to 15 percent of the numbers the rows report. Only `enabled` is settable (PATCH with `warm_up: {enabled}`); the other keys are derived, and sent back on a write they are accepted and ignored. This is separate from the per-row `warm_up_state` and `warm_up_factor`, which report what is active on that row: set `warm_up_factor` on a row to override the ramps (recovery after a restriction still caps it). Every warm-up number is inferred; none is published by LinkedIn. Curviate infers no account age. */
+                        /** @description The account's ACTIVE warm-up, derived on every read. While warm-up holds an account back, every row's effective ceiling is its configured ceiling multiplied by `factor`, so a `factor` of 0.30 means the account is held to 30 percent of the numbers the rows report. `enabled`, `preset`, `start`, `step` and `every` are settable (PATCH with `warm_up: {...}`); the other keys are derived, and sent back on a write they are accepted and ignored. This is separate from the per-row `warm_up_state` and `warm_up_factor`, which report what is active on that row: set `warm_up_factor` on a row to override the ramps (recovery after a restriction still caps it). Every warm-up number is inferred; none is published by LinkedIn. Curviate infers no account age. */
                         warm_up?: {
-                            /** @description The account's warm-up switch, default false. On ramps the account's limits from 0.15 at week 1 to full over 5 weeks, from connect or from the moment it is turned on; off is full limits. Recovery after a LinkedIn restriction applies either way. Set it with PATCH /v1/{account_id}/safety-policy and `warm_up: {enabled}`, or with `warm_up` at connect. */
+                            /** @description The account's warm-up switch, default false. On ramps the account's limits by `preset` in its sending days, from connect or from the moment it is turned on (Gradual: 30% on day 1 to 100% on day 14); off is full limits. Recovery after a LinkedIn restriction applies either way. Set it with PATCH /v1/{account_id}/safety-policy and `warm_up: {enabled}`, or with `warm_up` at connect. */
                             enabled?: boolean;
                             /**
-                             * @description `none` is an account at full speed. `ramping` is an account climbing 0.15, 0.35, 0.60, 0.85 to 1.00 by week after warm-up was turned on, at connect or later. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: it holds at 0 for seven days after the restriction lifts, resumes at 0.40, then steps up 0.15 every four days.
+                             * @description `none` is an account at full speed. `ramping` is an account climbing its ramp (`preset`, `day`) after warm-up was turned on, at connect or later. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: 0 while it is in force, then from the lift the Gradual ramp (30% on day 1 to 100% on day 14, in its sending days), whether warm-up is on or off.
                              * @enum {string}
                              */
                             state?: "none" | "ramping" | "restriction_recovery";
                             /** @description The multiplier applied to every row's ceiling: the lowest of every applying trigger's. 1 is not ramping. */
                             factor?: number;
-                            /** @description The triggers that apply now: `connect` in the first 28 days after a connect with warm-up on, `switched_on` in the first 28 days after warm-up was turned on, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
+                            /** @description The triggers that apply now: `connect` while the ramp begun at a connect with warm-up on is below 100%, `switched_on` while the ramp begun when warm-up was turned on is below 100%, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
                             triggers?: ("connect" | "switched_on" | "post_restriction")[];
                             /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. A fact only: it starts no ramp. */
                             dormant?: boolean;
                             /**
-                             * @description Where the limits update is on: the ramp, `gradual` (30% on day 1 rising to 100% on day 14, the default when warm-up is turned on) or `custom` (`start`, `step`, `every`). Settable with `warm_up: {preset}`. Absent where it is not on.
+                             * @description The ramp: `gradual` (30% on day 1 rising to 100% on day 14, the default when warm-up is turned on) or `custom` (`start`, `step`, `every`). Settable with `warm_up: {preset}`.
                              * @enum {string|null}
                              */
                             preset?: "gradual" | "custom" | null;
@@ -40725,7 +41684,7 @@ export interface operations {
                              * @enum {string}
                              */
                             source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
-                            /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Read this one, not `ceiling`, to know where the next call will be stopped. On an account in warm-up the two differ, and in the first week after connect they differ by a factor of about seven. Null when the row has no ceiling to ramp. `warm_up_state` and `warm_up_factor` beside it are the values ACTIVE on this row, not the seeded ones. */
+                            /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Read this one, not `ceiling`, to know where the next call will be stopped. On an account in warm-up the two differ: on the ramp's first day the effective ceiling is 30 percent of `ceiling`. Null when the row has no ceiling to ramp. `warm_up_state` and `warm_up_factor` beside it are the values ACTIVE on this row, not the seeded ones. */
                             effective_ceiling?: number | null;
                             /** @description What the account aims at today on this row: the figure the engine draws for the account-day from the account's own limit and green figure, at the level in force (`activity_level_effective`), never past the limit. `normal` is about midway between green and the limit, `increased` close to the limit. It differs from day to day. On InMail and on a Team default it is the green figure (the configured `green` when set, otherwise `ceiling` times the profile's seeded ratio). Null where the row has no limit to aim at. Read-only. */
                             target?: number | null;
@@ -41234,7 +42193,7 @@ export interface operations {
                     limit_profile_detected_at?: unknown;
                     /** @description REMOVED from the read (SF-04). Accepted and ignored until 2027-02-01 so an older document round-trips; refused after. */
                     posture_source?: unknown;
-                    /** @description The account's warm-up. `enabled`, `preset`, `start`, `step` and `every` are settable (the settings apply only where the limits update is on); the other keys (`day`, `factor`, `state`, `week`, `steps`, `triggers`, `dormant`) are derived on every read, accepted and ignored, so the read's object can be sent back unchanged. */
+                    /** @description The account's warm-up. `enabled`, `preset`, `start`, `step` and `every` are settable; the other keys (`day`, `factor`, `state`, `week`, `steps`, `triggers`, `dormant`) are derived on every read, accepted and ignored, so the read's object can be sent back unchanged. */
                     warm_up?: {
                         /** @description Turn this account's warm-up on (true) or off (false, the default). On starts the ramp at day 1 from now; off is full limits at once. Recovery after a LinkedIn restriction applies either way. */
                         enabled?: boolean;
@@ -41289,23 +42248,23 @@ export interface operations {
                          * @description When Curviate last read `limit_profile` from LinkedIn, whether or not the value changed. Null until it has. Curviate re-reads it on connect and, at most once a day, on an account read, so a subscription change reaches the numbers without a reconnect. While `limit_profile_source` is `operator` neither the value nor this timestamp moves, until you release the pin.
                          */
                         limit_profile_detected_at?: string | null;
-                        /** @description The account's ACTIVE warm-up, derived on every read. While warm-up holds an account back, every row's effective ceiling is its configured ceiling multiplied by `factor`, so a `factor` of 0.15 means the account is held to 15 percent of the numbers the rows report. Only `enabled` is settable (PATCH with `warm_up: {enabled}`); the other keys are derived, and sent back on a write they are accepted and ignored. This is separate from the per-row `warm_up_state` and `warm_up_factor`, which report what is active on that row: set `warm_up_factor` on a row to override the ramps (recovery after a restriction still caps it). Every warm-up number is inferred; none is published by LinkedIn. Curviate infers no account age. */
+                        /** @description The account's ACTIVE warm-up, derived on every read. While warm-up holds an account back, every row's effective ceiling is its configured ceiling multiplied by `factor`, so a `factor` of 0.30 means the account is held to 30 percent of the numbers the rows report. `enabled`, `preset`, `start`, `step` and `every` are settable (PATCH with `warm_up: {...}`); the other keys are derived, and sent back on a write they are accepted and ignored. This is separate from the per-row `warm_up_state` and `warm_up_factor`, which report what is active on that row: set `warm_up_factor` on a row to override the ramps (recovery after a restriction still caps it). Every warm-up number is inferred; none is published by LinkedIn. Curviate infers no account age. */
                         warm_up?: {
-                            /** @description The account's warm-up switch, default false. On ramps the account's limits from 0.15 at week 1 to full over 5 weeks, from connect or from the moment it is turned on; off is full limits. Recovery after a LinkedIn restriction applies either way. Set it with PATCH /v1/{account_id}/safety-policy and `warm_up: {enabled}`, or with `warm_up` at connect. */
+                            /** @description The account's warm-up switch, default false. On ramps the account's limits by `preset` in its sending days, from connect or from the moment it is turned on (Gradual: 30% on day 1 to 100% on day 14); off is full limits. Recovery after a LinkedIn restriction applies either way. Set it with PATCH /v1/{account_id}/safety-policy and `warm_up: {enabled}`, or with `warm_up` at connect. */
                             enabled?: boolean;
                             /**
-                             * @description `none` is an account at full speed. `ramping` is an account climbing 0.15, 0.35, 0.60, 0.85 to 1.00 by week after warm-up was turned on, at connect or later. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: it holds at 0 for seven days after the restriction lifts, resumes at 0.40, then steps up 0.15 every four days.
+                             * @description `none` is an account at full speed. `ramping` is an account climbing its ramp (`preset`, `day`) after warm-up was turned on, at connect or later. `restriction_recovery` is an account under, or just out of, a LinkedIn restriction: 0 while it is in force, then from the lift the Gradual ramp (30% on day 1 to 100% on day 14, in its sending days), whether warm-up is on or off.
                              * @enum {string}
                              */
                             state?: "none" | "ramping" | "restriction_recovery";
                             /** @description The multiplier applied to every row's ceiling: the lowest of every applying trigger's. 1 is not ramping. */
                             factor?: number;
-                            /** @description The triggers that apply now: `connect` in the first 28 days after a connect with warm-up on, `switched_on` in the first 28 days after warm-up was turned on, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
+                            /** @description The triggers that apply now: `connect` while the ramp begun at a connect with warm-up on is below 100%, `switched_on` while the ramp begun when warm-up was turned on is below 100%, `post_restriction` under or recovering from a LinkedIn restriction. With warm-up off only `post_restriction` can apply. */
                             triggers?: ("connect" | "switched_on" | "post_restriction")[];
                             /** @description True when the account has had no action for over 30 days (counted from its connect when it never acted), whether warm-up is on or off. A fact only: it starts no ramp. */
                             dormant?: boolean;
                             /**
-                             * @description Where the limits update is on: the ramp, `gradual` (30% on day 1 rising to 100% on day 14, the default when warm-up is turned on) or `custom` (`start`, `step`, `every`). Settable with `warm_up: {preset}`. Absent where it is not on.
+                             * @description The ramp: `gradual` (30% on day 1 rising to 100% on day 14, the default when warm-up is turned on) or `custom` (`start`, `step`, `every`). Settable with `warm_up: {preset}`.
                              * @enum {string|null}
                              */
                             preset?: "gradual" | "custom" | null;
@@ -41414,7 +42373,7 @@ export interface operations {
                              * @enum {string}
                              */
                             source_class?: "substrate" | "linkedin_official" | "practitioner" | "inferred" | "unseeded";
-                            /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Read this one, not `ceiling`, to know where the next call will be stopped. On an account in warm-up the two differ, and in the first week after connect they differ by a factor of about seven. Null when the row has no ceiling to ramp. `warm_up_state` and `warm_up_factor` beside it are the values ACTIVE on this row, not the seeded ones. */
+                            /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Read this one, not `ceiling`, to know where the next call will be stopped. On an account in warm-up the two differ: on the ramp's first day the effective ceiling is 30 percent of `ceiling`. Null when the row has no ceiling to ramp. `warm_up_state` and `warm_up_factor` beside it are the values ACTIVE on this row, not the seeded ones. */
                             effective_ceiling?: number | null;
                             /** @description What the account aims at today on this row: the figure the engine draws for the account-day from the account's own limit and green figure, at the level in force (`activity_level_effective`), never past the limit. `normal` is about midway between green and the limit, `increased` close to the limit. It differs from day to day. On InMail and on a Team default it is the green figure (the configured `green` when set, otherwise `ceiling` times the profile's seeded ratio). Null where the row has no limit to aim at. Read-only. */
                             target?: number | null;
@@ -43375,6 +44334,245 @@ export interface operations {
             };
             /** @description INSUFFICIENT_ROLE: only an Owner or a Manager renames the team; only an Owner sets billing_owner_user_id. */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1TeamsCurrentReplyLabels: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The team's Reply label settings. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "reply_label_settings";
+                        /** @description Whether Curviate reads each reply to your Campaigns and labels it. Off until an Owner or a Manager turns it on. Rules and people label either way. */
+                        enabled: boolean;
+                        /** @description Whether a reply labelled not_interested puts the person on your Do-not-contact list. Off by default. */
+                        not_interested_adds_to_do_not_contact: boolean;
+                        /** @description A Tag of your team per label (a Tag id), added to the Lead when the label is set; null for none. */
+                        tags: {
+                            /** @description The Tag for interested. */
+                            interested: string | null;
+                            /** @description The Tag for not_now. */
+                            not_now: string | null;
+                            /** @description The Tag for not_interested. */
+                            not_interested: string | null;
+                            /** @description The Tag for opt_out. */
+                            opt_out: string | null;
+                            /** @description The Tag for out_of_office. */
+                            out_of_office: string | null;
+                            /** @description The Tag for referral. */
+                            referral: string | null;
+                            /** @description The Tag for other. */
+                            other: string | null;
+                        };
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: a value that is not true or false, a Tag that is not a text id, a label that is not one of the seven, or an unknown field. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: only an Owner or a Manager of the team may do this. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: a Tag id that is not one of this team's Tags. Nothing was changed. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    patchV1TeamsCurrentReplyLabels: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description true: Curviate reads each reply to your Campaigns and labels it. */
+                    enabled?: boolean;
+                    /** @description true: a reply labelled not_interested puts the person on your Do-not-contact list. */
+                    not_interested_adds_to_do_not_contact?: boolean;
+                    /** @description A Tag id of this team per label; a label left out keeps its Tag. */
+                    tags?: {
+                        /** @description The Tag added when a reply is labelled interested; null removes it. */
+                        interested?: string | null;
+                        /** @description The Tag added when a reply is labelled not_now; null removes it. */
+                        not_now?: string | null;
+                        /** @description The Tag added when a reply is labelled not_interested; null removes it. */
+                        not_interested?: string | null;
+                        /** @description The Tag added when a reply is labelled opt_out; null removes it. */
+                        opt_out?: string | null;
+                        /** @description The Tag added when a reply is labelled out_of_office; null removes it. */
+                        out_of_office?: string | null;
+                        /** @description The Tag added when a reply is labelled referral; null removes it. */
+                        referral?: string | null;
+                        /** @description The Tag added when a reply is labelled other; null removes it. */
+                        other?: string | null;
+                    };
+                };
+            };
+        };
+        responses: {
+            /** @description The team's Reply label settings. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "reply_label_settings";
+                        /** @description Whether Curviate reads each reply to your Campaigns and labels it. Off until an Owner or a Manager turns it on. Rules and people label either way. */
+                        enabled: boolean;
+                        /** @description Whether a reply labelled not_interested puts the person on your Do-not-contact list. Off by default. */
+                        not_interested_adds_to_do_not_contact: boolean;
+                        /** @description A Tag of your team per label (a Tag id), added to the Lead when the label is set; null for none. */
+                        tags: {
+                            /** @description The Tag for interested. */
+                            interested: string | null;
+                            /** @description The Tag for not_now. */
+                            not_now: string | null;
+                            /** @description The Tag for not_interested. */
+                            not_interested: string | null;
+                            /** @description The Tag for opt_out. */
+                            opt_out: string | null;
+                            /** @description The Tag for out_of_office. */
+                            out_of_office: string | null;
+                            /** @description The Tag for referral. */
+                            referral: string | null;
+                            /** @description The Tag for other. */
+                            other: string | null;
+                        };
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: a value that is not true or false, a Tag that is not a text id, a label that is not one of the seven, or an unknown field. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: only an Owner or a Manager of the team may do this. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: a Tag id that is not one of this team's Tags. Nothing was changed. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -45475,7 +46673,7 @@ export interface operations {
                          * @enum {string}
                          */
                         connection: "google_app_password" | "microsoft_sign_in" | "imap_smtp";
-                        /** @description The IMAP server. Null when the connection is a sign-in with no settings. */
+                        /** @description The IMAP server. Null when the connection is a sign-in with no settings, and when `source` is `none`. */
                         imap: {
                             host: string;
                             port: number;
@@ -45485,7 +46683,7 @@ export interface operations {
                              */
                             security: "tls" | "starttls";
                         } | null;
-                        /** @description The SMTP submission server. Null when the connection is a sign-in with no settings. */
+                        /** @description The SMTP submission server. Null when the connection is a sign-in with no settings, and when `source` is `none`. */
                         smtp: {
                             host: string;
                             port: number;
@@ -45496,11 +46694,11 @@ export interface operations {
                             security: "tls" | "starttls";
                         } | null;
                         /**
-                         * @description Where the settings came from; `guess` is unchecked.
+                         * @description Where the settings came from. `guess` is `imap.` and `smtp.` on the domain, given only when both names resolve; `none` means nothing usable was found: ask the person for their host's settings.
                          * @enum {string}
                          */
-                        source: "known" | "autoconfig" | "ispdb" | "mx" | "srv" | "guess";
-                        /** @description True when the settings came over an unencrypted connection: show them and get an explicit confirm before connecting. */
+                        source: "known" | "autoconfig" | "ispdb" | "mx" | "srv" | "guess" | "none";
+                        /** @description True when the settings came over an unencrypted connection or are a guess: show them and get an explicit confirm before connecting. */
                         confirm_required: boolean;
                     };
                 };
@@ -45568,6 +46766,7 @@ export interface operations {
                             /** @description Mailbox id (mbx_...), opaque. */
                             id: string;
                             address: string;
+                            /** @description The From name recipients see ("Name" <address>): the Mailbox's own, else the name of the Account it sends for; null: the bare address. */
                             display_name: string | null;
                             /** @description The domain name of the address. */
                             domain: string;
@@ -45694,6 +46893,7 @@ export interface operations {
                         /** @description Mailbox id (mbx_...), opaque. */
                         id: string;
                         address: string;
+                        /** @description The From name recipients see ("Name" <address>): the Mailbox's own, else the name of the Account it sends for; null: the bare address. */
                         display_name: string | null;
                         /** @description The domain name of the address. */
                         domain: string;
@@ -45895,6 +47095,8 @@ export interface operations {
                     daily_cap?: number;
                     /** @description Plain text sign-off, at most 2000 characters; null clears it. */
                     signature?: string | null;
+                    /** @description The name recipients see in From ("Name" <address>), at most 100 characters, one line. Not set: the name of the Account the Mailbox sends for, else the bare address. */
+                    display_name?: string | null;
                     /** @description {kind: "account", account_id}: this Mailbox sends only for that one Account; {kind: "shared"}: any Account of the team may send from it; null: it sends nothing until linked. One Account, never a list. */
                     sends_for?: ({
                         /** @constant */
@@ -45920,6 +47122,7 @@ export interface operations {
                         /** @description Mailbox id (mbx_...), opaque. */
                         id: string;
                         address: string;
+                        /** @description The From name recipients see ("Name" <address>): the Mailbox's own, else the name of the Account it sends for; null: the bare address. */
                         display_name: string | null;
                         /** @description The domain name of the address. */
                         domain: string;
@@ -45974,7 +47177,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST: `daily_cap` above 50 or below 1, `signature` above 2,000 characters, `sends_for` that is not one Account, `shared` or null (a list of Accounts included), no field, or an unknown field. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: `daily_cap` above 50 or below 1, `signature` above 2,000 characters, `display_name` empty, above 100 characters or with a line break, `sends_for` that is not one Account, `shared` or null (a list of Accounts included), no field, or an unknown field. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -46062,6 +47265,7 @@ export interface operations {
                         /** @description Mailbox id (mbx_...), opaque. */
                         id: string;
                         address: string;
+                        /** @description The From name recipients see ("Name" <address>): the Mailbox's own, else the name of the Account it sends for; null: the bare address. */
                         display_name: string | null;
                         /** @description The domain name of the address. */
                         domain: string;
@@ -46204,6 +47408,7 @@ export interface operations {
                         /** @description Mailbox id (mbx_...), opaque. */
                         id: string;
                         address: string;
+                        /** @description The From name recipients see ("Name" <address>): the Mailbox's own, else the name of the Account it sends for; null: the bare address. */
                         display_name: string | null;
                         /** @description The domain name of the address. */
                         domain: string;
@@ -46346,7 +47551,7 @@ export interface operations {
                         /** @description Domain id (dom_...), opaque. */
                         id: string;
                         name: string;
-                        /** @description `unknown` means a lookup failed or the DKIM selector is not known yet; it never means a failure. */
+                        /** @description `unknown` means the check cannot verify: a lookup failed, or no DKIM key was found at any selector known for your mail host. It never means a failure. */
                         checks: {
                             /** @enum {string} */
                             mx: "pass" | "fail" | "unknown";
@@ -46368,12 +47573,14 @@ export interface operations {
                         };
                         /** @description Blocklists named in bounce messages; empty until one is. */
                         blocklists: string[];
+                        /** @description The DKIM selector whose key was found (`<selector>._domainkey.<domain>`), or read from a sent message; null while none is. */
+                        dkim_selector: string | null;
                         /** Format: date-time */
                         checked_at: string | null;
                     };
                 };
             };
-            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: not a domain name. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -46391,7 +47598,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description DOMAIN_NOT_FOUND: no Mailbox of this team is on this domain (another team's domain answers the same), or RESOURCE_NOT_FOUND where Mailboxes are not available to this team. */
+            /** @description DOMAIN_NOT_FOUND: this team has no Mailbox on this domain and has not checked it (another team's domain answers the same), or RESOURCE_NOT_FOUND where Mailboxes are not available to this team. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -46443,7 +47650,7 @@ export interface operations {
                         /** @description Domain id (dom_...), opaque. */
                         id: string;
                         name: string;
-                        /** @description `unknown` means a lookup failed or the DKIM selector is not known yet; it never means a failure. */
+                        /** @description `unknown` means the check cannot verify: a lookup failed, or no DKIM key was found at any selector known for your mail host. It never means a failure. */
                         checks: {
                             /** @enum {string} */
                             mx: "pass" | "fail" | "unknown";
@@ -46465,12 +47672,14 @@ export interface operations {
                         };
                         /** @description Blocklists named in bounce messages; empty until one is. */
                         blocklists: string[];
+                        /** @description The DKIM selector whose key was found (`<selector>._domainkey.<domain>`), or read from a sent message; null while none is. */
+                        dkim_selector: string | null;
                         /** Format: date-time */
                         checked_at: string | null;
                     };
                 };
             };
-            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: not a domain name. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -46488,7 +47697,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description DOMAIN_NOT_FOUND: no Mailbox of this team is on this domain (another team's domain answers the same), or RESOURCE_NOT_FOUND where Mailboxes are not available to this team. */
+            /** @description DOMAIN_NOT_FOUND: a public email provider's domain (gmail.com and the like), or RESOURCE_NOT_FOUND where Mailboxes are not available to this team. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -46616,6 +47825,8 @@ export interface operations {
                             company_linkedin_url: string | null;
                             /** @description Email: what you supplied, else the first email a LinkedIn profile read returned. Yours is never overwritten. */
                             email: string | null;
+                            /** @description When an email to this address hard-bounced (ISO 8601); null when it never did. Read-only. While set, every Campaign email step to this Lead is skipped (email_bounced) and LinkedIn steps go on. Changing email clears it. */
+                            email_bounced_at: string | null;
                             /** @description Location. */
                             location: string | null;
                             /** @description About text. */
@@ -46813,6 +48024,8 @@ export interface operations {
                         company_linkedin_url: string | null;
                         /** @description Email: what you supplied, else the first email a LinkedIn profile read returned. Yours is never overwritten. */
                         email: string | null;
+                        /** @description When an email to this address hard-bounced (ISO 8601); null when it never did. Read-only. While set, every Campaign email step to this Lead is skipped (email_bounced) and LinkedIn steps go on. Changing email clears it. */
+                        email_bounced_at: string | null;
                         /** @description Location. */
                         location: string | null;
                         /** @description About text. */
@@ -46906,6 +48119,8 @@ export interface operations {
                         company_linkedin_url: string | null;
                         /** @description Email: what you supplied, else the first email a LinkedIn profile read returned. Yours is never overwritten. */
                         email: string | null;
+                        /** @description When an email to this address hard-bounced (ISO 8601); null when it never did. Read-only. While set, every Campaign email step to this Lead is skipped (email_bounced) and LinkedIn steps go on. Changing email clears it. */
+                        email_bounced_at: string | null;
                         /** @description Location. */
                         location: string | null;
                         /** @description About text. */
@@ -47114,6 +48329,8 @@ export interface operations {
                         company_linkedin_url: string | null;
                         /** @description Email: what you supplied, else the first email a LinkedIn profile read returned. Yours is never overwritten. */
                         email: string | null;
+                        /** @description When an email to this address hard-bounced (ISO 8601); null when it never did. Read-only. While set, every Campaign email step to this Lead is skipped (email_bounced) and LinkedIn steps go on. Changing email clears it. */
+                        email_bounced_at: string | null;
                         /** @description Location. */
                         location: string | null;
                         /** @description About text. */
@@ -47729,7 +48946,7 @@ export interface operations {
                                  * @description Why a row was skipped.
                                  * @enum {string|null}
                                  */
-                                reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | null;
+                                reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
                                 /** @description The field a field_too_long row names. */
                                 field: string | null;
                                 /** @description An earlier row of this import for the same person. */
@@ -47816,7 +49033,7 @@ export interface operations {
                     /** @description A LinkedIn source Curviate reads page by page on its server, from source.account_id, inside that Account's limits and Active hours: answers 202 queued. Send rows, csv or source, exactly one. */
                     source?: {
                         /**
-                         * @description What to import: people_search takes a pasted LinkedIn people search URL. The other kinds are not available yet.
+                         * @description What to import: people_search, sales_nav_search and recruiter_search take a pasted search URL or built filters, company_people a company search URL or filters plus titles, sales_nav_lead_list a Sales Navigator list id, post_engagers a post id or URL, group_members a group id. The other kinds are not available yet.
                          * @enum {string}
                          */
                         kind: "people_search" | "company_people" | "sales_nav_search" | "sales_nav_lead_list" | "sales_nav_account_list" | "sales_nav_company_people" | "recruiter_search" | "post_engagers" | "group_members";
@@ -47824,21 +49041,25 @@ export interface operations {
                         account_id: string;
                         /** @description A pasted LinkedIn search URL (people_search: linkedin.com/search/results/people/...). */
                         url?: string;
-                        /** @description A built search instead of a URL (not available yet). */
+                        /** @description A built search instead of a URL: the filters the kind offers. Send url or filters, not both. */
                         filters?: {
                             [key: string]: unknown;
                         };
-                        /** @description A Sales Navigator list id (not available yet). */
+                        /** @description A Sales Navigator lead list id (sales_nav_lead_list). */
                         list_id?: string;
-                        /** @description A post id or URL (not available yet). */
+                        /** @description A post id or URL (post_engagers). */
                         post_id?: string;
-                        /** @description A LinkedIn group id (not available yet). */
+                        /** @description A LinkedIn group id the Account belongs to (group_members). */
                         group_id?: string;
-                        /** @description Job titles to keep (the company sources; not available yet). */
+                        /** @description Job titles to keep (company_people: required; only people with one of these titles are imported, never a whole company). */
                         titles?: string[];
-                        /** @description Stop after this many people (default and maximum: the kind's cap, 1,000 for people_search). */
+                        /** @description Stop after this many people (default and maximum: the kind's cap, 1,000 for people_search, 2,500 for the Sales Navigator kinds). */
                         max?: number;
                     };
+                    /** @description With source: continue this earlier import (imp_...) of the same source from where it stopped; no page is read twice. */
+                    continue_from?: string;
+                    /** @description With source: true reads the source from the beginning, even when an earlier import of it could continue. */
+                    restart?: boolean;
                 };
             };
         };
@@ -47936,7 +49157,7 @@ export interface operations {
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | null;
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -48038,7 +49259,7 @@ export interface operations {
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | null;
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -48074,7 +49295,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: list_id is not one of your Lead lists. ACCOUNT_NOT_FOUND: source.account_id is not one of your Accounts. */
+            /** @description RESOURCE_NOT_FOUND: list_id is not one of your Lead lists, or continue_from is not one of your imports. ACCOUNT_NOT_FOUND: source.account_id is not one of your Accounts. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -48083,7 +49304,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description REAUTH_REQUIRED: source.account_id needs reconnecting before it can read LinkedIn. Reconnect it, or choose another Account. Nothing is created. */
+            /** @description REAUTH_REQUIRED: source.account_id needs reconnecting before it can read LinkedIn. Reconnect it, or choose another Account. IMPORT_STATUS_CONFLICT: an import of the same source is still open (queued, running or paused); resume or stop it, or send restart: true. IMPORT_CANNOT_CONTINUE: continue_from names an import that read LinkedIn's last results for its search; narrow the search or split it. Nothing is created. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -48234,7 +49455,7 @@ export interface operations {
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | null;
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -48263,6 +49484,540 @@ export interface operations {
             };
             /** @description RESOURCE_NOT_FOUND: no such import, or purged (imports and reports are kept 30 days after they finish). */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1LeadsImportsIdPause: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Import id (imp_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The import, with its new status. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "lead_import";
+                        /** @description Import id (imp_...). */
+                        id: string;
+                        /**
+                         * @description paused and stopped belong to imports from a LinkedIn source.
+                         * @enum {string}
+                         */
+                        status: "queued" | "running" | "paused" | "stopped" | "completed" | "failed";
+                        /** @enum {string} */
+                        format: "rows" | "csv" | "source";
+                        /** @description Rows sent; for a LinkedIn source, the people read so far. */
+                        total_rows: number;
+                        counts: {
+                            created: number;
+                            updated: number;
+                            unchanged: number;
+                            skipped: number;
+                            /** @description A LinkedIn source: people read so far. */
+                            found: number;
+                            /** @description A LinkedIn source: people skipped for the Do-not-contact list. */
+                            do_not_contact: number;
+                            /** @description A LinkedIn source: people imported who opted out of email only. */
+                            no_email: number;
+                        };
+                        /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
+                        source?: Record<string, never> | null;
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours) or budget (the Account's search lines for today are spent, or Campaign work went first), with until the next opening. Null while reading or between paced pages. */
+                        waiting?: {
+                            kind?: string;
+                            until?: string | null;
+                        } | null;
+                        /** @description A range of working days left, from the Account's limits and the conservative search pace; never a time. Null when finished. */
+                        estimate?: {
+                            working_days_min?: number;
+                            working_days_max?: number;
+                        } | null;
+                        /** @description How many people the source holds, when LinkedIn says; null for a people search. */
+                        source_total?: Record<string, never> | null;
+                        /**
+                         * @description Why a LinkedIn import ended: max reached, no more pages, or 3 pages in a row with no new Lead.
+                         * @enum {string|null}
+                         */
+                        finish_reason?: "max_reached" | "source_exhausted" | "no_new_leads" | "stopped" | null;
+                        /** @description A LinkedIn search import that stopped before LinkedIn's 1,000-result ceiling can continue. */
+                        can_continue?: boolean;
+                        /** @description The import this one continues. */
+                        continued_from?: string | null;
+                        /** @description The Lead list every row was added to. */
+                        list_id: string | null;
+                        /** @description Tag names added to every row's Lead. */
+                        tags: string[];
+                        /** @description CSV only: how each header was read. */
+                        columns: {
+                            /** @description Header to target (a standard field, `tags` or `extra.<key>`). */
+                            mapped?: {
+                                [key: string]: string;
+                            };
+                            ignored?: string[];
+                        } | null;
+                        /** @description The user who started the import (the user your API key belongs to). */
+                        created_by_user_id: string | null;
+                        created_at: string;
+                        /** @description When processing began. */
+                        started_at: string | null;
+                        /** @description When processing ended. */
+                        finished_at: string | null;
+                        /** @description Set when status is failed. Rows applied before the failure stay applied and reported. */
+                        failure: {
+                            code?: string;
+                            message?: string;
+                        } | null;
+                        /** @description Inline imports only: the per-row report, in row order. */
+                        report?: {
+                            /** @description 1-based data row. */
+                            row: number;
+                            /** @enum {string} */
+                            outcome: "created" | "updated" | "unchanged" | "skipped";
+                            /** @description The Lead this row wrote to; null when skipped or when the Lead was deleted since. */
+                            lead_id: string | null;
+                            /**
+                             * @description Why a row was skipped.
+                             * @enum {string|null}
+                             */
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
+                            /** @description The field a field_too_long row names. */
+                            field: string | null;
+                            /** @description An earlier row of this import for the same person. */
+                            duplicate_of_row: number | null;
+                        }[];
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such import in your team, or purged. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description IMPORT_STATUS_CONFLICT: the import's status does not allow this (a pause of a paused import, a resume of one not paused, anything on a finished one, or an import with no LinkedIn source); the message names the status and the next step. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1LeadsImportsIdResume: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Import id (imp_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The import, with its new status. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "lead_import";
+                        /** @description Import id (imp_...). */
+                        id: string;
+                        /**
+                         * @description paused and stopped belong to imports from a LinkedIn source.
+                         * @enum {string}
+                         */
+                        status: "queued" | "running" | "paused" | "stopped" | "completed" | "failed";
+                        /** @enum {string} */
+                        format: "rows" | "csv" | "source";
+                        /** @description Rows sent; for a LinkedIn source, the people read so far. */
+                        total_rows: number;
+                        counts: {
+                            created: number;
+                            updated: number;
+                            unchanged: number;
+                            skipped: number;
+                            /** @description A LinkedIn source: people read so far. */
+                            found: number;
+                            /** @description A LinkedIn source: people skipped for the Do-not-contact list. */
+                            do_not_contact: number;
+                            /** @description A LinkedIn source: people imported who opted out of email only. */
+                            no_email: number;
+                        };
+                        /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
+                        source?: Record<string, never> | null;
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours) or budget (the Account's search lines for today are spent, or Campaign work went first), with until the next opening. Null while reading or between paced pages. */
+                        waiting?: {
+                            kind?: string;
+                            until?: string | null;
+                        } | null;
+                        /** @description A range of working days left, from the Account's limits and the conservative search pace; never a time. Null when finished. */
+                        estimate?: {
+                            working_days_min?: number;
+                            working_days_max?: number;
+                        } | null;
+                        /** @description How many people the source holds, when LinkedIn says; null for a people search. */
+                        source_total?: Record<string, never> | null;
+                        /**
+                         * @description Why a LinkedIn import ended: max reached, no more pages, or 3 pages in a row with no new Lead.
+                         * @enum {string|null}
+                         */
+                        finish_reason?: "max_reached" | "source_exhausted" | "no_new_leads" | "stopped" | null;
+                        /** @description A LinkedIn search import that stopped before LinkedIn's 1,000-result ceiling can continue. */
+                        can_continue?: boolean;
+                        /** @description The import this one continues. */
+                        continued_from?: string | null;
+                        /** @description The Lead list every row was added to. */
+                        list_id: string | null;
+                        /** @description Tag names added to every row's Lead. */
+                        tags: string[];
+                        /** @description CSV only: how each header was read. */
+                        columns: {
+                            /** @description Header to target (a standard field, `tags` or `extra.<key>`). */
+                            mapped?: {
+                                [key: string]: string;
+                            };
+                            ignored?: string[];
+                        } | null;
+                        /** @description The user who started the import (the user your API key belongs to). */
+                        created_by_user_id: string | null;
+                        created_at: string;
+                        /** @description When processing began. */
+                        started_at: string | null;
+                        /** @description When processing ended. */
+                        finished_at: string | null;
+                        /** @description Set when status is failed. Rows applied before the failure stay applied and reported. */
+                        failure: {
+                            code?: string;
+                            message?: string;
+                        } | null;
+                        /** @description Inline imports only: the per-row report, in row order. */
+                        report?: {
+                            /** @description 1-based data row. */
+                            row: number;
+                            /** @enum {string} */
+                            outcome: "created" | "updated" | "unchanged" | "skipped";
+                            /** @description The Lead this row wrote to; null when skipped or when the Lead was deleted since. */
+                            lead_id: string | null;
+                            /**
+                             * @description Why a row was skipped.
+                             * @enum {string|null}
+                             */
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
+                            /** @description The field a field_too_long row names. */
+                            field: string | null;
+                            /** @description An earlier row of this import for the same person. */
+                            duplicate_of_row: number | null;
+                        }[];
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such import in your team, or purged. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description IMPORT_STATUS_CONFLICT: the import's status does not allow this (a pause of a paused import, a resume of one not paused, anything on a finished one, or an import with no LinkedIn source); the message names the status and the next step. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1LeadsImportsIdStop: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Import id (imp_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The import, with its new status. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "lead_import";
+                        /** @description Import id (imp_...). */
+                        id: string;
+                        /**
+                         * @description paused and stopped belong to imports from a LinkedIn source.
+                         * @enum {string}
+                         */
+                        status: "queued" | "running" | "paused" | "stopped" | "completed" | "failed";
+                        /** @enum {string} */
+                        format: "rows" | "csv" | "source";
+                        /** @description Rows sent; for a LinkedIn source, the people read so far. */
+                        total_rows: number;
+                        counts: {
+                            created: number;
+                            updated: number;
+                            unchanged: number;
+                            skipped: number;
+                            /** @description A LinkedIn source: people read so far. */
+                            found: number;
+                            /** @description A LinkedIn source: people skipped for the Do-not-contact list. */
+                            do_not_contact: number;
+                            /** @description A LinkedIn source: people imported who opted out of email only. */
+                            no_email: number;
+                        };
+                        /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
+                        source?: Record<string, never> | null;
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours) or budget (the Account's search lines for today are spent, or Campaign work went first), with until the next opening. Null while reading or between paced pages. */
+                        waiting?: {
+                            kind?: string;
+                            until?: string | null;
+                        } | null;
+                        /** @description A range of working days left, from the Account's limits and the conservative search pace; never a time. Null when finished. */
+                        estimate?: {
+                            working_days_min?: number;
+                            working_days_max?: number;
+                        } | null;
+                        /** @description How many people the source holds, when LinkedIn says; null for a people search. */
+                        source_total?: Record<string, never> | null;
+                        /**
+                         * @description Why a LinkedIn import ended: max reached, no more pages, or 3 pages in a row with no new Lead.
+                         * @enum {string|null}
+                         */
+                        finish_reason?: "max_reached" | "source_exhausted" | "no_new_leads" | "stopped" | null;
+                        /** @description A LinkedIn search import that stopped before LinkedIn's 1,000-result ceiling can continue. */
+                        can_continue?: boolean;
+                        /** @description The import this one continues. */
+                        continued_from?: string | null;
+                        /** @description The Lead list every row was added to. */
+                        list_id: string | null;
+                        /** @description Tag names added to every row's Lead. */
+                        tags: string[];
+                        /** @description CSV only: how each header was read. */
+                        columns: {
+                            /** @description Header to target (a standard field, `tags` or `extra.<key>`). */
+                            mapped?: {
+                                [key: string]: string;
+                            };
+                            ignored?: string[];
+                        } | null;
+                        /** @description The user who started the import (the user your API key belongs to). */
+                        created_by_user_id: string | null;
+                        created_at: string;
+                        /** @description When processing began. */
+                        started_at: string | null;
+                        /** @description When processing ended. */
+                        finished_at: string | null;
+                        /** @description Set when status is failed. Rows applied before the failure stay applied and reported. */
+                        failure: {
+                            code?: string;
+                            message?: string;
+                        } | null;
+                        /** @description Inline imports only: the per-row report, in row order. */
+                        report?: {
+                            /** @description 1-based data row. */
+                            row: number;
+                            /** @enum {string} */
+                            outcome: "created" | "updated" | "unchanged" | "skipped";
+                            /** @description The Lead this row wrote to; null when skipped or when the Lead was deleted since. */
+                            lead_id: string | null;
+                            /**
+                             * @description Why a row was skipped.
+                             * @enum {string|null}
+                             */
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
+                            /** @description The field a field_too_long row names. */
+                            field: string | null;
+                            /** @description An earlier row of this import for the same person. */
+                            duplicate_of_row: number | null;
+                        }[];
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such import in your team, or purged. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description IMPORT_STATUS_CONFLICT: the import's status does not allow this (a pause of a paused import, a resume of one not paused, anything on a finished one, or an import with no LinkedIn source); the message names the status and the next step. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -48330,7 +50085,7 @@ export interface operations {
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | null;
+                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -48452,6 +50207,8 @@ export interface operations {
                         company_linkedin_url: string | null;
                         /** @description Email: what you supplied, else the first email a LinkedIn profile read returned. Yours is never overwritten. */
                         email: string | null;
+                        /** @description When an email to this address hard-bounced (ISO 8601); null when it never did. Read-only. While set, every Campaign email step to this Lead is skipped (email_bounced) and LinkedIn steps go on. Changing email clears it. */
+                        email_bounced_at: string | null;
                         /** @description Location. */
                         location: string | null;
                         /** @description About text. */
@@ -48706,6 +50463,8 @@ export interface operations {
                         company_linkedin_url: string | null;
                         /** @description Email: what you supplied, else the first email a LinkedIn profile read returned. Yours is never overwritten. */
                         email: string | null;
+                        /** @description When an email to this address hard-bounced (ISO 8601); null when it never did. Read-only. While set, every Campaign email step to this Lead is skipped (email_bounced) and LinkedIn steps go on. Changing email clears it. */
+                        email_bounced_at: string | null;
                         /** @description Location. */
                         location: string | null;
                         /** @description About text. */
@@ -50477,6 +52236,1174 @@ export interface operations {
             };
         };
     };
+    getV1Signals: {
+        parameters: {
+            query?: {
+                /** @description Only this kind: post_engaged, post_reposted, network_posted, profile_viewed, followed_you, mentioned_you or connection_added; post_engaged.reaction or post_engaged.comment for one sub-kind. */
+                kind?: "post_engaged" | "post_reposted" | "network_posted" | "profile_viewed" | "followed_you" | "mentioned_you" | "connection_added" | "post_engaged.reaction" | "post_engaged.comment";
+                /** @description Only the Signals this Account caught (acc_...). */
+                account_id?: string;
+                /** @description Only Signals whose person is a lead, a connection, a followed person, unknown or an anonymous viewer. */
+                match?: "lead" | "connection" | "followed" | "unknown" | "anonymous";
+                /** @description true: only people on your do-not-contact list; false: only people who are not. */
+                listed?: boolean;
+                /** @description Only Signals Curviate wrote after this time (ISO 8601). */
+                since?: string;
+                /** @description Opaque pagination cursor from a previous response; pass it back verbatim with the same filters. */
+                cursor?: string;
+                /** @description Max items per page (1-100, default 50). */
+                limit?: number;
+            };
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Signals of the Accounts you may operate, newest first, at most 7 days old. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object?: "list";
+                        items?: {
+                            /**
+                             * @description Response type discriminator.
+                             * @enum {string}
+                             */
+                            object?: "signal";
+                            /** @description Signal id (sig_...). */
+                            id?: string;
+                            /**
+                             * @description What happened.
+                             * @enum {string}
+                             */
+                            kind?: "post_engaged" | "post_reposted" | "network_posted" | "profile_viewed" | "followed_you" | "mentioned_you" | "connection_added";
+                            /**
+                             * @description For post_engaged: a reaction or a comment; null for every other kind.
+                             * @enum {string|null}
+                             */
+                            sub_kind?: "reaction" | "comment" | null;
+                            /** @description The notification type code the Signal came from, or the source for connection_added. */
+                            type?: string;
+                            /** @description The Account that caught it (acc_...). */
+                            account_id?: string;
+                            /**
+                             * Format: date-time
+                             * @description When LinkedIn says it happened.
+                             */
+                            occurred_at?: string;
+                            /**
+                             * Format: date-time
+                             * @description When Curviate stored the Signal. The 7 days run from here.
+                             */
+                            written_at?: string;
+                            /**
+                             * Format: date-time
+                             * @description 7 days after written_at: after this the Signal is gone.
+                             */
+                            expires_at?: string;
+                            /** @description Who did it. Null for an anonymous viewer and for an organization. */
+                            person?: {
+                                /** @description The person's LinkedIn member id. */
+                                member_id?: string;
+                                linkedin_url?: string;
+                                /** @description From the person's Lead; null when they are not a Lead. */
+                                name?: string | null;
+                                /** @description From the person's Lead; null when they are not a Lead. */
+                                headline?: string | null;
+                                /** @description 1 for a Connection of the Account, else null. */
+                                network_distance?: number | null;
+                                /** @description The person's Lead (con_...) when they were one when the Signal was written. */
+                                lead_id?: string | null;
+                                /** @description A Connection of the Account. */
+                                is_connection?: boolean;
+                                /** @description The Account followed them through Curviate. */
+                                followed?: boolean;
+                                /** @description On your do-not-contact list: nothing reaches out to them. */
+                                listed?: boolean;
+                            } | null;
+                            /** @description A viewer LinkedIn does not name: only a descriptor. */
+                            anonymous?: {
+                                descriptor?: string;
+                            } | null;
+                            /** @description A company page that did it. */
+                            organization?: {
+                                id?: string;
+                                linkedin_url?: string;
+                            } | null;
+                            /** @description The post or comment the Signal is about. */
+                            target?: {
+                                post_id?: string | null;
+                                comment_id?: string | null;
+                            };
+                            /** @description The reaction type, for a reaction. */
+                            reaction?: string | null;
+                        }[];
+                        cursor?: string | null;
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: a kind, match or listed value outside the lists, a since that is not an ISO 8601 time, limit out of range or a malformed cursor. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE or ACCOUNT_NOT_SHARED: account_id names an Account of your team you may not operate. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_NOT_FOUND: account_id is not in your team. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1SignalsKinds: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Every Signal kind, with its follow-up read. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object?: "list";
+                        items?: {
+                            /** @description The Signal kind. */
+                            kind?: string;
+                            /** @description Kinds this kind splits into, for a rule's kinds as kind.sub_kind. */
+                            sub_kinds?: string[];
+                            /**
+                             * @description The extra read a card of this kind can trigger: engagers (the post's reactions or comments), viewers (the profile viewer list), or none.
+                             * @enum {string}
+                             */
+                            follow_up?: "none" | "engagers" | "viewers";
+                            /** @description Whether that read is on for your team. */
+                            follow_up_enabled?: boolean;
+                            /** @description The limit rows one follow-up read uses. */
+                            debits?: string[];
+                        }[];
+                        cursor?: null;
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    patchV1SignalsSettings: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The follow-up reads, for the whole team. */
+                    follow_up: {
+                        /** @description Read a post's reactions or comments when a card shows someone engaged (default on). Off: the Signal names the card's first person only. */
+                        post_engaged?: boolean;
+                        /** @description Read the profile viewer list when a card shows views (default on). Off: no Signal for a viewer the card does not name. */
+                        profile_viewed?: boolean;
+                    };
+                };
+            };
+        };
+        responses: {
+            /** @description The follow-up settings as now set. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object?: "signal_settings";
+                        follow_up?: {
+                            post_engaged?: boolean;
+                            profile_viewed?: boolean;
+                        };
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: a key other than follow_up.post_engaged or follow_up.profile_viewed, a value that is not true or false, or nothing to change. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: only an Owner or a Manager changes the team's settings. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1SignalsWatch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The watch status of each Account you may operate. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object?: "list";
+                        items?: {
+                            /** @enum {string} */
+                            object?: "signal_watch";
+                            account_id?: string;
+                            /** @description The Account's Signal watch switch. Off is the default: an Account that is not watched writes no Signal. */
+                            signal_watch?: boolean;
+                            /**
+                             * @description off: the switch is off. paused: on, but not reading now, see pause_reason. watching: reads inside its Sessions.
+                             * @enum {string}
+                             */
+                            state?: "watching" | "paused" | "off";
+                            /** @enum {string|null} */
+                            pause_reason?: "reconnect_needed" | "health" | "restricted" | "pushback" | null;
+                            /** @description When a pushback pause ends. */
+                            paused_until?: string | null;
+                            last_visit_at?: string | null;
+                            /** @description The next planned visit; null while the Account is paused or off. */
+                            next_visit_at?: string | null;
+                            visits_today?: number;
+                            /** @description Reads the visits made today (UTC day), by kind. */
+                            reads_today?: {
+                                notifications?: number;
+                                engagers?: number;
+                                viewers?: number;
+                            };
+                        }[];
+                        cursor?: null;
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1SignalsRules: {
+        parameters: {
+            query?: {
+                /** @description true: only rules that are on; false: only rules that are off. */
+                enabled?: boolean;
+                /** @description Opaque pagination cursor from a previous response; pass it back verbatim. */
+                cursor?: string;
+                /** @description Max items per page (1-100, default 50). */
+                limit?: number;
+            };
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description This team's rules, newest first. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object?: "list";
+                        items?: {
+                            /**
+                             * @description Response type discriminator.
+                             * @enum {string}
+                             */
+                            object?: "signal_rule";
+                            /** @description Rule id (sgr_...). */
+                            id?: string;
+                            /** @description 1 to 100 characters. */
+                            name?: string;
+                            /** @description An off rule acts on no Signal. */
+                            enabled?: boolean;
+                            /** @description The Signal kinds it acts on; post_engaged.reaction and post_engaged.comment name one sub-kind. */
+                            kinds?: string[];
+                            /** @description The Accounts it covers; null covers every Account of the team, now and later. */
+                            account_ids?: string[] | null;
+                            /**
+                             * @description What happens to a person Curviate knows nothing about: skip, or one profile read the person may see.
+                             * @enum {string}
+                             */
+                            unknown_people?: "skip" | "visit_profile";
+                            /** @description What the rule does, 1 to 3, each type at most once. */
+                            outcomes?: {
+                                /** @enum {string} */
+                                type?: "add_to_list" | "send_event";
+                                /** @description For add_to_list: the Lead list (cl_...). */
+                                list_id?: string;
+                            }[];
+                            /** @description The rule as one plain sentence, the text the dashboard shows. */
+                            summary?: string;
+                            created_by?: {
+                                user_id?: string;
+                                name?: string | null;
+                            } | null;
+                            /** Format: date-time */
+                            created_at?: string;
+                            /** Format: date-time */
+                            updated_at?: string;
+                            /** @description When the rule last acted on a Signal; null before it has. */
+                            last_acted_at?: string | null;
+                        }[];
+                        cursor?: string | null;
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: limit out of range, a malformed cursor or a value for enabled that is not true or false. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1SignalsRules: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The rule's name, 1 to 100 characters. */
+                    name: string;
+                    /** @description On (default) or off. An off rule acts on no Signal. */
+                    enabled?: boolean;
+                    /** @description The kinds it acts on: post_engaged, post_reposted, network_posted, profile_viewed, followed_you, mentioned_you, connection_added, post_engaged.reaction, post_engaged.comment. */
+                    kinds: ("post_engaged" | "post_reposted" | "network_posted" | "profile_viewed" | "followed_you" | "mentioned_you" | "connection_added" | "post_engaged.reaction" | "post_engaged.comment")[];
+                    /** @description The Accounts it covers (acc_...); null covers every Account of the team, now and later. A rule may name an Account whose Signal watch is off: that Account writes no Signal, so no rule acts on it. */
+                    account_ids?: string[] | null;
+                    /**
+                     * @description skip (default): a person Curviate knows nothing about is skipped at no cost. visit_profile: Curviate reads their profile once, at the Account's next visit, which the person may see.
+                     * @enum {string}
+                     */
+                    unknown_people?: "skip" | "visit_profile";
+                    /** @description What the rule does, 1 to 3, each type at most once: {type: "add_to_list", list_id} adds the person to a Lead list; {type: "send_event"} sends signal.matched to your webhooks, so your agent or another tool can act. */
+                    outcomes: ({
+                        /** @constant */
+                        type: "add_to_list";
+                        /** @description The Lead list (cl_...) the person is added to. */
+                        list_id: string;
+                    } | {
+                        /** @constant */
+                        type: "send_event";
+                    })[];
+                };
+            };
+        };
+        responses: {
+            /** @description The rule, with its summary. */
+            201: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object?: "signal_rule";
+                        /** @description Rule id (sgr_...). */
+                        id?: string;
+                        /** @description 1 to 100 characters. */
+                        name?: string;
+                        /** @description An off rule acts on no Signal. */
+                        enabled?: boolean;
+                        /** @description The Signal kinds it acts on; post_engaged.reaction and post_engaged.comment name one sub-kind. */
+                        kinds?: string[];
+                        /** @description The Accounts it covers; null covers every Account of the team, now and later. */
+                        account_ids?: string[] | null;
+                        /**
+                         * @description What happens to a person Curviate knows nothing about: skip, or one profile read the person may see.
+                         * @enum {string}
+                         */
+                        unknown_people?: "skip" | "visit_profile";
+                        /** @description What the rule does, 1 to 3, each type at most once. */
+                        outcomes?: {
+                            /** @enum {string} */
+                            type?: "add_to_list" | "send_event";
+                            /** @description For add_to_list: the Lead list (cl_...). */
+                            list_id?: string;
+                        }[];
+                        /** @description The rule as one plain sentence, the text the dashboard shows. */
+                        summary?: string;
+                        created_by?: {
+                            user_id?: string;
+                            name?: string | null;
+                        } | null;
+                        /** Format: date-time */
+                        created_at?: string;
+                        /** Format: date-time */
+                        updated_at?: string;
+                        /** @description When the rule last acted on a Signal; null before it has. */
+                        last_acted_at?: string | null;
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST naming the field: a missing name, kinds or outcomes, an empty list, an unknown kind (the message lists the kinds), an outcome type repeated, an unknown key or a value of the wrong type. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: your role in the team does not allow adding Leads to a Lead list, which the rule does. ACCOUNT_NOT_SHARED: an Account you may not operate. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: a list_id that is not a Lead list of your team. ACCOUNT_NOT_FOUND: an account_ids entry that is not an Account of your team. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1SignalsRulesId: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Rule id (sgr_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One rule. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object?: "signal_rule";
+                        /** @description Rule id (sgr_...). */
+                        id?: string;
+                        /** @description 1 to 100 characters. */
+                        name?: string;
+                        /** @description An off rule acts on no Signal. */
+                        enabled?: boolean;
+                        /** @description The Signal kinds it acts on; post_engaged.reaction and post_engaged.comment name one sub-kind. */
+                        kinds?: string[];
+                        /** @description The Accounts it covers; null covers every Account of the team, now and later. */
+                        account_ids?: string[] | null;
+                        /**
+                         * @description What happens to a person Curviate knows nothing about: skip, or one profile read the person may see.
+                         * @enum {string}
+                         */
+                        unknown_people?: "skip" | "visit_profile";
+                        /** @description What the rule does, 1 to 3, each type at most once. */
+                        outcomes?: {
+                            /** @enum {string} */
+                            type?: "add_to_list" | "send_event";
+                            /** @description For add_to_list: the Lead list (cl_...). */
+                            list_id?: string;
+                        }[];
+                        /** @description The rule as one plain sentence, the text the dashboard shows. */
+                        summary?: string;
+                        created_by?: {
+                            user_id?: string;
+                            name?: string | null;
+                        } | null;
+                        /** Format: date-time */
+                        created_at?: string;
+                        /** Format: date-time */
+                        updated_at?: string;
+                        /** @description When the rule last acted on a Signal; null before it has. */
+                        last_acted_at?: string | null;
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such rule in your team (another team's rule answers the same). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    deleteV1SignalsRulesId: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Rule id (sgr_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted. What the rule did stays on the Leads. No response body. */
+            204: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: your role in the team does not allow adding Leads to a Lead list, which the rule does. ACCOUNT_NOT_SHARED: an Account you may not operate. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such rule in your team (another team's rule answers the same). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    patchV1SignalsRulesId: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Rule id (sgr_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The rule's name, 1 to 100 characters. */
+                    name?: string;
+                    /** @description On (default) or off. An off rule acts on no Signal. */
+                    enabled?: boolean;
+                    /** @description The kinds it acts on: post_engaged, post_reposted, network_posted, profile_viewed, followed_you, mentioned_you, connection_added, post_engaged.reaction, post_engaged.comment. */
+                    kinds?: ("post_engaged" | "post_reposted" | "network_posted" | "profile_viewed" | "followed_you" | "mentioned_you" | "connection_added" | "post_engaged.reaction" | "post_engaged.comment")[];
+                    /** @description The Accounts it covers (acc_...); null covers every Account of the team, now and later. A rule may name an Account whose Signal watch is off: that Account writes no Signal, so no rule acts on it. */
+                    account_ids?: string[] | null;
+                    /**
+                     * @description skip (default): a person Curviate knows nothing about is skipped at no cost. visit_profile: Curviate reads their profile once, at the Account's next visit, which the person may see.
+                     * @enum {string}
+                     */
+                    unknown_people?: "skip" | "visit_profile";
+                    /** @description What the rule does, 1 to 3, each type at most once: {type: "add_to_list", list_id} adds the person to a Lead list; {type: "send_event"} sends signal.matched to your webhooks, so your agent or another tool can act. */
+                    outcomes?: ({
+                        /** @constant */
+                        type: "add_to_list";
+                        /** @description The Lead list (cl_...) the person is added to. */
+                        list_id: string;
+                    } | {
+                        /** @constant */
+                        type: "send_event";
+                    })[];
+                };
+            };
+        };
+        responses: {
+            /** @description The rule as changed. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object?: "signal_rule";
+                        /** @description Rule id (sgr_...). */
+                        id?: string;
+                        /** @description 1 to 100 characters. */
+                        name?: string;
+                        /** @description An off rule acts on no Signal. */
+                        enabled?: boolean;
+                        /** @description The Signal kinds it acts on; post_engaged.reaction and post_engaged.comment name one sub-kind. */
+                        kinds?: string[];
+                        /** @description The Accounts it covers; null covers every Account of the team, now and later. */
+                        account_ids?: string[] | null;
+                        /**
+                         * @description What happens to a person Curviate knows nothing about: skip, or one profile read the person may see.
+                         * @enum {string}
+                         */
+                        unknown_people?: "skip" | "visit_profile";
+                        /** @description What the rule does, 1 to 3, each type at most once. */
+                        outcomes?: {
+                            /** @enum {string} */
+                            type?: "add_to_list" | "send_event";
+                            /** @description For add_to_list: the Lead list (cl_...). */
+                            list_id?: string;
+                        }[];
+                        /** @description The rule as one plain sentence, the text the dashboard shows. */
+                        summary?: string;
+                        created_by?: {
+                            user_id?: string;
+                            name?: string | null;
+                        } | null;
+                        /** Format: date-time */
+                        created_at?: string;
+                        /** Format: date-time */
+                        updated_at?: string;
+                        /** @description When the rule last acted on a Signal; null before it has. */
+                        last_acted_at?: string | null;
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST naming the field, as for create; no field to change. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: your role in the team does not allow adding Leads to a Lead list, which the rule does. ACCOUNT_NOT_SHARED: an Account you may not operate. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such rule, or a list_id that is not a Lead list of your team. ACCOUNT_NOT_FOUND: an Account that is not your team's. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1SignalsId: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Signal id (sig_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One Signal. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object?: "signal";
+                        /** @description Signal id (sig_...). */
+                        id?: string;
+                        /**
+                         * @description What happened.
+                         * @enum {string}
+                         */
+                        kind?: "post_engaged" | "post_reposted" | "network_posted" | "profile_viewed" | "followed_you" | "mentioned_you" | "connection_added";
+                        /**
+                         * @description For post_engaged: a reaction or a comment; null for every other kind.
+                         * @enum {string|null}
+                         */
+                        sub_kind?: "reaction" | "comment" | null;
+                        /** @description The notification type code the Signal came from, or the source for connection_added. */
+                        type?: string;
+                        /** @description The Account that caught it (acc_...). */
+                        account_id?: string;
+                        /**
+                         * Format: date-time
+                         * @description When LinkedIn says it happened.
+                         */
+                        occurred_at?: string;
+                        /**
+                         * Format: date-time
+                         * @description When Curviate stored the Signal. The 7 days run from here.
+                         */
+                        written_at?: string;
+                        /**
+                         * Format: date-time
+                         * @description 7 days after written_at: after this the Signal is gone.
+                         */
+                        expires_at?: string;
+                        /** @description Who did it. Null for an anonymous viewer and for an organization. */
+                        person?: {
+                            /** @description The person's LinkedIn member id. */
+                            member_id?: string;
+                            linkedin_url?: string;
+                            /** @description From the person's Lead; null when they are not a Lead. */
+                            name?: string | null;
+                            /** @description From the person's Lead; null when they are not a Lead. */
+                            headline?: string | null;
+                            /** @description 1 for a Connection of the Account, else null. */
+                            network_distance?: number | null;
+                            /** @description The person's Lead (con_...) when they were one when the Signal was written. */
+                            lead_id?: string | null;
+                            /** @description A Connection of the Account. */
+                            is_connection?: boolean;
+                            /** @description The Account followed them through Curviate. */
+                            followed?: boolean;
+                            /** @description On your do-not-contact list: nothing reaches out to them. */
+                            listed?: boolean;
+                        } | null;
+                        /** @description A viewer LinkedIn does not name: only a descriptor. */
+                        anonymous?: {
+                            descriptor?: string;
+                        } | null;
+                        /** @description A company page that did it. */
+                        organization?: {
+                            id?: string;
+                            linkedin_url?: string;
+                        } | null;
+                        /** @description The post or comment the Signal is about. */
+                        target?: {
+                            post_id?: string | null;
+                            comment_id?: string | null;
+                        };
+                        /** @description The reaction type, for a reaction. */
+                        reaction?: string | null;
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Signal for you. Unknown ids, ids older than 7 days, another team's and Signals of an Account you may not operate answer the same. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     postV1CampaignsVoiceClips: {
         parameters: {
             query: {
@@ -50837,17 +53764,28 @@ export interface operations {
                                 email_bounced: number;
                                 /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                                 no_email: number;
-                                /** @description Lead variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                                /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
                                 fields: {
-                                    /** @description Long form, as lead.first_name or lead.extra.opener. */
+                                    /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                     variable: string;
                                     steps: string[];
                                     /** @enum {string} */
                                     on_missing: "fallback" | "skip" | "hold";
                                     missing: number;
-                                    /** @description Leads for whom it cannot be told before the send; 0 for Lead fields. */
+                                    /** @description Leads for whom it cannot be told before the send: a company field (the name included) of a company whose stored record is missing or over 30 days old, read when the step sends. 0 for Lead fields and company custom fields. */
                                     unknown: number;
                                 }[];
+                                /** @description The Leads' companies, from stored data. */
+                                company: {
+                                    /** @description Leads with no known company id that a company variable reaches; their company variables are missing ({{company.name}} renders their own company text). */
+                                    leads_without_company: number;
+                                    /** @description Distinct companies of the Leads. */
+                                    companies: number;
+                                    /** @description Companies whose stored record is missing or over 30 days old that a step with a company field reaches: each is read once, through the sending account, when its first step sends. Company custom fields need no read. */
+                                    reads_needed: number;
+                                };
+                                /** @description Leads that would wait at a step with on_missing hold, a variable of it having no value. */
+                                held: number;
                             } | null;
                             /** @description Enrollments by state. */
                             counts: {
@@ -51154,17 +54092,28 @@ export interface operations {
                             email_bounced: number;
                             /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                             no_email: number;
-                            /** @description Lead variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
                             fields: {
-                                /** @description Long form, as lead.first_name or lead.extra.opener. */
+                                /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                 variable: string;
                                 steps: string[];
                                 /** @enum {string} */
                                 on_missing: "fallback" | "skip" | "hold";
                                 missing: number;
-                                /** @description Leads for whom it cannot be told before the send; 0 for Lead fields. */
+                                /** @description Leads for whom it cannot be told before the send: a company field (the name included) of a company whose stored record is missing or over 30 days old, read when the step sends. 0 for Lead fields and company custom fields. */
                                 unknown: number;
                             }[];
+                            /** @description The Leads' companies, from stored data. */
+                            company: {
+                                /** @description Leads with no known company id that a company variable reaches; their company variables are missing ({{company.name}} renders their own company text). */
+                                leads_without_company: number;
+                                /** @description Distinct companies of the Leads. */
+                                companies: number;
+                                /** @description Companies whose stored record is missing or over 30 days old that a step with a company field reaches: each is read once, through the sending account, when its first step sends. Company custom fields need no read. */
+                                reads_needed: number;
+                            };
+                            /** @description Leads that would wait at a step with on_missing hold, a variable of it having no value. */
+                            held: number;
                         } | null;
                         /** @description Enrollments by state. */
                         counts: {
@@ -51183,7 +54132,7 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Campaign. They never block a write. */
                         warnings: {
-                            /** @description The warning id, W1 to W21. */
+                            /** @description The warning id, W1 to W22. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -51437,17 +54386,28 @@ export interface operations {
                             email_bounced: number;
                             /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                             no_email: number;
-                            /** @description Lead variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
                             fields: {
-                                /** @description Long form, as lead.first_name or lead.extra.opener. */
+                                /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                 variable: string;
                                 steps: string[];
                                 /** @enum {string} */
                                 on_missing: "fallback" | "skip" | "hold";
                                 missing: number;
-                                /** @description Leads for whom it cannot be told before the send; 0 for Lead fields. */
+                                /** @description Leads for whom it cannot be told before the send: a company field (the name included) of a company whose stored record is missing or over 30 days old, read when the step sends. 0 for Lead fields and company custom fields. */
                                 unknown: number;
                             }[];
+                            /** @description The Leads' companies, from stored data. */
+                            company: {
+                                /** @description Leads with no known company id that a company variable reaches; their company variables are missing ({{company.name}} renders their own company text). */
+                                leads_without_company: number;
+                                /** @description Distinct companies of the Leads. */
+                                companies: number;
+                                /** @description Companies whose stored record is missing or over 30 days old that a step with a company field reaches: each is read once, through the sending account, when its first step sends. Company custom fields need no read. */
+                                reads_needed: number;
+                            };
+                            /** @description Leads that would wait at a step with on_missing hold, a variable of it having no value. */
+                            held: number;
                         } | null;
                         /** @description Enrollments by state. */
                         counts: {
@@ -51466,7 +54426,7 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Campaign. They never block a write. */
                         warnings: {
-                            /** @description The warning id, W1 to W21. */
+                            /** @description The warning id, W1 to W22. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -51854,17 +54814,28 @@ export interface operations {
                             email_bounced: number;
                             /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                             no_email: number;
-                            /** @description Lead variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
                             fields: {
-                                /** @description Long form, as lead.first_name or lead.extra.opener. */
+                                /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                 variable: string;
                                 steps: string[];
                                 /** @enum {string} */
                                 on_missing: "fallback" | "skip" | "hold";
                                 missing: number;
-                                /** @description Leads for whom it cannot be told before the send; 0 for Lead fields. */
+                                /** @description Leads for whom it cannot be told before the send: a company field (the name included) of a company whose stored record is missing or over 30 days old, read when the step sends. 0 for Lead fields and company custom fields. */
                                 unknown: number;
                             }[];
+                            /** @description The Leads' companies, from stored data. */
+                            company: {
+                                /** @description Leads with no known company id that a company variable reaches; their company variables are missing ({{company.name}} renders their own company text). */
+                                leads_without_company: number;
+                                /** @description Distinct companies of the Leads. */
+                                companies: number;
+                                /** @description Companies whose stored record is missing or over 30 days old that a step with a company field reaches: each is read once, through the sending account, when its first step sends. Company custom fields need no read. */
+                                reads_needed: number;
+                            };
+                            /** @description Leads that would wait at a step with on_missing hold, a variable of it having no value. */
+                            held: number;
                         } | null;
                         /** @description Enrollments by state. */
                         counts: {
@@ -51883,7 +54854,7 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Campaign. They never block a write. */
                         warnings: {
-                            /** @description The warning id, W1 to W21. */
+                            /** @description The warning id, W1 to W22. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -52146,17 +55117,28 @@ export interface operations {
                             email_bounced: number;
                             /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                             no_email: number;
-                            /** @description Lead variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
                             fields: {
-                                /** @description Long form, as lead.first_name or lead.extra.opener. */
+                                /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                 variable: string;
                                 steps: string[];
                                 /** @enum {string} */
                                 on_missing: "fallback" | "skip" | "hold";
                                 missing: number;
-                                /** @description Leads for whom it cannot be told before the send; 0 for Lead fields. */
+                                /** @description Leads for whom it cannot be told before the send: a company field (the name included) of a company whose stored record is missing or over 30 days old, read when the step sends. 0 for Lead fields and company custom fields. */
                                 unknown: number;
                             }[];
+                            /** @description The Leads' companies, from stored data. */
+                            company: {
+                                /** @description Leads with no known company id that a company variable reaches; their company variables are missing ({{company.name}} renders their own company text). */
+                                leads_without_company: number;
+                                /** @description Distinct companies of the Leads. */
+                                companies: number;
+                                /** @description Companies whose stored record is missing or over 30 days old that a step with a company field reaches: each is read once, through the sending account, when its first step sends. Company custom fields need no read. */
+                                reads_needed: number;
+                            };
+                            /** @description Leads that would wait at a step with on_missing hold, a variable of it having no value. */
+                            held: number;
                         } | null;
                         /** @description Enrollments by state. */
                         counts: {
@@ -52175,7 +55157,7 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Campaign. They never block a write. */
                         warnings: {
-                            /** @description The warning id, W1 to W21. */
+                            /** @description The warning id, W1 to W22. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -52421,17 +55403,28 @@ export interface operations {
                             email_bounced: number;
                             /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                             no_email: number;
-                            /** @description Lead variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
                             fields: {
-                                /** @description Long form, as lead.first_name or lead.extra.opener. */
+                                /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                 variable: string;
                                 steps: string[];
                                 /** @enum {string} */
                                 on_missing: "fallback" | "skip" | "hold";
                                 missing: number;
-                                /** @description Leads for whom it cannot be told before the send; 0 for Lead fields. */
+                                /** @description Leads for whom it cannot be told before the send: a company field (the name included) of a company whose stored record is missing or over 30 days old, read when the step sends. 0 for Lead fields and company custom fields. */
                                 unknown: number;
                             }[];
+                            /** @description The Leads' companies, from stored data. */
+                            company: {
+                                /** @description Leads with no known company id that a company variable reaches; their company variables are missing ({{company.name}} renders their own company text). */
+                                leads_without_company: number;
+                                /** @description Distinct companies of the Leads. */
+                                companies: number;
+                                /** @description Companies whose stored record is missing or over 30 days old that a step with a company field reaches: each is read once, through the sending account, when its first step sends. Company custom fields need no read. */
+                                reads_needed: number;
+                            };
+                            /** @description Leads that would wait at a step with on_missing hold, a variable of it having no value. */
+                            held: number;
                         } | null;
                         /** @description Enrollments by state. */
                         counts: {
@@ -52450,7 +55443,7 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Campaign. They never block a write. */
                         warnings: {
-                            /** @description The warning id, W1 to W21. */
+                            /** @description The warning id, W1 to W22. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -52685,17 +55678,28 @@ export interface operations {
                             email_bounced: number;
                             /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                             no_email: number;
-                            /** @description Lead variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
                             fields: {
-                                /** @description Long form, as lead.first_name or lead.extra.opener. */
+                                /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                 variable: string;
                                 steps: string[];
                                 /** @enum {string} */
                                 on_missing: "fallback" | "skip" | "hold";
                                 missing: number;
-                                /** @description Leads for whom it cannot be told before the send; 0 for Lead fields. */
+                                /** @description Leads for whom it cannot be told before the send: a company field (the name included) of a company whose stored record is missing or over 30 days old, read when the step sends. 0 for Lead fields and company custom fields. */
                                 unknown: number;
                             }[];
+                            /** @description The Leads' companies, from stored data. */
+                            company: {
+                                /** @description Leads with no known company id that a company variable reaches; their company variables are missing ({{company.name}} renders their own company text). */
+                                leads_without_company: number;
+                                /** @description Distinct companies of the Leads. */
+                                companies: number;
+                                /** @description Companies whose stored record is missing or over 30 days old that a step with a company field reaches: each is read once, through the sending account, when its first step sends. Company custom fields need no read. */
+                                reads_needed: number;
+                            };
+                            /** @description Leads that would wait at a step with on_missing hold, a variable of it having no value. */
+                            held: number;
                         } | null;
                         /** @description Enrollments by state. */
                         counts: {
@@ -52714,7 +55718,7 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Campaign. They never block a write. */
                         warnings: {
-                            /** @description The warning id, W1 to W21. */
+                            /** @description The warning id, W1 to W22. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -52960,17 +55964,28 @@ export interface operations {
                             email_bounced: number;
                             /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                             no_email: number;
-                            /** @description Lead variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
                             fields: {
-                                /** @description Long form, as lead.first_name or lead.extra.opener. */
+                                /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                 variable: string;
                                 steps: string[];
                                 /** @enum {string} */
                                 on_missing: "fallback" | "skip" | "hold";
                                 missing: number;
-                                /** @description Leads for whom it cannot be told before the send; 0 for Lead fields. */
+                                /** @description Leads for whom it cannot be told before the send: a company field (the name included) of a company whose stored record is missing or over 30 days old, read when the step sends. 0 for Lead fields and company custom fields. */
                                 unknown: number;
                             }[];
+                            /** @description The Leads' companies, from stored data. */
+                            company: {
+                                /** @description Leads with no known company id that a company variable reaches; their company variables are missing ({{company.name}} renders their own company text). */
+                                leads_without_company: number;
+                                /** @description Distinct companies of the Leads. */
+                                companies: number;
+                                /** @description Companies whose stored record is missing or over 30 days old that a step with a company field reaches: each is read once, through the sending account, when its first step sends. Company custom fields need no read. */
+                                reads_needed: number;
+                            };
+                            /** @description Leads that would wait at a step with on_missing hold, a variable of it having no value. */
+                            held: number;
                         } | null;
                         /** @description Enrollments by state. */
                         counts: {
@@ -52989,7 +56004,7 @@ export interface operations {
                         };
                         /** @description Lint warnings on the Sequence and the Campaign. They never block a write. */
                         warnings: {
-                            /** @description The warning id, W1 to W21. */
+                            /** @description The warning id, W1 to W22. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -53125,17 +56140,28 @@ export interface operations {
                         email_bounced: number;
                         /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                         no_email: number;
-                        /** @description Lead variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                        /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
                         fields: {
-                            /** @description Long form, as lead.first_name or lead.extra.opener. */
+                            /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                             variable: string;
                             steps: string[];
                             /** @enum {string} */
                             on_missing: "fallback" | "skip" | "hold";
                             missing: number;
-                            /** @description Leads for whom it cannot be told before the send; 0 for Lead fields. */
+                            /** @description Leads for whom it cannot be told before the send: a company field (the name included) of a company whose stored record is missing or over 30 days old, read when the step sends. 0 for Lead fields and company custom fields. */
                             unknown: number;
                         }[];
+                        /** @description The Leads' companies, from stored data. */
+                        company: {
+                            /** @description Leads with no known company id that a company variable reaches; their company variables are missing ({{company.name}} renders their own company text). */
+                            leads_without_company: number;
+                            /** @description Distinct companies of the Leads. */
+                            companies: number;
+                            /** @description Companies whose stored record is missing or over 30 days old that a step with a company field reaches: each is read once, through the sending account, when its first step sends. Company custom fields need no read. */
+                            reads_needed: number;
+                        };
+                        /** @description Leads that would wait at a step with on_missing hold, a variable of it having no value. */
+                        held: number;
                     };
                 };
             };
@@ -53349,6 +56375,8 @@ export interface operations {
                                     omitted: boolean;
                                     /** @description true when a variable had no value or the text was over the account's length limit. */
                                     used_fallback: boolean;
+                                    /** @description true when this variant uses a company field (the name included) of a company whose stored record is missing or over 30 days old, so a send reads that company page first through the sending Account. The preview itself never reads: the text renders from the stored values, or the fallback. */
+                                    company_read: boolean;
                                     /** @description voice.send only: this variant's Voice clip. */
                                     clip_id?: string | null;
                                     /** @description voice.send only: the clip's length in milliseconds; null when no such clip exists. */
@@ -53358,6 +56386,35 @@ export interface operations {
                                 would_skip: string;
                                 /** @description voice.send only: the text sent when the audio cannot go; null when the response already carries 1 MiB of text. */
                                 fallback?: string | null;
+                                /** @description email.send only: the email as this Lead would receive it. A read: no provider call, no Mailbox counter, nothing written. */
+                                email?: {
+                                    /** @description The Mailbox the first email goes from: the sending Account's own Mailboxes in turn, then the Campaign's shared ones. null when waiting is set or no Account is assigned. */
+                                    from: {
+                                        /** @description The Mailbox's display name. */
+                                        name: string | null;
+                                        address: string;
+                                    } | null;
+                                    /**
+                                     * @description no_mailbox: no Mailbox can send for this Account; mailbox_cap: every one is at its cap today.
+                                     * @enum {string|null}
+                                     */
+                                    waiting: "no_mailbox" | "mailbox_cap" | null;
+                                    /** @description The Lead's email address; null when it has none. */
+                                    to: string | null;
+                                    /** @description true when on_missing is hold and a variable has no value for this Lead. */
+                                    would_hold: boolean;
+                                    variants: {
+                                        variant_id: string;
+                                        /** @description The subject as sent; Re: and the thread's first subject on a later thread same step. */
+                                        subject: string | null;
+                                        /** @description The plain-text body as sent, the opt-out text included. null when a variable has no value and no fallback, or the 1 MiB budget is spent. */
+                                        text: string | null;
+                                        /** @description The HTML body as sent, the opt-out text included; null when the email goes as plain text only. */
+                                        html: string | null;
+                                        /** @description The variables whose own fallback was used. */
+                                        used_fallback: string[];
+                                    }[];
+                                };
                             }[];
                         }[];
                         /** @description First page only. An estimate of how long the list takes, from each account's current budget ceilings (warm-up applied). Each Lead is enrolled on min(accounts_per_lead, accounts that can act) accounts; those Enrollments split evenly over the accounts. It ignores what other Campaigns spend. */
@@ -53429,7 +56486,7 @@ export interface operations {
                         };
                         /** @description First page only. Lint warnings, as on the Campaign. */
                         warnings?: {
-                            /** @description The warning id, W1 to W21. */
+                            /** @description The warning id, W1 to W22. */
                             code: string;
                             /** @description Where, as step id then field. */
                             path: string;
@@ -53794,10 +56851,10 @@ export interface operations {
                             status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                             /** @description The Step it is at; null before it starts. */
                             current_step_id: string | null;
-                            /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. */
+                            /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. field_missing: a step set to hold for a missing Lead field (`on_missing: hold`) waits until the field is filled, at most 14 days (`until`), then skips the step and goes on. out_of_office: the Lead is away (an automatic reply to a Campaign email, or the Out of office Reply label); nothing runs and no timeout is decided until the start of the return date in the account's zone (`until`; 7 days on when the reply names none), then the Sequence goes on where it was. */
                             waiting: {
                                 /** @enum {string} */
-                                kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable";
+                                kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable" | "field_missing" | "out_of_office";
                                 /** @description The Step it waits at; null before it starts. */
                                 step_id: string | null;
                                 /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -53957,10 +57014,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. field_missing: a step set to hold for a missing Lead field (`on_missing: hold`) waits until the field is filled, at most 14 days (`until`), then skips the step and goes on. out_of_office: the Lead is away (an automatic reply to a Campaign email, or the Out of office Reply label); nothing runs and no timeout is decided until the start of the return date in the account's zone (`until`; 7 days on when the reply names none), then the Sequence goes on where it was. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable" | "field_missing" | "out_of_office";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -54138,10 +57195,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. field_missing: a step set to hold for a missing Lead field (`on_missing: hold`) waits until the field is filled, at most 14 days (`until`), then skips the step and goes on. out_of_office: the Lead is away (an automatic reply to a Campaign email, or the Out of office Reply label); nothing runs and no timeout is decided until the start of the return date in the account's zone (`until`; 7 days on when the reply names none), then the Sequence goes on where it was. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable" | "field_missing" | "out_of_office";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -54307,10 +57364,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. field_missing: a step set to hold for a missing Lead field (`on_missing: hold`) waits until the field is filled, at most 14 days (`until`), then skips the step and goes on. out_of_office: the Lead is away (an automatic reply to a Campaign email, or the Out of office Reply label); nothing runs and no timeout is decided until the start of the return date in the account's zone (`until`; 7 days on when the reply names none), then the Sequence goes on where it was. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable" | "field_missing" | "out_of_office";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -54483,10 +57540,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. field_missing: a step set to hold for a missing Lead field (`on_missing: hold`) waits until the field is filled, at most 14 days (`until`), then skips the step and goes on. out_of_office: the Lead is away (an automatic reply to a Campaign email, or the Out of office Reply label); nothing runs and no timeout is decided until the start of the return date in the account's zone (`until`; 7 days on when the reply names none), then the Sequence goes on where it was. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable" | "field_missing" | "out_of_office";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -54668,10 +57725,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. field_missing: a step set to hold for a missing Lead field (`on_missing: hold`) waits until the field is filled, at most 14 days (`until`), then skips the step and goes on. out_of_office: the Lead is away (an automatic reply to a Campaign email, or the Out of office Reply label); nothing runs and no timeout is decided until the start of the return date in the account's zone (`until`; 7 days on when the reply names none), then the Sequence goes on where it was. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable" | "field_missing" | "out_of_office";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -54853,10 +57910,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. field_missing: a step set to hold for a missing Lead field (`on_missing: hold`) waits until the field is filled, at most 14 days (`until`), then skips the step and goes on. out_of_office: the Lead is away (an automatic reply to a Campaign email, or the Out of office Reply label); nothing runs and no timeout is decided until the start of the return date in the account's zone (`until`; 7 days on when the reply names none), then the Sequence goes on where it was. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable" | "field_missing" | "out_of_office";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -55047,10 +58104,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. field_missing: a step set to hold for a missing Lead field (`on_missing: hold`) waits until the field is filled, at most 14 days (`until`), then skips the step and goes on. out_of_office: the Lead is away (an automatic reply to a Campaign email, or the Out of office Reply label); nothing runs and no timeout is decided until the start of the return date in the account's zone (`until`; 7 days on when the reply names none), then the Sequence goes on where it was. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable" | "field_missing" | "out_of_office";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -55248,10 +58305,10 @@ export interface operations {
                         status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
                         /** @description The Step it is at; null before it starts. */
                         current_step_id: string | null;
-                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. */
+                        /** @description What it waits for; null when nothing holds it. paused_by_user: you paused this Enrollment; it holds until you resume it, whatever else returns. account_unavailable, campaign_paused: its account or Campaign holds it. no_overlap: the Campaign's days and hours never meet the account's Active hours, so nothing can run; change one of them. no_mailbox: an email step has no Mailbox that can send for its account (none connected, or the one its thread is on is paused or needs a reconnect); it sends once one can. mailbox_cap: the Mailbox reached today's limit; it sends on the next day. email_unavailable: Curviate cannot send email right now; it resumes on its own. field_missing: a step set to hold for a missing Lead field (`on_missing: hold`) waits until the field is filled, at most 14 days (`until`), then skips the step and goes on. out_of_office: the Lead is away (an automatic reply to a Campaign email, or the Out of office Reply label); nothing runs and no timeout is decided until the start of the return date in the account's zone (`until`; 7 days on when the reply names none), then the Sequence goes on where it was. */
                         waiting: {
                             /** @enum {string} */
-                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable";
+                            kind: "wait" | "event" | "queue" | "budget" | "account_unavailable" | "campaign_paused" | "halt" | "kill_switch" | "paused_by_user" | "no_overlap" | "no_mailbox" | "mailbox_cap" | "email_unavailable" | "field_missing" | "out_of_office";
                             /** @description The Step it waits at; null before it starts. */
                             step_id: string | null;
                             /** @description ISO 8601, when the wait ends; null when open-ended. */
@@ -57969,7 +61026,7 @@ export interface operations {
                                 used: number | null;
                                 /** @description What this account is allowed on this row in this window, as configured. `null` where the row deliberately has no ceiling: the tally is reported and never enforced, and an uncalibrated row has no figure at all. Change it on the safety policy; Curviate never clamps what you set. */
                                 ceiling: number | null;
-                                /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (the first four weeks after warm-up was turned on, at connect or later, or while it recovers from a restriction) the two differ, and in the first week after connect they differ by a factor of about seven. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
+                                /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (its ramp after warm-up was turned on, at connect or later, or while it recovers from a restriction) the two differ: on the ramp's first day the effective ceiling is 30 percent of `ceiling`. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
                                 effective_ceiling?: number | null;
                                 /** @description What the account aims at today on this row: the engine's own figure for the account-day, drawn from the account's limit and green figure at the level in force (`normal` about midway, `increased` close to the limit), never past the limit; it differs from day to day. On InMail it is the green figure. Null where the row has no limit to aim at. */
                                 target?: number | null;
@@ -58199,6 +61256,404 @@ export interface operations {
                 };
             };
             /** @description RESOURCE_NOT_FOUND: campaign_id is not one of your Campaigns, or lead_id not one of your Leads (a merged one names the Lead it was merged into). ACCOUNT_NOT_FOUND: account_id is not one of your accounts, or was removed. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1AnalyticsEmail: {
+        parameters: {
+            query?: {
+                /** @description First day of the window, YYYY-MM-DD, read in timezone. Default: 29 days before to. */
+                from?: string;
+                /** @description Last day of the window, inclusive, YYYY-MM-DD, read in timezone. Default: today (29 days after from when only from is set); a later day is clamped to today. */
+                to?: string;
+                /** @description 7d, 30d, 90d, 12m (same date a year back, 366 days across a 29 February) or all (since the Team was created). Not with from or to. */
+                range?: "7d" | "30d" | "90d" | "12m" | "all";
+                /** @description Groups daily: day, week (from Monday), month, or auto (day to 90 days, week to 366, month beyond). Default: auto with range, day with from/to. */
+                bucket?: "auto" | "day" | "week" | "month";
+                /** @description IANA zone the days are read in, e.g. Europe/Berlin. Default: UTC. */
+                timezone?: string;
+                /** @description Only these accounts (acc_...). Default: every account you can see. Repeat the key, comma-separate or mix; empties ignored. */
+                account_id?: string;
+                /** @description Only these Campaigns (mot_...). Default: every Campaign. Repeat the key, comma-separate or mix; empties ignored. */
+                campaign_id?: string;
+                /** @description Sections to add. Repeat the key, comma-separate or mix; empties ignored. */
+                include?: string;
+            };
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Email results of your Campaigns' email steps in the window, from a rollup kept per hour of each send. Rates use the window's sends: an outcome that comes later counts for the day of the email it belongs to. A Mailbox shared by several accounts counts, under account_id, only that account's sends. Warm-up mail, placement tests and email sent by hand are never counted. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "email_analytics";
+                        /** @description The window as applied. */
+                        window: {
+                            /** @description First day, YYYY-MM-DD. */
+                            from: string;
+                            /** @description Last day, inclusive. */
+                            to: string;
+                            /** @description IANA zone the days are read in. */
+                            timezone: string;
+                            /** @description Days in the window. */
+                            days: number;
+                            /**
+                             * @description How daily is grouped (auto resolved: day up to 90 days, week up to 366, month beyond).
+                             * @enum {string}
+                             */
+                            bucket: "day" | "week" | "month";
+                        };
+                        scope: {
+                            /** @description The accounts filtered; empty: every account you can see. */
+                            account_ids: string[];
+                            /** @description The Campaigns filtered; empty: every Campaign. */
+                            campaign_ids: string[];
+                        };
+                        /** @description UTC instant of the read; outcomes so far and maturing are measured at it. */
+                        generated_at: string;
+                        /**
+                         * @description Open tracking of the Mailboxes in scope: on every one, on some (open is then over the tracked emails), or on none (open is null). Recommended: set it up in the Mailboxes tab.
+                         * @enum {string}
+                         */
+                        tracking: "set_up" | "partial" | "not_set_up";
+                        /** @description Emails sent. */
+                        sent: number;
+                        /** @description Leads emailed for the first time in the window, with no reply before that email. */
+                        first_emailed: number;
+                        /** @description Emails the provider refused for now (a daily or rate limit). Never a bounce. */
+                        refusals: number;
+                        /** @description Of the Leads first emailed in the window, the share whose first reply, by email or on LinkedIn, came after that email, so far. An out-of-office reply is never a reply. */
+                        reply: {
+                            /** @description Numerator: the replied part of first_emailed, so far. */
+                            replied: number;
+                            /** @description Denominator. */
+                            first_emailed: number;
+                            /** @description replied / first_emailed, 4 decimals; null when first_emailed is 0. */
+                            rate: number | null;
+                            /** @description True when first_emailed is below 30. The rate is still returned. */
+                            low_sample: boolean;
+                            /** @description Of first_emailed, no reply yet. */
+                            pending: number;
+                            /** @description Of first_emailed, sent less than 7 days before generated_at. Still in the rate. */
+                            maturing: number;
+                            /** @description maturing / first_emailed, 4 decimals; null when first_emailed is 0. Still maturing when maturing x 3 > first_emailed. */
+                            maturing_share: number | null;
+                            /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                            previous?: {
+                                /** @description replied in the previous period. */
+                                replied: number;
+                                /** @description first_emailed in the previous period. */
+                                first_emailed: number;
+                                /** @description null when first_emailed is 0. */
+                                rate: number | null;
+                            };
+                            /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                            delta?: number | null;
+                        };
+                        /** @description Of the emails sent with open tracking, the share a person opened. Opens by mail scanners and security gateways are counted apart (opens.machine), never here. Null when no Mailbox in scope has tracking set up. */
+                        open: {
+                            /** @description Numerator: the opened part of tracked, so far. */
+                            opened: number;
+                            /** @description Denominator. */
+                            tracked: number;
+                            /** @description opened / tracked, 4 decimals; null when tracked is 0. */
+                            rate: number | null;
+                            /** @description True when tracked is below 30. The rate is still returned. */
+                            low_sample: boolean;
+                            /** @description Of tracked, not opened yet. */
+                            pending: number;
+                            /** @description Of tracked, sent less than 7 days before generated_at. Still in the rate. */
+                            maturing: number;
+                            /** @description maturing / tracked, 4 decimals; null when tracked is 0. Still maturing when maturing x 3 > tracked. */
+                            maturing_share: number | null;
+                            /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                            previous?: {
+                                /** @description opened in the previous period. */
+                                opened: number;
+                                /** @description tracked in the previous period. */
+                                tracked: number;
+                                /** @description null when tracked is 0. */
+                                rate: number | null;
+                            };
+                            /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                            delta?: number | null;
+                        } | null;
+                        /** @description Of the emails sent, the share that bounced for good (hard bounces), the figure a Mailbox pauses on. Soft bounces and refusals are never in it. Shown in the dashboard from 50 emails. */
+                        bounce: {
+                            /** @description Numerator: the bounced part of sent, so far. */
+                            bounced: number;
+                            /** @description Denominator. */
+                            sent: number;
+                            /** @description bounced / sent, 4 decimals; null when sent is 0. */
+                            rate: number | null;
+                            /** @description True when sent is below 30. The rate is still returned. */
+                            low_sample: boolean;
+                            /** @description Of sent, not bounced. */
+                            pending: number;
+                            /** @description Of sent, sent less than 7 days before generated_at. Still in the rate. */
+                            maturing: number;
+                            /** @description maturing / sent, 4 decimals; null when sent is 0. Still maturing when maturing x 3 > sent. */
+                            maturing_share: number | null;
+                            /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                            previous?: {
+                                /** @description bounced in the previous period. */
+                                bounced: number;
+                                /** @description sent in the previous period. */
+                                sent: number;
+                                /** @description null when sent is 0. */
+                                rate: number | null;
+                            };
+                            /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                            delta?: number | null;
+                        };
+                        /** @description Of the Leads first emailed in the window, the share who opted out, by any route. */
+                        opt_out: {
+                            /** @description Numerator: the opted_out part of first_emailed, so far. */
+                            opted_out: number;
+                            /** @description Denominator. */
+                            first_emailed: number;
+                            /** @description opted_out / first_emailed, 4 decimals; null when first_emailed is 0. */
+                            rate: number | null;
+                            /** @description True when first_emailed is below 30. The rate is still returned. */
+                            low_sample: boolean;
+                            /** @description Of first_emailed, not opted out. */
+                            pending: number;
+                            /** @description Of first_emailed, sent less than 7 days before generated_at. Still in the rate. */
+                            maturing: number;
+                            /** @description maturing / first_emailed, 4 decimals; null when first_emailed is 0. Still maturing when maturing x 3 > first_emailed. */
+                            maturing_share: number | null;
+                            /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                            previous?: {
+                                /** @description opted_out in the previous period. */
+                                opted_out: number;
+                                /** @description first_emailed in the previous period. */
+                                first_emailed: number;
+                                /** @description null when first_emailed is 0. */
+                                rate: number | null;
+                            };
+                            /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                            delta?: number | null;
+                        };
+                        replies: {
+                            /** @description reply.replied split by channel. */
+                            by_channel: {
+                                /** @description First replies by email. */
+                                email: number;
+                                /** @description First replies on LinkedIn. */
+                                linkedin: number;
+                            };
+                            /** @description Replies by Reply label (unsure: below the label threshold; unlabelled: not labelled), each on the email it answers. */
+                            by_label: {
+                                [key: string]: number;
+                            };
+                            /** @description Replies by time after the email they answer: lt_1h, lt_1d, lt_3d, lt_7d, gte_7d. */
+                            by_delay: {
+                                [key: string]: number;
+                            };
+                            /** @description Out-of-office answers, automatic or labelled. Never a reply. */
+                            out_of_office: number;
+                        };
+                        opens: {
+                            /** @description Emails whose first open was a person's. */
+                            human: number;
+                            /** @description Emails first opened by a scanner or a security gateway (at delivery, or a known scanner network). */
+                            machine: number;
+                        };
+                        bounces: {
+                            /** @description Hard bounces. */
+                            hard: number;
+                            /** @description Soft bounces: delayed or refused for now. Never in the rate, never pause a Mailbox. */
+                            soft: number;
+                            /** @description Hard bounces by class: address, mailbox, system, network, protocol, content, policy, other. */
+                            by_reason: {
+                                [key: string]: number;
+                            };
+                        };
+                        opt_outs: {
+                            /** @description opt_out.opted_out split by route. */
+                            by_route: {
+                                /** @description By the unsubscribe link. */
+                                link: number;
+                                /** @description By the mail app's one-click unsubscribe. */
+                                one_click: number;
+                                /** @description By a reply asking to stop. */
+                                reply: number;
+                            };
+                            one_click: {
+                                /** @description True while one-click unsubscribe is not yet confirmed working; one_click then stays 0. */
+                                pending_test: boolean;
+                            };
+                        };
+                        /** @description Leads reached only because email exists. */
+                        never_accepted: {
+                            /** @description Of first_emailed, Leads who were not a connection of the sending account at the email. */
+                            first_emailed: number;
+                            /** @description The reply rate of those Leads. */
+                            reply: {
+                                /** @description Numerator: the replied part of first_emailed, so far. */
+                                replied: number;
+                                /** @description Denominator. */
+                                first_emailed: number;
+                                /** @description replied / first_emailed, 4 decimals; null when first_emailed is 0. */
+                                rate: number | null;
+                                /** @description True when first_emailed is below 30. The rate is still returned. */
+                                low_sample: boolean;
+                                /** @description Of first_emailed, no reply yet. */
+                                pending: number;
+                                /** @description Of first_emailed, sent less than 7 days before generated_at. Still in the rate. */
+                                maturing: number;
+                                /** @description maturing / first_emailed, 4 decimals; null when first_emailed is 0. Still maturing when maturing x 3 > first_emailed. */
+                                maturing_share: number | null;
+                                /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                previous?: {
+                                    /** @description replied in the previous period. */
+                                    replied: number;
+                                    /** @description first_emailed in the previous period. */
+                                    first_emailed: number;
+                                    /** @description null when first_emailed is 0. */
+                                    rate: number | null;
+                                };
+                                /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                delta?: number | null;
+                            };
+                        };
+                        /** @description Today's sending against the daily cap. */
+                        today: {
+                            /** @description Emails sent today, in timezone. */
+                            sent: number;
+                            /** @description The daily caps of the Mailboxes in scope, added up. */
+                            cap: number;
+                            /** @description Mailboxes in scope still ramping up: each reads ramping up to cap a day. */
+                            ramping: {
+                                /** @description Mailbox id (mbx_...). */
+                                mailbox_id: string;
+                                /** @description The daily cap it ramps up to. */
+                                cap: number;
+                            }[];
+                        };
+                        /** @description One entry per day of the window, oldest first, days without email included. */
+                        daily: {
+                            /** @description The day, YYYY-MM-DD, in timezone. */
+                            date: string;
+                            /** @description Emails sent that day. */
+                            sent: number;
+                            /** @description The daily caps of the Mailboxes in scope, added up. */
+                            cap: number;
+                            /** @description Of the Leads first emailed that day, the share who replied so far; null on a day with no email. */
+                            reply: number | null;
+                            /** @description Of that day's tracked emails, the share a person opened; null on a day with no email or without tracking. */
+                            open: number | null;
+                            /** @description Of the Leads first emailed that day, the share who opted out; null on a day with no email. */
+                            opt_out: number | null;
+                            /** @description Of that day's emails, the share that hard bounced; null on a day with no email. */
+                            bounce: number | null;
+                            /** @description True on the last 4 days: their reply and open rates are still rising. */
+                            fading: boolean;
+                        }[];
+                        /** @description With include=weeks: the reply rate by week of first email, Monday-start weeks in timezone. */
+                        weeks?: {
+                            /** @description The week's Monday, YYYY-MM-DD. */
+                            week_start: string;
+                            /** @description Leads first emailed that week. */
+                            first_emailed: number;
+                            /** @description Of those Leads, the share who replied so far. */
+                            reply: {
+                                /** @description Numerator: the replied part of first_emailed, so far. */
+                                replied: number;
+                                /** @description Denominator. */
+                                first_emailed: number;
+                                /** @description replied / first_emailed, 4 decimals; null when first_emailed is 0. */
+                                rate: number | null;
+                                /** @description True when first_emailed is below 30. The rate is still returned. */
+                                low_sample: boolean;
+                                /** @description Of first_emailed, no reply yet. */
+                                pending: number;
+                                /** @description Of first_emailed, sent less than 7 days before generated_at. Still in the rate. */
+                                maturing: number;
+                                /** @description maturing / first_emailed, 4 decimals; null when first_emailed is 0. Still maturing when maturing x 3 > first_emailed. */
+                                maturing_share: number | null;
+                                /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                previous?: {
+                                    /** @description replied in the previous period. */
+                                    replied: number;
+                                    /** @description first_emailed in the previous period. */
+                                    first_emailed: number;
+                                    /** @description null when first_emailed is 0. */
+                                    rate: number | null;
+                                };
+                                /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                delta?: number | null;
+                            };
+                            /** @description True while more than a third of those Leads were first emailed less than 7 days ago. */
+                            maturing: boolean;
+                        }[];
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: an unknown query parameter, a malformed or too long window (from:, to:, range:), an unknown zone (timezone:), more than 50 ids (campaign_id:, account_id:), or an include value other than weeks (include:; the others are not served yet). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Only with account_id, in a team. ACCOUNT_NOT_SHARED: the teammate turned team access off for the account, so only they read its numbers. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: a campaign_id is not one of your Campaigns. ACCOUNT_NOT_FOUND: an account_id is not one of your accounts, or was removed. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -59513,6 +62968,96 @@ export interface operations {
             };
         };
     };
+    postV1BillingSubscriptionMoveToCurrentPrice: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The subscription is on the current price. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Always true on success.
+                         * @enum {boolean}
+                         */
+                        moved: true;
+                        /**
+                         * @description The billing period, unchanged by the move.
+                         * @enum {string}
+                         */
+                        period: "monthly" | "annual";
+                        /** @description The seats moved, unchanged by the move. */
+                        seats: number;
+                        /** @description What was charged today in cents, tax included: a yearly move's invoice. 0 for a monthly move, charged on the next invoice. */
+                        charged_today: number;
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: the Team is already on the current price, has no subscription, or its previous price cannot be moved in place. Nothing was charged. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description PAYMENT_FAILED: the card was refused and the subscription stays on its previous price. PAYMENT_REQUIRED: a payment is overdue. */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: only an Owner of the Team moves the subscription. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     getV1BillingTier: {
         parameters: {
             query?: never;
@@ -59542,12 +63087,12 @@ export interface operations {
                          */
                         object: "tier";
                         /**
-                         * @description The Tier the Team has now: the highest of the Tier it bought, its trial's Tier while the trial runs, and a Tier granted to it. Null when it has none.
+                         * @description Whether the Team holds the plan now, with every feature: the Tier with every feature while it pays, while its trial runs, or while Curviate grants it the plan. Null when it holds none.
                          * @enum {string|null}
                          */
                         tier: "build" | "automate" | null;
                         /**
-                         * @description The Tier of the Team's subscription. Null without a live subscription.
+                         * @description The Tier named by the Team's subscription price: a previous price's own name, or the Tier with every feature on the current price. Null without a live subscription.
                          * @enum {string|null}
                          */
                         bought_tier: "build" | "automate" | null;

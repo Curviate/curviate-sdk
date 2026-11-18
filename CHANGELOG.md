@@ -7,6 +7,46 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [0.53.0] - 2026-11-18
+
+Regenerated `fixtures/openapi.json` and the generated types from the production document (`fixtures/PROVENANCE.json`, server commit `c8b370ae4`); the Sequence validator and its corpus re-vendored from the same tree. Nothing narrows: every change below adds a method, a field, a filter or a union member.
+
+### Wider unions
+
+An exhaustive `switch` must handle: Enrollment `waiting.kind` gains `field_missing` (a Lead field a step needs is empty) and `out_of_office` (a reply labelled out of office: the Lead waits 7 days); Lead import `waiting.kind` may read `pushback` (LinkedIn pushed back on a read; every import of the Account cools off); Campaign warnings gain W22 (`no_sending_account`: no sending Account can run, so nothing is sent).
+
+### Reply labels
+
+- **`unibox.list({ reply_label })`** keeps chats by their latest Reply label (several; `"none"` adds the unlabelled ones), and every chat carries `reply_label`.
+- **`unibox.getReplyLabel(messageId)`** reads a message's label and its history; **`unibox.updateMessage(messageId, { reply_label })`** sets or corrects it, acting as when Curviate sets it.
+- **`teams.getReplyLabels()`** and **`teams.updateReplyLabels()`**: labels on or off, `not_interested` to the Do-not-contact list, a Tag id per label.
+- Error `REPLY_NOT_LABELLABLE` (422) and type `ReplyLabel`.
+
+### Lead imports
+
+- `source.kind` takes `sales_nav_search`, `sales_nav_lead_list`, `recruiter_search`, `post_engagers`, `group_members` and `company_people` (with `titles`), by URL or built `filters`; `continue_from` and `restart` on `leads.imports.create`.
+- **`leads.imports.pause(id)`**, **`resume(id)`**, **`stop(id)`**. Errors `IMPORT_STATUS_CONFLICT` and `IMPORT_CANNOT_CONTINUE` (409).
+
+### Email
+
+- **`analytics.email()`** (`GET /v1/analytics/email`): sent, the reply, open, bounce and opt-out rates, `today` against the daily caps, the `daily` series, `include: ["weeks"]`.
+- Leads carry `email_bounced_at`. Notifications carry `channel` and `notifications.list({ channel })` filters by it (`email`, `linkedin`, `team`).
+- Mailboxes: `display_name` (the From name) on `mailboxes.update` and on a Mailbox connect request; `mailboxes.discover` may answer `source: "none"`; `domains.check` carries `dkim_selector` and runs for a domain before its first Mailbox.
+
+### Companies
+
+- **`curviate.companies.get(companyId)`** and **`update(companyId, { extra })`**: your Team's stored company record and its own company fields, no LinkedIn call.
+- `account(id).companies.get(identifier, { mode, max_age })`: the company read takes the retrieval mode.
+- Sequences: `{{company.name}}`, `{{company.industry}}`, `{{company.website}}`, `{{company.size}}`, `{{company.headcount_growth}}`, `{{company.location}}` and `{{company.extra.<key>}}`, accepted by the builder's compile-time checks and by `validateSequence` (R16 names the nearest company field). The Lead check carries `company` and `held`; a preview variant carries `company_read`.
+
+### Signals
+
+- **`curviate.signals`**: `list` (paged; `kind`, `account_id`, `match`, `listed`, `since`), `get`, `kinds`, `watch`, `updateSettings`; **`curviate.signals.rules`**: `list`, `create`, `get`, `update`, `delete`.
+
+### Billing
+
+- **`billing.moveToCurrentPrice()`** moves a subscription on a previous price to the current price now. It charges money (yearly: today, `charged_today`); a Team already on the current price is refused and nothing is charged. Owners only.
+
 ## [0.52.0] - 2026-11-17
 
 Regenerated `fixtures/openapi.json` and the generated types from the served document of the server tree that merges staging with the email Campaign bundle (`fixtures/PROVENANCE.json`, server commit `8c675b5b8`); the Sequence validator, its corpus and the webhook template corpus re-vendored from the same tree.

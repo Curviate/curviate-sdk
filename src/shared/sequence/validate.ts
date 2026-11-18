@@ -2,7 +2,7 @@
 import { businessDays, durationMinutes } from "./paths.js";
 import { normalizePath } from "../field-paths.js";
 import { awaitedEventName } from "./references.js";
-import { ACCOUNT_FIELDS, ACTION_PARAMS, ACTIONS, VOICE_CLIP_ID_RE, VOICE_CLIP_RULE, BOOLEAN_PREDICATES, DURATION_BOUNDS, DEPRECATED_ACCEPTED_UNTIL, DURATION_PATTERN, BUSINESS_DAYS, EMAIL_OPT_OUT_FORMS, EMAIL_REFUSED_KEYS, EMAIL_THREADS, END, hasEmailStep, EVENT_NAME_PATTERN, EVENTS, EXTRA_KEY_PATTERN, FIELD_OPERATORS, ID_PATTERN, MAX_PREDICATE_DEPTH, MAX_QUOTED_TOKEN_CHARS, MAX_SAVE_ENTRIES, MAX_SEQUENCE_BYTES, MAX_STEP_NOTE_CHARS, MAX_STEPS, MAX_VARIABLE_REFS_PER_TEXT, MAX_TAG_CHARS, MAX_VARIANTS, MAX_VARIANT_WEIGHT, MIN_VARIANT_WEIGHT, MESSAGING_ACTIONS, MY_FIELDS, MIN_VARIANTS, NAME_FIELDS, NUMBER_OPERATORS, ON_MISSING, OPT_OUT_MAX, OPT_OUT_TEXTS, REACTIONS, SAVE_NAME_PATTERN, SEQUENCE_SCHEMA_URL, STANDARD_FIELDS, languageCode, STEP_KEYS, STEP_KINDS, TAG_PATTERN, TEXT_LIMITS, type Action, type StepKind, fallbackKeyword, isObject, longVariable, } from "./limits.js";
+import { ACCOUNT_FIELDS, ACTION_PARAMS, ACTIONS, VOICE_CLIP_ID_RE, VOICE_CLIP_RULE, BOOLEAN_PREDICATES, DURATION_BOUNDS, DEPRECATED_ACCEPTED_UNTIL, DURATION_PATTERN, BUSINESS_DAYS, EMAIL_OPT_OUT_FORMS, EMAIL_REFUSED_KEYS, EMAIL_THREADS, END, hasEmailStep, EVENT_NAME_PATTERN, EVENTS, EXTRA_KEY_PATTERN, FIELD_OPERATORS, ID_PATTERN, MAX_PREDICATE_DEPTH, MAX_QUOTED_TOKEN_CHARS, MAX_SAVE_ENTRIES, MAX_SEQUENCE_BYTES, MAX_STEP_NOTE_CHARS, MAX_STEPS, MAX_VARIABLE_REFS_PER_TEXT, MAX_TAG_CHARS, MAX_VARIANTS, MAX_VARIANT_WEIGHT, MIN_VARIANT_WEIGHT, MESSAGING_ACTIONS, MY_FIELDS, MIN_VARIANTS, COMPANY_FIELDS, NAME_FIELDS, NUMBER_OPERATORS, ON_MISSING, OPT_OUT_MAX, OPT_OUT_TEXTS, REACTIONS, SAVE_NAME_PATTERN, SEQUENCE_SCHEMA_URL, STANDARD_FIELDS, languageCode, STEP_KEYS, STEP_KINDS, TAG_PATTERN, TEXT_LIMITS, type Action, type StepKind, fallbackKeyword, isObject, longVariable, } from "./limits.js";
 import { isMessageSend } from "./message-actions.js";
 import { ruleHelp } from "./rules.js";
 export interface PathRule {
@@ -33,6 +33,10 @@ export interface MotionWarningContext {
     assign?: string | undefined;
     minEmailGap?: number | undefined;
     noMailbox?: readonly string[] | undefined;
+    noSendingAccount?: readonly {
+        account: string;
+        reason: string;
+    }[] | undefined;
 }
 export const EMAIL_GAP_LOW_BELOW = 2;
 export type SampleShapes = Readonly<Record<string, readonly {
@@ -84,6 +88,8 @@ export function motionWarnings(doc: unknown, ctx: MotionWarningContext & {
     if ((ctx.variableKeys ?? 0) > 0) {
         warn("W13", "settings.variables", "", `Campaign variables were removed${UNTIL}; write the text in place or use a custom field`, "text in place or a custom field");
     }
+    for (const w of ctx.noSendingAccount ?? [])
+        warn("W22", "account_ids", "", `no_sending_account: ${quote(w.account)} ${w.reason}, and no other sending Account can run, so nothing is sent`);
     if (!isObject(doc))
         return out;
     const steps = Array.isArray(doc["steps"]) ? doc["steps"] : [];
@@ -230,7 +236,7 @@ function variablesIn(text: string): Variable[] {
 }
 const lacksFallback = (v: Variable): boolean => v.fallback === null && v.inner !== "mailbox.signature" && !v.inner.startsWith("campaign.");
 const PIPE_ACTIONS: readonly string[] = ["message.send", "inmail.send", "email.send"];
-export function leadVariablesWithoutFallback(doc: unknown): Array<{
+export function variablesWithoutFallback(doc: unknown): Array<{
     variable: string;
     steps: string[];
     on_missing: string;
@@ -253,7 +259,7 @@ export function leadVariablesWithoutFallback(doc: unknown): Array<{
                     continue;
                 for (const v of variablesIn(arm[k] as string).filter(lacksFallback)) {
                     const long = longVariable(v.inner);
-                    if (long === null || !long.startsWith("lead."))
+                    if (long === null || !(long.startsWith("lead.") || long.startsWith("company.")))
                         continue;
                     const key = `${long}|${onMissing}`;
                     const e = out.get(key) ?? { variable: long, steps: [], on_missing: onMissing };
@@ -361,6 +367,18 @@ function checkText(ctx: Ctx, order: number, path: string, pointer: string, paren
             issue(ctx, { ...at, code: "R16", rule: `${quote(v.token)}: the my_ prefix is reserved for my_first_name, my_last_name and my_full_name` });
             continue;
         }
+        const company = /^company\.(.*)$/s.exec(v.inner);
+        if (company && !isKnownVariable(v.inner)) {
+            const near = [...COMPANY_FIELDS].sort((a, b) => distance(company[1]!, a, 64) - distance(company[1]!, b, 64)).slice(0, 3).map((f) => `{{company.${f}}}`);
+            issue(ctx, {
+                ...at,
+                code: "R16",
+                rule: `unknown company variable ${quote(v.token)}; use ${COMPANY_FIELDS.map((f) => `company.${f}`).join(", ")} or a company custom field company.extra.<key>`,
+                token: near[0]!,
+                candidates: near,
+            });
+            continue;
+        }
         if (!isKnownVariable(v.inner)) {
             issue(ctx, {
                 ...at,
@@ -422,6 +440,10 @@ function isKnownVariable(inner: string): boolean {
         return (STANDARD_FIELDS as readonly string[]).includes(long.slice(5));
     if (long.startsWith("account."))
         return (ACCOUNT_FIELDS as readonly string[]).includes(long.slice(8));
+    if (long.startsWith("company.extra."))
+        return EXTRA_KEY_RE.test(long.slice("company.extra.".length));
+    if (long.startsWith("company."))
+        return (COMPANY_FIELDS as readonly string[]).includes(long.slice(8));
     return false;
 }
 function checkClipId(ctx: Ctx, order: number, path: string, pointer: string, parent: string, value: unknown): null {
