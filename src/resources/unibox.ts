@@ -1,5 +1,5 @@
 /**
- * Unibox (root-scoped): `curviate.unibox` (10 methods) and
+ * Unibox (root-scoped): `curviate.unibox` (14 methods) and
  * `curviate.unibox.accounts` (2 methods).
  *
  * The Unibox is one inbox over every account you can operate, served from
@@ -54,6 +54,14 @@ export type ReplyLabel = NonNullable<ReplyLabelHistory["current"]>["label"];
 export type UniboxConversation = paths[ConversationPath]["get"]["responses"]["200"]["content"]["application/json"];
 export type UniboxConversationMessagesParams = NonNullable<paths[`${ConversationPath}/messages`]["get"]["parameters"]["query"]>;
 export type UniboxConversationMessagesPage = paths[`${ConversationPath}/messages`]["get"]["responses"]["200"]["content"]["application/json"];
+export type UniboxConversationMarkBody = NonNullable<paths[ConversationPath]["patch"]["requestBody"]>["content"]["application/json"];
+export type UniboxConversationMarkResult = paths[ConversationPath]["patch"]["responses"]["200"]["content"]["application/json"];
+export type UniboxSendEmailBody = NonNullable<paths[`${ConversationPath}/emails`]["post"]["requestBody"]>["content"]["application/json"];
+export type UniboxSentEmail = paths[`${ConversationPath}/emails`]["post"]["responses"]["201"]["content"]["application/json"];
+export type ReferralSearchBody = NonNullable<paths["/v1/unibox/messages/{message_id}/referral/search"]["post"]["requestBody"]>["content"]["application/json"];
+export type ReferralSearchResult = paths["/v1/unibox/messages/{message_id}/referral/search"]["post"]["responses"]["200"]["content"]["application/json"];
+export type ReferralConfirmBody = NonNullable<paths["/v1/unibox/messages/{message_id}/referral/confirm"]["post"]["requestBody"]>["content"]["application/json"];
+export type ReferralConfirmResult = paths["/v1/unibox/messages/{message_id}/referral/confirm"]["post"]["responses"]["201"]["content"]["application/json"];
 export type UniboxAccountUpdateBody = NonNullable<paths["/v1/unibox/accounts/{account_id}"]["patch"]["requestBody"]>["content"]["application/json"];
 
 /** `curviate.unibox.accounts`: full-inbox sync per account. */
@@ -195,6 +203,67 @@ export class UniboxResource {
       (p) => this.ctx.request<UniboxConversationMessagesPage>({ method: "GET", path: apiPath`/v1/unibox/conversations/${conversationId}/messages`, ...(p ? { query: p } : {}) }),
       params,
     );
+  }
+
+  /**
+   * Mark a conversation read (`{ read: true }`) or unread: its LinkedIn chat
+   * on LinkedIn, and its email in Curviate (the Mailbox itself is never
+   * changed). An email from them makes it unread again.
+   * `PATCH /v1/unibox/conversations/{conversation_id}`
+   *
+   * @example
+   * await curviate.unibox.markConversation("cnv_123", { read: false }); // hand it to a person
+   */
+  markConversation(conversationId: string, body: UniboxConversationMarkBody): Promise<UniboxConversationMarkResult> {
+    return this.ctx.request<UniboxConversationMarkResult>({ method: "PATCH", path: apiPath`/v1/unibox/conversations/${conversationId}`, body });
+  }
+
+  /**
+   * Send one plain-text email to the conversation's Lead, at once: a reply in
+   * one of its threads (`thread_id`), or a new thread (`subject`, and
+   * `mailbox_id` when more than one Mailbox can send). It goes to the Lead's
+   * one address with no signature and no opt-out line, counts against the
+   * Mailbox's daily limit, and ends the Lead's open Enrollments on that
+   * Account as a reply would. Read `email` on `getConversation` first: it
+   * says whether email is available and from which Mailboxes; otherwise
+   * `EMAIL_UNAVAILABLE` (422, with `reason`). One HTTP call, never retried by
+   * the SDK: a retry after a timeout can send the email twice, so read the
+   * conversation before you send again.
+   * `POST /v1/unibox/conversations/{conversation_id}/emails`
+   *
+   * @example
+   * await curviate.unibox.sendEmail("cnv_123", { thread_id: "thr_123", text: "Thanks, Thursday works." });
+   */
+  sendEmail(conversationId: string, body: UniboxSendEmailBody): Promise<UniboxSentEmail> {
+    return this.ctx.request<UniboxSentEmail>({ method: "POST", path: apiPath`/v1/unibox/conversations/${conversationId}/emails`, body });
+  }
+
+  /**
+   * For a reply labelled Referral: one LinkedIn people search, as the
+   * conversation's Account, for the referred person (the name Curviate
+   * suggests from the reply, or `name`), at most 10 candidates, each counted
+   * against the Account's search limit. A message labelled otherwise is
+   * `NOT_A_REFERRAL` (409) and nothing is searched.
+   * `POST /v1/unibox/messages/{message_id}/referral/search`
+   *
+   * @example
+   * const { items } = await curviate.unibox.referralSearch("msg_123");
+   */
+  referralSearch(messageId: string, body: ReferralSearchBody = {}): Promise<ReferralSearchResult> {
+    return this.ctx.request<ReferralSearchResult>({ method: "POST", path: apiPath`/v1/unibox/messages/${messageId}/referral/search`, body });
+  }
+
+  /**
+   * For a reply labelled Referral: save the person you picked (`provider_id`
+   * from the search, or `linkedin_url`) as a Lead, or get the Lead you
+   * already hold (`outcome`). It never enrolls them.
+   * `POST /v1/unibox/messages/{message_id}/referral/confirm`
+   *
+   * @example
+   * const lead = await curviate.unibox.referralConfirm("msg_123", { provider_id: "ACoAAB1234567" });
+   */
+  referralConfirm(messageId: string, body: ReferralConfirmBody): Promise<ReferralConfirmResult> {
+    return this.ctx.request<ReferralConfirmResult>({ method: "POST", path: apiPath`/v1/unibox/messages/${messageId}/referral/confirm`, body });
   }
 
   /**

@@ -476,6 +476,11 @@ export const ERROR_CODES = [
   // - `REPLY_NOT_LABELLABLE` (422): a Reply label read or correction on a
   //   message that takes none: a direct conversation (no Campaign in it),
   //   your own message, or a warm-up message.
+  // - `NOT_A_REFERRAL` (409): a referral search or confirm on a message whose
+  //   Reply label is not referral. Nothing is searched or saved.
+  // - `EMAIL_UNAVAILABLE` (422): an email from a conversation where email is
+  //   not available; `reason` says why (no_email_address, email_bounced,
+  //   no_email, do_not_contact, no_mailbox, group_chat). Nothing is sent.
   "CAMPAIGN_NOT_STARTABLE",
   "CAMPAIGN_STATUS_CONFLICT",
   "ENROLLMENT_NOT_ACTIVE",
@@ -488,6 +493,8 @@ export const ERROR_CODES = [
   "LEAD_NOT_ENROLLABLE",
   "CHAT_NOT_ONE_TO_ONE",
   "REPLY_NOT_LABELLABLE",
+  "NOT_A_REFERRAL",
+  "EMAIL_UNAVAILABLE",
 
   // Dashboard v2 surface.
   //

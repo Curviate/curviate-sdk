@@ -9,11 +9,11 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [0.54.0] - 2026-11-18
 
-Regenerated `fixtures/openapi.json` and the generated types from the production document (`fixtures/PROVENANCE.json`, server commit `21f3739c4`); the Sequence validator and its corpus re-vendored from the same tree. Nothing narrows: every change below adds a method, a field, a filter or a union member.
+Regenerated `fixtures/openapi.json` and the generated types from the production document (`fixtures/PROVENANCE.json`, server commit `ba87aad99`); the Sequence validator and its corpus re-vendored from the same tree. Nothing narrows: every change below adds a method, a field, a filter or a union member.
 
 ### Wider unions
 
-An exhaustive `switch` must handle: `CurviateEvent` gains the eight `signal` events (`signal.post_engaged`, `signal.post_reposted`, `signal.network_posted`, `signal.profile_viewed`, `signal.followed_you`, `signal.mentioned_you`, `signal.connection_added`, `signal.matched`); Enrollment `reason` gains `attachment_missing` and `attachment_refused`; a Signal rule outcome `type` gains `enroll`; Campaign warnings gain W23 (`attachment_refused`: the email provider refused a file on the step).
+An exhaustive `switch` must handle: `CurviateEvent` gains the eight `signal` events (`signal.post_engaged`, `signal.post_reposted`, `signal.network_posted`, `signal.profile_viewed`, `signal.followed_you`, `signal.mentioned_you`, `signal.connection_added`, `signal.matched`); Enrollment `reason` gains `attachment_missing` and `attachment_refused`; a Signal rule outcome `type` gains `enroll`; Campaign warnings gain W23 (`attachment_refused`: the email provider refused a file on the step); the preview's `excluded` reason gains `same_company`.
 
 ### Email attachments
 
@@ -38,6 +38,18 @@ An exhaustive `switch` must handle: `CurviateEvent` gains the eight `signal` eve
 ### Do-not-contact
 
 - **`doNotContact.add({ company_linkedin_url })`** lists a whole company: nobody who works there is contacted or imported. An entry carries `company`.
+
+### Email from a conversation, Referral, marks (production `ba87aad9`)
+
+- **`unibox.sendEmail(conversationId, { text, thread_id? | subject, mailbox_id? })`**: one plain-text email to the conversation's Lead, a reply in a thread or a new thread. One HTTP call, never retried: a retry after a timeout can send twice. `EMAIL_UNAVAILABLE` (422, with `reason`) when email is not available.
+- **`unibox.markConversation(conversationId, { read })`**: read or unread, the LinkedIn chat on LinkedIn and the email in Curviate. A conversation carries `marks` and `email.to`.
+- **`unibox.referralSearch(messageId, { name? })`** and **`unibox.referralConfirm(messageId, { provider_id | linkedin_url })`** for a reply labelled Referral; `NOT_A_REFERRAL` (409) otherwise.
+
+### Mailbox warm-up, email analytics, one Lead per company
+
+- Mailboxes carry `warm_up { enabled, days, day, state, reason }`; `mailboxes.update` takes `warm_up { enabled, days }` (10, 14, 21 or 28).
+- `analytics.email({ include })` takes `breakdowns`, `mailboxes`, `domains` and `forecast` beside `weeks`, typed in the answer.
+- Campaign `settings.one_lead_per_company`; the preview's skipped and excluded reasons gain `same_company`.
 
 ## [0.53.0] - 2026-11-18
 

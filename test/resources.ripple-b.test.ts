@@ -145,6 +145,10 @@ describe("request shapes", () => {
     await client.unibox.listConversationMessages("cnv_1", { channel: "email", limit: 20 });
     await client.campaigns.attachments.upload(new Uint8Array([0x25, 0x50, 0x44, 0x46]), { filename: "pricing.pdf", contentType: "application/pdf" });
     await client.campaigns.attachments.get("cat_1");
+    await client.unibox.markConversation("cnv_1", { read: false });
+    await client.unibox.sendEmail("cnv_1", { text: "Thanks", thread_id: "thr_1" });
+    await client.unibox.referralSearch("msg_1");
+    await client.unibox.referralConfirm("msg_1", { provider_id: "ACo1" });
     expect(calls).toEqual([
       ["PATCH", "/v1/signals/watch/acc_1", {}, { signal_watch: true }],
       ["GET", "/v1/signals/actions", { outcome: "skipped", rule_id: "sgr_1" }, null],
@@ -153,6 +157,10 @@ describe("request shapes", () => {
       ["GET", "/v1/unibox/conversations/cnv_1/messages", { channel: "email", limit: "20" }, null],
       ["POST", "/v1/campaigns/attachments", { filename: "pricing.pdf" }, { type: "application/pdf", bytes: [0x25, 0x50, 0x44, 0x46] }],
       ["GET", "/v1/campaigns/attachments/cat_1", {}, null],
+      ["PATCH", "/v1/unibox/conversations/cnv_1", {}, { read: false }],
+      ["POST", "/v1/unibox/conversations/cnv_1/emails", {}, { text: "Thanks", thread_id: "thr_1" }],
+      ["POST", "/v1/unibox/messages/msg_1/referral/search", {}, {}],
+      ["POST", "/v1/unibox/messages/msg_1/referral/confirm", {}, { provider_id: "ACo1" }],
     ]);
   });
 

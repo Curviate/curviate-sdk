@@ -181,8 +181,11 @@ export class AnalyticsResource {
    * The email results of your Campaigns: emails `sent`, the `reply`, `open`,
    * `bounce` and `opt_out` rates and their counts, the `daily` series, and
    * `today` (sent against the Mailboxes' daily caps), under the window and
-   * the `account_id` / `campaign_id` filters; `include: ["weeks"]` adds the
-   * reply rate by week of first email. Read from an hourly rollup of each
+   * the `account_id` / `campaign_id` filters. `include` adds sections:
+   * `weeks` (the reply rate by week of first email), `breakdowns` (by
+   * receiving provider and more), `mailboxes` and `domains` (one row each,
+   * with their checks), `forecast` (the emails your Campaigns will send each
+   * day, from the Campaign engine's simulation). Read from an hourly rollup of each
    * send: no email or inbox is read. `tracking` says whether `open` covers
    * every email (`set_up`), some (`partial`) or none (`not_set_up`, `open`
    * is `null`). Read-only.

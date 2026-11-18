@@ -70,8 +70,12 @@ export class MailboxesResource {
    * for) and/or `sends_for`: `{ kind: "account",
    * account_id }` (sends only for that one Account), `{ kind: "shared" }` (any
    * Account of the Team may send from it) or `null` (sends nothing until
-   * linked). One Account, never a list. Owners and Managers change any Mailbox;
-   * a Member only the ones they connected.
+   * linked). One Account, never a list. `warm_up: { enabled: true, days }`
+   * (10, 14, 21 or 28) turns Mailbox warm-up on: short everyday emails
+   * exchanged with other Teams' Mailboxes, filed in their own folder, so the
+   * Mailbox builds a sending history; `{ enabled: false }` turns it off. The
+   * read carries `warm_up { enabled, days, day, state, reason }`. Owners and
+   * Managers change any Mailbox; a Member only the ones they connected.
    * `PATCH /v1/mailboxes/{id}`
    *
    * @example
