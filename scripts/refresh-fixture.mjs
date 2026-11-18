@@ -113,6 +113,24 @@ if (excluded.length > 0) {
   for (const p of droppedPaths) delete doc.paths[p];
 }
 
+// A served description can cite an internal document in parentheses, e.g.
+// "(api/NNN)" with digits. This repo is public and check:clean refuses it, so the
+// parenthesised reference is dropped here (the server copy is fixed upstream)
+// and counted in PROVENANCE. Nothing else in a description changes.
+const internalRef = / ?\((?:sdk|api|core|infra|mcp|cli)\/\d{3}\)/g;
+let scrubbedRefs = 0;
+const scrub = (n) => {
+  if (Array.isArray(n)) return n.forEach(scrub);
+  if (!n || typeof n !== "object") return;
+  for (const [k, v] of Object.entries(n)) {
+    if (k === "description" && typeof v === "string") {
+      const out = v.replace(internalRef, () => (scrubbedRefs++, ""));
+      if (out !== v) n[k] = out;
+    } else scrub(v);
+  }
+};
+scrub(doc);
+
 await writeFile(FIXTURE, JSON.stringify(doc, null, 2) + "\n", "utf8");
 
 // Provenance. /healthz is best-effort: a server that does not expose it still
@@ -134,6 +152,7 @@ await writeFile(
       fetched_at: new Date().toISOString(),
       paths: Object.keys(doc.paths ?? {}).length,
       servers_canonicalized: reordered,
+      ...(scrubbedRefs > 0 ? { scrubbed_internal_refs: scrubbedRefs } : {}),
       ...(excluded.length > 0 ? { excluded_path_prefixes: excluded, excluded_paths: droppedPaths } : {}),
       note: "Written by scripts/refresh-fixture.mjs (pnpm gen:fixture). Do not hand-edit; refresh instead.",
     },

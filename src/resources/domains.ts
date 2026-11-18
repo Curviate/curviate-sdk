@@ -19,14 +19,18 @@ export class DomainsResource {
    * A sending domain's checks as last run (daily): each of `mx`, `spf`,
    * `dkim`, `dmarc` and `tracking` is `pass`, `fail` or `unknown` (a failed
    * lookup, or a DKIM selector not known yet; never a failure), with the
-   * `tracking_record` CNAME to add and any named `blocklists`.
+   * `tracking_record` CNAME to add, any named `blocklists`, and
+   * `dkim_selector` (the selector whose key was found, `null` while none is).
    * `GET /v1/domains/{domain}/checks`
    *
    * With `{ now: true }` it runs the checks now and returns the result: DNS
-   * lookups only, it sends nothing and connects to no Mailbox.
+   * lookups only, it sends nothing and connects to no Mailbox. It takes any
+   * domain your Team names, before its first Mailbox there too, so the
+   * records can be set up first.
    * `POST /v1/domains/{domain}/checks`
    *
-   * A domain none of your Team's Mailboxes is on is `404 DOMAIN_NOT_FOUND`.
+   * A read of a domain your Team has no Mailbox on and never checked, and a
+   * public email provider's domain, are `404 DOMAIN_NOT_FOUND`.
    *
    * @example
    * const { checks } = await curviate.domains.check("acme.example", { now: true });

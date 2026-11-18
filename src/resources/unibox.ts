@@ -1,5 +1,5 @@
 /**
- * Unibox (root-scoped): `curviate.unibox` (6 methods) and
+ * Unibox (root-scoped): `curviate.unibox` (8 methods) and
  * `curviate.unibox.accounts` (2 methods).
  *
  * The Unibox is one inbox over every account you can operate, served from
@@ -41,6 +41,11 @@ export type UniboxEnrollBody = NonNullable<paths[`${ChatPath}/enrollments`]["pos
 export type UniboxEnrollResult = paths[`${ChatPath}/enrollments`]["post"]["responses"]["201"]["content"]["application/json"];
 export type UniboxAccountList = paths["/v1/unibox/accounts"]["get"]["responses"]["200"]["content"]["application/json"];
 export type UniboxAccount = paths["/v1/unibox/accounts/{account_id}"]["patch"]["responses"]["200"]["content"]["application/json"];
+export type ReplyLabelHistory = paths["/v1/unibox/messages/{message_id}/reply-label"]["get"]["responses"]["200"]["content"]["application/json"];
+export type ReplyLabelUpdateBody = NonNullable<paths["/v1/unibox/messages/{message_id}"]["patch"]["requestBody"]>["content"]["application/json"];
+export type ReplyLabelUpdateResult = paths["/v1/unibox/messages/{message_id}"]["patch"]["responses"]["200"]["content"]["application/json"];
+/** A Reply label: `interested`, `not_now`, `not_interested`, `opt_out`, `out_of_office`, `referral`, `other`, or `unsure` (Curviate could not tell). */
+export type ReplyLabel = NonNullable<ReplyLabelHistory["current"]>["label"];
 export type UniboxAccountUpdateBody = NonNullable<paths["/v1/unibox/accounts/{account_id}"]["patch"]["requestBody"]>["content"]["application/json"];
 
 /** `curviate.unibox.accounts`: full-inbox sync per account. */
@@ -99,7 +104,8 @@ export class UniboxResource {
    * List the chats of every account you can operate in one inbox, newest
    * activity first. Filters: `account_ids`, `campaign_ids`, `tags` (several
    * each), `person`, `unread`, `last_message_from`, `type`, `q` (3+
-   * characters). `await` it for one page; `for await` it for every chat
+   * characters), `reply_label` (the chat's latest Reply label, several;
+   * `"none"` adds the chats with no label). `await` it for one page; `for await` it for every chat
    * across pages.
    * `GET /v1/unibox/chats`
    *
@@ -132,7 +138,7 @@ export class UniboxResource {
   list(params?: UniboxChatListParams): Pageable<UniboxChatListPage> {
     return pageable(
       (p) =>
-        this.ctx.request<UniboxChatListPage>({ method: "GET", path: "/v1/unibox/chats", query: commaLists(p, "account_ids", "campaign_ids", "tags") }),
+        this.ctx.request<UniboxChatListPage>({ method: "GET", path: "/v1/unibox/chats", query: commaLists(p, "account_ids", "campaign_ids", "tags", "reply_label") }),
       params,
     );
   }
@@ -213,5 +219,38 @@ export class UniboxResource {
    */
   enroll(accountId: string, chatId: string, body: UniboxEnrollBody): Promise<UniboxEnrollResult> {
     return this.ctx.request<UniboxEnrollResult>({ method: "POST", path: apiPath`/v1/unibox/chats/${accountId}/${chatId}/enrollments`, body });
+  }
+
+  /**
+   * The Reply label of one message: `current` (or `null`) and every label it
+   * has had, newest first; a correction is a new entry and the earlier ones
+   * stay. From what Curviate has stored: no LinkedIn call. A message that
+   * takes no label (a direct conversation, your own message, a warm-up
+   * message) throws `REPLY_NOT_LABELLABLE`.
+   * `GET /v1/unibox/messages/{message_id}/reply-label`
+   *
+   * @example
+   * const { current } = await curviate.unibox.getReplyLabel("msg_123");
+   */
+  getReplyLabel(messageId: string): Promise<ReplyLabelHistory> {
+    return this.ctx.request<ReplyLabelHistory>({ method: "GET", path: apiPath`/v1/unibox/messages/${messageId}/reply-label` });
+  }
+
+  /**
+   * Set, correct, or resolve an `unsure` Reply label on a reply to a
+   * Campaign. Stored as a correction (who set it, the label it replaces). The
+   * label acts as when Curviate sets it: `opt_out` puts the person on your
+   * Do-not-contact list (a later correction leaves the entry), and so does
+   * `not_interested` when your team turned that on; `out_of_office` makes the
+   * Lead wait 7 days, then the Campaign goes on (correcting it away ends the
+   * wait and counts the reply); your team's Tag for the label is added to the
+   * Lead. No LinkedIn call. Needs Automate.
+   * `PATCH /v1/unibox/messages/{message_id}`
+   *
+   * @example
+   * await curviate.unibox.updateMessage("msg_123", { reply_label: "interested" });
+   */
+  updateMessage(messageId: string, body: ReplyLabelUpdateBody): Promise<ReplyLabelUpdateResult> {
+    return this.ctx.request<ReplyLabelUpdateResult>({ method: "PATCH", path: apiPath`/v1/unibox/messages/${messageId}`, body });
   }
 }

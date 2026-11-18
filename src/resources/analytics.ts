@@ -1,5 +1,5 @@
 /**
- * Analytics (root-scoped): `curviate.analytics` (2 methods),
+ * Analytics (root-scoped): `curviate.analytics` (3 methods),
  * `curviate.analytics.campaigns` (2 methods) and `curviate.analytics.events`
  * (1 method).
  *
@@ -41,6 +41,9 @@ export type AnalyticsExportParams = WithLists<NonNullable<paths["/v1/analytics/e
 export type AnalyticsEventListParams = WithLists<NonNullable<paths["/v1/analytics/events"]["get"]["parameters"]["query"]>, "origin">;
 export type AnalyticsEventListPage = paths["/v1/analytics/events"]["get"]["responses"]["200"]["content"]["application/json"];
 export type AnalyticsEvent = AnalyticsEventListPage["items"][number];
+/** `account_id`, `campaign_id` and `include` take a comma list or an array. */
+export type EmailAnalyticsParams = WithLists<NonNullable<paths["/v1/analytics/email"]["get"]["parameters"]["query"]>, "account_id" | "campaign_id" | "include">;
+export type EmailAnalytics = paths["/v1/analytics/email"]["get"]["responses"]["200"]["content"]["application/json"];
 /** An account-safety budget row; each counts its own unit. */
 export type BudgetRow = Activity["types"][number]["budget_row"];
 
@@ -170,6 +173,24 @@ export class AnalyticsResource {
    */
   activity(params?: ActivityParams): Promise<Activity> {
     return this.ctx.request<Activity>({ method: "GET", path: "/v1/analytics/activity", query: commaLists(params, "account_id") });
+  }
+
+  /**
+   * The email results of your Campaigns: emails `sent`, the `reply`, `open`,
+   * `bounce` and `opt_out` rates and their counts, the `daily` series, and
+   * `today` (sent against the Mailboxes' daily caps), under the window and
+   * the `account_id` / `campaign_id` filters; `include: ["weeks"]` adds the
+   * reply rate by week of first email. Read from an hourly rollup of each
+   * send: no email or inbox is read. `tracking` says whether `open` covers
+   * every email (`set_up`), some (`partial`) or none (`not_set_up`, `open`
+   * is `null`). Read-only.
+   * `GET /v1/analytics/email`
+   *
+   * @example
+   * const { sent, reply, bounce } = await curviate.analytics.email({ range: "30d" });
+   */
+  email(params?: EmailAnalyticsParams): Promise<EmailAnalytics> {
+    return this.ctx.request<EmailAnalytics>({ method: "GET", path: "/v1/analytics/email", query: commaLists(params, "account_id", "campaign_id", "include") });
   }
 
   /**

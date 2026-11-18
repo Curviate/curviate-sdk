@@ -5,7 +5,7 @@
 // table (namespace -> exact method set), enumerates the real prototype methods
 // on a constructed client, and asserts set-equality per namespace. A phantom
 // (extra) public method fails by name; a missing method fails by name; the
-// total must be 289 methods across 47 namespaces. A separate compile-time block
+// total must be 310 methods across 50 namespaces. A separate compile-time block
 // proves every removed method is gone at the type level.
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
@@ -66,12 +66,19 @@ const ROOT_SURFACE: Record<string, readonly string[]> = {
     "create",
     "setLogo",
     "removeLogo",
+    "getReplyLabels",
+    "updateReplyLabels",
   ],
+  // Your Team's company records. Same key as the account-scoped company
+  // reads below, different class.
+  companies: ["get", "update"],
+  signals: ["list", "get", "kinds", "watch", "updateSettings"],
+  "signals.rules": ["list", "create", "get", "update", "delete"],
   // Curviate's own Notifications. Same key as the account-scoped LinkedIn
   // notifications below, different class.
   notifications: ["list", "unreadCount", "update", "markAllRead"],
   leads: ["list", "get", "upsert", "update", "delete", "deleteMany", "updateMany", "enrich", "export"],
-  "leads.imports": ["create", "get", "list", "rows"],
+  "leads.imports": ["create", "get", "list", "rows", "pause", "resume", "stop"],
   leadLists: ["create", "list", "get", "update", "delete"],
   tags: ["list", "update", "delete"],
   campaigns: [
@@ -85,12 +92,12 @@ const ROOT_SURFACE: Record<string, readonly string[]> = {
   domains: ["check"],
   network: ["syncStatus", "resync"],
   "network.connections": ["list"],
-  unibox: ["list", "get", "unreadCount", "refresh", "tagLead", "enroll"],
+  unibox: ["list", "get", "unreadCount", "refresh", "tagLead", "enroll", "getReplyLabel", "updateMessage"],
   "unibox.accounts": ["list", "update"],
-  analytics: ["activity", "export"],
+  analytics: ["activity", "email", "export"],
   "analytics.campaigns": ["list", "get"],
   "analytics.events": ["list"],
-  billing: ["quote", "spendingCap", "changes", "switchPeriod"],
+  billing: ["quote", "spendingCap", "changes", "switchPeriod", "moveToCurrentPrice"],
   "billing.seats": ["lend", "return"],
   "billing.invoices": ["list", "pdf"],
   doNotContact: ["list", "get", "add", "update", "remove", "export", "import"],
@@ -260,6 +267,9 @@ const rootInstances: Record<string, object> = {
   teams: client.teams,
   notifications: client.notifications,
   leads: client.leads,
+  companies: client.companies,
+  signals: client.signals,
+  "signals.rules": client.signals.rules,
   "leads.imports": client.leads.imports,
   leadLists: client.leadLists,
   tags: client.tags,
@@ -309,8 +319,8 @@ describe("namespace mounting", () => {
       expect(client, `root namespace ${ns}`).toHaveProperty(ns);
     }
     // None of the account-scoped namespaces leak onto the root client.
-    // `notifications` is the one shared key: a different class at the root.
-    for (const ns of Object.keys(ACCOUNT_SURFACE).filter((n) => n !== "notifications")) {
+    // `notifications` and `companies` are the shared keys: a different class at the root.
+    for (const ns of Object.keys(ACCOUNT_SURFACE).filter((n) => n !== "notifications" && n !== "companies")) {
       expect(client, `${ns} must not be root-mounted`).not.toHaveProperty(ns);
     }
     // The old profiles name is gone at the root too.
@@ -343,17 +353,17 @@ describe("per-namespace method bijection", () => {
 });
 
 describe("total mapped surface", () => {
-  it("the intended table sums to 289 methods across 47 namespaces", () => {
+  it("the intended table sums to 310 methods across 50 namespaces", () => {
     const namespaces = [
       ...Object.values(ROOT_SURFACE),
       ...Object.values(ACCOUNT_SURFACE),
     ];
-    expect(namespaces.length).toBe(47);
+    expect(namespaces.length).toBe(50);
     const total = namespaces.reduce((n, methods) => n + methods.length, 0);
-    expect(total).toBe(289);
+    expect(total).toBe(310);
   });
 
-  it("the real runtime surface also sums to exactly 289", () => {
+  it("the real runtime surface also sums to exactly 310", () => {
     const roots = Object.values(rootInstances).reduce(
       (n, inst) => n + ownMethods(inst).size,
       0,
@@ -362,7 +372,7 @@ describe("total mapped surface", () => {
       (n, inst) => n + ownMethods(inst).size,
       0,
     );
-    expect(roots + accounts).toBe(289);
+    expect(roots + accounts).toBe(310);
   });
 });
 

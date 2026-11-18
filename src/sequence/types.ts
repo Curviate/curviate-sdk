@@ -185,8 +185,10 @@ type VarOk<I extends string> = I extends `${infer N}|${string}`
   ? VarOk<N>
   : Trim<I> extends "mailbox.signature"
     ? true
-    : Trim<I> extends `lead.extra.${infer K}`
+    : Trim<I> extends `lead.extra.${infer K}` | `company.extra.${infer K}`
     ? K extends "" ? false : true
+    : Trim<I> extends `company.${"name" | "industry" | "website" | "size" | "headcount_growth" | "location"}`
+    ? true
     : Trim<I> extends `lead.${infer F}`
       ? F extends StandardField ? true : false
       : Trim<I> extends `account.${"first_name" | "last_name" | "full_name"}`
@@ -201,7 +203,7 @@ type BadVar<S extends string> = Inners<S> extends infer I ? (I extends string ? 
 type CheckVars<S> = IsLiteral<S> extends true
   ? [BadVar<S & string>] extends [never]
     ? unknown
-    : SequenceTypeError<`{{${BadVar<S & string>}}} is not a v1 variable; use {{first_name}}, {{my_first_name}}, a custom field {{opener}}, or lead.<field>, lead.extra.<key>, account.first_name|last_name|full_name, mailbox.signature, with an optional fallback after |`>
+    : SequenceTypeError<`{{${BadVar<S & string>}}} is not a v1 variable; use {{first_name}}, {{my_first_name}}, a custom field {{opener}}, or lead.<field>, lead.extra.<key>, account.first_name|last_name|full_name, company.<field>, company.extra.<key>, mailbox.signature, with an optional fallback after |`>
   : unknown;
 /** G8: a literal fallback holds no variable. */
 type CheckFallback<S> = HasVar<S> extends true ? SequenceTypeError<"a fallback must not contain a variable"> : CheckVars<S>;

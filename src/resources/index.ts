@@ -55,7 +55,8 @@ import { ExportsResource } from "./exports.js";
 import { SalesNavigatorResource } from "./sales-navigator.js";
 import { RecruiterResource } from "./recruiter.js";
 import { JobsResource } from "./jobs.js";
-import { CompaniesResource } from "./companies.js";
+import { CompaniesResource, CompanyRecordsResource } from "./companies.js";
+import { SignalsResource } from "./signals.js";
 import { WebhooksResource } from "./webhooks.js";
 import { DraftsResource } from "./drafts.js";
 
@@ -93,7 +94,8 @@ export { ExportsResource } from "./exports.js";
 export { SalesNavigatorResource } from "./sales-navigator.js";
 export { RecruiterResource } from "./recruiter.js";
 export { JobsResource } from "./jobs.js";
-export { CompaniesResource } from "./companies.js";
+export { CompaniesResource, CompanyRecordsResource } from "./companies.js";
+export { SignalsResource, SignalRulesResource } from "./signals.js";
 export { WebhooksResource, WebhookDeliveriesResource } from "./webhooks.js";
 export { DraftsResource } from "./drafts.js";
 
@@ -159,6 +161,10 @@ export interface RootNamespaces
   /** Curviate's own Notifications, not the account's LinkedIn ones. */
   notifications: NotificationsResource;
   leads: LeadsResource;
+  /** Your Team's company records and company fields (stored data only). */
+  companies: CompanyRecordsResource;
+  /** What people did around your Accounts, and the rules that act on it. */
+  signals: SignalsResource;
   leadLists: LeadListsResource;
   tags: TagsResource;
   campaigns: CampaignsResource;
@@ -187,6 +193,8 @@ export function buildRootNamespaces(ctx: RequestContext): RootNamespaces {
     teams: new TeamsResource(ctx),
     notifications: new NotificationsResource(ctx),
     leads: new LeadsResource(ctx),
+    companies: new CompanyRecordsResource(ctx),
+    signals: new SignalsResource(ctx),
     leadLists: new LeadListsResource(ctx),
     tags: new TagsResource(ctx),
     campaigns: new CampaignsResource(ctx),

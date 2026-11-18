@@ -408,10 +408,19 @@ export const ERROR_CODES = [
   //   per team, Tags per Lead); the message names it. Delete some first.
   // - `IMPORT_QUEUE_FULL` (429): 5 background imports are already queued or
   //   running. Retry after one finishes.
+  // - `IMPORT_STATUS_CONFLICT` (409): pause, resume or stop is not allowed
+  //   in the import's status, or an import of the same source is still open
+  //   (`leads.imports.create` with `source`); the message names it. Resume or
+  //   stop that one, or send `restart: true`.
+  // - `IMPORT_CANNOT_CONTINUE` (409): `continue_from` names an import that
+  //   read LinkedIn's last results for its search (1,000 at most). Narrow the
+  //   search or split it.
   "NAME_TAKEN",
   "RESOURCE_IN_USE",
   "LEAD_LIMIT_REACHED",
   "IMPORT_QUEUE_FULL",
+  "IMPORT_STATUS_CONFLICT",
+  "IMPORT_CANNOT_CONTINUE",
 
   // Sequences (`Sequence`, `validateSequence`). `SEQUENCE_INVALID` (422 from
   // the API, or thrown offline by `toDocument()` / `Sequence.fromDocument`):
@@ -464,6 +473,9 @@ export const ERROR_CODES = [
   //   was refused (already enrolled, excluded, in another Campaign, filtered).
   // - `CHAT_NOT_ONE_TO_ONE` (422): a Unibox Lead action on a group chat,
   //   or a chat whose counterpart is not a person.
+  // - `REPLY_NOT_LABELLABLE` (422): a Reply label read or correction on a
+  //   message that takes none: a direct conversation (no Campaign in it),
+  //   your own message, or a warm-up message.
   "CAMPAIGN_NOT_STARTABLE",
   "CAMPAIGN_STATUS_CONFLICT",
   "ENROLLMENT_NOT_ACTIVE",
@@ -475,6 +487,7 @@ export const ERROR_CODES = [
   "ACCOUNT_NOT_IN_CAMPAIGN",
   "LEAD_NOT_ENROLLABLE",
   "CHAT_NOT_ONE_TO_ONE",
+  "REPLY_NOT_LABELLABLE",
 
   // Dashboard v2 surface.
   //

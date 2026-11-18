@@ -65,6 +65,68 @@ describe("request shapes", () => {
     ]);
   });
 
+  it("each pass-2 method makes one call: method, path, query and body as served", async () => {
+    const calls: unknown[] = [];
+    server.use(
+      http.all(`${BASE}/v1/*`, async ({ request }) => {
+        const u = new URL(request.url);
+        const raw = request.method === "GET" ? "" : await request.text();
+        calls.push([request.method, u.pathname, Object.fromEntries(u.searchParams), raw ? JSON.parse(raw) : null]);
+        return HttpResponse.json({});
+      }),
+    );
+    await client.unibox.list({ reply_label: ["interested", "none"] });
+    await client.unibox.getReplyLabel("m_1");
+    await client.unibox.updateMessage("m_1", { reply_label: "out_of_office" });
+    await client.teams.getReplyLabels();
+    await client.teams.updateReplyLabels({ enabled: true, tags: { interested: "tag_1", other: null } });
+    await client.leads.imports.pause("imp_1");
+    await client.leads.imports.resume("imp_1");
+    await client.leads.imports.stop("imp_1");
+    await client.analytics.email({ range: "30d", campaign_id: ["mot_1", "mot_2"], include: ["weeks"] });
+    await client.companies.get("1234567");
+    await client.companies.update("1234567", { extra: { tier: "A", owner: null } });
+    await client.account("acc_1").companies.get("acme", { mode: "cache_only" });
+    await client.notifications.list({ channel: "email" });
+    await client.billing.moveToCurrentPrice();
+    await client.signals.list({ kind: "post_engaged", match: "lead", listed: false });
+    await client.signals.get("sig_1");
+    await client.signals.kinds();
+    await client.signals.watch();
+    await client.signals.updateSettings({ follow_up: { profile_viewed: false } });
+    await client.signals.rules.list({ enabled: true });
+    await client.signals.rules.create({ name: "r", kinds: ["profile_viewed"], outcomes: [{ type: "send_event" }] });
+    await client.signals.rules.get("sgr_1");
+    await client.signals.rules.update("sgr_1", { enabled: false });
+    await client.signals.rules.delete("sgr_1");
+    expect(calls).toEqual([
+      ["GET", "/v1/unibox/chats", { reply_label: "interested,none" }, null],
+      ["GET", "/v1/unibox/messages/m_1/reply-label", {}, null],
+      ["PATCH", "/v1/unibox/messages/m_1", {}, { reply_label: "out_of_office" }],
+      ["GET", "/v1/teams/current/reply-labels", {}, null],
+      ["PATCH", "/v1/teams/current/reply-labels", {}, { enabled: true, tags: { interested: "tag_1", other: null } }],
+      ["POST", "/v1/leads/imports/imp_1/pause", {}, null],
+      ["POST", "/v1/leads/imports/imp_1/resume", {}, null],
+      ["POST", "/v1/leads/imports/imp_1/stop", {}, null],
+      ["GET", "/v1/analytics/email", { range: "30d", campaign_id: "mot_1,mot_2", include: "weeks" }, null],
+      ["GET", "/v1/companies/1234567", {}, null],
+      ["PATCH", "/v1/companies/1234567", {}, { extra: { tier: "A", owner: null } }],
+      ["GET", "/v1/acc_1/companies/acme", { mode: "cache_only" }, null],
+      ["GET", "/v1/notifications", { channel: "email" }, null],
+      ["POST", "/v1/billing/subscription/move-to-current-price", {}, null],
+      ["GET", "/v1/signals", { kind: "post_engaged", match: "lead", listed: "false" }, null],
+      ["GET", "/v1/signals/sig_1", {}, null],
+      ["GET", "/v1/signals/kinds", {}, null],
+      ["GET", "/v1/signals/watch", {}, null],
+      ["PATCH", "/v1/signals/settings", {}, { follow_up: { profile_viewed: false } }],
+      ["GET", "/v1/signals/rules", { enabled: "true" }, null],
+      ["POST", "/v1/signals/rules", {}, { name: "r", kinds: ["profile_viewed"], outcomes: [{ type: "send_event" }] }],
+      ["GET", "/v1/signals/rules/sgr_1", {}, null],
+      ["PATCH", "/v1/signals/rules/sgr_1", {}, { enabled: false }],
+      ["DELETE", "/v1/signals/rules/sgr_1", {}, null],
+    ]);
+  });
+
   it("network.resync() with no argument still sends a JSON body (Resync all)", async () => {
     let body: unknown;
     server.use(http.post(`${BASE}/v1/network/resync`, async ({ request }) => { body = await request.json(); return HttpResponse.json({ object: "network_resync_list", items: [] }, { status: 202 }); }));

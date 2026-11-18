@@ -104,6 +104,9 @@ export function languageCode(v: unknown): string | null {
     return LANGUAGE_CODES.has(c) ? c : null;
 }
 export const NAME_FIELDS = ["full_name", "first_name", "last_name"] as const;
+export const COMPANY_FIELDS = ["name", "industry", "website", "size", "headcount_growth", "location"] as const;
+const COMPANY_TOKEN_RE = /\{\{\s*company\.(?!extra\.)[^{}|]*/;
+export const usesCompanyField = (text: string): boolean => COMPANY_TOKEN_RE.test(text);
 export const ACCOUNT_FIELDS = ["first_name", "last_name", "full_name"] as const;
 export const BOOLEAN_PREDICATES = [
     "lead.connected",

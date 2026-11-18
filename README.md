@@ -149,6 +149,12 @@ const csv = await readFile("leads.csv", "utf8"); // node:fs/promises
 const imp = await curviate.leads.imports.create({ csv, list_name: "Q4 webinar" });
 // Once `status` is `completed` (poll `imports.get` for a background import):
 const { items: skipped } = await curviate.leads.imports.rows(imp.id, { outcome: "skipped" });
+// Or a LinkedIn source, read page by page inside the Account's limits; pause, resume or stop it.
+const src = await curviate.leads.imports.create({ source: { kind: "people_search", account_id: "acc_1", url: "https://www.linkedin.com/search/results/people/?keywords=cto" } });
+await curviate.leads.imports.pause(src.id); // resume(id), stop(id); continue a stopped one with continue_from
+
+// Your Team's own company fields, read in a Sequence as {{company.extra.<key>}}.
+await curviate.companies.update("1234567", { extra: { tier: "A" } });
 
 await curviate.leads.updateMany({ lead_ids: [id], add_tags: ["vip"] });
 const all = await curviate.leads.export({ format: "json", tag: "vip" });
@@ -262,12 +268,18 @@ await curviate.unibox.accounts.update("acc_1", { sync_full_inbox: true }); // by
 await curviate.unibox.refresh();
 await curviate.unibox.tagLead("acc_1", "chat_1", { tags: ["warm"] });
 await curviate.unibox.enroll("acc_1", "chat_1", { campaign_id: "mot_1" });
+for await (const chat of curviate.unibox.list({ reply_label: ["interested", "unsure"] })) console.log(chat.reply_label);
+await curviate.unibox.updateMessage("msg_1", { reply_label: "not_now" }); // correct a Reply label; getReplyLabel(id) reads its history
+
+// Signals: what people did around your Accounts in the last 7 days, and rules that act on them.
+for await (const s of curviate.signals.list({ kind: "profile_viewed", match: "lead" })) console.log(s.id);
 
 // Campaign results, activity in budget units, the events feed.
 const overview = await curviate.analytics.campaigns.list({ from: "2026-10-01", to: "2026-10-31" });
 const summary = await curviate.analytics.campaigns.list({ range: "30d", compare: "previous_period", origin: ["campaign", "unibox"] });
 const detail = await curviate.analytics.campaigns.get("mot_1");
 const { types } = await curviate.analytics.activity(); // per BudgetRow; never add rows together
+const email = await curviate.analytics.email({ range: "30d", include: ["weeks"] }); // sent, reply, open, bounce, opt_out
 for await (const event of curviate.analytics.events.list({ kind: ["message.replied"] })) console.log(event.campaign_name);
 const { items: forOne } = await curviate.analytics.events.list({ lead_id: "con_1", origin: ["unibox", "api"] }); // 404 for an unknown, other-team or merged-away id
 

@@ -1,0 +1,42 @@
+{
+  "about": "server-only Campaign warning: no sending Account can run, one per Account with its reason",
+  "rules": [
+    "W22"
+  ],
+  "only": "server",
+  "context": {
+    "account_profiles": [
+      "basic"
+    ],
+    "no_sending_account": [
+      {
+        "account": "acc_x",
+        "reason": "has no seat: attach one"
+      }
+    ]
+  },
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "v",
+        "do": "profile.view",
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "path": "account_ids",
+      "rule": "no_sending_account: acc_x has no seat: attach one, and no other sending Account can run, so nothing is sent",
+      "code": "W22",
+      "message": "no_sending_account: acc_x has no seat: attach one, and no other sending Account can run, so nothing is sent",
+      "pointer": "",
+      "hint": "Fix what the warning names for one Account (reconnect it, attach a seat, settle the payment), or add a sending Account that can run.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w22",
+      "severity": "warning"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 /**
- * Leads resource: 9 methods plus `imports` (4 methods), root-scoped,
+ * Leads resource: 9 methods plus `imports` (7 methods), root-scoped,
  * `curviate.leads`.
  *
  * A Lead is a person your team keeps: a LinkedIn URL plus your own fields
@@ -52,6 +52,7 @@ export type LeadImport =
 export type LeadImportListParams = NonNullable<paths["/v1/leads/imports"]["get"]["parameters"]["query"]>;
 export type LeadImportListPage = paths["/v1/leads/imports"]["get"]["responses"]["200"]["content"]["application/json"];
 export type LeadImportGetResult = paths["/v1/leads/imports/{id}"]["get"]["responses"]["200"]["content"]["application/json"];
+export type LeadImportControlResult = paths["/v1/leads/imports/{id}/pause"]["post"]["responses"]["200"]["content"]["application/json"];
 export type LeadImportRowsParams = NonNullable<paths["/v1/leads/imports/{id}/rows"]["get"]["parameters"]["query"]>;
 export type LeadImportRowsPage = paths["/v1/leads/imports/{id}/rows"]["get"]["responses"]["200"]["content"]["application/json"];
 
@@ -79,6 +80,18 @@ export class LeadImportsResource {
    * list limit is skipped (`list_limit_reached`). Off by default, `lists` is
    * ignored. A JSON export names lists only when `fields` includes `lists`.
    * `POST /v1/leads/imports`
+   *
+   * Or send `source`: a LinkedIn source Curviate reads page by page from
+   * `source.account_id`, inside that Account's limits and Active hours
+   * (answers `queued`). `kind` is `people_search`, `sales_nav_search` or
+   * `recruiter_search` (a pasted search `url` or built `filters`),
+   * `company_people` (a company search plus `titles`, required),
+   * `sales_nav_lead_list` (`list_id`), `post_engagers` (`post_id`) or
+   * `group_members` (`group_id`); `max` caps it. A source read before
+   * continues where it stopped by default; `continue_from: "imp_..."` names
+   * the import to continue (`IMPORT_CANNOT_CONTINUE` when it read
+   * LinkedIn's last results), `restart: true` reads from the beginning. An
+   * open import of the same source is `IMPORT_STATUS_CONFLICT`.
    *
    * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
    *
@@ -146,6 +159,46 @@ export class LeadImportsResource {
       path: apiPath`/v1/leads/imports/${importId}/rows`,
       ...(params ? { query: params } : {}),
     });
+  }
+
+  /**
+   * Pause an import from a LinkedIn source: no page is read until it
+   * resumes; a page in flight is stored, and the Account is free for its
+   * next import meanwhile. `IMPORT_STATUS_CONFLICT` unless queued or
+   * running. Needs Automate.
+   * `POST /v1/leads/imports/{id}/pause`
+   *
+   * @example
+   * await curviate.leads.imports.pause("imp_123");
+   */
+  pause(importId: string): Promise<LeadImportControlResult> {
+    return this.ctx.request<LeadImportControlResult>({ method: "POST", path: apiPath`/v1/leads/imports/${importId}/pause` });
+  }
+
+  /**
+   * Resume a paused import: it reads on from where it stopped, after the
+   * Account's running import if there is one, at the same pace.
+   * `IMPORT_STATUS_CONFLICT` unless paused. Needs Automate.
+   * `POST /v1/leads/imports/{id}/resume`
+   *
+   * @example
+   * await curviate.leads.imports.resume("imp_123");
+   */
+  resume(importId: string): Promise<LeadImportControlResult> {
+    return this.ctx.request<LeadImportControlResult>({ method: "POST", path: apiPath`/v1/leads/imports/${importId}/resume` });
+  }
+
+  /**
+   * Stop an import for good: the people found so far stay and the position
+   * is kept, so a new import of the same source with `continue_from` reads
+   * on from there. `IMPORT_STATUS_CONFLICT` once finished. Needs Automate.
+   * `POST /v1/leads/imports/{id}/stop`
+   *
+   * @example
+   * await curviate.leads.imports.stop("imp_123");
+   */
+  stop(importId: string): Promise<LeadImportControlResult> {
+    return this.ctx.request<LeadImportControlResult>({ method: "POST", path: apiPath`/v1/leads/imports/${importId}/stop` });
   }
 }
 
