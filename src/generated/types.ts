@@ -1349,7 +1349,7 @@ export interface paths {
         put?: never;
         /**
          * Resync connections
-         * @description Starts a full re-read of one account's Connections, or with no account_id of every account you can operate that can start one now. Those start one after another in a random order, each 20 to 90 seconds after the previous one. Paced like every sync read and only inside the account's activity window, so a large network takes hours to days. Once per account per 24 hours. Follow it on GET /v1/network/sync-status. Needs Automate.
+         * @description Starts a full re-read of one account's Connections, or with no account_id of every account you can operate that can start one now. Those start one after another in a random order, each 20 to 90 seconds after the previous one. Paced like every sync read and only inside the account's activity window, so a large network takes hours to days. Once per account per 24 hours. Follow it on GET /v1/network/sync-status. Needs a subscription.
          */
         post: operations["postV1NetworkResync"];
         delete?: never;
@@ -1469,7 +1469,7 @@ export interface paths {
         put?: never;
         /**
          * Refresh Unibox chats
-         * @description Re-reads each account's newest conversations past any cache (each inbox's top, then unread chats below it). Accounts with full-inbox sync, a Campaign chat or Campaign outreach; without sync only Campaign chats are kept. Runs within minutes, once per account per 2 minutes. Needs Automate.
+         * @description Re-reads each account's newest conversations past any cache (each inbox's top, then unread chats below it). Accounts with full-inbox sync, a Campaign chat or Campaign outreach; without sync only Campaign chats are kept. Runs within minutes, once per account per 2 minutes. Needs a subscription.
          */
         post: operations["postV1UniboxRefresh"];
         delete?: never;
@@ -1489,7 +1489,7 @@ export interface paths {
         put?: never;
         /**
          * Save a chat's person as a Lead
-         * @description Saves the other person of a one-to-one chat as a Lead (or finds the one you hold) and adds Tags, never removing any. Name and headline come from LinkedIn and keep updating. Reads the chat once only when Curviate holds nothing about the person yet. Needs Automate.
+         * @description Saves the other person of a one-to-one chat as a Lead (or finds the one you hold) and adds Tags, never removing any. Name and headline come from LinkedIn and keep updating. Reads the chat once only when Curviate holds nothing about the person yet. Needs a subscription.
          */
         post: operations["postV1UniboxChatsAccountIdChatIdLead"];
         delete?: never;
@@ -1509,7 +1509,7 @@ export interface paths {
         put?: never;
         /**
          * Add a chat's person to a Campaign
-         * @description Saves the other person of a one-to-one chat as a Lead, then enrolls them in the Campaign through this chat's account. A direct add: the rule that skips people you already chat with does not apply; every other rule does. Needs Automate.
+         * @description Saves the other person of a one-to-one chat as a Lead, then enrolls them in the Campaign through this chat's account. A direct add: the rule that skips people you already chat with does not apply; every other rule does. Needs a subscription.
          */
         post: operations["postV1UniboxChatsAccountIdChatIdEnrollments"];
         delete?: never;
@@ -1553,7 +1553,7 @@ export interface paths {
         head?: never;
         /**
          * Set or correct a message's Reply label
-         * @description Sets the Reply label of a reply to a Campaign, corrects one, or resolves unsure. Stored as a correction: who set it, and the label it replaces, which stays in the history. The label acts as it does when Curviate sets it: opt_out puts the person on your Do-not-contact list (a later correction leaves the entry; remove it with DELETE /v1/do-not-contact/{id}); not_interested does too when your team turned that on; out_of_office makes the Lead wait 7 days, then the Campaign goes on, and correcting it away ends the wait and counts the reply; your team's Tag for the label is added to the Lead. interested, not_now, referral and other inform. No LinkedIn call. Needs Automate.
+         * @description Sets the Reply label of a reply to a Campaign, corrects one, or resolves unsure. Stored as a correction: who set it, and the label it replaces, which stays in the history. The label acts as it does when Curviate sets it: opt_out puts the person on your Do-not-contact list (a later correction leaves the entry; remove it with DELETE /v1/do-not-contact/{id}); not_interested does too when your team turned that on; out_of_office makes the Lead wait 7 days, then the Campaign goes on, and correcting it away ends the wait and counts the reply; your team's Tag for the label is added to the Lead. interested, not_now, referral and other inform. No LinkedIn call. Needs a subscription.
          */
         patch: operations["patchV1UniboxMessagesMessageId"];
         trace?: never;
@@ -1575,7 +1575,11 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Mark a conversation read or unread
+         * @description Marks a conversation read or unread: its LinkedIn chat on LinkedIn, as PATCH /v1/{account_id}/chats/{chat_id} does, and its email in Curviate. The Mailbox itself is never changed. An email from them makes the conversation unread again. Needs a subscription.
+         */
+        patch: operations["patchV1UniboxConversationsConversationId"];
         trace?: never;
     };
     "/v1/unibox/conversations/{conversation_id}/messages": {
@@ -1592,6 +1596,66 @@ export interface paths {
         get: operations["getV1UniboxConversationsConversationIdMessages"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/unibox/conversations/{conversation_id}/emails": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send an email from a conversation
+         * @description Sends one plain-text email to the conversation's Lead, at once: a reply in one of its threads (thread_id), or a new thread (subject, and mailbox_id when more than one Mailbox can send). A reply goes from its thread's Mailbox with Re: and the thread's first subject, threaded under its last email. It goes to the Lead's one address; no signature, no opt-out line is added. It counts against the Mailbox's daily limit, as a Campaign email does, and ends the Lead's open Enrollments on this account as a reply would, by each Campaign's reply scope. Read first whether email is available, and from which Mailboxes, on GET /v1/unibox/conversations/{conversation_id} (email). Every refusal comes before anything reaches a Mailbox. Needs a subscription.
+         */
+        post: operations["postV1UniboxConversationsConversationIdEmails"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/unibox/messages/{message_id}/referral/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Find a referred person on LinkedIn
+         * @description For a reply labelled Referral: Curviate suggests the referred person's name from the reply; this runs one LinkedIn people search for it (or for the name you give) as the conversation's account, at most 10 results, each counted against the account's search limit. The name is kept on the label as referral.name. Add a candidate as a Lead with POST /v1/unibox/messages/{message_id}/referral/confirm. Needs a subscription.
+         */
+        post: operations["postV1UniboxMessagesMessageIdReferralSearch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/unibox/messages/{message_id}/referral/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add a referred person as a Lead
+         * @description For a reply labelled Referral: saves the person you picked as a Lead, or returns the Lead you already hold. Never enrolls them: add them to a Campaign yourself. A person's step: there is no MCP tool for it. Needs a subscription.
+         */
+        post: operations["postV1UniboxMessagesMessageIdReferralConfirm"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1937,7 +2001,7 @@ export interface paths {
         put?: never;
         /**
          * Create a draft
-         * @description Stores an unpublished post until it is published or deleted. Every field is optional, the account too; a Draft has at most one account and can move between yours. Up to 50 Drafts and 2 GiB of media per account, and per no-account. A retry creates a second Draft. Needs Automate.
+         * @description Stores an unpublished post until it is published or deleted. Every field is optional, the account too; a Draft has at most one account and can move between yours. Up to 50 Drafts and 2 GiB of media per account, and per no-account. A retry creates a second Draft. Needs a subscription.
          */
         post: operations["postV1Drafts"];
         delete?: never;
@@ -1969,7 +2033,7 @@ export interface paths {
         head?: never;
         /**
          * Update a draft
-         * @description Partial update: an omitted field is left as is, null clears it. attachments replaces the whole list ({id} keeps an existing file, a base64 object adds one, the rest is deleted). account_id moves the Draft to another of your accounts. Editing a failed Draft clears its failure. Needs Automate.
+         * @description Partial update: an omitted field is left as is, null clears it. attachments replaces the whole list ({id} keeps an existing file, a base64 object adds one, the rest is deleted). account_id moves the Draft to another of your accounts. Editing a failed Draft clears its failure. Needs a subscription.
          */
         patch: operations["patchV1DraftsId"];
         trace?: never;
@@ -1985,7 +2049,7 @@ export interface paths {
         put?: never;
         /**
          * Publish a draft now
-         * @description Publishes the Draft now, under create post's rules and safety limits. Success deletes the Draft and its media, writes a publish record and returns the post id, no webhook. A known failure keeps the content; a scheduled time already passed is cleared. The responses say more. Needs Automate.
+         * @description Publishes the Draft now, under create post's rules and safety limits. Success deletes the Draft and its media, writes a publish record and returns the post id, no webhook. A known failure keeps the content; a scheduled time already passed is cleared. The responses say more. Needs a subscription.
          */
         post: operations["postV1DraftsIdPublish"];
         delete?: never;
@@ -2005,7 +2069,7 @@ export interface paths {
         put?: never;
         /**
          * Upload a draft attachment
-         * @description Adds one file to the Draft as the raw request body, for media too large to send inline: a video (MP4, up to 50 MiB), a PDF (up to 50 MiB) or an image. Content-Type is the file's type, Content-Length is required; kept only if it arrives whole. Same media rules as inline. Needs Automate.
+         * @description Adds one file to the Draft as the raw request body, for media too large to send inline: a video (MP4, up to 50 MiB), a PDF (up to 50 MiB) or an image. Content-Type is the file's type, Content-Length is required; kept only if it arrives whole. Same media rules as inline. Needs a subscription.
          */
         post: operations["postV1DraftsIdAttachments"];
         delete?: never;
@@ -3617,7 +3681,7 @@ export interface paths {
         put?: never;
         /**
          * Create an incoming event
-         * @description A private URL any tool can post JSON to. Curviate finds the Lead by the match paths and moves the Enrollments waiting for the event (until event.<name>), keeping no part of the post. It starts switched off: the first post is the sample (its paths and types only); then switch it on. The url is in full in this response only: treat it like a password. Needs Automate.
+         * @description A private URL any tool can post JSON to. Curviate finds the Lead by the match paths and moves the Enrollments waiting for the event (until event.<name>), keeping no part of the post. It starts switched off: the first post is the sample (its paths and types only); then switch it on. The url is in full in this response only: treat it like a password. Needs a subscription.
          */
         post: operations["postV1IncomingEvents"];
         delete?: never;
@@ -3637,7 +3701,7 @@ export interface paths {
         put?: never;
         /**
          * Rotate an incoming event's URL
-         * @description Issues a new URL, in full in this response only. The old one keeps working for 24 hours, then answers 410. Only the creator. Needs Automate.
+         * @description Issues a new URL, in full in this response only. The old one keeps working for 24 hours, then answers 410. Only the creator. Needs a subscription.
          */
         post: operations["postV1IncomingEventsIdRotate"];
         delete?: never;
@@ -3657,7 +3721,7 @@ export interface paths {
         put?: never;
         /**
          * Capture a new sample
-         * @description The next post replaces the sample (paths and types only) and still moves Campaigns when switched on. Only the creator. Needs Automate.
+         * @description The next post replaces the sample (paths and types only) and still moves Campaigns when switched on. Only the creator. Needs a subscription.
          */
         post: operations["postV1IncomingEventsIdCapture"];
         delete?: never;
@@ -3777,7 +3841,7 @@ export interface paths {
         head?: never;
         /**
          * Update a Mailbox
-         * @description Sets the daily cap (1 to 50, a hard maximum for every caller), the signature (plain text, at most 2,000 characters, `null` clears it), the From name `display_name` (one line, at most 100 characters; `null` clears it, and the Mailbox then sends with the name of the Account it sends for) and/or `sends_for`: `{kind: "account", account_id}` (this Mailbox sends only for that one Account), `{kind: "shared"}` (any Account of the team may send from it) or `null` (it sends nothing until linked). A Mailbox claimed for a person sends for exactly that person's Account; a list of Accounts is `400`, an Account outside the team `404 ACCOUNT_NOT_FOUND`. A change of the link leaves the Mailbox's open threads on it. Owners and Managers change any Mailbox; a Member only the ones they connected.
+         * @description Sets the daily cap (1 to 50, a hard maximum for every caller), the signature (plain text, at most 2,000 characters, `null` clears it), the From name `display_name` (one line, at most 100 characters; `null` clears it, and the Mailbox then sends with the name of the Account it sends for) and/or `sends_for`: `{kind: "account", account_id}` (this Mailbox sends only for that one Account), `{kind: "shared"}` (any Account of the team may send from it) or `null` (it sends nothing until linked). A Mailbox claimed for a person sends for exactly that person's Account; a list of Accounts is `400`, an Account outside the team `404 ACCOUNT_NOT_FOUND`. A change of the link leaves the Mailbox's open threads on it. `warm_up: {enabled, days}` turns Mailbox warm-up on (Recommended; `days` 10, 14, 21 or 28, required with `enabled: true`) or off. Turning it on is your consent that other Teams' warm-up emails pass through this Mailbox until Curviate files them into their own folder; it is included in your plan. A new `days` while on keeps the day count; off then on starts again at day 1. Owners and Managers change any Mailbox; a Member only the ones they connected.
          */
         patch: operations["patchV1MailboxesId"];
         trace?: never;
@@ -3861,7 +3925,7 @@ export interface paths {
         put?: never;
         /**
          * Create or update a lead
-         * @description Upserts the Lead for one person, keyed on LinkedIn identity: any spelling of the same profile URL updates the same Lead. An empty or null value never erases a stored one; tags and list_id/list_name only add. 201 when created, 200 otherwise, with outcome. Needs Automate.
+         * @description Upserts the Lead for one person, keyed on LinkedIn identity: any spelling of the same profile URL updates the same Lead. An empty or null value never erases a stored one; tags and list_id/list_name only add. 201 when created, 200 otherwise, with outcome. Needs a subscription.
          */
         post: operations["postV1Leads"];
         delete?: never;
@@ -3901,7 +3965,7 @@ export interface paths {
         put?: never;
         /**
          * Tag or move leads in bulk
-         * @description Adds and removes Tags and list memberships on up to 1000 Leads by lead_ids, or on every Lead a filter matches (up to 10000). Send exactly one of lead_ids or filter; filter takes the listing's filters as JSON, comma lists as arrays. A filter over the cap is refused and nothing changes. Adding what is present or removing what is absent is a no-op. A new Tag name or add_list_name creates it. Needs Automate.
+         * @description Adds and removes Tags and list memberships on up to 1000 Leads by lead_ids, or on every Lead a filter matches (up to 10000). Send exactly one of lead_ids or filter; filter takes the listing's filters as JSON, comma lists as arrays. A filter over the cap is refused and nothing changes. Adding what is present or removing what is absent is a no-op. A new Tag name or add_list_name creates it. Needs a subscription.
          */
         post: operations["postV1LeadsUpdate"];
         delete?: never;
@@ -3941,7 +4005,7 @@ export interface paths {
         put?: never;
         /**
          * Enrich leads
-         * @description Fills up to 1000 Leads from LinkedIn data. Stored data is used first, free; the rest is queued as a paced live profile visit from account_id (profile_views budget). A live visit is a real profile view the person may see; cache_only never visits. Needs Automate.
+         * @description Fills up to 1000 Leads from LinkedIn data. Stored data is used first, free; the rest is queued as a paced live profile visit from account_id (profile_views budget). A live visit is a real profile view the person may see; cache_only never visits. Needs a subscription.
          */
         post: operations["postV1LeadsEnrich"];
         delete?: never;
@@ -3965,7 +4029,7 @@ export interface paths {
         put?: never;
         /**
          * Import leads
-         * @description Imports Leads from rows or CSV text, keyed on LinkedIn identity as POST /v1/leads; re-importing merges. Up to 10000 rows. 500 rows or fewer run in the request (201, per-row report inline); more run in the background (202). A bad value skips its row, a bad structure refuses all. apply_lists: true adds each row's Lead to the Lead lists named in its lists (created by name), so an export re-imports with its lists; the Team's list limit skips the row (list_limit_reached). source imports from LinkedIn instead: a pasted people search URL (kind people_search, up to 1,000 people) is read on our server from source.account_id, page by page, inside that Account's limits and Active hours and at a human pace (202, days not minutes); each person becomes a Lead from the search result itself, a Lead you have already joins the list as it is. Needs Automate.
+         * @description Imports Leads from rows or CSV text, keyed on LinkedIn identity as POST /v1/leads; re-importing merges. Up to 10000 rows. 500 rows or fewer run in the request (201, per-row report inline); more run in the background (202). A bad value skips its row, a bad structure refuses all. apply_lists: true adds each row's Lead to the Lead lists named in its lists (created by name), so an export re-imports with its lists; the Team's list limit skips the row (list_limit_reached). source starts an import from a LinkedIn source instead, read on our server through source.account_id, page by page, inside that Account's limits and Active hours and at a human pace (202, days not minutes): a people search (people_search) or a company search with job titles (company_people); a Sales Navigator search, lead list, account list or account search with job titles (sales_nav_search, sales_nav_lead_list, sales_nav_account_list, sales_nav_company_people; the Account needs Sales Navigator); a Recruiter search (recruiter_search; the Account needs Recruiter); a post's engagers (post_engagers) or a group's members (group_members). A search takes a pasted url or built filters. x-curviate-limits.source_people names the most people each kind reads. Each person becomes a Lead from what the source returns; a Lead you have already joins the list as it is. Needs a subscription.
          */
         post: operations["postV1LeadsImports"];
         delete?: never;
@@ -4005,7 +4069,7 @@ export interface paths {
         put?: never;
         /**
          * Pause a lead import
-         * @description Pauses an import from a LinkedIn source: no page is read until it resumes; a page in flight is stored. The Account is free for its next import meanwhile. 409 IMPORT_STATUS_CONFLICT unless queued or running. Needs Automate.
+         * @description Pauses an import from a LinkedIn source: no page is read until it resumes; a page in flight is stored. The Account is free for its next import meanwhile. 409 IMPORT_STATUS_CONFLICT unless queued or running. Needs a subscription.
          */
         post: operations["postV1LeadsImportsIdPause"];
         delete?: never;
@@ -4025,7 +4089,7 @@ export interface paths {
         put?: never;
         /**
          * Resume a lead import
-         * @description Resumes a paused import: it reads on from where it stopped, after the Account's running import if there is one, at the same pace (no burst). 409 IMPORT_STATUS_CONFLICT unless paused. Needs Automate.
+         * @description Resumes a paused import: it reads on from where it stopped, after the Account's running import if there is one, at the same pace (no burst). 409 IMPORT_STATUS_CONFLICT unless paused. Needs a subscription.
          */
         post: operations["postV1LeadsImportsIdResume"];
         delete?: never;
@@ -4045,7 +4109,7 @@ export interface paths {
         put?: never;
         /**
          * Stop a lead import
-         * @description Stops an import for good: the people found so far stay, the position is kept, so a new import of the same source with continue_from reads on from there. No Notification. 409 IMPORT_STATUS_CONFLICT once finished. Needs Automate.
+         * @description Stops an import for good: the people found so far stay, the position is kept, so a new import of the same source with continue_from reads on from there. No Notification. 409 IMPORT_STATUS_CONFLICT once finished. Needs a subscription.
          */
         post: operations["postV1LeadsImportsIdStop"];
         delete?: never;
@@ -4097,7 +4161,7 @@ export interface paths {
         head?: never;
         /**
          * Update a lead
-         * @description Partial update: an omitted field is left as is, null clears it (Curviate may fill it again from LinkedIn). In extra, null removes that key. linkedin_url cannot change. Needs Automate.
+         * @description Partial update: an omitted field is left as is, null clears it (Curviate may fill it again from LinkedIn). In extra, null removes that key. linkedin_url cannot change. Needs a subscription.
          */
         patch: operations["patchV1LeadsId"];
         trace?: never;
@@ -4141,7 +4205,7 @@ export interface paths {
         head?: never;
         /**
          * Rename a tag
-         * @description Renames the Tag on every Lead. Names are unique in any casing. Needs Automate.
+         * @description Renames the Tag on every Lead. Names are unique in any casing. Needs a subscription.
          */
         patch: operations["patchV1TagsId"];
         trace?: never;
@@ -4161,7 +4225,7 @@ export interface paths {
         put?: never;
         /**
          * Create a lead list
-         * @description Creates a static Lead list. With from, a filter as in POST /v1/leads/update, it starts with every Lead the filter matches now (up to 10000): from.list_id of two lists combines them, a Lead in both counted once; list_match all keeps those in both; not_list_id leaves some out. The lists named in from are not changed. Add Leads later with POST /v1/leads/update or list_name on create and import. Needs Automate.
+         * @description Creates a static Lead list. With from, a filter as in POST /v1/leads/update, it starts with every Lead the filter matches now (up to 10000): from.list_id of two lists combines them, a Lead in both counted once; list_match all keeps those in both; not_list_id leaves some out. The lists named in from are not changed. Add Leads later with POST /v1/leads/update or list_name on create and import. Needs a subscription.
          */
         post: operations["postV1LeadLists"];
         delete?: never;
@@ -4193,7 +4257,7 @@ export interface paths {
         head?: never;
         /**
          * Update a lead list
-         * @description Renames the list or changes its description. Needs Automate.
+         * @description Renames the list or changes its description. Needs a subscription.
          */
         patch: operations["patchV1LeadListsId"];
         trace?: never;
@@ -4213,7 +4277,7 @@ export interface paths {
         put?: never;
         /**
          * Add a person to the do-not-contact list
-         * @description Adds one person by lead_id or linkedin_url, with an optional reason and a scope (everything by default; email_only stops email only and leaves LinkedIn untouched); a URL of someone who is not a Lead yet creates the Lead first, from stored data only. Or a whole company by company_linkedin_url (its LinkedIn URL with the numeric id, as a Lead's company_linkedin_url shows it): nobody who works there is enrolled, contacted or imported. 201 when added; a person or company already on the list answers 200 with its entry. Any team member may add. For many people, POST /v1/do-not-contact/import takes a file. Needs Automate.
+         * @description Adds one person by lead_id or linkedin_url, with an optional reason and a scope (everything by default; email_only stops email only and leaves LinkedIn untouched); a URL of someone who is not a Lead yet creates the Lead first, from stored data only. Or a whole company by company_linkedin_url (its LinkedIn URL with the numeric id, as a Lead's company_linkedin_url shows it): nobody who works there is enrolled, contacted or imported. 201 when added; a person or company already on the list answers 200 with its entry. Any team member may add. For many people, POST /v1/do-not-contact/import takes a file. Needs a subscription.
          */
         post: operations["postV1DoNotContact"];
         delete?: never;
@@ -4253,7 +4317,7 @@ export interface paths {
         put?: never;
         /**
          * Import a do-not-contact file
-         * @description Adds the people of a file to the do-not-contact list: rows of linkedin_url and an optional reason and scope (everything or email_only; another scope skips the row as invalid_scope), as JSON rows or CSV text, up to 10000 rows. Each row works as POST /v1/do-not-contact: a URL of someone who is not a Lead yet creates the Lead from stored data, and a person already on the list is reported unchanged (their entry and reason stay). The answer is the per-row report. A bad URL or reason skips its row and the others apply; a bad structure refuses the file. A do-not-contact export re-imports as it is. Any team member may import. Needs Automate.
+         * @description Adds the people of a file to the do-not-contact list: rows of linkedin_url and an optional reason and scope (everything or email_only; another scope skips the row as invalid_scope), as JSON rows or CSV text, up to 10000 rows. Each row works as POST /v1/do-not-contact: a URL of someone who is not a Lead yet creates the Lead from stored data, and a person already on the list is reported unchanged (their entry and reason stay). The answer is the per-row report. A bad URL or reason skips its row and the others apply; a bad structure refuses the file. A do-not-contact export re-imports as it is. Any team member may import. Needs a subscription.
          */
         post: operations["postV1DoNotContactImport"];
         delete?: never;
@@ -4285,7 +4349,7 @@ export interface paths {
         head?: never;
         /**
          * Change a do-not-contact reason
-         * @description Sets the entry's reason, from the fixed list; null clears it. Any team member may change it. Needs Automate.
+         * @description Sets the entry's reason, from the fixed list; null clears it. Any team member may change it. Needs a subscription.
          */
         patch: operations["patchV1DoNotContactId"];
         trace?: never;
@@ -4493,7 +4557,7 @@ export interface paths {
         put?: never;
         /**
          * Upload a voice clip
-         * @description Uploads one audio file (MP3, WAV, M4A, WebM or Ogg) as the raw request body and returns a clip id for a voice note step. Content-Length is required; the filename query names the file. The audio is converted once and the original is discarded. 1 to 120 seconds, up to 20 MiB, 100 uploads per team per 24 hours. A retry stores a second clip. A clip no Sequence uses is deleted 30 days after its upload. Needs Automate.
+         * @description Uploads one audio file (MP3, WAV, M4A, WebM or Ogg) as the raw request body and returns a clip id for a voice note step. Content-Length is required; the filename query names the file. The audio is converted once and the original is discarded. 1 to 120 seconds, up to 20 MiB, 100 uploads per team per 24 hours. A retry stores a second clip. A clip no Sequence uses is deleted 30 days after its upload. Needs a subscription.
          */
         post: operations["postV1CampaignsVoiceClips"];
         delete?: never;
@@ -4533,7 +4597,7 @@ export interface paths {
         put?: never;
         /**
          * Upload a Campaign attachment
-         * @description Uploads one file as the raw request body and returns an id for an email step's attachment_ids. Content-Length is required; the filename query names the file as the recipient sees it. Up to 20 MiB, 100 uploads per team per 24 hours. The media type is read from the file's bytes; executables, scripts and macro-enabled Office files are refused. A retry stores a second file. A file no Sequence uses is deleted 30 days after its upload. A link usually lands better than a file. Needs Automate.
+         * @description Uploads one file as the raw request body and returns an id for an email step's attachment_ids. Content-Length is required; the filename query names the file as the recipient sees it. Up to 20 MiB, 100 uploads per team per 24 hours. The media type is read from the file's bytes; executables, scripts and macro-enabled Office files are refused. A retry stores a second file. A file no Sequence uses is deleted 30 days after its upload. A link usually lands better than a file. Needs a subscription.
          */
         post: operations["postV1CampaignsAttachments"];
         delete?: never;
@@ -4577,7 +4641,7 @@ export interface paths {
         put?: never;
         /**
          * Create a campaign
-         * @description Creates a Campaign as a draft: nothing is sent until you start it. Only name is required; the rest has defaults and can be set later. A sequence, when given, is validated whole against the Sequence document schema (GET /schemas/sequence/v1.json) and refused with every error at once. Needs Automate.
+         * @description Creates a Campaign as a draft: nothing is sent until you start it. Only name is required; the rest has defaults and can be set later. A sequence, when given, is validated whole against the Sequence document schema (GET /schemas/sequence/v1.json) and refused with every error at once. Needs a subscription.
          */
         post: operations["postV1Campaigns"];
         delete?: never;
@@ -4609,7 +4673,7 @@ export interface paths {
         head?: never;
         /**
          * Update a campaign
-         * @description Partial update in every status but archived. schedule and settings merge key by key; lists, accounts, where and sequence are replaced whole. After start, a sequence edit to text, waits, notes or variant weights applies in place (sequence_change copy); any other is a new Sequence version (structural). Needs Automate.
+         * @description Partial update in every status but archived. schedule and settings merge key by key; lists, accounts, where and sequence are replaced whole. After start, a sequence edit to text, waits, notes or variant weights applies in place (sequence_change copy); any other is a new Sequence version (structural). Needs a subscription.
          */
         patch: operations["patchV1CampaignsId"];
         trace?: never;
@@ -4625,7 +4689,7 @@ export interface paths {
         put?: never;
         /**
          * Start a campaign
-         * @description Starts a draft: active, or scheduled while schedule.start_at is in the future. Needs a Lead list, a sending account that is active with a seat and a Sequence; every gap comes back at once in errors[]. Nothing reaches LinkedIn before this call. With an email step it also needs a Lead check at the current sequence_revision (POST /v1/campaigns/{id}/check) and refuses while Leads have no email address, unless the body is {"skip_missing_email": true}. Needs Automate.
+         * @description Starts a draft: active, or scheduled while schedule.start_at is in the future. Needs a Lead list, a sending account that is active with a seat and a Sequence; every gap comes back at once in errors[]. Nothing reaches LinkedIn before this call. With an email step it also needs a Lead check at the current sequence_revision (POST /v1/campaigns/{id}/check) and refuses while Leads have no email address, unless the body is {"skip_missing_email": true}. Needs a subscription.
          */
         post: operations["postV1CampaignsIdStart"];
         delete?: never;
@@ -4665,7 +4729,7 @@ export interface paths {
         put?: never;
         /**
          * Resume a campaign
-         * @description Resumes a paused Campaign: active, or scheduled before schedule.start_at. Checks what start checks, the Lead check of a Campaign with an email step and {"skip_missing_email": true} included; every gap comes back at once in errors[]. Needs Automate.
+         * @description Resumes a paused Campaign: active, or scheduled before schedule.start_at. Checks what start checks, the Lead check of a Campaign with an email step and {"skip_missing_email": true} included; every gap comes back at once in errors[]. Needs a subscription.
          */
         post: operations["postV1CampaignsIdResume"];
         delete?: never;
@@ -4705,7 +4769,7 @@ export interface paths {
         put?: never;
         /**
          * Check a campaign's leads
-         * @description The Lead check: one count over every Lead the Campaign would enroll (its Lead lists' members not on an exclusion list, and Leads added directly): how many have no usable email address, a bounced one, or are on the Do-not-contact list for email only, and which Lead variables without a fallback they lack. Stored and served as lead_check on the Campaign; start of a Campaign with an email step needs one at the current sequence_revision. In any status. Sends nothing. Needs Automate.
+         * @description The Lead check: one count over every Lead the Campaign would enroll (its Lead lists' members not on an exclusion list, and Leads added directly): how many have no usable email address, a bounced one, or are on the Do-not-contact list for email only, and which Lead variables without a fallback they lack. Stored and served as lead_check on the Campaign; start of a Campaign with an email step needs one at the current sequence_revision. In any status. Sends nothing. Needs a subscription.
          */
         post: operations["postV1CampaignsIdCheck"];
         delete?: never;
@@ -4765,7 +4829,7 @@ export interface paths {
         put?: never;
         /**
          * Add leads to a campaign
-         * @description Enrolls up to 1000 Leads directly, without a Lead list. Exclusions still apply; the answer says per Lead what happened, and a repeat answers already_enrolled. Works in every status but archived; adding to a completed Campaign reactivates it. Needs Automate.
+         * @description Enrolls up to 1000 Leads directly, without a Lead list. Exclusions still apply; the answer says per Lead what happened, and a repeat answers already_enrolled. Works in every status but archived; adding to a completed Campaign reactivates it. Needs a subscription.
          */
         post: operations["postV1CampaignsIdLeads"];
         delete?: never;
@@ -4885,7 +4949,7 @@ export interface paths {
         put?: never;
         /**
          * Resume an enrollment
-         * @description With at: re-enters the named Step of an active, paused or finished Enrollment (an out-of-office reply), arming the reply rule; it may send that Step again. To retry a failed Step, use the bulk retry action. Without at: lifts your own pause. Needs Automate.
+         * @description With at: re-enters the named Step of an active, paused or finished Enrollment (an out-of-office reply), arming the reply rule; it may send that Step again. To retry a failed Step, use the bulk retry action. Without at: lifts your own pause. Needs a subscription.
          */
         post: operations["postV1EnrollmentsIdResume"];
         delete?: never;
@@ -4905,7 +4969,7 @@ export interface paths {
         put?: never;
         /**
          * Send a custom event to an enrollment
-         * @description Sends a custom event to an active or paused Enrollment whose Sequence waits for it (`until event.<name>`), e.g. after you wrote the researched text to the Lead's extra fields. Input only: it fires no webhook. Needs Automate.
+         * @description Sends a custom event to an active or paused Enrollment whose Sequence waits for it (`until event.<name>`), e.g. after you wrote the researched text to the Lead's extra fields. Input only: it fires no webhook. Needs a subscription.
          */
         post: operations["postV1EnrollmentsIdEvents"];
         delete?: never;
@@ -4925,7 +4989,7 @@ export interface paths {
         put?: never;
         /**
          * Send a signal to an enrollment (deprecated)
-         * @description Deprecated, accepted until 2027-01-19: use POST /v1/enrollments/{id}/events, which this answers identically, plus a Deprecation header and a W13 warning. It sends a custom event, never a Signal. Needs Automate.
+         * @description Deprecated, accepted until 2027-01-19: use POST /v1/enrollments/{id}/events, which this answers identically, plus a Deprecation header and a W13 warning. It sends a custom event, never a Signal. Needs a subscription.
          */
         post: operations["postV1EnrollmentsIdSignal"];
         delete?: never;
@@ -4945,7 +5009,7 @@ export interface paths {
         put?: never;
         /**
          * Move an enrollment to another account
-         * @description Moves an Enrollment to another sending account of its Campaign and restarts it there at the first Step of its Sequence version (variants kept). Refused, nothing changed, once its account contacted the person beyond a profile view. warnings names a Step that will be skipped. Needs Automate.
+         * @description Moves an Enrollment to another sending account of its Campaign and restarts it there at the first Step of its Sequence version (variants kept). Refused, nothing changed, once its account contacted the person beyond a profile view. warnings names a Step that will be skipped. Needs a subscription.
          */
         post: operations["postV1EnrollmentsIdReassign"];
         delete?: never;
@@ -4965,7 +5029,7 @@ export interface paths {
         put?: never;
         /**
          * Move an enrollment to another campaign
-         * @description Ends the Enrollment (finish_reason moved) and enrolls its Lead in another Campaign on the same account, to start at that Campaign's first Step. Being in the first Campaign never refuses it; every other rule of the new Campaign applies (do-not-contact, exclusion lists, filters). Moving back later is allowed. Refused, nothing changed, when that Campaign is archived or does not send from the account. Needs Automate.
+         * @description Ends the Enrollment (finish_reason moved) and enrolls its Lead in another Campaign on the same account, to start at that Campaign's first Step. Being in the first Campaign never refuses it; every other rule of the new Campaign applies (do-not-contact, exclusion lists, filters). Moving back later is allowed. Refused, nothing changed, when that Campaign is archived or does not send from the account. Needs a subscription.
          */
         post: operations["postV1EnrollmentsIdMove"];
         delete?: never;
@@ -20797,7 +20861,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A named account is in your team but you may not use it. INSUFFICIENT_ROLE: your role does not reach a teammate's account. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. Neither is fixed by retrying. TIER_REQUIRED: the team's Tier does not include Network. TIER_REQUIRED: the team's Tier does not include Network (Network is part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description A named account is in your team but you may not use it. INSUFFICIENT_ROLE: your role does not reach a teammate's account. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. Neither is fixed by retrying. TIER_REQUIRED: the team's Tier does not include Network. TIER_REQUIRED: the team has no subscription (Network needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -21218,7 +21282,7 @@ export interface operations {
                             lead_id: string | null;
                             /** @description That Lead's Tags; empty without a Lead. */
                             tags: string[];
-                            /** @description Whether the chat is unread on LinkedIn. One value per account, the same for every viewer. */
+                            /** @description Whether the conversation is unread: its chat on LinkedIn (one value per account, the same for every viewer), or an email from them since it was last marked read. Mark it with PATCH /v1/unibox/conversations/{conversation_id}. */
                             unread: boolean;
                             /** @description Set when the chat was made unread without a newer message from them: by the Unibox (unibox), through the API (api), or on LinkedIn itself (linkedin). Null when the chat is read, or unread because they wrote. */
                             marked_unread: {
@@ -21307,6 +21371,47 @@ export interface operations {
                                     name: string;
                                 } | null;
                             } | null;
+                            /** @description The person's marks, from your Do-not-contact list and their address. Both null when there is none. */
+                            marks: {
+                                /** @description On your Do-not-contact list for everything: no Campaign reaches them, and only a LinkedIn reply is allowed. */
+                                do_not_contact: {
+                                    /** @description Why: unsubscribed (the link or the one-click header), asked_to_stop (a reply), email_bounced, or the reason a person gave. */
+                                    reason: string | null;
+                                    /**
+                                     * @description How it was set: the unsubscribe link, the one-click header, a reply Curviate labelled, or a person. Null for a bounce.
+                                     * @enum {string|null}
+                                     */
+                                    how: "unsubscribe_link" | "email_header" | "reply_model" | "person" | null;
+                                    /** @description When. */
+                                    at: string;
+                                    /** @description how person only: the member who added it, when known. */
+                                    added_by?: {
+                                        /** @description The member. */
+                                        user_id?: string;
+                                        /** @description Their name. */
+                                        name?: string | null;
+                                    } | null;
+                                } | null;
+                                /** @description No email to them: their address bounced (reason email_bounced), or they opted out of email only (LinkedIn stays open). */
+                                no_email: {
+                                    /** @description Why: unsubscribed (the link or the one-click header), asked_to_stop (a reply), email_bounced, or the reason a person gave. */
+                                    reason: string | null;
+                                    /**
+                                     * @description How it was set: the unsubscribe link, the one-click header, a reply Curviate labelled, or a person. Null for a bounce.
+                                     * @enum {string|null}
+                                     */
+                                    how: "unsubscribe_link" | "email_header" | "reply_model" | "person" | null;
+                                    /** @description When. */
+                                    at: string;
+                                    /** @description how person only: the member who added it, when known. */
+                                    added_by?: {
+                                        /** @description The member. */
+                                        user_id?: string;
+                                        /** @description Their name. */
+                                        name?: string | null;
+                                    } | null;
+                                } | null;
+                            };
                             /** @description Only on GET /v1/unibox/conversations/{conversation_id}: whether you can email this person from this conversation, and from which Mailboxes. From what Curviate has stored: no mailbox is contacted. */
                             email?: {
                                 /** @description true when an email can go out now. */
@@ -21331,6 +21436,8 @@ export interface operations {
                                 }[];
                                 /** @description The Mailbox an email goes from by default: the thread's, else the only one that can send, else null. */
                                 default_mailbox_id: string | null;
+                                /** @description The Lead's one email address, where an email goes. Null when the Lead has none. */
+                                to: string | null;
                             };
                         }[];
                         /** @description Pass it back as cursor, with the same filters, for the next page. Null on the last page. */
@@ -21486,7 +21593,7 @@ export interface operations {
                         lead_id: string | null;
                         /** @description That Lead's Tags; empty without a Lead. */
                         tags: string[];
-                        /** @description Whether the chat is unread on LinkedIn. One value per account, the same for every viewer. */
+                        /** @description Whether the conversation is unread: its chat on LinkedIn (one value per account, the same for every viewer), or an email from them since it was last marked read. Mark it with PATCH /v1/unibox/conversations/{conversation_id}. */
                         unread: boolean;
                         /** @description Set when the chat was made unread without a newer message from them: by the Unibox (unibox), through the API (api), or on LinkedIn itself (linkedin). Null when the chat is read, or unread because they wrote. */
                         marked_unread: {
@@ -21575,6 +21682,47 @@ export interface operations {
                                 name: string;
                             } | null;
                         } | null;
+                        /** @description The person's marks, from your Do-not-contact list and their address. Both null when there is none. */
+                        marks: {
+                            /** @description On your Do-not-contact list for everything: no Campaign reaches them, and only a LinkedIn reply is allowed. */
+                            do_not_contact: {
+                                /** @description Why: unsubscribed (the link or the one-click header), asked_to_stop (a reply), email_bounced, or the reason a person gave. */
+                                reason: string | null;
+                                /**
+                                 * @description How it was set: the unsubscribe link, the one-click header, a reply Curviate labelled, or a person. Null for a bounce.
+                                 * @enum {string|null}
+                                 */
+                                how: "unsubscribe_link" | "email_header" | "reply_model" | "person" | null;
+                                /** @description When. */
+                                at: string;
+                                /** @description how person only: the member who added it, when known. */
+                                added_by?: {
+                                    /** @description The member. */
+                                    user_id?: string;
+                                    /** @description Their name. */
+                                    name?: string | null;
+                                } | null;
+                            } | null;
+                            /** @description No email to them: their address bounced (reason email_bounced), or they opted out of email only (LinkedIn stays open). */
+                            no_email: {
+                                /** @description Why: unsubscribed (the link or the one-click header), asked_to_stop (a reply), email_bounced, or the reason a person gave. */
+                                reason: string | null;
+                                /**
+                                 * @description How it was set: the unsubscribe link, the one-click header, a reply Curviate labelled, or a person. Null for a bounce.
+                                 * @enum {string|null}
+                                 */
+                                how: "unsubscribe_link" | "email_header" | "reply_model" | "person" | null;
+                                /** @description When. */
+                                at: string;
+                                /** @description how person only: the member who added it, when known. */
+                                added_by?: {
+                                    /** @description The member. */
+                                    user_id?: string;
+                                    /** @description Their name. */
+                                    name?: string | null;
+                                } | null;
+                            } | null;
+                        };
                         /** @description Only on GET /v1/unibox/conversations/{conversation_id}: whether you can email this person from this conversation, and from which Mailboxes. From what Curviate has stored: no mailbox is contacted. */
                         email?: {
                             /** @description true when an email can go out now. */
@@ -21599,6 +21747,8 @@ export interface operations {
                             }[];
                             /** @description The Mailbox an email goes from by default: the thread's, else the only one that can send, else null. */
                             default_mailbox_id: string | null;
+                            /** @description The Lead's one email address, where an email goes. Null when the Lead has none. */
+                            to: string | null;
                         };
                     };
                 };
@@ -21803,7 +21953,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: your role does not reach a teammate's account named in account_ids. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team's Tier does not include Unibox (Unibox is part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description INSUFFICIENT_ROLE: your role does not reach a teammate's account named in account_ids. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -21911,7 +22061,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: your role does not reach a teammate's account named in account_ids. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. NO_ACTIVE_SEAT: the account has no active seat. TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team's Tier does not include Unibox (Unibox is part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description INSUFFICIENT_ROLE: your role does not reach a teammate's account named in account_ids. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. NO_ACTIVE_SEAT: the account has no active seat. TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -22036,7 +22186,7 @@ export interface operations {
                          * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | "same_company" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
@@ -22098,7 +22248,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: your role does not reach a teammate's account named in account_ids. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. NO_ACTIVE_SEAT: the account has no active seat. TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team's Tier does not include Unibox (Unibox is part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description INSUFFICIENT_ROLE: your role does not reach a teammate's account named in account_ids. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. NO_ACTIVE_SEAT: the account has no active seat. TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -22409,7 +22559,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team's Tier does not include Unibox (Unibox is part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -22553,7 +22703,7 @@ export interface operations {
                         lead_id: string | null;
                         /** @description That Lead's Tags; empty without a Lead. */
                         tags: string[];
-                        /** @description Whether the chat is unread on LinkedIn. One value per account, the same for every viewer. */
+                        /** @description Whether the conversation is unread: its chat on LinkedIn (one value per account, the same for every viewer), or an email from them since it was last marked read. Mark it with PATCH /v1/unibox/conversations/{conversation_id}. */
                         unread: boolean;
                         /** @description Set when the chat was made unread without a newer message from them: by the Unibox (unibox), through the API (api), or on LinkedIn itself (linkedin). Null when the chat is read, or unread because they wrote. */
                         marked_unread: {
@@ -22642,6 +22792,47 @@ export interface operations {
                                 name: string;
                             } | null;
                         } | null;
+                        /** @description The person's marks, from your Do-not-contact list and their address. Both null when there is none. */
+                        marks: {
+                            /** @description On your Do-not-contact list for everything: no Campaign reaches them, and only a LinkedIn reply is allowed. */
+                            do_not_contact: {
+                                /** @description Why: unsubscribed (the link or the one-click header), asked_to_stop (a reply), email_bounced, or the reason a person gave. */
+                                reason: string | null;
+                                /**
+                                 * @description How it was set: the unsubscribe link, the one-click header, a reply Curviate labelled, or a person. Null for a bounce.
+                                 * @enum {string|null}
+                                 */
+                                how: "unsubscribe_link" | "email_header" | "reply_model" | "person" | null;
+                                /** @description When. */
+                                at: string;
+                                /** @description how person only: the member who added it, when known. */
+                                added_by?: {
+                                    /** @description The member. */
+                                    user_id?: string;
+                                    /** @description Their name. */
+                                    name?: string | null;
+                                } | null;
+                            } | null;
+                            /** @description No email to them: their address bounced (reason email_bounced), or they opted out of email only (LinkedIn stays open). */
+                            no_email: {
+                                /** @description Why: unsubscribed (the link or the one-click header), asked_to_stop (a reply), email_bounced, or the reason a person gave. */
+                                reason: string | null;
+                                /**
+                                 * @description How it was set: the unsubscribe link, the one-click header, a reply Curviate labelled, or a person. Null for a bounce.
+                                 * @enum {string|null}
+                                 */
+                                how: "unsubscribe_link" | "email_header" | "reply_model" | "person" | null;
+                                /** @description When. */
+                                at: string;
+                                /** @description how person only: the member who added it, when known. */
+                                added_by?: {
+                                    /** @description The member. */
+                                    user_id?: string;
+                                    /** @description Their name. */
+                                    name?: string | null;
+                                } | null;
+                            } | null;
+                        };
                         /** @description Only on GET /v1/unibox/conversations/{conversation_id}: whether you can email this person from this conversation, and from which Mailboxes. From what Curviate has stored: no mailbox is contacted. */
                         email?: {
                             /** @description true when an email can go out now. */
@@ -22666,6 +22857,8 @@ export interface operations {
                             }[];
                             /** @description The Mailbox an email goes from by default: the thread's, else the only one that can send, else null. */
                             default_mailbox_id: string | null;
+                            /** @description The Lead's one email address, where an email goes. Null when the Lead has none. */
+                            to: string | null;
                         };
                     };
                 };
@@ -22690,6 +22883,335 @@ export interface operations {
             };
             /** @description RESOURCE_NOT_FOUND: no such conversation in your Unibox, the same answer for an id that does not exist, another team's, and one you cannot see. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    patchV1UniboxConversationsConversationId: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description The conversation (cnv_...), as the list serves it. */
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description true marks the conversation read, false unread. */
+                    read: boolean;
+                };
+            };
+        };
+        responses: {
+            /** @description The conversation. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "unibox_chat";
+                        /** @description The account the chat belongs to. */
+                        account_id: string;
+                        /** @description That account's connection status. A chat stays listed while its account needs a reconnect. */
+                        account_status: string;
+                        /** @description The conversation: one person on one account, across LinkedIn and email. Stable for that pair. Read it with GET /v1/unibox/conversations/{conversation_id}. */
+                        conversation_id: string;
+                        /** @description The channels the conversation holds: linkedin, email, or both. Email is the email a Campaign sent this person from this account, and their replies. */
+                        channels: ("linkedin" | "email")[];
+                        /**
+                         * @description The channel of the newest message.
+                         * @enum {string}
+                         */
+                        last_message_channel: "linkedin" | "email";
+                        /** @description The LinkedIn chat. Use it with the account id on the chat routes. Null when the conversation is email only. */
+                        chat_id: string | null;
+                        /**
+                         * @description The kind of conversation. Null until it is known: a chat seen only through a new message gets its kind when it is listed or opened.
+                         * @enum {string|null}
+                         */
+                        type: "classic" | "inmail" | "sales_navigator" | "recruiter" | null;
+                        /** @description true for a group chat. */
+                        is_group: boolean;
+                        /** @description The other person in a one-to-one chat. Null for a group chat, or while nobody is known yet. */
+                        counterpart: {
+                            /** @description Their LinkedIn member id. */
+                            member_id?: string | null;
+                            /** @description Their name. */
+                            name?: string | null;
+                            /** @description Their headline. */
+                            headline?: string | null;
+                            /** @description Their profile picture. */
+                            picture_url?: string | null;
+                            /** @description Their profile. */
+                            profile_url?: string | null;
+                        } | null;
+                        /** @description A group chat as this account sees it. Null for a one-to-one chat. The account's own person is never among the members. */
+                        group: {
+                            /** @description The group's own title. Null when it has none: name it from its members. */
+                            title: string | null;
+                            /** @description The other members, as far as LinkedIn has listed them: the count is what the list holds. Empty while members_known is false. */
+                            members: {
+                                /** @description Their name. Null while LinkedIn has not named them. */
+                                name: string | null;
+                                /** @description Their first name. */
+                                first_name: string | null;
+                                /** @description Their profile picture. */
+                                picture_url: string | null;
+                                /** @description Their profile. */
+                                profile_url: string | null;
+                                /** @description Their headline. */
+                                headline: string | null;
+                                /** @description true when they are on your Team's do-not-contact list. Null when nothing names them yet, so nothing was checked. A reply into the group is still allowed, and reaches everyone in it. */
+                                do_not_contact: boolean | null;
+                            }[];
+                            /** @description false until a read has listed the group's members. Its next sync lists them. */
+                            members_known: boolean;
+                            /** @description Who wrote preview, when someone other than this account did and Curviate knows who. */
+                            preview_sender: string | null;
+                        } | null;
+                        /** @description The Lead this person is, when you hold one (matched on their LinkedIn ids). */
+                        lead_id: string | null;
+                        /** @description That Lead's Tags; empty without a Lead. */
+                        tags: string[];
+                        /** @description Whether the conversation is unread: its chat on LinkedIn (one value per account, the same for every viewer), or an email from them since it was last marked read. Mark it with PATCH /v1/unibox/conversations/{conversation_id}. */
+                        unread: boolean;
+                        /** @description Set when the chat was made unread without a newer message from them: by the Unibox (unibox), through the API (api), or on LinkedIn itself (linkedin). Null when the chat is read, or unread because they wrote. */
+                        marked_unread: {
+                            /**
+                             * @description Who marked it unread.
+                             * @enum {string}
+                             */
+                            origin: "unibox" | "api" | "linkedin";
+                            /** @description When Curviate learned of it. */
+                            at: string;
+                        } | null;
+                        /** @description The newest message or send in this conversation Curviate knows of, on either channel. */
+                        last_activity_at: string | null;
+                        /**
+                         * @description Who sent the last message, on either channel. Null while unknown.
+                         * @enum {string|null}
+                         */
+                        last_message_from: "me" | "them" | null;
+                        /** @description The newest message text Curviate holds for the chat. Null when it holds none. */
+                        preview: {
+                            /** @description The text. */
+                            text?: string;
+                            /** @description When it was sent. */
+                            at?: string;
+                        } | null;
+                        /** @description The Campaign this chat belongs to: the most recently started Enrollment linked to it. Null for a chat no Campaign links. An Enrollment that finished with finish_reason messaged_manually stopped because you messaged this person; replied, because they replied; engaged_elsewhere, because they replied to or were messaged from another Account of the Campaign. */
+                        campaign_context: {
+                            /** @description The Campaign. */
+                            campaign_id: string;
+                            /** @description Its name. */
+                            campaign_name: string;
+                            /** @description The Enrollment of this person in that Campaign. */
+                            enrollment_id: string;
+                            /**
+                             * @description The Enrollment's state, as its status.
+                             * @enum {string}
+                             */
+                            enrollment_status: "queued" | "active" | "paused" | "finished" | "failed" | "skipped";
+                            /** @description Why the Enrollment finished, as on the Enrollment. Null while it has not finished. */
+                            finish_reason: string | null;
+                            /** @description The Step the Enrollment is at, or ended on. */
+                            step_id: string | null;
+                            /** @description The variant its last message or invitation Step sent. Null without variants. */
+                            variant_id: string | null;
+                            /** @description The action of its last executed message or invitation Step, such as voice.send. Null before any. */
+                            action: string | null;
+                        } | null;
+                        /** @description The chat's latest Reply label, what a reply to a Campaign needs next. Null: no label yet, and always null for a direct conversation. interested, not_now, not_interested and other inform. opt_out puts the person on your Do-not-contact list. out_of_office is not a reply: the Lead waits for the return date. referral names someone else to talk to. unsure: Curviate could not tell, a person decides. */
+                        reply_label: {
+                            /**
+                             * @description The label.
+                             * @enum {string}
+                             */
+                            label: "interested" | "not_now" | "not_interested" | "opt_out" | "out_of_office" | "referral" | "other" | "unsure";
+                            /**
+                             * @description rule: a message header said so. curviate: Curviate read the reply. user: a person or an agent set it.
+                             * @enum {string}
+                             */
+                            source: "rule" | "curviate" | "user";
+                            /** @description How sure Curviate is, as a whole percent from 0 to 100. Null for a label a rule or a person set, and for unsure. */
+                            confidence: number | null;
+                            /** @description Who set the label, only when source is user. */
+                            set_by: {
+                                /** @description The user. */
+                                user_id: string;
+                                /** @description Their name. */
+                                name: string | null;
+                                /**
+                                 * @description dashboard, api or mcp.
+                                 * @enum {string}
+                                 */
+                                via: "dashboard" | "api" | "mcp";
+                            } | null;
+                            /**
+                             * @description The label this one replaced on the same message. Null for the first.
+                             * @enum {string|null}
+                             */
+                            previous_label: "interested" | "not_now" | "not_interested" | "opt_out" | "out_of_office" | "referral" | "other" | "unsure" | null;
+                            /** @description When the label was set. */
+                            set_at: string;
+                            /** @description Out of office: the day the person is back (YYYY-MM-DD). Null when the reply names none. */
+                            return_date: string | null;
+                            /** @description Referral: who the reply points to. Null otherwise. */
+                            referral: {
+                                /** @description Their name, as the reply gives it. */
+                                name: string;
+                            } | null;
+                        } | null;
+                        /** @description The person's marks, from your Do-not-contact list and their address. Both null when there is none. */
+                        marks: {
+                            /** @description On your Do-not-contact list for everything: no Campaign reaches them, and only a LinkedIn reply is allowed. */
+                            do_not_contact: {
+                                /** @description Why: unsubscribed (the link or the one-click header), asked_to_stop (a reply), email_bounced, or the reason a person gave. */
+                                reason: string | null;
+                                /**
+                                 * @description How it was set: the unsubscribe link, the one-click header, a reply Curviate labelled, or a person. Null for a bounce.
+                                 * @enum {string|null}
+                                 */
+                                how: "unsubscribe_link" | "email_header" | "reply_model" | "person" | null;
+                                /** @description When. */
+                                at: string;
+                                /** @description how person only: the member who added it, when known. */
+                                added_by?: {
+                                    /** @description The member. */
+                                    user_id?: string;
+                                    /** @description Their name. */
+                                    name?: string | null;
+                                } | null;
+                            } | null;
+                            /** @description No email to them: their address bounced (reason email_bounced), or they opted out of email only (LinkedIn stays open). */
+                            no_email: {
+                                /** @description Why: unsubscribed (the link or the one-click header), asked_to_stop (a reply), email_bounced, or the reason a person gave. */
+                                reason: string | null;
+                                /**
+                                 * @description How it was set: the unsubscribe link, the one-click header, a reply Curviate labelled, or a person. Null for a bounce.
+                                 * @enum {string|null}
+                                 */
+                                how: "unsubscribe_link" | "email_header" | "reply_model" | "person" | null;
+                                /** @description When. */
+                                at: string;
+                                /** @description how person only: the member who added it, when known. */
+                                added_by?: {
+                                    /** @description The member. */
+                                    user_id?: string;
+                                    /** @description Their name. */
+                                    name?: string | null;
+                                } | null;
+                            } | null;
+                        };
+                        /** @description Only on GET /v1/unibox/conversations/{conversation_id}: whether you can email this person from this conversation, and from which Mailboxes. From what Curviate has stored: no mailbox is contacted. */
+                        email?: {
+                            /** @description true when an email can go out now. */
+                            available: boolean;
+                            /**
+                             * @description Why not. group_chat: a group chat takes no email. no_email_address: the Lead has no email address. email_bounced: the address bounced. no_email: the person opted out of email (LinkedIn stays open). do_not_contact: the person is on your Do-not-contact list; reply on LinkedIn only. no_mailbox: no Mailbox this conversation may use can send.
+                             * @enum {string|null}
+                             */
+                            reason: "group_chat" | "no_email_address" | "email_bounced" | "no_email" | "do_not_contact" | "no_mailbox" | null;
+                            /** @description When the bounce or the Do-not-contact entry happened, where the reason has one. */
+                            at: string | null;
+                            /** @description The Mailboxes this conversation may use: the account's own, and the shared ones its Campaign chose (without a Campaign, shared ones only when the account has none of its own). Never another person's. */
+                            mailboxes: {
+                                /** @description The Mailbox. */
+                                mailbox_id: string;
+                                /** @description Its address. */
+                                address: string;
+                                /** @description true for a shared Mailbox. */
+                                shared: boolean;
+                                /** @description Its state; connected and ramping can send, reconnect_needed needs a reconnect. */
+                                state: string;
+                            }[];
+                            /** @description The Mailbox an email goes from by default: the thread's, else the only one that can send, else null. */
+                            default_mailbox_id: string | null;
+                            /** @description The Lead's one email address, where an email goes. Null when the Lead has none. */
+                            to: string | null;
+                        };
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: read is missing or not true or false, or the body has another field. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description The account's seat billing is past due; the LinkedIn chat is not marked. */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description NO_ACTIVE_SEAT: the account has no active seat, so its LinkedIn chat is not marked. INSUFFICIENT_ROLE, ACCOUNT_NOT_SHARED: you can read this conversation but not change it. TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such conversation in your Unibox, the same answer for an id that does not exist, another team's, and one you cannot see. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -22883,6 +23405,464 @@ export interface operations {
                 };
             };
             /** @description RATE_LIMIT_ACCOUNT: the account's per-minute read ceiling; retry after the time it names. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1UniboxConversationsConversationIdEmails: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description The conversation (cnv_...), as the list serves it. */
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The email's text, plain text, 1 to 10,000 characters. No signature is added. */
+                    text: string;
+                    /** @description Reply in this thread (a thread_id from the conversation's messages). Omit it to start a new thread. */
+                    thread_id?: string;
+                    /** @description New thread only: the Mailbox to send from, one of the conversation's email.mailboxes. Needed when more than one can send. A reply always goes from its thread's Mailbox. */
+                    mailbox_id?: string;
+                    /** @description The subject. Required for a new thread. A reply's subject is Re: and the thread's first subject unless you give one. */
+                    subject?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The email, as the conversation's messages serve it. */
+            201: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description email.
+                         * @enum {string}
+                         */
+                        channel: "email";
+                        /** @description The email's id. */
+                        id: string;
+                        /** @description The conversation. */
+                        conversation_id: string;
+                        /** @description Its thread: the one replied in, or the new thread's id. */
+                        thread_id: string;
+                        /** @description When it was sent. */
+                        timestamp: string;
+                        /** @description true. */
+                        is_sender?: boolean;
+                        /** @description The subject sent. */
+                        subject: string;
+                        /** @description The Mailbox's address. */
+                        from: string;
+                        /** @description The Lead's address. */
+                        to: string[];
+                        /** @description Empty. */
+                        cc?: string[];
+                        /** @description Empty. */
+                        bcc?: string[];
+                        /** @description The text sent. */
+                        text: string;
+                        /** @description A quoted part of the text, apart from it. Null when there is none. */
+                        quoted_text?: string | null;
+                        /** @description false. */
+                        automatic?: boolean;
+                        /**
+                         * @description unibox from the dashboard, api from a key or an agent.
+                         * @enum {string}
+                         */
+                        origin: "unibox" | "api";
+                        /** @description Empty. */
+                        attachments?: Record<string, never>[];
+                        /** @description The Mailbox it went from. */
+                        mailbox_id: string;
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: text is missing or over 10,000 characters; a to field (it always goes to the Lead); a new thread without subject; mailbox_id is not one of the conversation's Mailboxes, or names another Mailbox than a reply's thread (start a new thread to use another), or is missing while more than one can send; thread_id is not a thread of this conversation. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE, ACCOUNT_NOT_SHARED: you can read this conversation but not send from its account. TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such conversation in your Unibox, the same answer for an id that does not exist, another team's, and one you cannot see. MAILBOX_NOT_FOUND: mailbox_id is not a Mailbox of your team. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_STATE_CONFLICT: the Mailbox cannot send: it needs reconnecting, is paused, or has sent its daily limit. The message names the state and the ways on: a new thread from another Mailbox, or a LinkedIn reply. Nothing was sent. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description EMAIL_UNAVAILABLE: email is not available in this conversation; reason is no_email_address, email_bounced, no_email, do_not_contact, no_mailbox or group_chat, at the mark's date. Nothing was sent. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description PLATFORM_ERROR: the Mailbox's provider did not take the email. Nothing was sent and the daily limit was given back. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1UniboxMessagesMessageIdReferralSearch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description The message id, as the conversation's messages list it. */
+                message_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The name to search for. Omitted: the name Curviate suggests from the reply. */
+                    name?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The candidates. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /**
+                         * @description Response type discriminator.
+                         * @enum {string}
+                         */
+                        object: "referral_search";
+                        /** @description The name Curviate read from the reply; null when it found none. */
+                        suggested_name: string | null;
+                        /** @description The name searched. */
+                        name: string;
+                        /** @description At most 10 people, in LinkedIn's order. Empty when none matched: the name stays on the label. */
+                        candidates: {
+                            /** @description Pass it to the confirm route. */
+                            provider_id: string;
+                            /** @description Their name. */
+                            name: string | null;
+                            /** @description Their headline. */
+                            headline: string | null;
+                            /** @description Their profile. */
+                            linkedin_url: string | null;
+                        }[];
+                        /** @description The message's label, with referral.name. */
+                        reply_label: {
+                            /**
+                             * @description The label.
+                             * @enum {string}
+                             */
+                            label: "interested" | "not_now" | "not_interested" | "opt_out" | "out_of_office" | "referral" | "other" | "unsure";
+                            /**
+                             * @description rule: a message header said so. curviate: Curviate read the reply. user: a person or an agent set it.
+                             * @enum {string}
+                             */
+                            source: "rule" | "curviate" | "user";
+                            /** @description How sure Curviate is, as a whole percent from 0 to 100. Null for a label a rule or a person set, and for unsure. */
+                            confidence: number | null;
+                            /** @description Who set the label, only when source is user. */
+                            set_by: {
+                                /** @description The user. */
+                                user_id: string;
+                                /** @description Their name. */
+                                name: string | null;
+                                /**
+                                 * @description dashboard, api or mcp.
+                                 * @enum {string}
+                                 */
+                                via: "dashboard" | "api" | "mcp";
+                            } | null;
+                            /**
+                             * @description The label this one replaced on the same message. Null for the first.
+                             * @enum {string|null}
+                             */
+                            previous_label: "interested" | "not_now" | "not_interested" | "opt_out" | "out_of_office" | "referral" | "other" | "unsure" | null;
+                            /** @description When the label was set. */
+                            set_at: string;
+                            /** @description Out of office: the day the person is back (YYYY-MM-DD). Null when the reply names none. */
+                            return_date: string | null;
+                            /** @description Referral: who the reply points to. Null otherwise. */
+                            referral: {
+                                /** @description Their name, as the reply gives it. */
+                                name: string;
+                            } | null;
+                        } | null;
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: no name was given and Curviate found none in the reply, or the body has another field. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description NO_ACTIVE_SEAT, INSUFFICIENT_ROLE, ACCOUNT_NOT_SHARED: you cannot search as the conversation's account. TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: Curviate holds no label for this message in your Unibox, the same answer for an unknown id and for a chat you cannot see. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description NOT_A_REFERRAL: the message's label is not referral; the message names it. Nothing was searched. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description BUDGET_EXHAUSTED: the account's search limit is spent. Nothing was searched. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1UniboxMessagesMessageIdReferralConfirm: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description The message id, as the conversation's messages list it. */
+                message_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description A candidate's provider_id, from the search. */
+                    provider_id?: string;
+                    /** @description Or the person's LinkedIn profile URL. */
+                    linkedin_url?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The Lead you already held (outcome unchanged or updated). */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description The new Lead (outcome created), as GET /v1/leads/{id} serves it. */
+            201: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description INVALID_REQUEST: neither or both of provider_id and linkedin_url, or linkedin_url is not a LinkedIn profile. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: Curviate holds no label for this message in your Unibox, the same answer for an unknown id and for a chat you cannot see. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description NOT_A_REFERRAL: the message's label is not referral; the message names it. Nothing was saved. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description LEAD_LIMIT_REACHED: a new Lead would pass your team's Lead limit. Nothing was saved. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -26928,7 +27908,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. TIER_REQUIRED: the team's Tier does not include Drafts (Drafts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. TIER_REQUIRED: the team has no subscription (Drafts need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -27343,7 +28323,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. TIER_REQUIRED: the team's Tier does not include Drafts (Drafts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. TIER_REQUIRED: the team has no subscription (Drafts need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -27460,7 +28440,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. TIER_REQUIRED: the team's Tier does not include Drafts (Drafts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. TIER_REQUIRED: the team has no subscription (Drafts need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -27650,7 +28630,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. TIER_REQUIRED: the team's Tier does not include Drafts (Drafts are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description Forbidden. NO_ACTIVE_SEAT: the account is not attached to an active seat. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. TIER_REQUIRED: the team has no subscription (Drafts need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -46550,7 +47530,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: incoming events are part of Campaigns; this team's Tier does not include them. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: incoming events are part of Campaigns; this team's Tier does not include them. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -46686,7 +47666,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: only the creator edits, rotates and captures; Owners and Managers switch one on or off and delete it. Or TIER_REQUIRED: incoming events are part of Campaigns; this team's Tier does not include them. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description INSUFFICIENT_ROLE: only the creator edits, rotates and captures; Owners and Managers switch one on or off and delete it. Or TIER_REQUIRED: incoming events are part of Campaigns; this team's Tier does not include them. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -46822,7 +47802,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: only the creator edits, rotates and captures; Owners and Managers switch one on or off and delete it. Or TIER_REQUIRED: incoming events are part of Campaigns; this team's Tier does not include them. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description INSUFFICIENT_ROLE: only the creator edits, rotates and captures; Owners and Managers switch one on or off and delete it. Or TIER_REQUIRED: incoming events are part of Campaigns; this team's Tier does not include them. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -47485,6 +48465,7 @@ export interface operations {
                             connected_by_user_id: string | null;
                             /** Format: date-time */
                             connected_at: string;
+                            /** @description Which Accounts and Campaigns this Mailbox sent for, and how many emails for each, most first. Counted when an email is sent; an email that was not sent does not count. A Unibox email counts for its Account only. */
                             used_with: {
                                 accounts: {
                                     account_id?: string;
@@ -47494,6 +48475,25 @@ export interface operations {
                                     campaign_id?: string;
                                     emails?: number;
                                 }[];
+                            };
+                            /** @description Mailbox warm-up: short everyday emails exchanged with other Teams' Mailboxes, filed into their own folder, never in Curviate's Unibox, so the Mailbox builds a sending history. Off until turned on; a Mailbox bought from Curviate starts with it on. */
+                            warm_up: {
+                                /** @description Whether warm-up is turned on. */
+                                enabled: boolean;
+                                /**
+                                 * @description The days picked: 10, 14, 21 or 28; null if never picked.
+                                 * @enum {integer|null}
+                                 */
+                                days: 10 | 14 | 21 | 28 | null;
+                                /** @description Warm-up day: 1 on the day it was turned on, then one more each calendar day; null while off. */
+                                day: number | null;
+                                /**
+                                 * @description `off`, or `warming` (day N of the days picked).
+                                 * @enum {string}
+                                 */
+                                state: "off" | "warming";
+                                /** @description Why warm-up is waiting; null otherwise. */
+                                reason: string | null;
                             };
                         }[];
                         cursor?: string | null;
@@ -47612,6 +48612,7 @@ export interface operations {
                         connected_by_user_id: string | null;
                         /** Format: date-time */
                         connected_at: string;
+                        /** @description Which Accounts and Campaigns this Mailbox sent for, and how many emails for each, most first. Counted when an email is sent; an email that was not sent does not count. A Unibox email counts for its Account only. */
                         used_with: {
                             accounts: {
                                 account_id?: string;
@@ -47621,6 +48622,25 @@ export interface operations {
                                 campaign_id?: string;
                                 emails?: number;
                             }[];
+                        };
+                        /** @description Mailbox warm-up: short everyday emails exchanged with other Teams' Mailboxes, filed into their own folder, never in Curviate's Unibox, so the Mailbox builds a sending history. Off until turned on; a Mailbox bought from Curviate starts with it on. */
+                        warm_up: {
+                            /** @description Whether warm-up is turned on. */
+                            enabled: boolean;
+                            /**
+                             * @description The days picked: 10, 14, 21 or 28; null if never picked.
+                             * @enum {integer|null}
+                             */
+                            days: 10 | 14 | 21 | 28 | null;
+                            /** @description Warm-up day: 1 on the day it was turned on, then one more each calendar day; null while off. */
+                            day: number | null;
+                            /**
+                             * @description `off`, or `warming` (day N of the days picked).
+                             * @enum {string}
+                             */
+                            state: "off" | "warming";
+                            /** @description Why warm-up is waiting; null otherwise. */
+                            reason: string | null;
                         };
                     };
                 };
@@ -47783,6 +48803,13 @@ export interface operations {
                         /** @constant */
                         kind: "shared";
                     }) | null;
+                    /** @description Mailbox warm-up: Curviate exchanges short everyday emails between this Mailbox and other Teams' Mailboxes, opens and answers them, moves them out of spam and files them into their own folder, never into Curviate's Unibox, so the Mailbox builds a sending history. Turning it on is your consent that other Teams' warm-up emails pass through this Mailbox. Included in your plan. Changing the days keeps the day count; off then on starts again at day 1. */
+                    warm_up?: {
+                        /** @description true turns Mailbox warm-up on (Recommended), false turns it off. */
+                        enabled: boolean;
+                        /** @description How many days warm-up runs before the Mailbox can be ready: 10, 14, 21 or 28. Required with enabled true. */
+                        days?: number;
+                    };
                 };
             };
         };
@@ -47841,6 +48868,7 @@ export interface operations {
                         connected_by_user_id: string | null;
                         /** Format: date-time */
                         connected_at: string;
+                        /** @description Which Accounts and Campaigns this Mailbox sent for, and how many emails for each, most first. Counted when an email is sent; an email that was not sent does not count. A Unibox email counts for its Account only. */
                         used_with: {
                             accounts: {
                                 account_id?: string;
@@ -47850,6 +48878,25 @@ export interface operations {
                                 campaign_id?: string;
                                 emails?: number;
                             }[];
+                        };
+                        /** @description Mailbox warm-up: short everyday emails exchanged with other Teams' Mailboxes, filed into their own folder, never in Curviate's Unibox, so the Mailbox builds a sending history. Off until turned on; a Mailbox bought from Curviate starts with it on. */
+                        warm_up: {
+                            /** @description Whether warm-up is turned on. */
+                            enabled: boolean;
+                            /**
+                             * @description The days picked: 10, 14, 21 or 28; null if never picked.
+                             * @enum {integer|null}
+                             */
+                            days: 10 | 14 | 21 | 28 | null;
+                            /** @description Warm-up day: 1 on the day it was turned on, then one more each calendar day; null while off. */
+                            day: number | null;
+                            /**
+                             * @description `off`, or `warming` (day N of the days picked).
+                             * @enum {string}
+                             */
+                            state: "off" | "warming";
+                            /** @description Why warm-up is waiting; null otherwise. */
+                            reason: string | null;
                         };
                     };
                 };
@@ -47984,6 +49031,7 @@ export interface operations {
                         connected_by_user_id: string | null;
                         /** Format: date-time */
                         connected_at: string;
+                        /** @description Which Accounts and Campaigns this Mailbox sent for, and how many emails for each, most first. Counted when an email is sent; an email that was not sent does not count. A Unibox email counts for its Account only. */
                         used_with: {
                             accounts: {
                                 account_id?: string;
@@ -47993,6 +49041,25 @@ export interface operations {
                                 campaign_id?: string;
                                 emails?: number;
                             }[];
+                        };
+                        /** @description Mailbox warm-up: short everyday emails exchanged with other Teams' Mailboxes, filed into their own folder, never in Curviate's Unibox, so the Mailbox builds a sending history. Off until turned on; a Mailbox bought from Curviate starts with it on. */
+                        warm_up: {
+                            /** @description Whether warm-up is turned on. */
+                            enabled: boolean;
+                            /**
+                             * @description The days picked: 10, 14, 21 or 28; null if never picked.
+                             * @enum {integer|null}
+                             */
+                            days: 10 | 14 | 21 | 28 | null;
+                            /** @description Warm-up day: 1 on the day it was turned on, then one more each calendar day; null while off. */
+                            day: number | null;
+                            /**
+                             * @description `off`, or `warming` (day N of the days picked).
+                             * @enum {string}
+                             */
+                            state: "off" | "warming";
+                            /** @description Why warm-up is waiting; null otherwise. */
+                            reason: string | null;
                         };
                     };
                 };
@@ -48127,6 +49194,7 @@ export interface operations {
                         connected_by_user_id: string | null;
                         /** Format: date-time */
                         connected_at: string;
+                        /** @description Which Accounts and Campaigns this Mailbox sent for, and how many emails for each, most first. Counted when an email is sent; an email that was not sent does not count. A Unibox email counts for its Account only. */
                         used_with: {
                             accounts: {
                                 account_id?: string;
@@ -48136,6 +49204,25 @@ export interface operations {
                                 campaign_id?: string;
                                 emails?: number;
                             }[];
+                        };
+                        /** @description Mailbox warm-up: short everyday emails exchanged with other Teams' Mailboxes, filed into their own folder, never in Curviate's Unibox, so the Mailbox builds a sending history. Off until turned on; a Mailbox bought from Curviate starts with it on. */
+                        warm_up: {
+                            /** @description Whether warm-up is turned on. */
+                            enabled: boolean;
+                            /**
+                             * @description The days picked: 10, 14, 21 or 28; null if never picked.
+                             * @enum {integer|null}
+                             */
+                            days: 10 | 14 | 21 | 28 | null;
+                            /** @description Warm-up day: 1 on the day it was turned on, then one more each calendar day; null while off. */
+                            day: number | null;
+                            /**
+                             * @description `off`, or `warming` (day N of the days picked).
+                             * @enum {string}
+                             */
+                            state: "off" | "warming";
+                            /** @description Why warm-up is waiting; null otherwise. */
+                            reason: string | null;
                         };
                     };
                 };
@@ -48856,7 +49943,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team has no subscription (Leads need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -49200,7 +50287,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team has no subscription (Leads need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -49458,7 +50545,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: a Member named a teammate's account. ACCOUNT_NOT_SHARED: its person turned team access off. NO_ACTIVE_SEAT: the account has no seat. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description INSUFFICIENT_ROLE: a Member named a teammate's account. ACCOUNT_NOT_SHARED: its person turned team access off. NO_ACTIVE_SEAT: the account has no seat. Not fixed by retrying. TIER_REQUIRED: the team has no subscription (Leads need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -49963,7 +51050,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team has no subscription (Leads need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -50319,7 +51406,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team has no subscription (Leads need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -50497,7 +51584,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team has no subscription (Leads need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -50675,7 +51762,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team has no subscription (Leads need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -51198,7 +52285,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team has no subscription (Leads need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -51461,7 +52548,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team has no subscription (Leads need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -51690,7 +52777,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team has no subscription (Leads need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -51971,7 +53058,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team has no subscription (Leads need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -52324,7 +53411,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team has no subscription (Leads need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -52572,7 +53659,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team has no subscription (Leads need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -52911,7 +53998,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Leads (Leads are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team has no subscription (Leads need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -54445,7 +55532,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Campaigns (Automate). Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include Campaigns (Automate). Not fixed by retrying. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -54658,7 +55745,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Campaigns (Automate). Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description TIER_REQUIRED: the team's Tier does not include Campaigns (Automate). Not fixed by retrying. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -54918,6 +56005,8 @@ export interface operations {
                                  * @enum {string}
                                  */
                                 reply_scope: "both" | "own_channel";
+                                /** @description When true, at most one Lead per company is enrolled: a Lead whose company already has a Lead in this Campaign is skipped same_company (skip_detail: the Lead kept, the first admitted). Leads without a known company are never skipped for it. Default false. */
+                                one_lead_per_company: boolean;
                             };
                             /** @description lead.* predicates a Lead must all pass to enroll. */
                             where: {
@@ -54967,6 +56056,8 @@ export interface operations {
                                 };
                                 /** @description Leads that would wait at a step with on_missing hold, a variable of it having no value. */
                                 held: number;
+                                /** @description With settings.one_lead_per_company: Leads at a company another of these Leads shares, beyond the first, that would be skipped same_company. 0 when the setting is off. Absent from a check made before this count existed. */
+                                same_company?: number;
                                 /** @description Each email step or variant that sends files: how many and their size in bytes. A link usually lands better than a file. */
                                 attachments: {
                                     step: string;
@@ -55141,6 +56232,8 @@ export interface operations {
                         variables?: {
                             [key: string]: string | null;
                         };
+                        /** @description Enroll at most one Lead per company. When true, a Lead whose company already has a Lead in this Campaign is skipped with reason same_company, naming the Lead kept (the first admitted). A Lead without a known company is never skipped for it. Default false. */
+                        one_lead_per_company?: boolean;
                         /**
                          * @description Campaigns with an email step: what a reply ends. both (default): a reply by email or on LinkedIn ends the Enrollment. own_channel: it skips only the later steps of the channel it came on (channel_replied), and the other channel's steps go on.
                          * @enum {string}
@@ -55252,6 +56345,8 @@ export interface operations {
                              * @enum {string}
                              */
                             reply_scope: "both" | "own_channel";
+                            /** @description When true, at most one Lead per company is enrolled: a Lead whose company already has a Lead in this Campaign is skipped same_company (skip_detail: the Lead kept, the first admitted). Leads without a known company are never skipped for it. Default false. */
+                            one_lead_per_company: boolean;
                         };
                         /** @description lead.* predicates a Lead must all pass to enroll. */
                         where: {
@@ -55303,6 +56398,8 @@ export interface operations {
                             };
                             /** @description Leads that would wait at a step with on_missing hold, a variable of it having no value. */
                             held: number;
+                            /** @description With settings.one_lead_per_company: Leads at a company another of these Leads shares, beyond the first, that would be skipped same_company. 0 when the setting is off. Absent from a check made before this count existed. */
+                            same_company?: number;
                             /** @description Each email step or variant that sends files: how many and their size in bytes. A link usually lands better than a file. */
                             attachments: {
                                 step: string;
@@ -55392,7 +56489,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Campaign's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Campaign sends from to pause or archive, and removes only their own. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Campaign's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Campaign sends from to pause or archive, and removes only their own. Not fixed by retrying. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -55554,6 +56651,8 @@ export interface operations {
                              * @enum {string}
                              */
                             reply_scope: "both" | "own_channel";
+                            /** @description When true, at most one Lead per company is enrolled: a Lead whose company already has a Lead in this Campaign is skipped same_company (skip_detail: the Lead kept, the first admitted). Leads without a known company are never skipped for it. Default false. */
+                            one_lead_per_company: boolean;
                         };
                         /** @description lead.* predicates a Lead must all pass to enroll. */
                         where: {
@@ -55605,6 +56704,8 @@ export interface operations {
                             };
                             /** @description Leads that would wait at a step with on_missing hold, a variable of it having no value. */
                             held: number;
+                            /** @description With settings.one_lead_per_company: Leads at a company another of these Leads shares, beyond the first, that would be skipped same_company. 0 when the setting is off. Absent from a check made before this count existed. */
+                            same_company?: number;
                             /** @description Each email step or variant that sends files: how many and their size in bytes. A link usually lands better than a file. */
                             attachments: {
                                 step: string;
@@ -55877,6 +56978,8 @@ export interface operations {
                         variables?: {
                             [key: string]: string | null;
                         };
+                        /** @description Enroll at most one Lead per company. When true, a Lead whose company already has a Lead in this Campaign is skipped with reason same_company, naming the Lead kept (the first admitted). A Lead without a known company is never skipped for it. Default false. */
+                        one_lead_per_company?: boolean;
                         /**
                          * @description Campaigns with an email step: what a reply ends. both (default): a reply by email or on LinkedIn ends the Enrollment. own_channel: it skips only the later steps of the channel it came on (channel_replied), and the other channel's steps go on.
                          * @enum {string}
@@ -55990,6 +57093,8 @@ export interface operations {
                              * @enum {string}
                              */
                             reply_scope: "both" | "own_channel";
+                            /** @description When true, at most one Lead per company is enrolled: a Lead whose company already has a Lead in this Campaign is skipped same_company (skip_detail: the Lead kept, the first admitted). Leads without a known company are never skipped for it. Default false. */
+                            one_lead_per_company: boolean;
                         };
                         /** @description lead.* predicates a Lead must all pass to enroll. */
                         where: {
@@ -56041,6 +57146,8 @@ export interface operations {
                             };
                             /** @description Leads that would wait at a step with on_missing hold, a variable of it having no value. */
                             held: number;
+                            /** @description With settings.one_lead_per_company: Leads at a company another of these Leads shares, beyond the first, that would be skipped same_company. 0 when the setting is off. Absent from a check made before this count existed. */
+                            same_company?: number;
                             /** @description Each email step or variant that sends files: how many and their size in bytes. A link usually lands better than a file. */
                             attachments: {
                                 step: string;
@@ -56132,7 +57239,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Campaign's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Campaign sends from to pause or archive, and removes only their own. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Campaign's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Campaign sends from to pause or archive, and removes only their own. Not fixed by retrying. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -56301,6 +57408,8 @@ export interface operations {
                              * @enum {string}
                              */
                             reply_scope: "both" | "own_channel";
+                            /** @description When true, at most one Lead per company is enrolled: a Lead whose company already has a Lead in this Campaign is skipped same_company (skip_detail: the Lead kept, the first admitted). Leads without a known company are never skipped for it. Default false. */
+                            one_lead_per_company: boolean;
                         };
                         /** @description lead.* predicates a Lead must all pass to enroll. */
                         where: {
@@ -56352,6 +57461,8 @@ export interface operations {
                             };
                             /** @description Leads that would wait at a step with on_missing hold, a variable of it having no value. */
                             held: number;
+                            /** @description With settings.one_lead_per_company: Leads at a company another of these Leads shares, beyond the first, that would be skipped same_company. 0 when the setting is off. Absent from a check made before this count existed. */
+                            same_company?: number;
                             /** @description Each email step or variant that sends files: how many and their size in bytes. A link usually lands better than a file. */
                             attachments: {
                                 step: string;
@@ -56433,7 +57544,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Campaign's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Campaign sends from to pause or archive, and removes only their own. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Campaign's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Campaign sends from to pause or archive, and removes only their own. Not fixed by retrying. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -56595,6 +57706,8 @@ export interface operations {
                              * @enum {string}
                              */
                             reply_scope: "both" | "own_channel";
+                            /** @description When true, at most one Lead per company is enrolled: a Lead whose company already has a Lead in this Campaign is skipped same_company (skip_detail: the Lead kept, the first admitted). Leads without a known company are never skipped for it. Default false. */
+                            one_lead_per_company: boolean;
                         };
                         /** @description lead.* predicates a Lead must all pass to enroll. */
                         where: {
@@ -56646,6 +57759,8 @@ export interface operations {
                             };
                             /** @description Leads that would wait at a step with on_missing hold, a variable of it having no value. */
                             held: number;
+                            /** @description With settings.one_lead_per_company: Leads at a company another of these Leads shares, beyond the first, that would be skipped same_company. 0 when the setting is off. Absent from a check made before this count existed. */
+                            same_company?: number;
                             /** @description Each email step or variant that sends files: how many and their size in bytes. A link usually lands better than a file. */
                             attachments: {
                                 step: string;
@@ -56878,6 +57993,8 @@ export interface operations {
                              * @enum {string}
                              */
                             reply_scope: "both" | "own_channel";
+                            /** @description When true, at most one Lead per company is enrolled: a Lead whose company already has a Lead in this Campaign is skipped same_company (skip_detail: the Lead kept, the first admitted). Leads without a known company are never skipped for it. Default false. */
+                            one_lead_per_company: boolean;
                         };
                         /** @description lead.* predicates a Lead must all pass to enroll. */
                         where: {
@@ -56929,6 +58046,8 @@ export interface operations {
                             };
                             /** @description Leads that would wait at a step with on_missing hold, a variable of it having no value. */
                             held: number;
+                            /** @description With settings.one_lead_per_company: Leads at a company another of these Leads shares, beyond the first, that would be skipped same_company. 0 when the setting is off. Absent from a check made before this count existed. */
+                            same_company?: number;
                             /** @description Each email step or variant that sends files: how many and their size in bytes. A link usually lands better than a file. */
                             attachments: {
                                 step: string;
@@ -57010,7 +58129,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Campaign's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Campaign sends from to pause or archive, and removes only their own. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Campaign's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Campaign sends from to pause or archive, and removes only their own. Not fixed by retrying. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -57172,6 +58291,8 @@ export interface operations {
                              * @enum {string}
                              */
                             reply_scope: "both" | "own_channel";
+                            /** @description When true, at most one Lead per company is enrolled: a Lead whose company already has a Lead in this Campaign is skipped same_company (skip_detail: the Lead kept, the first admitted). Leads without a known company are never skipped for it. Default false. */
+                            one_lead_per_company: boolean;
                         };
                         /** @description lead.* predicates a Lead must all pass to enroll. */
                         where: {
@@ -57223,6 +58344,8 @@ export interface operations {
                             };
                             /** @description Leads that would wait at a step with on_missing hold, a variable of it having no value. */
                             held: number;
+                            /** @description With settings.one_lead_per_company: Leads at a company another of these Leads shares, beyond the first, that would be skipped same_company. 0 when the setting is off. Absent from a check made before this count existed. */
+                            same_company?: number;
                             /** @description Each email step or variant that sends files: how many and their size in bytes. A link usually lands better than a file. */
                             attachments: {
                                 step: string;
@@ -57407,6 +58530,8 @@ export interface operations {
                         };
                         /** @description Leads that would wait at a step with on_missing hold, a variable of it having no value. */
                         held: number;
+                        /** @description With settings.one_lead_per_company: Leads at a company another of these Leads shares, beyond the first, that would be skipped same_company. 0 when the setting is off. Absent from a check made before this count existed. */
+                        same_company?: number;
                         /** @description Each email step or variant that sends files: how many and their size in bytes. A link usually lands better than a file. */
                         attachments: {
                             step: string;
@@ -57436,7 +58561,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Campaign's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Campaign sends from to pause or archive, and removes only their own. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description In a team, for an account in account_ids (named or already held). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account, also for the person who connected it. A team Owner or Manager, and the Campaign's creator, may always pause it, archive it, or send an update holding only account_ids that takes accounts out. Any other Member needs every account the Campaign sends from to pause or archive, and removes only their own. Not fixed by retrying. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -57603,10 +58728,10 @@ export interface operations {
                             /** @description A sending account to render this sample with, not a promise: the account is set when one takes the Lead. null when none can act or assignment needs LinkedIn. */
                             account_id: string | null;
                             /**
-                             * @description Why the Lead would not be enrolled, from stored data: the Team's do-not-contact list holds it, an Exclusion list holds it, it is or was within 90 days in another Campaign, an account already chats with it, an account of the team has a pending invitation to it, or the Campaign has an email step and it has no usable email address. null: nothing excludes it.
+                             * @description Why the Lead would not be enrolled, from stored data: the Team's do-not-contact list holds it, an Exclusion list holds it, it is or was within 90 days in another Campaign, an account already chats with it, an account of the team has a pending invitation to it, or the Campaign has an email step and it has no usable email address, or (settings.one_lead_per_company) another Lead at its company comes first. null: nothing excludes it.
                              * @enum {string|null}
                              */
-                            excluded: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "no_email_address" | null;
+                            excluded: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "no_email_address" | "same_company" | null;
                             filters: {
                                 index: number;
                                 /**
@@ -57679,7 +58804,7 @@ export interface operations {
                         }[];
                         /** @description First page only. An estimate of how long the list takes, from each account's current budget ceilings (warm-up applied). Each Lead is enrolled on min(accounts_per_lead, accounts that can act) accounts; those Enrollments split evenly over the accounts. It ignores what other Campaigns spend. */
                         projection?: {
-                            /** @description The Leads of the source lists, counted from stored data (nothing is read from LinkedIn), each once. A Lead that would be skipped for several reasons counts under the first: do_not_contact, excluded, other_campaign, known_chat, pending_invite, no_email_address, filtered, not_connected. Present even when the Campaign has no Sequence. */
+                            /** @description The Leads of the source lists, counted from stored data (nothing is read from LinkedIn), each once. A Lead that would be skipped for several reasons counts under the first: do_not_contact, excluded, other_campaign, known_chat, pending_invite, no_email_address, same_company, filtered, not_connected. Present even when the Campaign has no Sequence. */
                             audience: {
                                 /** @description Leads in the Campaign's source lists, each counted once. */
                                 total: number;
@@ -57698,6 +58823,8 @@ export interface operations {
                                     filtered: number;
                                     /** @description The Campaign has an email step and the Lead has no usable email address: never enrolled. */
                                     no_email_address: number;
+                                    /** @description With settings.one_lead_per_company: another Lead at the same company comes first (or is already in the Campaign), so this one is skipped. 0 when the setting is off. */
+                                    same_company: number;
                                     /** @description With settings.assign already_connected: no sending account is connected to them, so the Campaign will skip them. 0 for any other assign, and while a sending account has not finished reading its Connections. */
                                     not_connected: number;
                                 };
@@ -57852,10 +58979,10 @@ export interface operations {
                         results: {
                             lead_id: string;
                             /**
-                             * @description no_email_address: the Campaign has an email step and the Lead has no usable address; no Enrollment is written.
+                             * @description no_email_address: the Campaign has an email step and the Lead has no usable address; no Enrollment is written. same_company: settings.one_lead_per_company is on and another Lead at the Lead's company is already in the Campaign; the Enrollment is written skipped, naming that Lead.
                              * @enum {string}
                              */
-                            outcome: "queued" | "already_enrolled" | "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "no_email_address" | "filtered_out" | "not_found";
+                            outcome: "queued" | "already_enrolled" | "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "no_email_address" | "same_company" | "filtered_out" | "not_found";
                             /** @description The Lead's Enrollments this answer is about; empty for not_found, filtered_out and no_email_address. */
                             enrollment_ids: string[];
                         }[];
@@ -57880,7 +59007,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for an account the Campaign sends from, or the account_id you name. INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account. Not fixed by retrying. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description In a team, for an account the Campaign sends from, or the account_id you name. INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: team access is off for the account. Not fixed by retrying. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -58056,7 +59183,7 @@ export interface operations {
                 /** @description With done_step only: how that Step ended. The 200 response description defines each value. */
                 outcome?: "executed" | "skipped" | "failed" | "accepted" | "not_accepted" | "replied" | "no_reply" | "seen";
                 /** @description Catalogue reason codes: skip, finish or Step reasons (on done_step when given). Repeat the key, comma-separate or mix; empties ignored. */
-                reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "no_email_address" | "email_bounced" | "no_email" | "field_missing" | "attachment_missing" | "channel_replied" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "attachment_refused" | "outcome_unknown" | "tag_limit")[];
+                reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "same_company" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "no_email_address" | "email_bounced" | "no_email" | "field_missing" | "attachment_missing" | "channel_replied" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "attachment_refused" | "outcome_unknown" | "tag_limit")[];
                 /** @description Only Enrollments whose variant on that variant's Step is this one. */
                 variant_id?: string;
                 /** @description Relationship to the account at the start: connected, not_connected, invite_pending, unknown. Repeat the key, comma-separate or mix; empties ignored. */
@@ -58129,7 +59256,7 @@ export interface operations {
                              * @description Why the Lead was not enrolled; null unless status is skipped.
                              * @enum {string|null}
                              */
-                            skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | null;
+                            skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | "same_company" | null;
                             /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                             finish_message: string | null;
                             /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
@@ -58292,7 +59419,7 @@ export interface operations {
                          * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | "same_company" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
@@ -58353,7 +59480,7 @@ export interface operations {
                              * @description Why it was skipped or failed: a code of the reasons catalogue, https://docs.curviate.com/reference/campaign-reasons.
                              * @enum {string|null}
                              */
-                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "no_email_address" | "email_bounced" | "no_email" | "field_missing" | "attachment_missing" | "channel_replied" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "attachment_refused" | "outcome_unknown" | "tag_limit" | null;
+                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "same_company" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "no_email_address" | "email_bounced" | "no_email" | "field_missing" | "attachment_missing" | "channel_replied" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "attachment_refused" | "outcome_unknown" | "tag_limit" | null;
                             /** @description The catalogue's one-line sentence for reason; null when reason is. */
                             reason_message: string | null;
                             /** @description The account that ran it; null for an entry no account ran (requeued). */
@@ -58473,7 +59600,7 @@ export interface operations {
                          * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | "same_company" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
@@ -58642,7 +59769,7 @@ export interface operations {
                          * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | "same_company" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
@@ -58818,7 +59945,7 @@ export interface operations {
                          * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | "same_company" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
@@ -58880,7 +60007,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Campaign sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Campaign sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Campaign sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Campaign sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -59003,7 +60130,7 @@ export interface operations {
                          * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | "same_company" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
@@ -59065,7 +60192,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Campaign sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Campaign sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Campaign sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Campaign sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -59188,7 +60315,7 @@ export interface operations {
                          * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | "same_company" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
@@ -59259,7 +60386,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Campaign sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Campaign sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Campaign sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Campaign sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -59382,7 +60509,7 @@ export interface operations {
                          * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | "same_company" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
@@ -59455,7 +60582,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Campaign sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Campaign sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. The same for the target account: you need to be allowed to send from it in Campaigns. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Campaign sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Campaign sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. The same for the target account: you need to be allowed to send from it in Campaigns. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -59583,7 +60710,7 @@ export interface operations {
                          * @description Why the Lead was not enrolled; null unless status is skipped.
                          * @enum {string|null}
                          */
-                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | null;
+                        skip_reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "no_email_address" | "same_company" | null;
                         /** @description The reasons catalogue's one-line sentence for finish_reason (https://docs.curviate.com/reference/campaign-reasons); null when finish_reason is. */
                         finish_message: string | null;
                         /** @description The reasons catalogue's one-line sentence for skip_reason (https://docs.curviate.com/reference/campaign-reasons); null when skip_reason is. */
@@ -59645,7 +60772,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Campaign sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Campaign sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. The same for the Campaign you move it to: you need to be allowed to send from its accounts. TIER_REQUIRED: the team's Tier does not include Campaigns (Campaigns are part of Automate). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description In a team, for the account the Enrollment runs on (before one is assigned: the accounts its Campaign sends from). INSUFFICIENT_ROLE: the account is a teammate's and your role is Member. ACCOUNT_NOT_SHARED: before an account is assigned, team access is off for an account its Campaign sends from. Not fixed by retrying. An Enrollment on a teammate's account with team access off is not found (404) instead. The same for the Campaign you move it to: you need to be allowed to send from its accounts. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -59748,7 +60875,7 @@ export interface operations {
                          */
                         outcome?: "executed" | "skipped" | "failed" | "accepted" | "not_accepted" | "replied" | "no_reply" | "seen";
                         /** @description Catalogue reason codes. */
-                        reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "no_email_address" | "email_bounced" | "no_email" | "field_missing" | "attachment_missing" | "channel_replied" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "attachment_refused" | "outcome_unknown" | "tag_limit")[];
+                        reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "same_company" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "no_email_address" | "email_bounced" | "no_email" | "field_missing" | "attachment_missing" | "channel_replied" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "attachment_refused" | "outcome_unknown" | "tag_limit")[];
                         /** @description Only Enrollments whose variant on that variant's Step is this one. */
                         variant_id?: string;
                         /** @description Any of connected, not_connected, invite_pending, unknown. */
@@ -62469,7 +63596,7 @@ export interface operations {
                              * @description Why a step was skipped or failed, as a code of the reasons catalogue (https://docs.curviate.com/reference/campaign-reasons); null otherwise.
                              * @enum {string|null}
                              */
-                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "no_email_address" | "email_bounced" | "no_email" | "field_missing" | "attachment_missing" | "channel_replied" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "attachment_refused" | "outcome_unknown" | "tag_limit" | null;
+                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "same_company" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "no_email_address" | "email_bounced" | "no_email" | "field_missing" | "attachment_missing" | "channel_replied" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "attachment_refused" | "outcome_unknown" | "tag_limit" | null;
                             /** @description The catalogue's one-line plain-words sentence for reason; null when reason is. */
                             reason_message: string | null;
                             /** @description The person, read live; null once the Lead is deleted. */
@@ -62883,10 +64010,1011 @@ export interface operations {
                             /** @description True while more than a third of those Leads were first emailed less than 7 days ago. */
                             maturing: boolean;
                         }[];
+                        /** @description With include=breakdowns: the window's email split by Campaign, step, variant, receiving provider, thread setting, Mailbox and account. Each list adds up to the totals. Rows are listed by emails sent; no row is scored or ranked. */
+                        breakdowns?: {
+                            /** @description Per Campaign. */
+                            campaign: {
+                                /** @description Campaign id (mot_...). */
+                                campaign_id: string;
+                                /** @description The Campaign's name. */
+                                name: string | null;
+                                /** @description Emails sent. */
+                                sent: number;
+                                /** @description Leads emailed for the first time. */
+                                first_emailed: number;
+                                /** @description Of the Leads first emailed, the share who replied so far. */
+                                reply: {
+                                    /** @description Numerator: the replied part of first_emailed, so far. */
+                                    replied: number;
+                                    /** @description Denominator. */
+                                    first_emailed: number;
+                                    /** @description replied / first_emailed, 4 decimals; null when first_emailed is 0. */
+                                    rate: number | null;
+                                    /** @description True when first_emailed is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of first_emailed, no reply yet. */
+                                    pending: number;
+                                    /** @description Of first_emailed, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / first_emailed, 4 decimals; null when first_emailed is 0. Still maturing when maturing x 3 > first_emailed. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description replied in the previous period. */
+                                        replied: number;
+                                        /** @description first_emailed in the previous period. */
+                                        first_emailed: number;
+                                        /** @description null when first_emailed is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                };
+                                /** @description Of these emails, the share that bounced for good. */
+                                bounce: {
+                                    /** @description Numerator: the bounced part of sent, so far. */
+                                    bounced: number;
+                                    /** @description Denominator. */
+                                    sent: number;
+                                    /** @description bounced / sent, 4 decimals; null when sent is 0. */
+                                    rate: number | null;
+                                    /** @description True when sent is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of sent, not bounced. */
+                                    pending: number;
+                                    /** @description Of sent, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / sent, 4 decimals; null when sent is 0. Still maturing when maturing x 3 > sent. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description bounced in the previous period. */
+                                        bounced: number;
+                                        /** @description sent in the previous period. */
+                                        sent: number;
+                                        /** @description null when sent is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                };
+                                /** @description Of these emails sent with open tracking, the share a person opened; null when no Mailbox in scope has tracking set up. */
+                                open: {
+                                    /** @description Numerator: the opened part of tracked, so far. */
+                                    opened: number;
+                                    /** @description Denominator. */
+                                    tracked: number;
+                                    /** @description opened / tracked, 4 decimals; null when tracked is 0. */
+                                    rate: number | null;
+                                    /** @description True when tracked is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of tracked, not opened yet. */
+                                    pending: number;
+                                    /** @description Of tracked, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / tracked, 4 decimals; null when tracked is 0. Still maturing when maturing x 3 > tracked. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description opened in the previous period. */
+                                        opened: number;
+                                        /** @description tracked in the previous period. */
+                                        tracked: number;
+                                        /** @description null when tracked is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                } | null;
+                                /** @description Of the Leads first emailed, the share who opted out. */
+                                opt_out: {
+                                    /** @description Numerator: the opted_out part of first_emailed, so far. */
+                                    opted_out: number;
+                                    /** @description Denominator. */
+                                    first_emailed: number;
+                                    /** @description opted_out / first_emailed, 4 decimals; null when first_emailed is 0. */
+                                    rate: number | null;
+                                    /** @description True when first_emailed is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of first_emailed, not opted out. */
+                                    pending: number;
+                                    /** @description Of first_emailed, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / first_emailed, 4 decimals; null when first_emailed is 0. Still maturing when maturing x 3 > first_emailed. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description opted_out in the previous period. */
+                                        opted_out: number;
+                                        /** @description first_emailed in the previous period. */
+                                        first_emailed: number;
+                                        /** @description null when first_emailed is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                };
+                            }[];
+                            /** @description Per email step, rated on its own emails. */
+                            step: {
+                                /** @description Campaign id (mot_...). */
+                                campaign_id: string;
+                                /** @description The step's id in the Sequence. */
+                                step_id: string;
+                                /** @description Its place among the email steps of the current Sequence (1 for the first); null when the step is no longer in it. */
+                                email_number: number | null;
+                                /**
+                                 * @description The step's thread setting: same (in the thread of the Lead's previous email) or new; null when the step is no longer in the Sequence.
+                                 * @enum {string|null}
+                                 */
+                                thread: "same" | "new" | null;
+                                /** @description Emails sent. */
+                                sent: number;
+                                /** @description Leads emailed for the first time. */
+                                first_emailed: number;
+                                /** @description Of these emails, the share answered by a reply (an out-of-office never counts). */
+                                reply: {
+                                    /** @description Numerator: the replied part of sent, so far. */
+                                    replied: number;
+                                    /** @description Denominator. */
+                                    sent: number;
+                                    /** @description replied / sent, 4 decimals; null when sent is 0. */
+                                    rate: number | null;
+                                    /** @description True when sent is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of sent, no reply yet. */
+                                    pending: number;
+                                    /** @description Of sent, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / sent, 4 decimals; null when sent is 0. Still maturing when maturing x 3 > sent. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description replied in the previous period. */
+                                        replied: number;
+                                        /** @description sent in the previous period. */
+                                        sent: number;
+                                        /** @description null when sent is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                };
+                                /** @description Of these emails, the share that bounced for good. */
+                                bounce: {
+                                    /** @description Numerator: the bounced part of sent, so far. */
+                                    bounced: number;
+                                    /** @description Denominator. */
+                                    sent: number;
+                                    /** @description bounced / sent, 4 decimals; null when sent is 0. */
+                                    rate: number | null;
+                                    /** @description True when sent is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of sent, not bounced. */
+                                    pending: number;
+                                    /** @description Of sent, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / sent, 4 decimals; null when sent is 0. Still maturing when maturing x 3 > sent. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description bounced in the previous period. */
+                                        bounced: number;
+                                        /** @description sent in the previous period. */
+                                        sent: number;
+                                        /** @description null when sent is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                };
+                                /** @description Of these emails sent with open tracking, the share a person opened; null when no Mailbox in scope has tracking set up. */
+                                open: {
+                                    /** @description Numerator: the opened part of tracked, so far. */
+                                    opened: number;
+                                    /** @description Denominator. */
+                                    tracked: number;
+                                    /** @description opened / tracked, 4 decimals; null when tracked is 0. */
+                                    rate: number | null;
+                                    /** @description True when tracked is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of tracked, not opened yet. */
+                                    pending: number;
+                                    /** @description Of tracked, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / tracked, 4 decimals; null when tracked is 0. Still maturing when maturing x 3 > tracked. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description opened in the previous period. */
+                                        opened: number;
+                                        /** @description tracked in the previous period. */
+                                        tracked: number;
+                                        /** @description null when tracked is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                } | null;
+                                /** @description Of these emails, the share answered by an opt-out. */
+                                opt_out: {
+                                    /** @description Numerator: the opted_out part of sent, so far. */
+                                    opted_out: number;
+                                    /** @description Denominator. */
+                                    sent: number;
+                                    /** @description opted_out / sent, 4 decimals; null when sent is 0. */
+                                    rate: number | null;
+                                    /** @description True when sent is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of sent, not opted out. */
+                                    pending: number;
+                                    /** @description Of sent, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / sent, 4 decimals; null when sent is 0. Still maturing when maturing x 3 > sent. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description opted_out in the previous period. */
+                                        opted_out: number;
+                                        /** @description sent in the previous period. */
+                                        sent: number;
+                                        /** @description null when sent is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                };
+                            }[];
+                            /** @description Per variant of an email step, rated on its own emails. */
+                            variant: {
+                                /** @description Campaign id (mot_...). */
+                                campaign_id: string;
+                                /** @description The step's id in the Sequence. */
+                                step_id: string;
+                                /** @description The variant's id; null for a step without variants. */
+                                variant_id: string | null;
+                                /** @description Emails sent. */
+                                sent: number;
+                                /** @description Leads emailed for the first time. */
+                                first_emailed: number;
+                                /** @description Of these emails, the share answered by a reply (an out-of-office never counts). */
+                                reply: {
+                                    /** @description Numerator: the replied part of sent, so far. */
+                                    replied: number;
+                                    /** @description Denominator. */
+                                    sent: number;
+                                    /** @description replied / sent, 4 decimals; null when sent is 0. */
+                                    rate: number | null;
+                                    /** @description True when sent is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of sent, no reply yet. */
+                                    pending: number;
+                                    /** @description Of sent, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / sent, 4 decimals; null when sent is 0. Still maturing when maturing x 3 > sent. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description replied in the previous period. */
+                                        replied: number;
+                                        /** @description sent in the previous period. */
+                                        sent: number;
+                                        /** @description null when sent is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                };
+                                /** @description Of these emails, the share that bounced for good. */
+                                bounce: {
+                                    /** @description Numerator: the bounced part of sent, so far. */
+                                    bounced: number;
+                                    /** @description Denominator. */
+                                    sent: number;
+                                    /** @description bounced / sent, 4 decimals; null when sent is 0. */
+                                    rate: number | null;
+                                    /** @description True when sent is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of sent, not bounced. */
+                                    pending: number;
+                                    /** @description Of sent, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / sent, 4 decimals; null when sent is 0. Still maturing when maturing x 3 > sent. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description bounced in the previous period. */
+                                        bounced: number;
+                                        /** @description sent in the previous period. */
+                                        sent: number;
+                                        /** @description null when sent is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                };
+                                /** @description Of these emails sent with open tracking, the share a person opened; null when no Mailbox in scope has tracking set up. */
+                                open: {
+                                    /** @description Numerator: the opened part of tracked, so far. */
+                                    opened: number;
+                                    /** @description Denominator. */
+                                    tracked: number;
+                                    /** @description opened / tracked, 4 decimals; null when tracked is 0. */
+                                    rate: number | null;
+                                    /** @description True when tracked is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of tracked, not opened yet. */
+                                    pending: number;
+                                    /** @description Of tracked, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / tracked, 4 decimals; null when tracked is 0. Still maturing when maturing x 3 > tracked. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description opened in the previous period. */
+                                        opened: number;
+                                        /** @description tracked in the previous period. */
+                                        tracked: number;
+                                        /** @description null when tracked is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                } | null;
+                                /** @description Of these emails, the share answered by an opt-out. */
+                                opt_out: {
+                                    /** @description Numerator: the opted_out part of sent, so far. */
+                                    opted_out: number;
+                                    /** @description Denominator. */
+                                    sent: number;
+                                    /** @description opted_out / sent, 4 decimals; null when sent is 0. */
+                                    rate: number | null;
+                                    /** @description True when sent is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of sent, not opted out. */
+                                    pending: number;
+                                    /** @description Of sent, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / sent, 4 decimals; null when sent is 0. Still maturing when maturing x 3 > sent. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description opted_out in the previous period. */
+                                        opted_out: number;
+                                        /** @description sent in the previous period. */
+                                        sent: number;
+                                        /** @description null when sent is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                };
+                            }[];
+                            /** @description Per receiving provider of the Leads' addresses. */
+                            provider: {
+                                /**
+                                 * @description gmail and outlook_com by the address; google_workspace, microsoft_365 or other by the domain's mail server; unknown when it could not be read.
+                                 * @enum {string}
+                                 */
+                                provider: "gmail" | "outlook_com" | "google_workspace" | "microsoft_365" | "other" | "unknown";
+                                /** @description Emails sent. */
+                                sent: number;
+                                /** @description Leads emailed for the first time. */
+                                first_emailed: number;
+                                /** @description Of the Leads first emailed, the share who replied so far. */
+                                reply: {
+                                    /** @description Numerator: the replied part of first_emailed, so far. */
+                                    replied: number;
+                                    /** @description Denominator. */
+                                    first_emailed: number;
+                                    /** @description replied / first_emailed, 4 decimals; null when first_emailed is 0. */
+                                    rate: number | null;
+                                    /** @description True when first_emailed is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of first_emailed, no reply yet. */
+                                    pending: number;
+                                    /** @description Of first_emailed, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / first_emailed, 4 decimals; null when first_emailed is 0. Still maturing when maturing x 3 > first_emailed. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description replied in the previous period. */
+                                        replied: number;
+                                        /** @description first_emailed in the previous period. */
+                                        first_emailed: number;
+                                        /** @description null when first_emailed is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                };
+                                /** @description Of these emails, the share that bounced for good. */
+                                bounce: {
+                                    /** @description Numerator: the bounced part of sent, so far. */
+                                    bounced: number;
+                                    /** @description Denominator. */
+                                    sent: number;
+                                    /** @description bounced / sent, 4 decimals; null when sent is 0. */
+                                    rate: number | null;
+                                    /** @description True when sent is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of sent, not bounced. */
+                                    pending: number;
+                                    /** @description Of sent, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / sent, 4 decimals; null when sent is 0. Still maturing when maturing x 3 > sent. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description bounced in the previous period. */
+                                        bounced: number;
+                                        /** @description sent in the previous period. */
+                                        sent: number;
+                                        /** @description null when sent is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                };
+                                /** @description Of these emails sent with open tracking, the share a person opened; null when no Mailbox in scope has tracking set up. */
+                                open: {
+                                    /** @description Numerator: the opened part of tracked, so far. */
+                                    opened: number;
+                                    /** @description Denominator. */
+                                    tracked: number;
+                                    /** @description opened / tracked, 4 decimals; null when tracked is 0. */
+                                    rate: number | null;
+                                    /** @description True when tracked is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of tracked, not opened yet. */
+                                    pending: number;
+                                    /** @description Of tracked, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / tracked, 4 decimals; null when tracked is 0. Still maturing when maturing x 3 > tracked. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description opened in the previous period. */
+                                        opened: number;
+                                        /** @description tracked in the previous period. */
+                                        tracked: number;
+                                        /** @description null when tracked is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                } | null;
+                                /** @description Of the Leads first emailed, the share who opted out. */
+                                opt_out: {
+                                    /** @description Numerator: the opted_out part of first_emailed, so far. */
+                                    opted_out: number;
+                                    /** @description Denominator. */
+                                    first_emailed: number;
+                                    /** @description opted_out / first_emailed, 4 decimals; null when first_emailed is 0. */
+                                    rate: number | null;
+                                    /** @description True when first_emailed is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of first_emailed, not opted out. */
+                                    pending: number;
+                                    /** @description Of first_emailed, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / first_emailed, 4 decimals; null when first_emailed is 0. Still maturing when maturing x 3 > first_emailed. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description opted_out in the previous period. */
+                                        opted_out: number;
+                                        /** @description first_emailed in the previous period. */
+                                        first_emailed: number;
+                                        /** @description null when first_emailed is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                };
+                            }[];
+                            /** @description Per thread setting of the email steps, rated on their own emails. */
+                            thread: {
+                                /**
+                                 * @description The step's thread setting: same (in the thread of the Lead's previous email) or new; null when the step is no longer in the Sequence.
+                                 * @enum {string|null}
+                                 */
+                                thread: "same" | "new" | null;
+                                /** @description Emails sent. */
+                                sent: number;
+                                /** @description Leads emailed for the first time. */
+                                first_emailed: number;
+                                /** @description Of these emails, the share answered by a reply (an out-of-office never counts). */
+                                reply: {
+                                    /** @description Numerator: the replied part of sent, so far. */
+                                    replied: number;
+                                    /** @description Denominator. */
+                                    sent: number;
+                                    /** @description replied / sent, 4 decimals; null when sent is 0. */
+                                    rate: number | null;
+                                    /** @description True when sent is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of sent, no reply yet. */
+                                    pending: number;
+                                    /** @description Of sent, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / sent, 4 decimals; null when sent is 0. Still maturing when maturing x 3 > sent. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description replied in the previous period. */
+                                        replied: number;
+                                        /** @description sent in the previous period. */
+                                        sent: number;
+                                        /** @description null when sent is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                };
+                                /** @description Of these emails, the share that bounced for good. */
+                                bounce: {
+                                    /** @description Numerator: the bounced part of sent, so far. */
+                                    bounced: number;
+                                    /** @description Denominator. */
+                                    sent: number;
+                                    /** @description bounced / sent, 4 decimals; null when sent is 0. */
+                                    rate: number | null;
+                                    /** @description True when sent is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of sent, not bounced. */
+                                    pending: number;
+                                    /** @description Of sent, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / sent, 4 decimals; null when sent is 0. Still maturing when maturing x 3 > sent. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description bounced in the previous period. */
+                                        bounced: number;
+                                        /** @description sent in the previous period. */
+                                        sent: number;
+                                        /** @description null when sent is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                };
+                                /** @description Of these emails sent with open tracking, the share a person opened; null when no Mailbox in scope has tracking set up. */
+                                open: {
+                                    /** @description Numerator: the opened part of tracked, so far. */
+                                    opened: number;
+                                    /** @description Denominator. */
+                                    tracked: number;
+                                    /** @description opened / tracked, 4 decimals; null when tracked is 0. */
+                                    rate: number | null;
+                                    /** @description True when tracked is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of tracked, not opened yet. */
+                                    pending: number;
+                                    /** @description Of tracked, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / tracked, 4 decimals; null when tracked is 0. Still maturing when maturing x 3 > tracked. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description opened in the previous period. */
+                                        opened: number;
+                                        /** @description tracked in the previous period. */
+                                        tracked: number;
+                                        /** @description null when tracked is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                } | null;
+                                /** @description Of these emails, the share answered by an opt-out. */
+                                opt_out: {
+                                    /** @description Numerator: the opted_out part of sent, so far. */
+                                    opted_out: number;
+                                    /** @description Denominator. */
+                                    sent: number;
+                                    /** @description opted_out / sent, 4 decimals; null when sent is 0. */
+                                    rate: number | null;
+                                    /** @description True when sent is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of sent, not opted out. */
+                                    pending: number;
+                                    /** @description Of sent, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / sent, 4 decimals; null when sent is 0. Still maturing when maturing x 3 > sent. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description opted_out in the previous period. */
+                                        opted_out: number;
+                                        /** @description sent in the previous period. */
+                                        sent: number;
+                                        /** @description null when sent is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                };
+                            }[];
+                            /** @description Per Mailbox that sent. */
+                            mailbox: {
+                                /** @description Mailbox id (mbx_...). */
+                                mailbox_id: string | null;
+                                /** @description The Mailbox's address; null once it is removed. */
+                                address: string | null;
+                                /** @description Emails sent. */
+                                sent: number;
+                                /** @description Leads emailed for the first time. */
+                                first_emailed: number;
+                                /** @description Of the Leads first emailed, the share who replied so far. */
+                                reply: {
+                                    /** @description Numerator: the replied part of first_emailed, so far. */
+                                    replied: number;
+                                    /** @description Denominator. */
+                                    first_emailed: number;
+                                    /** @description replied / first_emailed, 4 decimals; null when first_emailed is 0. */
+                                    rate: number | null;
+                                    /** @description True when first_emailed is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of first_emailed, no reply yet. */
+                                    pending: number;
+                                    /** @description Of first_emailed, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / first_emailed, 4 decimals; null when first_emailed is 0. Still maturing when maturing x 3 > first_emailed. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description replied in the previous period. */
+                                        replied: number;
+                                        /** @description first_emailed in the previous period. */
+                                        first_emailed: number;
+                                        /** @description null when first_emailed is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                };
+                                /** @description Of these emails, the share that bounced for good. */
+                                bounce: {
+                                    /** @description Numerator: the bounced part of sent, so far. */
+                                    bounced: number;
+                                    /** @description Denominator. */
+                                    sent: number;
+                                    /** @description bounced / sent, 4 decimals; null when sent is 0. */
+                                    rate: number | null;
+                                    /** @description True when sent is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of sent, not bounced. */
+                                    pending: number;
+                                    /** @description Of sent, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / sent, 4 decimals; null when sent is 0. Still maturing when maturing x 3 > sent. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description bounced in the previous period. */
+                                        bounced: number;
+                                        /** @description sent in the previous period. */
+                                        sent: number;
+                                        /** @description null when sent is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                };
+                                /** @description Of these emails sent with open tracking, the share a person opened; null when no Mailbox in scope has tracking set up. */
+                                open: {
+                                    /** @description Numerator: the opened part of tracked, so far. */
+                                    opened: number;
+                                    /** @description Denominator. */
+                                    tracked: number;
+                                    /** @description opened / tracked, 4 decimals; null when tracked is 0. */
+                                    rate: number | null;
+                                    /** @description True when tracked is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of tracked, not opened yet. */
+                                    pending: number;
+                                    /** @description Of tracked, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / tracked, 4 decimals; null when tracked is 0. Still maturing when maturing x 3 > tracked. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description opened in the previous period. */
+                                        opened: number;
+                                        /** @description tracked in the previous period. */
+                                        tracked: number;
+                                        /** @description null when tracked is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                } | null;
+                                /** @description Of the Leads first emailed, the share who opted out. */
+                                opt_out: {
+                                    /** @description Numerator: the opted_out part of first_emailed, so far. */
+                                    opted_out: number;
+                                    /** @description Denominator. */
+                                    first_emailed: number;
+                                    /** @description opted_out / first_emailed, 4 decimals; null when first_emailed is 0. */
+                                    rate: number | null;
+                                    /** @description True when first_emailed is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of first_emailed, not opted out. */
+                                    pending: number;
+                                    /** @description Of first_emailed, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / first_emailed, 4 decimals; null when first_emailed is 0. Still maturing when maturing x 3 > first_emailed. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description opted_out in the previous period. */
+                                        opted_out: number;
+                                        /** @description first_emailed in the previous period. */
+                                        first_emailed: number;
+                                        /** @description null when first_emailed is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                };
+                            }[];
+                            /** @description Per account the Leads ran on. */
+                            account: {
+                                /** @description Account id (acc_...). */
+                                account_id: string;
+                                /** @description The account's name. */
+                                name: string | null;
+                                /** @description Emails sent. */
+                                sent: number;
+                                /** @description Leads emailed for the first time. */
+                                first_emailed: number;
+                                /** @description Of the Leads first emailed, the share who replied so far. */
+                                reply: {
+                                    /** @description Numerator: the replied part of first_emailed, so far. */
+                                    replied: number;
+                                    /** @description Denominator. */
+                                    first_emailed: number;
+                                    /** @description replied / first_emailed, 4 decimals; null when first_emailed is 0. */
+                                    rate: number | null;
+                                    /** @description True when first_emailed is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of first_emailed, no reply yet. */
+                                    pending: number;
+                                    /** @description Of first_emailed, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / first_emailed, 4 decimals; null when first_emailed is 0. Still maturing when maturing x 3 > first_emailed. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description replied in the previous period. */
+                                        replied: number;
+                                        /** @description first_emailed in the previous period. */
+                                        first_emailed: number;
+                                        /** @description null when first_emailed is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                };
+                                /** @description Of these emails, the share that bounced for good. */
+                                bounce: {
+                                    /** @description Numerator: the bounced part of sent, so far. */
+                                    bounced: number;
+                                    /** @description Denominator. */
+                                    sent: number;
+                                    /** @description bounced / sent, 4 decimals; null when sent is 0. */
+                                    rate: number | null;
+                                    /** @description True when sent is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of sent, not bounced. */
+                                    pending: number;
+                                    /** @description Of sent, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / sent, 4 decimals; null when sent is 0. Still maturing when maturing x 3 > sent. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description bounced in the previous period. */
+                                        bounced: number;
+                                        /** @description sent in the previous period. */
+                                        sent: number;
+                                        /** @description null when sent is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                };
+                                /** @description Of these emails sent with open tracking, the share a person opened; null when no Mailbox in scope has tracking set up. */
+                                open: {
+                                    /** @description Numerator: the opened part of tracked, so far. */
+                                    opened: number;
+                                    /** @description Denominator. */
+                                    tracked: number;
+                                    /** @description opened / tracked, 4 decimals; null when tracked is 0. */
+                                    rate: number | null;
+                                    /** @description True when tracked is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of tracked, not opened yet. */
+                                    pending: number;
+                                    /** @description Of tracked, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / tracked, 4 decimals; null when tracked is 0. Still maturing when maturing x 3 > tracked. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description opened in the previous period. */
+                                        opened: number;
+                                        /** @description tracked in the previous period. */
+                                        tracked: number;
+                                        /** @description null when tracked is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                } | null;
+                                /** @description Of the Leads first emailed, the share who opted out. */
+                                opt_out: {
+                                    /** @description Numerator: the opted_out part of first_emailed, so far. */
+                                    opted_out: number;
+                                    /** @description Denominator. */
+                                    first_emailed: number;
+                                    /** @description opted_out / first_emailed, 4 decimals; null when first_emailed is 0. */
+                                    rate: number | null;
+                                    /** @description True when first_emailed is below 30. The rate is still returned. */
+                                    low_sample: boolean;
+                                    /** @description Of first_emailed, not opted out. */
+                                    pending: number;
+                                    /** @description Of first_emailed, sent less than 7 days before generated_at. Still in the rate. */
+                                    maturing: number;
+                                    /** @description maturing / first_emailed, 4 decimals; null when first_emailed is 0. Still maturing when maturing x 3 > first_emailed. */
+                                    maturing_share: number | null;
+                                    /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                    previous?: {
+                                        /** @description opted_out in the previous period. */
+                                        opted_out: number;
+                                        /** @description first_emailed in the previous period. */
+                                        first_emailed: number;
+                                        /** @description null when first_emailed is 0. */
+                                        rate: number | null;
+                                    };
+                                    /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                    delta?: number | null;
+                                };
+                            }[];
+                        };
+                        /** @description With include=mailboxes: each Mailbox in scope (of the accounts and Campaigns filtered, and every Mailbox that sent their email in the window), by address. */
+                        mailboxes?: {
+                            /** @description Mailbox id (mbx_...). */
+                            mailbox_id: string;
+                            /** @description The Mailbox's address. */
+                            address: string;
+                            /** @description The Mailbox's state, as on the Mailbox: connected, ramping, paused, paused_by_bounces, paused_by_provider, reconnect_needed. */
+                            state: string;
+                            /** @description Its daily cap. A ramping Mailbox ramps up to it. */
+                            daily_cap: number;
+                            /** @description The cap Curviate lowered it to while mail lands in spam; null when not lowered. */
+                            cap_lowered_to: number | null;
+                            /** @description Emails it sent today, whatever the filters. */
+                            sent_today: number;
+                            /** @description Emails it sent in the window under the filters. */
+                            sent: number;
+                            bounces: {
+                                /** @description Hard bounces of those emails. */
+                                hard: number;
+                                /** @description Soft bounces of those emails. */
+                                soft: number;
+                            };
+                            /** @description Its hard bounces over its emails in the last 7 days, the figure it pauses on above 3%. Read it from 50 emails. */
+                            bounce_rate_7d: {
+                                /** @description Numerator: the bounced part of sent, so far. */
+                                bounced: number;
+                                /** @description Denominator. */
+                                sent: number;
+                                /** @description bounced / sent, 4 decimals; null when sent is 0. */
+                                rate: number | null;
+                                /** @description True when sent is below 30. The rate is still returned. */
+                                low_sample: boolean;
+                                /** @description Of sent, not bounced. */
+                                pending: number;
+                                /** @description Of sent, sent less than 7 days before generated_at. Still in the rate. */
+                                maturing: number;
+                                /** @description maturing / sent, 4 decimals; null when sent is 0. Still maturing when maturing x 3 > sent. */
+                                maturing_share: number | null;
+                                /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                previous?: {
+                                    /** @description bounced in the previous period. */
+                                    bounced: number;
+                                    /** @description sent in the previous period. */
+                                    sent: number;
+                                    /** @description null when sent is 0. */
+                                    rate: number | null;
+                                };
+                                /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                delta?: number | null;
+                            };
+                            /** @description Of the Leads it emailed first in the window, the share who replied so far. */
+                            reply: {
+                                /** @description Numerator: the replied part of first_emailed, so far. */
+                                replied: number;
+                                /** @description Denominator. */
+                                first_emailed: number;
+                                /** @description replied / first_emailed, 4 decimals; null when first_emailed is 0. */
+                                rate: number | null;
+                                /** @description True when first_emailed is below 30. The rate is still returned. */
+                                low_sample: boolean;
+                                /** @description Of first_emailed, no reply yet. */
+                                pending: number;
+                                /** @description Of first_emailed, sent less than 7 days before generated_at. Still in the rate. */
+                                maturing: number;
+                                /** @description maturing / first_emailed, 4 decimals; null when first_emailed is 0. Still maturing when maturing x 3 > first_emailed. */
+                                maturing_share: number | null;
+                                /** @description With compare=previous_period: the same rate over the same number of days just before from, same zone and filters. */
+                                previous?: {
+                                    /** @description replied in the previous period. */
+                                    replied: number;
+                                    /** @description first_emailed in the previous period. */
+                                    first_emailed: number;
+                                    /** @description null when first_emailed is 0. */
+                                    rate: number | null;
+                                };
+                                /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
+                                delta?: number | null;
+                            };
+                        }[];
+                        /** @description With include=domains: the sending domains of those Mailboxes, by name. */
+                        domains?: {
+                            /** @description Domain id (dom_...); null until the domain is first checked. */
+                            id: string | null;
+                            /** @description The domain. */
+                            name: string;
+                            /** @description The daily DNS checks: pass, fail, or unknown (not read yet). */
+                            checks: {
+                                /** @enum {string} */
+                                mx: "pass" | "fail" | "unknown";
+                                /** @enum {string} */
+                                spf: "pass" | "fail" | "unknown";
+                                /** @enum {string} */
+                                dkim: "pass" | "fail" | "unknown";
+                                /** @enum {string} */
+                                dmarc: "pass" | "fail" | "unknown";
+                                /** @enum {string} */
+                                tracking: "pass" | "fail" | "unknown";
+                            };
+                            /**
+                             * @description Where the checks come from: dns, from DNS lookups.
+                             * @enum {string}
+                             */
+                            source: "dns" | "dns_and_mail";
+                            /** @description Blocklists a receiver named in a bounce of this domain's mail. */
+                            blocklists: string[];
+                        }[];
+                        /** @description With include=forecast: the emails your Campaigns' email steps are expected to send, per day from today, over the accounts you can see. Each Mailbox counts its daily cap (the lowered cap where Curviate lowered it); a Mailbox shared by several accounts' Campaigns counts its cap once across them; a paused Mailbox, or one to reconnect, counts nothing. Sends only: replies are not forecast. */
+                        forecast?: {
+                            /**
+                             * @description computing: an account of the scope has had no simulation yet, so daily is today's zeros and is not a forecast; read again in a few minutes. computed otherwise (always for a draft Campaign).
+                             * @enum {string}
+                             */
+                            status: "computed" | "computing";
+                            /** @description When the newest of the scope's simulations ran (UTC); null when none has. */
+                            computed_at: string | null;
+                            /** @description Changes whenever any simulation of the team runs again: cache the section until it changes. */
+                            version: string | null;
+                            /** @description The last day served, YYYY-MM-DD: today when nothing lies ahead. */
+                            through: string;
+                            /** @description Every day from today through `through`, in the read's timezone; a day with nothing expected is all zeros. */
+                            daily: {
+                                date: string;
+                                /** @description Emails expected to be sent. */
+                                emails_sent: number;
+                            }[];
+                        };
                     };
                 };
             };
-            /** @description INVALID_REQUEST: an unknown query parameter, a malformed or too long window (from:, to:, range:), an unknown zone (timezone:), more than 50 ids (campaign_id:, account_id:), or an include value other than weeks (include:; the others are not served yet). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: an unknown query parameter, a malformed or too long window (from:, to:, range:), an unknown zone (timezone:), more than 50 ids (campaign_id:, account_id:), or an include value other than weeks, breakdowns, mailboxes, domains or forecast (include:). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;

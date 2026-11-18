@@ -228,6 +228,14 @@ export type {
   UniboxConversation,
   UniboxConversationMessagesParams,
   UniboxConversationMessagesPage,
+  UniboxConversationMarkBody,
+  UniboxConversationMarkResult,
+  UniboxSendEmailBody,
+  UniboxSentEmail,
+  ReferralSearchBody,
+  ReferralSearchResult,
+  ReferralConfirmBody,
+  ReferralConfirmResult,
 } from "./resources/unibox.js";
 
 export type {

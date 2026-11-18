@@ -243,6 +243,10 @@ export class CampaignsResource {
    * `on_reply_elsewhere` (`stop` or `continue`), `withdraw_on_reply_elsewhere`
    * and `account_gap` (`1d` to `30d`), served only in that mode;
    * `accounts_per_lead` is locked once the Campaign has started.
+   * `settings.one_lead_per_company: true` enrolls at most one Lead per company:
+   * a Lead whose company already has one in the Campaign is skipped with reason
+   * `same_company`, naming the Lead kept; a Lead with no known company is never
+   * skipped for it.
    *
    * `settings.priority` (`normal`, the default, or `prioritized`) is the
    * Campaign's weight in each sending account's budgets: `normal` weighs 1,
