@@ -145,8 +145,8 @@ export class SignalsResource {
    * @example
    * const signal = await curviate.signals.get("sig_123");
    */
-  get(signalId: string): Promise<Signal> {
-    return this.ctx.request<Signal>({ method: "GET", path: apiPath`/v1/signals/${signalId}` });
+  get(id: string): Promise<Signal> {
+    return this.ctx.request<Signal>({ method: "GET", path: apiPath`/v1/signals/${id}` });
   }
 
   /**
