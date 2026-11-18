@@ -171,7 +171,8 @@ export class BillingResource {
    * await curviate.billing.switchPeriod();
    */
   switchPeriod(): Promise<SwitchPeriodResult> {
-    return this.ctx.request<SwitchPeriodResult>({ method: "POST", path: "/v1/billing/subscription/switch-period" });
+    // The route takes `{to: "annual"}`, the one switch.
+    return this.ctx.request<SwitchPeriodResult>({ method: "POST", path: "/v1/billing/subscription/switch-period", body: { to: "annual" } });
   }
 
   /**

@@ -224,11 +224,18 @@ export class UniboxResource {
    * `mailbox_id` when more than one Mailbox can send). It goes to the Lead's
    * one address with no signature and no opt-out line, counts against the
    * Mailbox's daily limit, and ends the Lead's open Enrollments on that
-   * Account as a reply would. Read `email` on `getConversation` first: it
-   * says whether email is available and from which Mailboxes; otherwise
-   * `EMAIL_UNAVAILABLE` (422, with `reason`). One HTTP call, never retried by
-   * the SDK: a retry after a timeout can send the email twice, so read the
-   * conversation before you send again.
+   * Account as a reply would. `cc` and `bcc` (at most 20 addresses together)
+   * and `attachments` (`{filename, content_type, content}` with base64
+   * content, at most 10, 20 MiB in all; executables, scripts and
+   * macro-enabled Office files refused) ride along. When the receiving server
+   * refused some Cc or Bcc addresses but took the Lead's, the answer carries
+   * `warnings: [{ code: "recipients_refused", addresses }]`. Read `email` on
+   * `getConversation` first: it says whether email is available and from which
+   * Mailboxes; otherwise `EMAIL_UNAVAILABLE` (422, with `reason`). One HTTP
+   * call, never retried by the SDK. A `PLATFORM_ERROR` with
+   * `err.outcomeUnknown` means the provider stopped answering after it had the
+   * whole email: it may have been sent and is kept as sent. Never send it
+   * again; read the conversation first.
    * `POST /v1/unibox/conversations/{conversation_id}/emails`
    *
    * @example
@@ -267,8 +274,9 @@ export class UniboxResource {
   }
 
   /**
-   * Count unread chats (chats, not messages); cheap to poll. `account_ids`
-   * narrows it.
+   * Count unread conversations (not messages), LinkedIn and email alike: an
+   * email from the Lead makes a conversation unread; cheap to poll.
+   * `account_ids` narrows it.
    * `GET /v1/unibox/unread-count`
    *
    * @example

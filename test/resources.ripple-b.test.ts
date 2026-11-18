@@ -149,6 +149,7 @@ describe("request shapes", () => {
     await client.unibox.sendEmail("cnv_1", { text: "Thanks", thread_id: "thr_1" });
     await client.unibox.referralSearch("msg_1");
     await client.unibox.referralConfirm("msg_1", { provider_id: "ACo1" });
+    await client.billing.switchPeriod();
     expect(calls).toEqual([
       ["PATCH", "/v1/signals/watch/acc_1", {}, { signal_watch: true }],
       ["GET", "/v1/signals/actions", { outcome: "skipped", rule_id: "sgr_1" }, null],
@@ -161,6 +162,7 @@ describe("request shapes", () => {
       ["POST", "/v1/unibox/conversations/cnv_1/emails", {}, { text: "Thanks", thread_id: "thr_1" }],
       ["POST", "/v1/unibox/messages/msg_1/referral/search", {}, {}],
       ["POST", "/v1/unibox/messages/msg_1/referral/confirm", {}, { provider_id: "ACo1" }],
+      ["POST", "/v1/billing/subscription/switch-period", {}, { to: "annual" }],
     ]);
   });
 
