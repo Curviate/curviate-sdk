@@ -1,0 +1,43 @@
+{
+  "about": "email.send: files on the step and on each variant (one variant without any sends none)",
+  "rules": [],
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "first",
+        "do": "email.send",
+        "with": {
+          "subject": "The guide",
+          "text": "Hi, the guide is attached.",
+          "attachment_ids": [
+            "cat_01J8Z3K9P0Q1R2S3T4V5W6X7AA",
+            "cat_01J8Z3K9P0Q1R2S3T4V5W6X7BB"
+          ]
+        },
+        "next": "second"
+      },
+      {
+        "id": "second",
+        "do": "email.send",
+        "variants": [
+          {
+            "id": "a",
+            "text": "With the price list",
+            "attachment_ids": [
+              "cat_01J8Z3K9P0Q1R2S3T4V5W6X7CC"
+            ]
+          },
+          {
+            "id": "b",
+            "text": "A link instead: https://acme.test/prices"
+          }
+        ],
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": []
+}

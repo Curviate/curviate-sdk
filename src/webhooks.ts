@@ -231,6 +231,42 @@ export interface EnrollmentOptedOutPayload extends CampaignPayload {
 }
 
 /**
+ * A `signal.<kind>` event: one Signal of a watched Account, delivered once
+ * whether or not a rule acts on it. Ids and codes only, never post or comment
+ * text. `person` is `null` for an anonymous viewer (`anonymous`) or a company
+ * (`organization`).
+ */
+export interface SignalPayload {
+  account_id: string;
+  event: string;
+  object: "signal";
+  /** The Signal id (`sig_...`), readable with `signals.get` for 7 days. */
+  id: string;
+  kind: string;
+  sub_kind: string | null;
+  occurred_at: string;
+  written_at: string;
+  expires_at: string;
+  person: {
+    member_id: string;
+    linkedin_url: string | null;
+    name: string | null;
+    headline: string | null;
+    network_distance: number | null;
+    lead_id: string | null;
+    is_connection: boolean;
+    followed: boolean;
+    listed: boolean;
+  } | null;
+  [key: string]: unknown;
+}
+
+/** `signal.matched`: a Signal rule with the `send_event` outcome acted on a Signal, once per rule and Signal. */
+export interface SignalMatchedPayload extends SignalPayload {
+  rule: { rule_id: string; name: string };
+}
+
+/**
  * Delivery metadata that accompanies every Curviate webhook event.
  *
  * These fields are present on every delivery the platform sends, but
@@ -336,6 +372,14 @@ export type CurviateEvent = CurviateEventEnvelope &
     | { event: "step.executed"; data: CampaignPayload }
     | { event: "step.failed"; data: CampaignPayload }
     | { event: "campaign.custom_event"; data: CampaignPayload }
+    | { event: "signal.post_engaged"; data: SignalPayload }
+    | { event: "signal.post_reposted"; data: SignalPayload }
+    | { event: "signal.network_posted"; data: SignalPayload }
+    | { event: "signal.profile_viewed"; data: SignalPayload }
+    | { event: "signal.followed_you"; data: SignalPayload }
+    | { event: "signal.mentioned_you"; data: SignalPayload }
+    | { event: "signal.connection_added"; data: SignalPayload }
+    | { event: "signal.matched"; data: SignalMatchedPayload }
   );
 
 // ─── Header parsing ──────────────────────────────────────────────────────────

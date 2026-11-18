@@ -270,9 +270,13 @@ await curviate.unibox.tagLead("acc_1", "chat_1", { tags: ["warm"] });
 await curviate.unibox.enroll("acc_1", "chat_1", { campaign_id: "mot_1" });
 for await (const chat of curviate.unibox.list({ reply_label: ["interested", "unsure"] })) console.log(chat.reply_label);
 await curviate.unibox.updateMessage("msg_1", { reply_label: "not_now" }); // correct a Reply label; getReplyLabel(id) reads its history
+// One conversation: one person on one account across LinkedIn and email (each chat carries conversation_id).
+for await (const item of curviate.unibox.listConversationMessages("cnv_1")) console.log(item.channel); // null: a Campaign event
 
 // Signals: what people did around your Accounts in the last 7 days, and rules that act on them.
 for await (const s of curviate.signals.list({ kind: "profile_viewed", match: "lead" })) console.log(s.id);
+await curviate.signals.setWatch("acc_1", { signal_watch: true }); // off by default: only a watched Account catches Signals
+for await (const a of curviate.signals.actions({ outcome: "skipped" })) console.log(a.reason); // what rules did
 
 // Campaign results, activity in budget units, the events feed.
 const overview = await curviate.analytics.campaigns.list({ from: "2026-10-01", to: "2026-10-31" });
@@ -280,6 +284,7 @@ const summary = await curviate.analytics.campaigns.list({ range: "30d", compare:
 const detail = await curviate.analytics.campaigns.get("mot_1");
 const { types } = await curviate.analytics.activity(); // per BudgetRow; never add rows together
 const email = await curviate.analytics.email({ range: "30d", include: ["weeks"] }); // sent, reply, open, bounce, opt_out
+const { items: toFix } = await curviate.analytics.emailAttention(); // Needs a fix: each problem with the CLI call to its fix
 for await (const event of curviate.analytics.events.list({ kind: ["message.replied"] })) console.log(event.campaign_name);
 const { items: forOne } = await curviate.analytics.events.list({ lead_id: "con_1", origin: ["unibox", "api"] }); // 404 for an unknown, other-team or merged-away id
 
@@ -389,6 +394,8 @@ import { Sequence, step } from "@curviate/sdk";
 // The file is converted once and the original is discarded. A retry stores a second clip.
 const clip = await curviate.campaigns.voiceClips.upload(await readFile("intro.mp3"), { filename: "intro.mp3" });
 const { duration_ms } = await curviate.campaigns.voiceClips.get(clip.id); // no download link in the response
+// A file for an email step's attachment_ids: up to 20 MiB; executables and macro-enabled Office files are refused.
+const file = await curviate.campaigns.attachments.upload(await readFile("pricing.pdf"), { filename: "pricing.pdf" });
 
 const seq = Sequence.create({ on_reply: "end" }).add(
   step.do("voice", "voice.send", {

@@ -151,6 +151,9 @@ export type {
   VoiceClip,
   VoiceClipContentType,
   VoiceClipUploadOptions,
+  CampaignAttachment,
+  CampaignAttachmentContentType,
+  CampaignAttachmentUploadOptions,
   Campaign,
   CampaignCreateBody,
   CampaignUpdateBody,
@@ -222,6 +225,9 @@ export type {
   ReplyLabelHistory,
   ReplyLabelUpdateBody,
   ReplyLabelUpdateResult,
+  UniboxConversation,
+  UniboxConversationMessagesParams,
+  UniboxConversationMessagesPage,
 } from "./resources/unibox.js";
 
 export type {
@@ -237,6 +243,10 @@ export type {
   SignalRuleListPage,
   SignalRuleCreateBody,
   SignalRuleUpdateBody,
+  SignalActionListParams,
+  SignalActionListPage,
+  SignalWatch,
+  SignalWatchUpdateBody,
 } from "./resources/signals.js";
 
 export type {
@@ -260,6 +270,8 @@ export type {
   AnalyticsExportParams,
   EmailAnalyticsParams,
   EmailAnalytics,
+  EmailAttentionParams,
+  EmailAttention,
 } from "./resources/analytics.js";
 
 export type { ExportCreateBody, Export, ExportGetResult } from "./resources/exports.js";
@@ -361,6 +373,8 @@ export {
   type EnrollmentEmailBouncedPayload,
   type EnrollmentOutOfOfficePayload,
   type EnrollmentOptedOutPayload,
+  type SignalPayload,
+  type SignalMatchedPayload,
   type PostPublishedPayload,
   type PostPublishFailedPayload,
   type ConstructEventOptions,

@@ -1,5 +1,5 @@
 // Vendored from the API by scripts/vendor-shared.mjs. Do not edit: change the API and re-run.
-import { VOICE_CLIP_ID_RE, isObject } from "./limits.js";
+import { CAMPAIGN_ATTACHMENT_ID_RE, VOICE_CLIP_ID_RE, isObject } from "./limits.js";
 type Json = Record<string, unknown>;
 function steps(doc: unknown): Json[] {
     const s = isObject(doc) ? doc["steps"] : undefined;
@@ -55,6 +55,42 @@ export function voiceClipRefs(doc: unknown): Array<{
                     add(v["clip_id"], `${String(s["id"])}.variants.${String(v["id"])}.clip_id`, `/steps/${i}/variants/${j}/clip_id`);
             });
         }
+    });
+    return out;
+}
+export function attachmentRefs(doc: unknown): Array<{
+    step: string;
+    variant: string | null;
+    ids: string[];
+    path: string;
+    pointer: string;
+}> {
+    const out: Array<{
+        step: string;
+        variant: string | null;
+        ids: string[];
+        path: string;
+        pointer: string;
+    }> = [];
+    const add = (v: unknown, step: string, variant: string | null, path: string, pointer: string) => {
+        if (!Array.isArray(v))
+            return;
+        const ids = [...new Set(v.filter((x): x is string => typeof x === "string" && CAMPAIGN_ATTACHMENT_ID_RE.test(x)))];
+        if (ids.length > 0)
+            out.push({ step, variant, ids, path, pointer });
+    };
+    steps(doc).forEach((s, i) => {
+        if (s["do"] !== "email.send")
+            return;
+        const id = String(s["id"]);
+        if (Array.isArray(s["variants"])) {
+            s["variants"].forEach((v: unknown, j: number) => {
+                if (isObject(v))
+                    add(v["attachment_ids"], id, String(v["id"]), `${id}.variants.${String(v["id"])}.attachment_ids`, `/steps/${i}/variants/${j}/attachment_ids`);
+            });
+        }
+        else if (isObject(s["with"]))
+            add(s["with"]["attachment_ids"], id, null, `${id}.with.attachment_ids`, `/steps/${i}/with/attachment_ids`);
     });
     return out;
 }

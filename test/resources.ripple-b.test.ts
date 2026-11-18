@@ -127,6 +127,35 @@ describe("request shapes", () => {
     ]);
   });
 
+  it("each pass-3 method makes one call: method, path, query and body as served; an upload sends the bytes raw", async () => {
+    const calls: unknown[] = [];
+    server.use(
+      http.all(`${BASE}/v1/*`, async ({ request }) => {
+        const u = new URL(request.url);
+        const raw = request.method === "GET" ? "" : request.headers.get("content-type") === "application/json" ? await request.text() : "";
+        const bytes = request.method !== "GET" && !raw ? [...new Uint8Array(await request.arrayBuffer())] : null;
+        calls.push([request.method, u.pathname, Object.fromEntries(u.searchParams), raw ? JSON.parse(raw) : bytes && { type: request.headers.get("content-type"), bytes }]);
+        return HttpResponse.json({});
+      }),
+    );
+    await client.signals.setWatch("acc_1", { signal_watch: true });
+    await client.signals.actions({ outcome: "skipped", rule_id: "sgr_1" });
+    await client.analytics.emailAttention({ campaign_id: "mot_1" });
+    await client.unibox.getConversation("cnv_1");
+    await client.unibox.listConversationMessages("cnv_1", { channel: "email", limit: 20 });
+    await client.campaigns.attachments.upload(new Uint8Array([0x25, 0x50, 0x44, 0x46]), { filename: "pricing.pdf", contentType: "application/pdf" });
+    await client.campaigns.attachments.get("cat_1");
+    expect(calls).toEqual([
+      ["PATCH", "/v1/signals/watch/acc_1", {}, { signal_watch: true }],
+      ["GET", "/v1/signals/actions", { outcome: "skipped", rule_id: "sgr_1" }, null],
+      ["GET", "/v1/analytics/email/attention", { campaign_id: "mot_1" }, null],
+      ["GET", "/v1/unibox/conversations/cnv_1", {}, null],
+      ["GET", "/v1/unibox/conversations/cnv_1/messages", { channel: "email", limit: "20" }, null],
+      ["POST", "/v1/campaigns/attachments", { filename: "pricing.pdf" }, { type: "application/pdf", bytes: [0x25, 0x50, 0x44, 0x46] }],
+      ["GET", "/v1/campaigns/attachments/cat_1", {}, null],
+    ]);
+  });
+
   it("network.resync() with no argument still sends a JSON body (Resync all)", async () => {
     let body: unknown;
     server.use(http.post(`${BASE}/v1/network/resync`, async ({ request }) => { body = await request.json(); return HttpResponse.json({ object: "network_resync_list", items: [] }, { status: 202 }); }));

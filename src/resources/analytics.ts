@@ -44,6 +44,8 @@ export type AnalyticsEvent = AnalyticsEventListPage["items"][number];
 /** `account_id`, `campaign_id` and `include` take a comma list or an array. */
 export type EmailAnalyticsParams = WithLists<NonNullable<paths["/v1/analytics/email"]["get"]["parameters"]["query"]>, "account_id" | "campaign_id" | "include">;
 export type EmailAnalytics = paths["/v1/analytics/email"]["get"]["responses"]["200"]["content"]["application/json"];
+export type EmailAttentionParams = NonNullable<paths["/v1/analytics/email/attention"]["get"]["parameters"]["query"]>;
+export type EmailAttention = paths["/v1/analytics/email/attention"]["get"]["responses"]["200"]["content"]["application/json"];
 /** An account-safety budget row; each counts its own unit. */
 export type BudgetRow = Activity["types"][number]["budget_row"];
 
@@ -191,6 +193,25 @@ export class AnalyticsResource {
    */
   email(params?: EmailAnalyticsParams): Promise<EmailAnalytics> {
     return this.ctx.request<EmailAnalytics>({ method: "GET", path: "/v1/analytics/email", query: commaLists(params, "account_id", "campaign_id", "include") });
+  }
+
+  /**
+   * Needs a fix: what to fix in your email sending now, one item per
+   * problem, what stops sending first. `kind` is the problem (a Notification
+   * type such as `mailbox.auto_paused`, `domain.dmarc_missing`,
+   * `provider.spam_high` or `account.no_mailbox`; more may be added),
+   * `subject` what it is on, `since` when it arose, `values` its codes and
+   * numbers, and `next` the CLI call that leads to the fix. An item leaves
+   * the list once its problem ends. Filters: `campaign_id`, `account_id`.
+   * Read-only.
+   * `GET /v1/analytics/email/attention`
+   *
+   * @example
+   * const { items } = await curviate.analytics.emailAttention();
+   * for (const item of items) console.log(item.kind, item.next);
+   */
+  emailAttention(params?: EmailAttentionParams): Promise<EmailAttention> {
+    return this.ctx.request<EmailAttention>({ method: "GET", path: "/v1/analytics/email/attention", ...(params ? { query: params } : {}) });
   }
 
   /**

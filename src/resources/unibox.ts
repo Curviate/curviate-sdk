@@ -1,5 +1,5 @@
 /**
- * Unibox (root-scoped): `curviate.unibox` (8 methods) and
+ * Unibox (root-scoped): `curviate.unibox` (10 methods) and
  * `curviate.unibox.accounts` (2 methods).
  *
  * The Unibox is one inbox over every account you can operate, served from
@@ -16,6 +16,10 @@
  * read, react, edit, delete) throws `REAUTH_REQUIRED` (409) until you
  * reconnect it. An archived Account is not listed.
  *
+ * A conversation is one person on one account across LinkedIn and email:
+ * each chat carries its `conversation_id`, and `getConversation` and
+ * `listConversationMessages` read it, both channels in one timeline.
+ *
  * A send from the API (this SDK included) or the Unibox marks the chat read:
  * `unread` turns `false`, `marked_unread` clears, and a `chat.updated`
  * webhook reports it. A send from a Campaign leaves the read state as it is.
@@ -27,6 +31,7 @@ import { commaLists } from "../internal/query.js";
 import { pageable, type Pageable } from "../internal/paginate.js";
 
 type ChatPath = "/v1/unibox/chats/{account_id}/{chat_id}";
+type ConversationPath = "/v1/unibox/conversations/{conversation_id}";
 
 export type UniboxChatListParams = NonNullable<paths["/v1/unibox/chats"]["get"]["parameters"]["query"]>;
 export type UniboxChatListPage = paths["/v1/unibox/chats"]["get"]["responses"]["200"]["content"]["application/json"];
@@ -46,6 +51,9 @@ export type ReplyLabelUpdateBody = NonNullable<paths["/v1/unibox/messages/{messa
 export type ReplyLabelUpdateResult = paths["/v1/unibox/messages/{message_id}"]["patch"]["responses"]["200"]["content"]["application/json"];
 /** A Reply label: `interested`, `not_now`, `not_interested`, `opt_out`, `out_of_office`, `referral`, `other`, or `unsure` (Curviate could not tell). */
 export type ReplyLabel = NonNullable<ReplyLabelHistory["current"]>["label"];
+export type UniboxConversation = paths[ConversationPath]["get"]["responses"]["200"]["content"]["application/json"];
+export type UniboxConversationMessagesParams = NonNullable<paths[`${ConversationPath}/messages`]["get"]["parameters"]["query"]>;
+export type UniboxConversationMessagesPage = paths[`${ConversationPath}/messages`]["get"]["responses"]["200"]["content"]["application/json"];
 export type UniboxAccountUpdateBody = NonNullable<paths["/v1/unibox/accounts/{account_id}"]["patch"]["requestBody"]>["content"]["application/json"];
 
 /** `curviate.unibox.accounts`: full-inbox sync per account. */
@@ -153,6 +161,40 @@ export class UniboxResource {
    */
   get(accountId: string, chatId: string): Promise<UniboxChat> {
     return this.ctx.request<UniboxChat>({ method: "GET", path: apiPath`/v1/unibox/chats/${accountId}/${chatId}` });
+  }
+
+  /**
+   * One conversation: one person on one account, across LinkedIn and email,
+   * as the list serves it (`conversation_id` on each chat). From what
+   * Curviate has stored: no LinkedIn call, no mailbox read.
+   * `GET /v1/unibox/conversations/{conversation_id}`
+   *
+   * @example
+   * const conversation = await curviate.unibox.getConversation("cnv_123");
+   */
+  getConversation(conversationId: string): Promise<UniboxConversation> {
+    return this.ctx.request<UniboxConversation>({ method: "GET", path: apiPath`/v1/unibox/conversations/${conversationId}` });
+  }
+
+  /**
+   * A conversation's timeline, newest first: its LinkedIn messages (the same
+   * ids as `account(id).messaging`), its emails, and Campaign events (a
+   * bounce, an unsubscribe, the Enrollment's end) as items with `channel`
+   * `null`. `counts` cover the whole conversation. A page holds `limit`
+   * LinkedIn messages and every email and event since the oldest of them;
+   * `channel: "email"` serves every email at once. Email is read from what
+   * Curviate kept: no mailbox read. `await` it for one page; `for await` it
+   * for every item.
+   * `GET /v1/unibox/conversations/{conversation_id}/messages`
+   *
+   * @example
+   * for await (const item of curviate.unibox.listConversationMessages("cnv_123")) console.log(item.channel);
+   */
+  listConversationMessages(conversationId: string, params?: UniboxConversationMessagesParams): Pageable<UniboxConversationMessagesPage> {
+    return pageable(
+      (p) => this.ctx.request<UniboxConversationMessagesPage>({ method: "GET", path: apiPath`/v1/unibox/conversations/${conversationId}/messages`, ...(p ? { query: p } : {}) }),
+      params,
+    );
   }
 
   /**
