@@ -5,7 +5,7 @@
 // table (namespace -> exact method set), enumerates the real prototype methods
 // on a constructed client, and asserts set-equality per namespace. A phantom
 // (extra) public method fails by name; a missing method fails by name; the
-// total must be 310 methods across 50 namespaces. A separate compile-time block
+// total must be 317 methods across 51 namespaces. A separate compile-time block
 // proves every removed method is gone at the type level.
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
@@ -72,7 +72,7 @@ const ROOT_SURFACE: Record<string, readonly string[]> = {
   // Your Team's company records. Same key as the account-scoped company
   // reads below, different class.
   companies: ["get", "update"],
-  signals: ["list", "get", "kinds", "watch", "updateSettings"],
+  signals: ["list", "get", "kinds", "watch", "updateSettings", "setWatch", "actions"],
   "signals.rules": ["list", "create", "get", "update", "delete"],
   // Curviate's own Notifications. Same key as the account-scoped LinkedIn
   // notifications below, different class.
@@ -86,15 +86,16 @@ const ROOT_SURFACE: Record<string, readonly string[]> = {
     "check", "preview", "getSequenceVersion", "addLeads", "removeLeads",
   ],
   "campaigns.voiceClips": ["upload", "get"],
+  "campaigns.attachments": ["upload", "get"],
   enrollments: ["list", "get", "stop", "pause", "resume", "events", "reassign", "bulk", "retry", "signal"],
   tier: ["get"],
   mailboxes: ["list", "get", "update", "pause", "resume", "remove", "discover"],
   domains: ["check"],
   network: ["syncStatus", "resync"],
   "network.connections": ["list"],
-  unibox: ["list", "get", "unreadCount", "refresh", "tagLead", "enroll", "getReplyLabel", "updateMessage"],
+  unibox: ["list", "get", "unreadCount", "refresh", "tagLead", "enroll", "getReplyLabel", "updateMessage", "getConversation", "listConversationMessages"],
   "unibox.accounts": ["list", "update"],
-  analytics: ["activity", "email", "export"],
+  analytics: ["activity", "email", "emailAttention", "export"],
   "analytics.campaigns": ["list", "get"],
   "analytics.events": ["list"],
   billing: ["quote", "spendingCap", "changes", "switchPeriod", "moveToCurrentPrice"],
@@ -275,6 +276,7 @@ const rootInstances: Record<string, object> = {
   tags: client.tags,
   campaigns: client.campaigns,
   "campaigns.voiceClips": client.campaigns.voiceClips,
+  "campaigns.attachments": client.campaigns.attachments,
   enrollments: client.enrollments,
   tier: client.tier,
   mailboxes: client.mailboxes,
@@ -353,17 +355,17 @@ describe("per-namespace method bijection", () => {
 });
 
 describe("total mapped surface", () => {
-  it("the intended table sums to 310 methods across 50 namespaces", () => {
+  it("the intended table sums to 317 methods across 51 namespaces", () => {
     const namespaces = [
       ...Object.values(ROOT_SURFACE),
       ...Object.values(ACCOUNT_SURFACE),
     ];
-    expect(namespaces.length).toBe(50);
+    expect(namespaces.length).toBe(51);
     const total = namespaces.reduce((n, methods) => n + methods.length, 0);
-    expect(total).toBe(310);
+    expect(total).toBe(317);
   });
 
-  it("the real runtime surface also sums to exactly 310", () => {
+  it("the real runtime surface also sums to exactly 317", () => {
     const roots = Object.values(rootInstances).reduce(
       (n, inst) => n + ownMethods(inst).size,
       0,
@@ -372,7 +374,7 @@ describe("total mapped surface", () => {
       (n, inst) => n + ownMethods(inst).size,
       0,
     );
-    expect(roots + accounts).toBe(310);
+    expect(roots + accounts).toBe(317);
   });
 });
 

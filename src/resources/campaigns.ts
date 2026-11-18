@@ -1,6 +1,6 @@
 /**
- * Campaigns and Enrollments (root-scoped): `curviate.campaigns` (13 methods, plus
- * `voiceClips` with 2) and `curviate.enrollments` (10 methods).
+ * Campaigns and Enrollments (root-scoped): `curviate.campaigns` (14 methods, plus
+ * `voiceClips` and `attachments` with 2 each) and `curviate.enrollments` (10 methods).
  *
  * A Campaign runs one Sequence (see `Sequence`) for the Leads of its Lead
  * lists, on its sending accounts, inside its schedule. It is created as a
@@ -61,6 +61,19 @@ export interface VoiceClipUploadOptions {
 const AUDIO_BY_EXTENSION: Record<string, VoiceClipContentType> = {
   mp3: "audio/mpeg", wav: "audio/wav", m4a: "audio/mp4", mp4: "audio/mp4", webm: "audio/webm", ogg: "audio/ogg", oga: "audio/ogg",
 };
+
+/** The file types the attachment upload lists for its raw body. Curviate reads the type from the file's bytes. */
+export type CampaignAttachmentContentType = keyof NonNullable<paths["/v1/campaigns/attachments"]["post"]["requestBody"]>["content"];
+/** A stored file: `id` (`cat_...`) goes in an email step's `attachment_ids`. */
+export type CampaignAttachment = paths["/v1/campaigns/attachments"]["post"]["responses"]["201"]["content"]["application/json"];
+
+/** Options for {@link CampaignAttachmentsResource.upload}. */
+export interface CampaignAttachmentUploadOptions {
+  /** The file's name as the recipient sees it. 1 to 255 characters, never a path. */
+  filename: string;
+  /** The file's type. Optional: a `Blob`'s own type, else `application/octet-stream`; Curviate reads the real type from the bytes. */
+  contentType?: CampaignAttachmentContentType;
+}
 
 export type Enrollment = paths["/v1/enrollments/{id}/stop"]["post"]["responses"]["200"]["content"]["application/json"];
 export type EnrollmentDetail = paths["/v1/enrollments/{id}"]["get"]["responses"]["200"]["content"]["application/json"];
@@ -150,12 +163,65 @@ export class VoiceClipsResource {
   }
 }
 
+/** `curviate.campaigns.attachments`: the files an `email.send` step sends. */
+export class CampaignAttachmentsResource {
+  constructor(private readonly ctx: RequestContext) {}
+
+  /**
+   * Upload one file as the raw request body and resolve with the stored
+   * file; its `id` goes in an email step's `attachment_ids` (at most 10 a
+   * step, 20 MiB in total). `Content-Length` is sent (a chunked upload is
+   * refused with `411`), so pass the bytes, not a stream. A link usually
+   * lands better than a file.
+   * `POST /v1/campaigns/attachments?filename=...`
+   *
+   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   *
+   * Limits: up to 20 MiB (`PAYLOAD_TOO_LARGE`, 413), 100 uploads per Team per
+   * 24 hours (`RATE_LIMIT_TENANT`, 429, `Retry-After` is the wait). The type
+   * is read from the file's bytes: executables, scripts, installers and
+   * macro-enabled Office files are refused (`UNSUPPORTED_MEDIA_TYPE`, 415).
+   * A retry stores a second file. A file no Sequence uses is deleted 30 days
+   * after its upload.
+   *
+   * @example
+   * const bytes = await readFile("pricing.pdf");
+   * const file = await curviate.campaigns.attachments.upload(bytes, { filename: "pricing.pdf" });
+   * // with: { subject: "Pricing", text: "Attached, as promised.", attachment_ids: [file.id] }
+   */
+  upload(data: Blob | ArrayBuffer | Uint8Array, options: CampaignAttachmentUploadOptions): Promise<CampaignAttachment> {
+    const contentType = options.contentType ?? ((data instanceof Blob && data.type) || "application/octet-stream");
+    return this.ctx.request<CampaignAttachment>({
+      method: "POST",
+      path: "/v1/campaigns/attachments",
+      query: { filename: options.filename },
+      rawBody: { data, contentType },
+    });
+  }
+
+  /**
+   * One file: `id`, `filename`, `content_type`, `bytes`, `created_at`. No
+   * download link. Another Team's id is `RESOURCE_NOT_FOUND`, the same as an
+   * unknown one.
+   * `GET /v1/campaigns/attachments/{id}`
+   *
+   * @example
+   * const file = await curviate.campaigns.attachments.get("cat_01J8Z3K9P0Q1R2S3T4V5W6X7Y8");
+   */
+  get(attachmentId: string): Promise<CampaignAttachment> {
+    return this.ctx.request<CampaignAttachment>({ method: "GET", path: apiPath`/v1/campaigns/attachments/${attachmentId}` });
+  }
+}
+
 export class CampaignsResource {
   /** Voice clips for `voice.send` steps. */
   readonly voiceClips: VoiceClipsResource;
+  /** Files for `email.send` steps. */
+  readonly attachments: CampaignAttachmentsResource;
 
   constructor(private readonly ctx: RequestContext) {
     this.voiceClips = new VoiceClipsResource(ctx);
+    this.attachments = new CampaignAttachmentsResource(ctx);
   }
 
   /**

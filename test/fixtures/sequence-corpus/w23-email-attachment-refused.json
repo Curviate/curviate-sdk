@@ -1,0 +1,75 @@
+{
+  "about": "email.send: a file the provider refused, named on the step and on a variant (W23 until attachment_ids change)",
+  "rules": [
+    "W23"
+  ],
+  "only": "server",
+  "context": {
+    "refused_attachments": {
+      "cat_01J8Z3K9P0Q1R2S3T4V5W6X7AA": {
+        "filename": "setup.zip",
+        "message": "552 5.7.0 This message was blocked because its content presents a potential security issue."
+      }
+    }
+  },
+  "schema_valid": true,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "first",
+        "do": "email.send",
+        "with": {
+          "subject": "Hi",
+          "text": "Hi",
+          "attachment_ids": [
+            "cat_01J8Z3K9P0Q1R2S3T4V5W6X7AA",
+            "cat_01J8Z3K9P0Q1R2S3T4V5W6X7BB"
+          ]
+        },
+        "next": "second"
+      },
+      {
+        "id": "second",
+        "do": "email.send",
+        "variants": [
+          {
+            "id": "a",
+            "text": "Again",
+            "attachment_ids": [
+              "cat_01J8Z3K9P0Q1R2S3T4V5W6X7AA"
+            ]
+          },
+          {
+            "id": "b",
+            "text": "No file"
+          }
+        ],
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "path": "first.with.attachment_ids",
+      "rule": "attachment_refused: the email provider refused setup.zip on step first: 552 5.7.0 This message was blocked because its content presents a potential security issue.",
+      "code": "W23",
+      "message": "attachment_refused: the email provider refused setup.zip on step first: 552 5.7.0 This message was blocked because its content presents a potential security issue.",
+      "pointer": "/steps/0/with/attachment_ids",
+      "hint": "Swap the file in the step's attachment_ids, or send a link to it instead.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w23",
+      "severity": "warning"
+    },
+    {
+      "path": "second.variants.a.attachment_ids",
+      "rule": "attachment_refused: the email provider refused setup.zip on step second: 552 5.7.0 This message was blocked because its content presents a potential security issue.",
+      "code": "W23",
+      "message": "attachment_refused: the email provider refused setup.zip on step second: 552 5.7.0 This message was blocked because its content presents a potential security issue.",
+      "pointer": "/steps/1/variants/0/attachment_ids",
+      "hint": "Swap the file in the step's attachment_ids, or send a link to it instead.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#w23",
+      "severity": "warning"
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "about": "email.send attachment_ids: 11 ids, a malformed id, the same file twice, and with.attachment_ids beside variants",
+  "rules": [
+    "R13",
+    "R23"
+  ],
+  "schema_valid": false,
+  "document": {
+    "on_reply": "end",
+    "steps": [
+      {
+        "id": "many",
+        "do": "email.send",
+        "with": {
+          "subject": "Hi",
+          "text": "Hi",
+          "attachment_ids": [
+            "cat_01J8Z3K9P0Q1R2S3T4V5W6X7AA",
+            "cat_01J8Z3K9P0Q1R2S3T4V5W6X7BB",
+            "cat_01J8Z3K9P0Q1R2S3T4V5W6X7CC",
+            "cat_01J8Z3K9P0Q1R2S3T4V5W6X7DD",
+            "cat_01J8Z3K9P0Q1R2S3T4V5W6X7EE",
+            "cat_01J8Z3K9P0Q1R2S3T4V5W6X7FF",
+            "cat_01J8Z3K9P0Q1R2S3T4V5W6X7GG",
+            "cat_01J8Z3K9P0Q1R2S3T4V5W6X7HH",
+            "cat_01J8Z3K9P0Q1R2S3T4V5W6X7JJ",
+            "cat_01J8Z3K9P0Q1R2S3T4V5W6X7KK",
+            "cat_01J8Z3K9P0Q1R2S3T4V5W6X7MM"
+          ]
+        },
+        "next": "bad"
+      },
+      {
+        "id": "bad",
+        "do": "email.send",
+        "with": {
+          "subject": "Hi",
+          "text": "Hi",
+          "attachment_ids": [
+            "vc_01J8Z3K9P0Q1R2S3T4V5W6X7Y8",
+            "cat_01J8Z3K9P0Q1R2S3T4V5W6X7AA",
+            "cat_01J8Z3K9P0Q1R2S3T4V5W6X7AA"
+          ]
+        },
+        "next": "both"
+      },
+      {
+        "id": "both",
+        "do": "email.send",
+        "with": {
+          "attachment_ids": [
+            "cat_01J8Z3K9P0Q1R2S3T4V5W6X7AA"
+          ]
+        },
+        "variants": [
+          {
+            "id": "x",
+            "subject": "Hi",
+            "text": "Hi",
+            "attachment_ids": "cat_x"
+          },
+          {
+            "id": "y",
+            "subject": "Hi",
+            "text": "Hi"
+          }
+        ],
+        "next": "end"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "path": "many.with.attachment_ids",
+      "rule": "holds 11 files; the limit is 10 per step or variant",
+      "code": "R13",
+      "message": "holds 11 files; the limit is 10 per step or variant",
+      "pointer": "/steps/0/with/attachment_ids",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",
+      "severity": "error"
+    },
+    {
+      "path": "bad.with.attachment_ids[0]",
+      "rule": "must be the id of a Campaign attachment of this Team (POST /v1/campaigns/attachments)",
+      "code": "R13",
+      "message": "must be the id of a Campaign attachment of this Team (POST /v1/campaigns/attachments)",
+      "pointer": "/steps/1/with/attachment_ids/0",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",
+      "severity": "error"
+    },
+    {
+      "path": "bad.with.attachment_ids[2]",
+      "rule": "names the same file twice",
+      "code": "R13",
+      "message": "names the same file twice",
+      "pointer": "/steps/1/with/attachment_ids/2",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",
+      "severity": "error"
+    },
+    {
+      "path": "both.with.attachment_ids",
+      "rule": "with variants, each variant carries its own attachment_ids",
+      "code": "R23",
+      "message": "with variants, each variant carries its own attachment_ids",
+      "pointer": "/steps/2/with/attachment_ids",
+      "hint": "Give the step 2 to 5 variants with ids unique in the document (weights on all or none, each 1 to 100), or one text in with.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r23",
+      "severity": "error"
+    },
+    {
+      "path": "both.variants.x.attachment_ids",
+      "rule": "must be a list of Campaign attachment ids",
+      "code": "R13",
+      "message": "must be a list of Campaign attachment ids",
+      "pointer": "/steps/2/variants/0/attachment_ids",
+      "hint": "Use an action from the list and only the parameters it takes, with values of their type.",
+      "docs_url": "https://docs.curviate.com/reference/sequence-rules#r13",
+      "severity": "error"
+    }
+  ],
+  "warnings": []
+}

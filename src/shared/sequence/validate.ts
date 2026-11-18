@@ -1,8 +1,8 @@
 // Vendored from the API by scripts/vendor-shared.mjs. Do not edit: change the API and re-run.
 import { businessDays, durationMinutes } from "./paths.js";
 import { normalizePath } from "../field-paths.js";
-import { awaitedEventName } from "./references.js";
-import { ACCOUNT_FIELDS, ACTION_PARAMS, ACTIONS, VOICE_CLIP_ID_RE, VOICE_CLIP_RULE, BOOLEAN_PREDICATES, DURATION_BOUNDS, DEPRECATED_ACCEPTED_UNTIL, DURATION_PATTERN, BUSINESS_DAYS, EMAIL_OPT_OUT_FORMS, EMAIL_REFUSED_KEYS, EMAIL_THREADS, END, hasEmailStep, EVENT_NAME_PATTERN, EVENTS, EXTRA_KEY_PATTERN, FIELD_OPERATORS, ID_PATTERN, MAX_PREDICATE_DEPTH, MAX_QUOTED_TOKEN_CHARS, MAX_SAVE_ENTRIES, MAX_SEQUENCE_BYTES, MAX_STEP_NOTE_CHARS, MAX_STEPS, MAX_VARIABLE_REFS_PER_TEXT, MAX_TAG_CHARS, MAX_VARIANTS, MAX_VARIANT_WEIGHT, MIN_VARIANT_WEIGHT, MESSAGING_ACTIONS, MY_FIELDS, MIN_VARIANTS, COMPANY_FIELDS, NAME_FIELDS, NUMBER_OPERATORS, ON_MISSING, OPT_OUT_MAX, OPT_OUT_TEXTS, REACTIONS, SAVE_NAME_PATTERN, SEQUENCE_SCHEMA_URL, STANDARD_FIELDS, languageCode, STEP_KEYS, STEP_KINDS, TAG_PATTERN, TEXT_LIMITS, type Action, type StepKind, fallbackKeyword, isObject, longVariable, } from "./limits.js";
+import { attachmentRefs, awaitedEventName } from "./references.js";
+import { ACCOUNT_FIELDS, ACTION_PARAMS, ACTIONS, VOICE_CLIP_ID_RE, VOICE_CLIP_RULE, CAMPAIGN_ATTACHMENT_ID_RE, CAMPAIGN_ATTACHMENT_RULE, MAX_STEP_ATTACHMENTS, BOOLEAN_PREDICATES, DURATION_BOUNDS, DEPRECATED_ACCEPTED_UNTIL, DURATION_PATTERN, BUSINESS_DAYS, EMAIL_OPT_OUT_FORMS, EMAIL_REFUSED_KEYS, EMAIL_THREADS, END, hasEmailStep, EVENT_NAME_PATTERN, EVENTS, EXTRA_KEY_PATTERN, FIELD_OPERATORS, ID_PATTERN, MAX_PREDICATE_DEPTH, MAX_QUOTED_TOKEN_CHARS, MAX_SAVE_ENTRIES, MAX_SEQUENCE_BYTES, MAX_STEP_NOTE_CHARS, MAX_STEPS, MAX_VARIABLE_REFS_PER_TEXT, MAX_TAG_CHARS, MAX_VARIANTS, MAX_VARIANT_WEIGHT, MIN_VARIANT_WEIGHT, MESSAGING_ACTIONS, MY_FIELDS, MIN_VARIANTS, COMPANY_FIELDS, NAME_FIELDS, NUMBER_OPERATORS, ON_MISSING, OPT_OUT_MAX, OPT_OUT_TEXTS, REACTIONS, SAVE_NAME_PATTERN, SEQUENCE_SCHEMA_URL, STANDARD_FIELDS, languageCode, STEP_KEYS, STEP_KINDS, TAG_PATTERN, TEXT_LIMITS, type Action, type StepKind, fallbackKeyword, isObject, longVariable, } from "./limits.js";
 import { isMessageSend } from "./message-actions.js";
 import { ruleHelp } from "./rules.js";
 export interface PathRule {
@@ -37,6 +37,10 @@ export interface MotionWarningContext {
         account: string;
         reason: string;
     }[] | undefined;
+    refusedAttachments?: ReadonlyMap<string, {
+        filename: string;
+        message: string;
+    }> | undefined;
 }
 export const EMAIL_GAP_LOW_BELOW = 2;
 export type SampleShapes = Readonly<Record<string, readonly {
@@ -92,6 +96,15 @@ export function motionWarnings(doc: unknown, ctx: MotionWarningContext & {
         warn("W22", "account_ids", "", `no_sending_account: ${quote(w.account)} ${w.reason}, and no other sending Account can run, so nothing is sent`);
     if (!isObject(doc))
         return out;
+    if (ctx.refusedAttachments?.size) {
+        for (const r of attachmentRefs(doc)) {
+            for (const id of r.ids) {
+                const f = ctx.refusedAttachments.get(id);
+                if (f)
+                    warn("W23", r.path, r.pointer, `attachment_refused: the email provider refused ${quote(f.filename)} on step ${quote(r.step)}${f.message ? `: ${f.message}` : ""}`);
+            }
+        }
+    }
     const steps = Array.isArray(doc["steps"]) ? doc["steps"] : [];
     const has = (p: SendingAccountProfile) => ctx.accountProfiles.includes(p);
     const recruiterOnly = ctx.accountProfiles.length > 0 && ctx.accountProfiles.every((p) => p === "recruiter");
@@ -450,6 +463,19 @@ function checkClipId(ctx: Ctx, order: number, path: string, pointer: string, par
     if (typeof value !== "string" || !VOICE_CLIP_ID_RE.test(value))
         issue(ctx, { order, code: "R13", path, pointer: value === undefined ? parent : pointer, rule: VOICE_CLIP_RULE });
     return null;
+}
+function checkAttachmentIds(ctx: Ctx, order: number, path: string, pointer: string, value: unknown): void {
+    const at = { order, code: "R13", path, pointer };
+    if (!Array.isArray(value))
+        return void issue(ctx, { ...at, rule: "must be a list of Campaign attachment ids" });
+    if (value.length > MAX_STEP_ATTACHMENTS)
+        return void issue(ctx, { ...at, rule: `holds ${value.length} files; the limit is ${MAX_STEP_ATTACHMENTS} per step or variant` });
+    value.forEach((id, i) => {
+        if (typeof id !== "string" || !CAMPAIGN_ATTACHMENT_ID_RE.test(id))
+            issue(ctx, { ...at, path: `${path}[${i}]`, pointer: `${pointer}/${i}`, rule: CAMPAIGN_ATTACHMENT_RULE });
+        else if (value.indexOf(id) !== i)
+            issue(ctx, { ...at, path: `${path}[${i}]`, pointer: `${pointer}/${i}`, rule: "names the same file twice" });
+    });
 }
 function checkFallbackText(ctx: Ctx, order: number, path: string, pointer: string, parent: string, value: unknown, limit: number, keyword?: string): void {
     if (keyword !== undefined && value === keyword)
@@ -839,6 +865,12 @@ function checkDo(ctx: Ctx, order: number, p: string, ptr: string, raw: Record<st
     if (hasVariants && withTextKeys.some((k) => has(w, k) && w[k] !== null)) {
         issue(ctx, { order, code: "R23", path: `${p}.variants`, pointer: vptr, rule: `use either variants or with.${withTextKeys.join(" and with.")}, not both` });
     }
+    if (email && has(w, "attachment_ids")) {
+        if (hasVariants)
+            issue(ctx, { order, code: "R23", path: `${p}.with.attachment_ids`, pointer: `${wp}/attachment_ids`, rule: "with variants, each variant carries its own attachment_ids" });
+        else
+            checkAttachmentIds(ctx, order, `${p}.with.attachment_ids`, `${wp}/attachment_ids`, w["attachment_ids"]);
+    }
     const limitOf = (field: string): number => email
         ? field === "subject"
             ? TEXT_LIMITS.email_subject
@@ -894,10 +926,12 @@ function checkDo(ctx: Ctx, order: number, p: string, ptr: string, raw: Record<st
                 vp = `${p}.variants.${vid}`;
             }
             for (const k of keysOf(v)) {
-                if (k !== "id" && k !== "weight" && !textKeys.includes(k)) {
-                    issue(ctx, { order, code: "R23", path: `${vp}.${quote(k)}`, pointer: `${vptrJ}${jsonPointer(k)}`, rule: `unknown key; a variant holds id, ${textKeys.join(" and ")} and weight` });
+                if (k !== "id" && k !== "weight" && !textKeys.includes(k) && !(email && k === "attachment_ids")) {
+                    issue(ctx, { order, code: "R23", path: `${vp}.${quote(k)}`, pointer: `${vptrJ}${jsonPointer(k)}`, rule: `unknown key; a variant holds id, ${textKeys.join(" and ")}${email ? ", attachment_ids" : ""} and weight` });
                 }
             }
+            if (email && has(v, "attachment_ids"))
+                checkAttachmentIds(ctx, order, `${vp}.attachment_ids`, `${vptrJ}/attachment_ids`, v["attachment_ids"]);
             const wt = v["weight"];
             if (has(v, "weight")) {
                 if (typeof wt !== "number" || !Number.isInteger(wt) || wt < MIN_VARIANT_WEIGHT || wt > MAX_VARIANT_WEIGHT) {

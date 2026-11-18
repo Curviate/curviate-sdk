@@ -700,6 +700,16 @@
                     "type": "boolean",
                     "default": true,
                     "description": "Open tracking, on once the sending domain's record resolves; false switches it off for this step."
+                  },
+                  "attachment_ids": {
+                    "type": "array",
+                    "maxItems": 10,
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "pattern": "^cat_[0-9A-HJKMNP-TV-Z]{26}$"
+                    },
+                    "description": "Files sent with this email: ids from POST /v1/campaigns/attachments, at most 10, 20 MiB in total. A link usually lands better than a file."
                   }
                 }
               },
@@ -732,6 +742,16 @@
                     "body_html": {
                       "type": "string",
                       "minLength": 1
+                    },
+                    "attachment_ids": {
+                      "type": "array",
+                      "maxItems": 10,
+                      "uniqueItems": true,
+                      "items": {
+                        "type": "string",
+                        "pattern": "^cat_[0-9A-HJKMNP-TV-Z]{26}$"
+                      },
+                      "description": "Files sent with this email: ids from POST /v1/campaigns/attachments, at most 10, 20 MiB in total. A link usually lands better than a file."
                     },
                     "weight": {
                       "type": "integer",

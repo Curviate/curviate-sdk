@@ -60,13 +60,17 @@ export const ACTION_PARAMS: Record<Action, readonly string[]> = {
     "message.send": ["text", "fallback", "on_missing"],
     "inmail.send": ["subject", "text", "fallback", "on_missing"],
     "voice.send": ["clip_id", "fallback"],
-    "email.send": ["subject", "text", "body_html", "thread", "on_missing", "opt_out", ...OPT_OUT_TEXTS, "track_opens"],
+    "email.send": ["subject", "text", "body_html", "thread", "on_missing", "opt_out", ...OPT_OUT_TEXTS, "track_opens", "attachment_ids"],
     "post.react": ["post", "newer_than", "reaction"],
     "post.comment": ["post", "newer_than", "text", "fallback", "on_missing"],
     "skill.endorse": [],
 };
 export const VOICE_CLIP_ID_RE = /^vc_[0-9A-HJKMNP-TV-Z]{26}$/;
 export const VOICE_CLIP_RULE = "must be the id of a Voice clip of this Team (POST /v1/campaigns/voice-clips)";
+export const CAMPAIGN_ATTACHMENT_ID_RE = /^cat_[0-9A-HJKMNP-TV-Z]{26}$/;
+export const MAX_STEP_ATTACHMENTS = 10;
+export const MAX_STEP_ATTACHMENT_BYTES = 20 * 1024 * 1024;
+export const CAMPAIGN_ATTACHMENT_RULE = "must be the id of a Campaign attachment of this Team (POST /v1/campaigns/attachments)";
 const isAction = (a: string): a is Action => (ACTIONS as readonly string[]).includes(a);
 export const MESSAGING_ACTIONS: readonly Action[] = ["invite.send", ...(MESSAGE_SEND_ACTIONS as readonly string[]).filter(isAction), "post.comment"];
 export const hasEmailStep = (doc: unknown): boolean => isObject(doc) && Array.isArray(doc["steps"]) && (doc["steps"] as unknown[]).some((s) => isObject(s) && s["do"] === "email.send");

@@ -7,6 +7,38 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [0.54.0] - 2026-11-18
+
+Regenerated `fixtures/openapi.json` and the generated types from the production document (`fixtures/PROVENANCE.json`, server commit `21f3739c4`); the Sequence validator and its corpus re-vendored from the same tree. Nothing narrows: every change below adds a method, a field, a filter or a union member.
+
+### Wider unions
+
+An exhaustive `switch` must handle: `CurviateEvent` gains the eight `signal` events (`signal.post_engaged`, `signal.post_reposted`, `signal.network_posted`, `signal.profile_viewed`, `signal.followed_you`, `signal.mentioned_you`, `signal.connection_added`, `signal.matched`); Enrollment `reason` gains `attachment_missing` and `attachment_refused`; a Signal rule outcome `type` gains `enroll`; Campaign warnings gain W23 (`attachment_refused`: the email provider refused a file on the step).
+
+### Email attachments
+
+- **`campaigns.attachments.upload(bytes, { filename })`** stores one file (up to 20 MiB, 100 uploads per Team per 24 hours; executables, scripts and macro-enabled Office files refused) and **`campaigns.attachments.get(id)`** reads it back. Its `id` goes in an email step's `attachment_ids` (at most 10 a step, 20 MiB in total), which the builder, `validateSequence` and the Lead check (`attachments`) know.
+
+### Email: Needs a fix
+
+- **`analytics.emailAttention({ campaign_id?, account_id? })`** (`GET /v1/analytics/email/attention`): what to fix in your email sending now, one item per problem with the CLI call that leads to its fix.
+
+### Unibox conversations
+
+- Every chat carries `conversation_id`, `channels`, `last_message_channel` and its `email` state: one conversation is one person on one account across LinkedIn and email.
+- **`unibox.getConversation(id)`** and **`unibox.listConversationMessages(id, { channel?, limit?, cursor? })`**: both channels in one timeline, with Campaign events (a bounce, an unsubscribe, the end) as items.
+
+### Signals
+
+- **`signals.setWatch(accountId, { signal_watch })`** switches one Account's Signal watch on or off (Owners and Managers).
+- **`signals.actions({ lead_id?, rule_id?, outcome? })`**: what rules did, paged. A Signal carries its `actions`.
+- Rules take the `enroll` outcome (`campaign_id`) and `act_on_last_7_days` on create.
+- Webhooks: `source: "signal"` and the eight events, typed `SignalPayload` and `SignalMatchedPayload`.
+
+### Do-not-contact
+
+- **`doNotContact.add({ company_linkedin_url })`** lists a whole company: nobody who works there is contacted or imported. An entry carries `company`.
+
 ## [0.53.0] - 2026-11-18
 
 Regenerated `fixtures/openapi.json` and the generated types from the production document (`fixtures/PROVENANCE.json`, server commit `c8b370ae4`); the Sequence validator and its corpus re-vendored from the same tree. Nothing narrows: every change below adds a method, a field, a filter or a union member.
