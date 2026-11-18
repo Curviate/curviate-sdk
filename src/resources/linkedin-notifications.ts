@@ -55,7 +55,11 @@ export class LinkedInNotificationsResource {
   /**
    * List the connected account's notification cards, newest first, plus
    * the account-level `unread_count` (the unseen badge, NOT a count of
-   * `items`) and `latest_published_at` (a cheap poll watermark). Injected
+   * `items`) and `latest_published_at` (a cheap poll watermark, set on every
+   * page, cursor pages included). Each card carries `kind` (what it means,
+   * from its `type` code alone: `post_engaged`, `profile_viewed`, ...; `null`
+   * for other cards), `actors` (everyone it names, members and
+   * organizations) and `object_ids` (`post_id`, `comment_id`). Injected
    * promo/suggestion cards are included and flagged (`injected:true`),
    * never filtered.
    * `GET /v1/{account_id}/notifications`
