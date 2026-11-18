@@ -23444,6 +23444,19 @@ export interface operations {
                     mailbox_id?: string;
                     /** @description The subject. Required for a new thread. A reply's subject is Re: and the thread's first subject unless you give one. */
                     subject?: string;
+                    /** @description Cc: email addresses, seen by every recipient. At most 20 addresses in Cc and Bcc together; duplicates are dropped. */
+                    cc?: string[];
+                    /** @description Bcc: email addresses no other recipient sees. At most 20 addresses in Cc and Bcc together. */
+                    bcc?: string[];
+                    /** @description Files, at most 10, up to 20 MiB in all (decoded). Executables, scripts and macro-enabled Office files are refused. Not kept by Curviate: the email keeps their name, type, size and hash. */
+                    attachments?: {
+                        /** @description The file's name, without a path. */
+                        filename: string;
+                        /** @description The file's media type, as you know it; the type sent is the one its bytes show. */
+                        content_type: string;
+                        /** @description The file's bytes, base64. */
+                        content: string;
+                    }[];
                 };
             };
         };
@@ -23478,9 +23491,9 @@ export interface operations {
                         from: string;
                         /** @description The Lead's address. */
                         to: string[];
-                        /** @description Empty. */
+                        /** @description The Cc sent, duplicates and the Lead's own address dropped. */
                         cc?: string[];
-                        /** @description Empty. */
+                        /** @description The Bcc sent (served only on your own email). */
                         bcc?: string[];
                         /** @description The text sent. */
                         text: string;
@@ -23493,14 +23506,25 @@ export interface operations {
                          * @enum {string}
                          */
                         origin: "unibox" | "api";
-                        /** @description Empty. */
-                        attachments?: Record<string, never>[];
+                        /** @description The files sent: name, the type their bytes show, size in bytes. Curviate keeps no file. */
+                        attachments?: {
+                            filename?: string;
+                            content_type?: string;
+                            size?: number;
+                        }[];
                         /** @description The Mailbox it went from. */
                         mailbox_id: string;
+                        /** @description Present only when the receiving server refused some Cc or Bcc addresses while it took the Lead's: code recipients_refused, the addresses that got nothing. The email went to everyone else; cc and bcc list only who received it. */
+                        warnings?: {
+                            /** @enum {string} */
+                            code?: "recipients_refused";
+                            addresses?: string[];
+                            message?: string;
+                        }[];
                     };
                 };
             };
-            /** @description INVALID_REQUEST: text is missing or over 10,000 characters; a to field (it always goes to the Lead); a new thread without subject; mailbox_id is not one of the conversation's Mailboxes, or names another Mailbox than a reply's thread (start a new thread to use another), or is missing while more than one can send; thread_id is not a thread of this conversation. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: text is missing or over 10,000 characters; a to field (it always goes to the Lead); a new thread without subject; mailbox_id is not one of the conversation's Mailboxes, or names another Mailbox than a reply's thread (start a new thread to use another), or is missing while more than one can send; thread_id is not a thread of this conversation; a Cc or Bcc that is not one email address (named with its index, cc[1]), or more than 20 addresses in Cc and Bcc together; an attachment that is not base64 or has no file name. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -23536,7 +23560,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description MAILBOX_STATE_CONFLICT: the Mailbox cannot send: it needs reconnecting, is paused, or has sent its daily limit. The message names the state and the ways on: a new thread from another Mailbox, or a LinkedIn reply. Nothing was sent. */
+            /** @description MAILBOX_STATE_CONFLICT: the Mailbox cannot send: it needs reconnecting, is paused, or has sent its daily limit. The message names the state and the ways on: a new thread from another Mailbox, or a LinkedIn reply. Nothing was sent. DO_NOT_CONTACT: a Cc or Bcc address is a Lead of yours on the Do-not-contact list or opted out of email (the message names it, cc[0]); nothing was sent. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -23545,8 +23569,17 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Payload too large, the request body exceeds the size limit. */
+            /** @description PAYLOAD_TOO_LARGE: the attachments total more than 20 MiB decoded (the message names the total and the limit), or the request body is larger than this route reads. Nothing was sent. */
             413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description UNSUPPORTED_MEDIA_TYPE: an attachment is an executable, a script or a macro-enabled Office file, by its name, its type or its bytes. Nothing was sent. */
+            415: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -23575,7 +23608,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description PLATFORM_ERROR: the Mailbox's provider did not take the email. Nothing was sent and the daily limit was given back. */
+            /** @description PLATFORM_ERROR: the Mailbox's provider did not take the email. Nothing was sent and the daily limit was given back; the Lead's own address refused stops the whole email, Cc and Bcc included. retry_likely_to_succeed is false when the provider refused this email itself (its content or files): sent again unchanged, it is refused again. reason outcome_unknown: the provider stopped answering after it had the whole email, so it may have been sent; it is kept in the conversation as sent with outcome_unknown true, the daily limit stays spent. Do not send it again. */
             502: {
                 headers: {
                     [name: string]: unknown;

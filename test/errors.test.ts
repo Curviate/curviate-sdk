@@ -431,3 +431,20 @@ describe("entitlement taxonomy after the tier retirement", () => {
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 const _errorCodeMatchesArray: Same<ErrorCode, (typeof ERROR_CODES)[number]> = true;
 void _errorCodeMatchesArray;
+
+describe("outcomeUnknown: a send that may have happened", () => {
+  it("reads reason outcome_unknown off a 502, and only that", async () => {
+    const { http, HttpResponse } = await import("msw");
+    const { server } = await import("./msw/server.js");
+    const { Curviate, CurviateError } = await import("../src/index.js");
+    const c = new Curviate({ apiKey: "cvt_test_ou", baseUrl: "https://app.curviate.test", maxRetries: 0 });
+    let reason: string | undefined = "outcome_unknown";
+    server.use(http.post("https://app.curviate.test/v1/unibox/conversations/cnv_1/emails", () =>
+      HttpResponse.json({ code: "PLATFORM_ERROR", message: "may have been sent", user_fixable: false, retry_likely_to_succeed: false, ...(reason ? { reason } : {}) }, { status: 502 })));
+    const send = () => c.unibox.sendEmail("cnv_1", { text: "Hi", thread_id: "thr_1" }).then(() => null, (e: unknown) => e);
+    const unknown = (await send()) as InstanceType<typeof CurviateError>;
+    expect([unknown.code, unknown.outcomeUnknown, unknown.retryLikelyToSucceed, unknown.toJSON().outcomeUnknown]).toEqual(["PLATFORM_ERROR", true, false, true]);
+    reason = undefined;
+    expect(((await send()) as InstanceType<typeof CurviateError>).outcomeUnknown).toBe(false);
+  });
+});

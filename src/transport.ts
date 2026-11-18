@@ -224,6 +224,7 @@ async function errorFromResponse(res: Response): Promise<{ err: CurviateError; r
     retryHint: toRetryHint(env?.retry_hint),
     userFixable: env?.user_fixable ?? false,
     retryLikelyToSucceed: env?.retry_likely_to_succeed ?? false,
+    ...(env?.reason === "outcome_unknown" ? { outcomeUnknown: true } : {}),
     ...(retryAfterMs !== undefined ? { retryAfterMs } : {}),
     ...(typeof env?.row === "string" ? { budgetRow: env.row } : {}),
     // `retry_after` is DELIBERATELY NOT folded into `retryAfterMs`. Everything

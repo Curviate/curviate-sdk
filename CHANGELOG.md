@@ -9,7 +9,7 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [0.54.0] - 2026-11-18
 
-Regenerated `fixtures/openapi.json` and the generated types from the production document (`fixtures/PROVENANCE.json`, server commit `ba87aad99`); the Sequence validator and its corpus re-vendored from the same tree. Nothing narrows: every change below adds a method, a field, a filter or a union member.
+Regenerated `fixtures/openapi.json` and the generated types from the document the server tree at `81de39f1e` serves (`fixtures/PROVENANCE.json`: built locally, because no deployed environment carried the Cc, Bcc and files of an email from a conversation yet; re-check with `check:types` against the deployed document before the publish); the Sequence validator and its corpus re-vendored from the same tree. Nothing narrows: every change below adds a method, a field, a filter or a union member.
 
 ### Wider unions
 
@@ -44,6 +44,13 @@ An exhaustive `switch` must handle: `CurviateEvent` gains the eight `signal` eve
 - **`unibox.sendEmail(conversationId, { text, thread_id? | subject, mailbox_id? })`**: one plain-text email to the conversation's Lead, a reply in a thread or a new thread. One HTTP call, never retried: a retry after a timeout can send twice. `EMAIL_UNAVAILABLE` (422, with `reason`) when email is not available.
 - **`unibox.markConversation(conversationId, { read })`**: read or unread, the LinkedIn chat on LinkedIn and the email in Curviate. A conversation carries `marks` and `email.to`.
 - **`unibox.referralSearch(messageId, { name? })`** and **`unibox.referralConfirm(messageId, { provider_id | linkedin_url })`** for a reply labelled Referral; `NOT_A_REFERRAL` (409) otherwise.
+
+### Email from a conversation: Cc, Bcc, files, and an unknown outcome
+
+- `unibox.sendEmail` takes `cc`, `bcc` (at most 20 addresses together) and `attachments` (`{filename, content_type, content}` base64, at most 10, 20 MiB in all). The answer may carry `warnings: [{ code: "recipients_refused", addresses }]`: those Cc or Bcc addresses got nothing, everyone else did.
+- **`CurviateError.outcomeUnknown`**: `true` on `reason: "outcome_unknown"` (the provider stopped answering after it had the whole email: it may have been sent, and is kept as sent). Never send it again.
+- `unibox.unreadCount()` counts conversations, LinkedIn and email alike.
+- **Fixed:** `billing.switchPeriod()` sends `{ to: "annual" }`, which the route requires (it answered 400 before).
 
 ### Mailbox warm-up, email analytics, one Lead per company
 

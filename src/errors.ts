@@ -743,6 +743,8 @@ export interface CurviateErrorInit {
   safetyHint?: SafetyHint;
   /** Which safety rule refused, on a `BUDGET_EXHAUSTED`. Wire field `reason`. */
   safetyReason?: SafetyReason;
+  /** `reason: "outcome_unknown"` on the wire: the message may have been sent; never send it again. */
+  outcomeUnknown?: boolean;
   /**
    * Whether the action was refused. Wire field `blocked`; always `true` on a
    * `BUDGET_EXHAUSTED`, because the action did not happen and spent nothing.
@@ -813,6 +815,7 @@ export interface CurviateErrorJSON {
   blocked?: boolean;
   connectionLocation?: ConnectionLocation;
   errors?: CurviateErrorDetail[];
+  outcomeUnknown?: boolean;
   current?: SequenceConflictCurrent;
   feature?: TierFeature | (string & {});
   requiredTier?: TierName | (string & {}) | null;
@@ -869,6 +872,12 @@ export class CurviateError extends Error {
   readonly upgradeUrl: string | undefined;
   /** Per-code structured details. See {@link CurviateErrorDetails}. */
   readonly details: CurviateErrorDetails | undefined;
+  /**
+   * `true` when the API says the outcome is unknown (`reason: "outcome_unknown"`): the provider stopped answering after
+   * it had the whole message, so it may have been sent (an email from a conversation, `unibox.sendEmail`). Never send it
+   * again: read the conversation first. `false` otherwise.
+   */
+  readonly outcomeUnknown: boolean;
 
   constructor(init: CurviateErrorInit) {
     super(init.message);
@@ -883,6 +892,7 @@ export class CurviateError extends Error {
     this.resetAt = init.resetAt;
     this.safetyHint = init.safetyHint;
     this.safetyReason = init.safetyReason;
+    this.outcomeUnknown = init.outcomeUnknown === true;
     this.blocked = init.blocked;
     this.connectionLocation = init.connectionLocation;
     this.errors = init.errors;
@@ -922,6 +932,7 @@ export class CurviateError extends Error {
     if (this.resetAt !== undefined) json.resetAt = this.resetAt;
     if (this.safetyHint !== undefined) json.safetyHint = this.safetyHint;
     if (this.safetyReason !== undefined) json.safetyReason = this.safetyReason;
+    if (this.outcomeUnknown) json.outcomeUnknown = true;
     if (this.blocked !== undefined) json.blocked = this.blocked;
     if (this.connectionLocation !== undefined) json.connectionLocation = this.connectionLocation;
     if (this.errors !== undefined) json.errors = this.errors;
