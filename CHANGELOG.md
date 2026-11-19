@@ -9,7 +9,7 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [0.54.0] - 2026-11-18
 
-Regenerated `fixtures/openapi.json` and the generated types from the document staging serves at `bda8d49f8` (`fixtures/PROVENANCE.json`); the Sequence validator and its corpus re-vendored. Nothing narrows: every change below adds a method, a field, a filter or a union member.
+Regenerated `fixtures/openapi.json` and the generated types from the document staging serves at `e3aae783d` (`fixtures/PROVENANCE.json`); the Sequence validator and its corpus re-vendored. Nothing narrows: every change below adds a method, a field, a filter or a union member.
 
 ### Wider unions
 
@@ -20,6 +20,9 @@ An exhaustive `switch` must handle: `CurviateEvent` gains the eight `signal` eve
 - **`mailboxes.placementTests.run(mailboxId, { subject, body })`** sends your exact email from the Mailbox to 12 test inboxes at four providers and reads where each copy lands; **`list(mailboxId)`** and **`get(mailboxId, testId)`** read the tests, a verdict per provider (`inbox`, `partly_spam`, `spam`) and the Team's allowance `{ used, total, resets_at }` (10 per paid seat a month).
 - New codes `PLACEMENT_TEST_ALLOWANCE_EXHAUSTED` (429, never retried: the allowance is monthly) and `PLACEMENT_TESTS_UNAVAILABLE` (503).
 - **`campaigns.placementChecks(campaignId)`**: the Campaign's weekly placement checks.
+- The Mailbox read carries `reputation` (0 to 100, or `null` while gathering: never render it as 0); warm-up `reason` gains `paused_by_curviate`; Notification types gain `domain.mx_failing`.
+- `mailboxes.remove` on a Mailbox from Curviate: Owners only, its charge stops at the period's end; `409 MAILBOX_STATE_CONFLICT` "still settling with billing" is never retried in a loop.
+- Every connect and reconnect answer of `auth.intent` carries `seat_id` (and the deprecated `attached_seat_id`, same value).
 - An order's `state` and `reason` are documented on `mailboxes.purchases.get`: `provisioning` (charged, being set up), `cancelled` with `host_failed` (setting up failed, the charge undone in full): neither is a cue to retry or order again.
 - The Sequence builder types `attachment_ids` on `email.send` (it refused them at compile time before; files are uploaded first with `campaigns.attachments.upload`).
 - The Mailbox read carries `landing { google, microsoft, other, read_at }`: where its own warm-up mail lands per receiving provider over 7 days, a verdict (`inbox`, `partly_spam`, `spam`, `gathering`), never a count.

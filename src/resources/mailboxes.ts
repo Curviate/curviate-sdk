@@ -242,14 +242,16 @@ export class MailboxesResource {
    * Mailbox builds a sending history; `{ enabled: false }` turns it off. The
    * read carries `warm_up { enabled, days, day, state, reason }`. Owners and
    * Managers change any Mailbox; a Member only the ones they connected.
+   * `reputation` is a whole number 0 to 100, or `null` while there is not
+   * enough to say (show "gathering", never 0).
    * The read also carries `landing { google, microsoft, other, read_at }`:
    * where this Mailbox's own warm-up mail lands per receiving provider over the
    * last 7 days, a verdict (`inbox`, `partly_spam`, `spam`, or `gathering`
    * while there is not enough to say), never a count. Show the verdict as
    * served; there is nothing to compute from it.
    * `state` is `off`, `warming` (day N of the days picked) or `waiting`: on but
-   * not running now, its day held; `reason` says why (`reconnect_needed`,
-   * `trial`, `app_password`, `warm_up_app`, `allowance`).
+   * not running now, its day held; `reason` says why (`paused_by_curviate`,
+   * `reconnect_needed`, `trial`, `app_password`, `warm_up_app`, `allowance`).
    * `PATCH /v1/mailboxes/{id}`
    *
    * @example
@@ -298,7 +300,12 @@ export class MailboxesResource {
 
   /**
    * Remove a Mailbox and delete its stored credentials in one step. It changes
-   * no seat count. A Member removes only a Mailbox they connected.
+   * no seat count. A Member removes only a Mailbox they connected. A Mailbox
+   * from Curviate is an Owner's to remove (`403 INSUFFICIENT_ROLE` otherwise);
+   * it is deleted with its mail, and its $5 a month stops at the end of the
+   * billing period. `409 MAILBOX_STATE_CONFLICT` "Too many Mailbox changes are
+   * still settling with billing" means nothing was changed: try again later,
+   * never in a loop.
    * `DELETE /v1/mailboxes/{id}`
    *
    * @example
