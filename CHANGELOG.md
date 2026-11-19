@@ -9,7 +9,7 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [0.57.0] - 2026-11-20
 
-Docs only; no method, field or type changes. `fixtures/openapi.json` and the generated types are refreshed from the served document (recorded in `fixtures/PROVENANCE.json`).
+Docs only; no method, field or type changes. `fixtures/openapi.json` and the generated types are refreshed from the served document (production `c17f1b853`, recorded in `fixtures/PROVENANCE.json`): descriptions only in the types; the fixture's `TIER_REQUIRED` examples now show `current_tier: null`, what a refusal returns.
 
 - **The docs say the plan, never a Tier**: one plan includes every feature. The `TIER_REQUIRED` fields say what they hold: `requiredTier` is `"automate"`, the plan's code; `currentTier` is `null` without a subscription; `upgradeUrl` is where an Owner subscribes. `tier.get()` says whether the Team holds the plan (`tier` is `"automate"`, or `null`). The README's "Tiers" section is now "The plan", and its example no longer prints a code as a product name; it also drops `pending`, a field the server does not serve.
 - The generated types carry the server's reworded descriptions (the `TIER_REQUIRED` fields, `GET /v1/billing/tier`, seats, teams, the Unibox, Network, incoming events, Enrollments, voice clips and attachments, `save_connections_as_leads`). Wire names and values are unchanged: `TIER_REQUIRED`, `required_tier`, `current_tier`, `curviate.tier`, `TierName`. The previous prices keep their names in `billing.moveToCurrentPrice`.
