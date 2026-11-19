@@ -1,6 +1,6 @@
 /**
  * Mailboxes resource: 7 methods (root-scoped), `curviate.mailboxes`, with
- * `curviate.mailboxes.placementTests` (3) and `curviate.mailboxes.purchases` (4).
+ * `curviate.mailboxes.placementTests` (3) and `curviate.mailboxes.purchases` (5).
  *
  * A Mailbox is an email address your Team sends from. Connecting one is a
  * Connect request (`curviate.connectRequests.create({ mailbox: ... })`): there
@@ -162,6 +162,22 @@ export class MailboxPurchasesResource {
   check(purchaseId: string): Promise<MailboxPurchase> {
     return this.ctx.request<MailboxPurchase>({ method: "POST", path: apiPath`/v1/mailboxes/purchases/${purchaseId}/check` });
   }
+
+  /**
+   * Cancel an order still waiting for its records: nothing was charged, so
+   * nothing is refunded. An order being charged, being set up, active or
+   * cancelled answers `409 MAILBOX_PURCHASE_STATE_CONFLICT` and stays as it
+   * is. While a charge is under way that answer is neither a failure to retry
+   * nor a cancellation: read the order again in a few minutes with `get`.
+   * Owners only. One HTTP call, never retried.
+   * `DELETE /v1/mailboxes/purchases/{id}`
+   *
+   * @example
+   * const { state } = await curviate.mailboxes.purchases.cancel("mpu_123"); // "cancelled"
+   */
+  cancel(purchaseId: string): Promise<MailboxPurchase> {
+    return this.ctx.request<MailboxPurchase>({ method: "DELETE", path: apiPath`/v1/mailboxes/purchases/${purchaseId}` });
+  }
 }
 
 export class MailboxesResource {
@@ -220,6 +236,11 @@ export class MailboxesResource {
    * Mailbox builds a sending history; `{ enabled: false }` turns it off. The
    * read carries `warm_up { enabled, days, day, state, reason }`. Owners and
    * Managers change any Mailbox; a Member only the ones they connected.
+   * The read also carries `landing { google, microsoft, other, read_at }`:
+   * where this Mailbox's own warm-up mail lands per receiving provider over the
+   * last 7 days, a verdict (`inbox`, `partly_spam`, `spam`, or `gathering`
+   * while there is not enough to say), never a count. Show the verdict as
+   * served; there is nothing to compute from it.
    * `state` is `off`, `warming` (day N of the days picked) or `waiting`: on but
    * not running now, its day held; `reason` says why (`reconnect_needed`,
    * `trial`, `app_password`, `warm_up_app`, `allowance`).

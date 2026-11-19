@@ -404,6 +404,10 @@ export const ERROR_CODES = [
   //   another Team's id answers the same.
   // - `MAILBOX_PURCHASE_PENDING` (409): this domain already has an order of
   //   your Team waiting for its records; its `id` is in the error.
+  // - `MAILBOX_PURCHASE_STATE_CONFLICT` (409): `cancel` on an order no longer
+  //   waiting for its records (being charged, being set up, active or
+  //   cancelled); the message names its state. During a charge, read the
+  //   order again later; never retry the cancel.
   // - `MAILBOX_PURCHASE_TRIAL` (403): a Team on a trial cannot order.
   // - `DOMAIN_IN_USE` (409): the domain already has Mailboxes from Curviate or
   //   an order; name another domain.
@@ -413,6 +417,7 @@ export const ERROR_CODES = [
   "MAILBOX_PURCHASE_NOT_FOUND",
   "MAILBOX_PURCHASE_PENDING",
   "MAILBOX_PURCHASE_TRIAL",
+  "MAILBOX_PURCHASE_STATE_CONFLICT",
   "DOMAIN_IN_USE",
   "DOMAIN_IS_COMPANY_EMAIL",
   "MAILBOX_SALES_PAUSED",
