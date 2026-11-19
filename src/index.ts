@@ -43,6 +43,8 @@ export type {
   AccountOverviewParams,
   AccountOverview,
   TeamSafetyPolicy,
+  SafetyEventListParams,
+  SafetyEventListPage,
   TeamSafetyPolicyUpdateBody,
   TeamSafetyPolicyUpdateResult,
 } from "./resources/accounts.js";
