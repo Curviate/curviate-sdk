@@ -206,6 +206,10 @@ export class AuthResource {
    * where it was. The account's time zone follows its connection location;
    * `timezone` is deprecated and ignored.
    *
+   * Every connected or reconnected answer carries `seat_id`, the seat the
+   * account occupies (a reconnect keeps it; null for an admin seatless
+   * account); `attached_seat_id` is the same value, deprecated.
+   *
    * Warm-up is off by default: a new account gets full limits from the start.
    * `warm_up: true` connects a NEW account with warm-up on (the Gradual ramp:
    * 30% of its limits on day 1, rising to 100% on day 14 of its sending days); recovery after a LinkedIn restriction

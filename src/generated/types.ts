@@ -28918,7 +28918,7 @@ export interface operations {
                             object: "curviate_notification";
                             /** @description Notification id (ntf_...). Valid for you only. */
                             id: string;
-                            /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, account.campaign_work_paused, account.health_worsened, account.activity_level_fallback, campaign.auto_paused, campaign.no_sending_account, campaign.completed, leads.import_finished, export.finished, billing.spending_cap_reached, mailbox.auto_paused, mailbox.provider_paused, mailbox.reconnect_needed, domain.dmarc_missing, domain.dkim_failing, provider.spam_high, account.no_mailbox, mailbox.warm_up_off, campaign.variant_behind, campaign.emails_too_close, team.invite_accepted, team.member_left. Advice arrives already read and never counts as unread: mailbox.warm_up_off, campaign.variant_behind, campaign.emails_too_close. */
+                            /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, account.campaign_work_paused, account.health_worsened, account.activity_level_fallback, campaign.auto_paused, campaign.no_sending_account, campaign.completed, leads.import_finished, export.finished, billing.spending_cap_reached, mailbox.auto_paused, mailbox.provider_paused, mailbox.reconnect_needed, domain.mx_failing, domain.dmarc_missing, domain.dkim_failing, provider.spam_high, account.no_mailbox, mailbox.warm_up_off, campaign.variant_behind, campaign.emails_too_close, team.invite_accepted, team.member_left. Advice arrives already read and never counts as unread: mailbox.warm_up_off, campaign.variant_behind, campaign.emails_too_close. */
                             type: string;
                             /**
                              * @description Where it comes from: email (a Mailbox, a sending domain or an email step), linkedin (an account's LinkedIn trouble) or team (everything else).
@@ -29185,7 +29185,7 @@ export interface operations {
                         object: "curviate_notification";
                         /** @description Notification id (ntf_...). Valid for you only. */
                         id: string;
-                        /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, account.campaign_work_paused, account.health_worsened, account.activity_level_fallback, campaign.auto_paused, campaign.no_sending_account, campaign.completed, leads.import_finished, export.finished, billing.spending_cap_reached, mailbox.auto_paused, mailbox.provider_paused, mailbox.reconnect_needed, domain.dmarc_missing, domain.dkim_failing, provider.spam_high, account.no_mailbox, mailbox.warm_up_off, campaign.variant_behind, campaign.emails_too_close, team.invite_accepted, team.member_left. Advice arrives already read and never counts as unread: mailbox.warm_up_off, campaign.variant_behind, campaign.emails_too_close. */
+                        /** @description What happened. An open list: new values may be added, so tolerate ones you do not know. Today: account.reconnect_needed, account.restricted, account.keep_connected_failed, account.campaign_work_paused, account.health_worsened, account.activity_level_fallback, campaign.auto_paused, campaign.no_sending_account, campaign.completed, leads.import_finished, export.finished, billing.spending_cap_reached, mailbox.auto_paused, mailbox.provider_paused, mailbox.reconnect_needed, domain.mx_failing, domain.dmarc_missing, domain.dkim_failing, provider.spam_high, account.no_mailbox, mailbox.warm_up_off, campaign.variant_behind, campaign.emails_too_close, team.invite_accepted, team.member_left. Advice arrives already read and never counts as unread: mailbox.warm_up_off, campaign.variant_behind, campaign.emails_too_close. */
                         type: string;
                         /**
                          * @description Where it comes from: email (a Mailbox, a sending domain or an email step), linkedin (an account's LinkedIn trouble) or team (everything else).
@@ -39824,6 +39824,13 @@ export interface operations {
                         account_id?: string;
                         /** @enum {string} */
                         status?: "active";
+                        /** @description The seat this account occupies, unchanged by a reconnect (null for an admin seatless account). */
+                        seat_id?: string | null;
+                        /**
+                         * @deprecated
+                         * @description Deprecated, use seat_id (same value). Removed at the GA /v1 cutover.
+                         */
+                        attached_seat_id?: string | null;
                         /** @description Your own id for this account's end user, as set on connect or PATCH. Null when none. Not unique. */
                         external_id?: string | null;
                         /** @description Present only when recruiter_contract_id was sent: true once that contract is active on the account; false when the account is connected but the contract could not be selected. */
@@ -49214,7 +49221,7 @@ export interface operations {
                                  * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (a Microsoft Mailbox: connect the Curviate Warm-up app for it again), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added).
                                  * @enum {string|null}
                                  */
-                                reason: "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
+                                reason: "paused_by_curviate" | "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
                             };
                             /** @description Where this Mailbox's warm-up mail lands, per receiving provider, over the last 7 days: `inbox`, `partly_spam`, `spam`, or `gathering` while there is not enough to say. `read_at` is the last reading counted. Its own warm-up only; a verdict, never a count. */
                             landing: {
@@ -49227,6 +49234,8 @@ export interface operations {
                                 /** Format: date-time */
                                 read_at: string | null;
                             };
+                            /** @description This Mailbox's reputation, 0 to 100: where its warm-up and test mail landed over the last 7 days, its domain setup, its bounces and how long it has been warming. Updated each night and when a placement test completes; null while there is not enough evidence yet. */
+                            reputation: number | null;
                         }[];
                         cursor?: string | null;
                     };
@@ -49375,7 +49384,7 @@ export interface operations {
                              * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (a Microsoft Mailbox: connect the Curviate Warm-up app for it again), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added).
                              * @enum {string|null}
                              */
-                            reason: "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
+                            reason: "paused_by_curviate" | "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
                         };
                         /** @description Where this Mailbox's warm-up mail lands, per receiving provider, over the last 7 days: `inbox`, `partly_spam`, `spam`, or `gathering` while there is not enough to say. `read_at` is the last reading counted. Its own warm-up only; a verdict, never a count. */
                         landing: {
@@ -49388,6 +49397,8 @@ export interface operations {
                             /** Format: date-time */
                             read_at: string | null;
                         };
+                        /** @description This Mailbox's reputation, 0 to 100: where its warm-up and test mail landed over the last 7 days, its domain setup, its bounces and how long it has been warming. Updated each night and when a placement test completes; null while there is not enough evidence yet. */
+                        reputation: number | null;
                     };
                 };
             };
@@ -49645,7 +49656,7 @@ export interface operations {
                              * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (a Microsoft Mailbox: connect the Curviate Warm-up app for it again), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added).
                              * @enum {string|null}
                              */
-                            reason: "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
+                            reason: "paused_by_curviate" | "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
                         };
                         /** @description Where this Mailbox's warm-up mail lands, per receiving provider, over the last 7 days: `inbox`, `partly_spam`, `spam`, or `gathering` while there is not enough to say. `read_at` is the last reading counted. Its own warm-up only; a verdict, never a count. */
                         landing: {
@@ -49658,6 +49669,8 @@ export interface operations {
                             /** Format: date-time */
                             read_at: string | null;
                         };
+                        /** @description This Mailbox's reputation, 0 to 100: where its warm-up and test mail landed over the last 7 days, its domain setup, its bounces and how long it has been warming. Updated each night and when a placement test completes; null while there is not enough evidence yet. */
+                        reputation: number | null;
                     };
                 };
             };
@@ -49822,7 +49835,7 @@ export interface operations {
                              * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (a Microsoft Mailbox: connect the Curviate Warm-up app for it again), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added).
                              * @enum {string|null}
                              */
-                            reason: "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
+                            reason: "paused_by_curviate" | "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
                         };
                         /** @description Where this Mailbox's warm-up mail lands, per receiving provider, over the last 7 days: `inbox`, `partly_spam`, `spam`, or `gathering` while there is not enough to say. `read_at` is the last reading counted. Its own warm-up only; a verdict, never a count. */
                         landing: {
@@ -49835,6 +49848,8 @@ export interface operations {
                             /** Format: date-time */
                             read_at: string | null;
                         };
+                        /** @description This Mailbox's reputation, 0 to 100: where its warm-up and test mail landed over the last 7 days, its domain setup, its bounces and how long it has been warming. Updated each night and when a placement test completes; null while there is not enough evidence yet. */
+                        reputation: number | null;
                     };
                 };
             };
@@ -49999,7 +50014,7 @@ export interface operations {
                              * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (a Microsoft Mailbox: connect the Curviate Warm-up app for it again), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added).
                              * @enum {string|null}
                              */
-                            reason: "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
+                            reason: "paused_by_curviate" | "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
                         };
                         /** @description Where this Mailbox's warm-up mail lands, per receiving provider, over the last 7 days: `inbox`, `partly_spam`, `spam`, or `gathering` while there is not enough to say. `read_at` is the last reading counted. Its own warm-up only; a verdict, never a count. */
                         landing: {
@@ -50012,6 +50027,8 @@ export interface operations {
                             /** Format: date-time */
                             read_at: string | null;
                         };
+                        /** @description This Mailbox's reputation, 0 to 100: where its warm-up and test mail landed over the last 7 days, its domain setup, its bounces and how long it has been warming. Updated each night and when a placement test completes; null while there is not enough evidence yet. */
+                        reputation: number | null;
                     };
                 };
             };
@@ -66220,6 +66237,22 @@ export interface operations {
                                 /** @description With compare=previous_period: rate - previous rate on the raw rates, 4 decimals; null when either rate is null. */
                                 delta?: number | null;
                             };
+                            /** @description Its warm-up, as GET /v1/mailboxes/{id} serves it. */
+                            warm_up: {
+                                /** @description Warm-up switched on. */
+                                enabled: boolean;
+                                /** @description The warm-up period chosen, in days; null while off. */
+                                days: number | null;
+                                /** @description Which day of that period it is; null while off. */
+                                day: number | null;
+                                /**
+                                 * @description off, warming, or waiting to start (reason says why).
+                                 * @enum {string}
+                                 */
+                                state: "off" | "warming" | "waiting";
+                                /** @description Why it waits; null otherwise. */
+                                reason: string | null;
+                            };
                         }[];
                         /** @description With include=domains: the sending domains of those Mailboxes, by name. */
                         domains?: {
@@ -66248,6 +66281,69 @@ export interface operations {
                             /** @description Blocklists a receiver named in a bounce of this domain's mail. */
                             blocklists: string[];
                         }[];
+                        /** @description With include=landing: where mail lands, three readings kept apart, a verdict per receiving provider, never a count. Receivers do not report where a Lead's email landed, so there is no inbox rate for Campaign mail; these readings stand in for it. */
+                        landing?: {
+                            /** @description Warm-up mail between Mailboxes, the last 7 days, over the Mailboxes in scope with warm-up on. */
+                            warm_up: {
+                                /**
+                                 * @description inbox, partly_spam or spam; gathering while there is not enough to judge.
+                                 * @enum {string}
+                                 */
+                                google: "inbox" | "partly_spam" | "spam" | "gathering";
+                                /**
+                                 * @description inbox, partly_spam or spam; gathering while there is not enough to judge.
+                                 * @enum {string}
+                                 */
+                                microsoft: "inbox" | "partly_spam" | "spam" | "gathering";
+                                /**
+                                 * @description inbox, partly_spam or spam; gathering while there is not enough to judge.
+                                 * @enum {string}
+                                 */
+                                other: "inbox" | "partly_spam" | "spam" | "gathering";
+                                /** @description The hour the newest of these reads was made (UTC); null when none. */
+                                read_at: string | null;
+                            };
+                            /** @description The newest weekly check of a Campaign's email from a Mailbox in scope, the last 30 days. */
+                            weekly_check: {
+                                /**
+                                 * @description inbox, partly_spam or spam; gathering while there is not enough to judge.
+                                 * @enum {string}
+                                 */
+                                google_workspace: "inbox" | "partly_spam" | "spam" | "gathering";
+                                /**
+                                 * @description inbox, partly_spam or spam; gathering while there is not enough to judge.
+                                 * @enum {string}
+                                 */
+                                microsoft_365: "inbox" | "partly_spam" | "spam" | "gathering";
+                                /** @description When that check finished (UTC); null when none. */
+                                completed_at: string | null;
+                            };
+                            /** @description The newest test you ran from a Mailbox in scope, the last 30 days. */
+                            tests: {
+                                /**
+                                 * @description inbox, partly_spam or spam; gathering while there is not enough to judge.
+                                 * @enum {string}
+                                 */
+                                google_workspace: "inbox" | "partly_spam" | "spam" | "gathering";
+                                /**
+                                 * @description inbox, partly_spam or spam; gathering while there is not enough to judge.
+                                 * @enum {string}
+                                 */
+                                microsoft_365: "inbox" | "partly_spam" | "spam" | "gathering";
+                                /**
+                                 * @description inbox, partly_spam or spam; gathering while there is not enough to judge.
+                                 * @enum {string}
+                                 */
+                                gmail: "inbox" | "partly_spam" | "spam" | "gathering";
+                                /**
+                                 * @description inbox, partly_spam or spam; gathering while there is not enough to judge.
+                                 * @enum {string}
+                                 */
+                                outlook_com: "inbox" | "partly_spam" | "spam" | "gathering";
+                                /** @description When that test finished (UTC); null when none. */
+                                completed_at: string | null;
+                            };
+                        };
                         /** @description With include=forecast: the emails your Campaigns' email steps are expected to send, per day from today, over the accounts you can see. Each Mailbox counts its daily cap (the lowered cap where Curviate lowered it); a Mailbox shared by several accounts' Campaigns counts its cap once across them; a paused Mailbox, or one to reconnect, counts nothing. Sends only: replies are not forecast. */
                         forecast?: {
                             /**
@@ -66271,7 +66367,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST: an unknown query parameter, a malformed or too long window (from:, to:, range:), an unknown zone (timezone:), more than 50 ids (campaign_id:, account_id:), or an include value other than weeks, breakdowns, mailboxes, domains or forecast (include:). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: an unknown query parameter, a malformed or too long window (from:, to:, range:), an unknown zone (timezone:), more than 50 ids (campaign_id:, account_id:), or an include value other than weeks, landing, breakdowns, mailboxes, domains or forecast (include:). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -66357,7 +66453,7 @@ export interface operations {
                         /** @description Items listed. */
                         count: number;
                         items: {
-                            /** @description The problem, a Notification type: mailbox.auto_paused, mailbox.provider_paused, mailbox.reconnect_needed, account.no_mailbox, domain.dmarc_missing, domain.dkim_failing, provider.spam_high, mailbox.warm_up_off, campaign.variant_behind, campaign.emails_too_close. More may be added. */
+                            /** @description The problem, a Notification type: mailbox.auto_paused, mailbox.provider_paused, mailbox.reconnect_needed, account.no_mailbox, domain.mx_failing, domain.dmarc_missing, domain.dkim_failing, provider.spam_high, mailbox.warm_up_off, campaign.variant_behind, campaign.emails_too_close. More may be added. */
                             kind: string;
                             subject: {
                                 /**
