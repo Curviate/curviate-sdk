@@ -9,7 +9,7 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [0.54.0] - 2026-11-18
 
-Regenerated `fixtures/openapi.json` and the generated types from the document staging serves at `4c1e6ef64`, built locally from that tree with one description corrected (the Campaign placement checks' read named an internal reference; the server fix ships with this release) (`fixtures/PROVENANCE.json`); the Sequence validator and its corpus re-vendored. Nothing narrows: every change below adds a method, a field, a filter or a union member.
+Regenerated `fixtures/openapi.json` and the generated types from the document staging serves at `53ae9b3ea` (`fixtures/PROVENANCE.json`); the Sequence validator and its corpus re-vendored. Nothing narrows: every change below adds a method, a field, a filter or a union member.
 
 ### Wider unions
 
@@ -28,7 +28,8 @@ An exhaustive `switch` must handle: `CurviateEvent` gains the eight `signal` eve
 
 ### Mailboxes from Curviate
 
-- **`mailboxes.purchases.create({ domain, mailboxes })`**, **`list({ state? })`** and **`get(id)`**: order Mailboxes on a domain your Team owns and read the order, its state and the five records to add. Today an order is placed by an Owner in the dashboard: `create` with an API key answers `401 UNAUTHORIZED`. New codes `MAILBOX_PURCHASE_NOT_FOUND`, `MAILBOX_PURCHASE_PENDING`, `MAILBOX_PURCHASE_TRIAL`, `DOMAIN_IN_USE`, `DOMAIN_IS_COMPANY_EMAIL`, `MAILBOX_SALES_PAUSED`.
+- **`mailboxes.purchases.create({ domain, mailboxes })`**, **`list({ state? })`**, **`get(id)`** and **`check(id)`**: order Mailboxes on a domain your Team owns, read the order, its state and the five records to add, and look the records up now (once a minute). Owners only. An order through an API key counts under the Team's cap on Mailboxes from Curviate (`billing.spendingCap()` reads `mailbox_cap`, set by an Owner in the dashboard): past it, `403 SPENDING_CAP_REACHED` and nothing is ordered. New codes `MAILBOX_PURCHASE_NOT_FOUND`, `MAILBOX_PURCHASE_PENDING`, `MAILBOX_PURCHASE_TRIAL`, `DOMAIN_IN_USE`, `DOMAIN_IS_COMPANY_EMAIL`, `MAILBOX_SALES_PAUSED`.
+- `billing.changes()` gains `mailbox_cap_change`; Mailbox warm-up `reason` `warm_up_app` also covers a Microsoft Mailbox whose Curviate Warm-up app needs connecting again.
 
 ### Email attachments
 

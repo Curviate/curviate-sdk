@@ -43,6 +43,7 @@ describe("Mailbox, Domain and Team-policy operations", () => {
     ["mailboxes.purchases.create", () => c.mailboxes.purchases.create({ domain: "acme-mail.example.test", mailboxes: [{ local_part: "anna", display_name: "Anna Weber", sends_for: { kind: "shared" } }] }), { method: "POST", path: "/v1/mailboxes/purchases", body: { domain: "acme-mail.example.test", mailboxes: [{ local_part: "anna", display_name: "Anna Weber", sends_for: { kind: "shared" } }] } }],
     ["mailboxes.purchases.list", () => c.mailboxes.purchases.list({ state: "awaiting_dns" }), { method: "GET", path: "/v1/mailboxes/purchases", query: "?state=awaiting_dns" }],
     ["mailboxes.purchases.get", () => c.mailboxes.purchases.get("mpu_1"), { method: "GET", path: "/v1/mailboxes/purchases/mpu_1" }],
+    ["mailboxes.purchases.check", () => c.mailboxes.purchases.check("mpu_1"), { method: "POST", path: "/v1/mailboxes/purchases/mpu_1/check" }],
     ["domains.check", () => c.domains.check("acme.example"), { method: "GET", path: "/v1/domains/acme.example/checks" }],
     ["domains.check now", () => c.domains.check("acme.example", { now: true }), { method: "POST", path: "/v1/domains/acme.example/checks" }],
     ["connectRequests.create mailbox", () => c.connectRequests.create({ mailbox }), { method: "POST", path: "/v1/auth/connect-requests", body: { mailbox } }],
@@ -75,7 +76,7 @@ describe("Mailbox, Domain and Team-policy operations", () => {
   it.each([
     ["PLACEMENT_TEST_ALLOWANCE_EXHAUSTED", 429, () => c.mailboxes.placementTests.run("mbx_1", { subject: "s", body: "b" })],
     ["PLACEMENT_TESTS_UNAVAILABLE", 503, () => c.mailboxes.placementTests.run("mbx_1", { subject: "s", body: "b" })],
-    ["UNAUTHORIZED", 401, () => c.mailboxes.purchases.create({ domain: "acme-mail.example.test", mailboxes: [{ local_part: "anna", display_name: "Anna" }] })],
+    ["SPENDING_CAP_REACHED", 403, () => c.mailboxes.purchases.create({ domain: "acme-mail.example.test", mailboxes: [{ local_part: "anna", display_name: "Anna" }] })],
     ["MAILBOX_SALES_PAUSED", 409, () => c.mailboxes.purchases.create({ domain: "acme-mail.example.test", mailboxes: [{ local_part: "anna", display_name: "Anna" }] })],
   ] as const)("%s (%i) decodes to itself after exactly one request, never retried", async (code, status, run) => {
     let calls = 0;
