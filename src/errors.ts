@@ -385,6 +385,38 @@ export const ERROR_CODES = [
   "MAILBOX_ADMIN_APPROVAL_REQUIRED",
   "MAILBOX_ADDRESS_MISMATCH",
 
+  // Placement tests (`mailboxes.placementTests.run`). Neither sends anything
+  // or draws from the allowance, and neither is retried by the client.
+  //
+  // - `PLACEMENT_TEST_ALLOWANCE_EXHAUSTED` (429): the Team's placement tests
+  //   this month are used (10 per paid seat, pooled; a trial has 0); the
+  //   message says when it resets, as does `placementTests.list`'s
+  //   `allowance.resets_at`. Not a rate limit:
+  //   waiting minutes does not help, a paid seat or the new month does.
+  // - `PLACEMENT_TESTS_UNAVAILABLE` (503): placement tests cannot run right
+  //   now.
+  "PLACEMENT_TEST_ALLOWANCE_EXHAUSTED",
+  "PLACEMENT_TESTS_UNAVAILABLE",
+
+  // Mailboxes from Curviate (`mailboxes.purchases`).
+  //
+  // - `MAILBOX_PURCHASE_NOT_FOUND` (404): no order with this id in your Team;
+  //   another Team's id answers the same.
+  // - `MAILBOX_PURCHASE_PENDING` (409): this domain already has an order of
+  //   your Team waiting for its records; its `id` is in the error.
+  // - `MAILBOX_PURCHASE_TRIAL` (403): a Team on a trial cannot order.
+  // - `DOMAIN_IN_USE` (409): the domain already has Mailboxes from Curviate or
+  //   an order; name another domain.
+  // - `DOMAIN_IS_COMPANY_EMAIL` (422): the domain your company email runs on;
+  //   use a separate domain.
+  // - `MAILBOX_SALES_PAUSED` (409): orders cannot be placed at the moment.
+  "MAILBOX_PURCHASE_NOT_FOUND",
+  "MAILBOX_PURCHASE_PENDING",
+  "MAILBOX_PURCHASE_TRIAL",
+  "DOMAIN_IN_USE",
+  "DOMAIN_IS_COMPANY_EMAIL",
+  "MAILBOX_SALES_PAUSED",
+
   // Seats and the Team's spending cap, from an agent's seat call.
   //
   // - `SPENDING_CAP_REACHED` (403): `billing` seat add (or a seat's

@@ -38,6 +38,7 @@ export type CampaignPreview = paths["/v1/campaigns/{id}/preview"]["get"]["respon
 export type CampaignStartBody = NonNullable<paths["/v1/campaigns/{id}/start"]["post"]["requestBody"]>["content"]["application/json"];
 /** The Lead check (`check`), also served as `lead_check` on the Campaign. */
 export type CampaignLeadCheck = paths["/v1/campaigns/{id}/check"]["post"]["responses"]["200"]["content"]["application/json"];
+export type CampaignPlacementChecks = paths["/v1/campaigns/{id}/placement-checks"]["get"]["responses"]["200"]["content"]["application/json"];
 export type SequenceVersionParams = NonNullable<paths["/v1/campaigns/{id}/sequence"]["get"]["parameters"]["query"]>;
 export type SequenceVersion = paths["/v1/campaigns/{id}/sequence"]["get"]["responses"]["200"]["content"]["application/json"];
 export type CampaignAddLeadsBody = NonNullable<paths["/v1/campaigns/{id}/leads"]["post"]["requestBody"]>["content"]["application/json"];
@@ -376,6 +377,23 @@ export class CampaignsResource {
    */
   check(campaignId: string): Promise<CampaignLeadCheck> {
     return this.ctx.request<CampaignLeadCheck>({ method: "POST", path: apiPath`/v1/campaigns/${campaignId}/check` });
+  }
+
+  /**
+   * The Campaign's weekly placement checks, newest first, at most 26: each
+   * calendar week its first email step, and each email step whose text
+   * changed that week, is sent from one of its Mailboxes and read like a
+   * placement test. Each item: `week` (its Monday), `mailbox_id`, `step_id`,
+   * `status` (`running`, `complete`, `waiting`, `skipped`), `reason`
+   * (`no_mailbox`, `cap`, `seeds`) and the `google_workspace` and
+   * `microsoft_365` verdicts (`inbox`, `partly_spam`, `spam`) once complete.
+   * `GET /v1/campaigns/{id}/placement-checks`
+   *
+   * @example
+   * const { items } = await curviate.campaigns.placementChecks("mot_123");
+   */
+  placementChecks(campaignId: string): Promise<CampaignPlacementChecks> {
+    return this.ctx.request<CampaignPlacementChecks>({ method: "GET", path: apiPath`/v1/campaigns/${campaignId}/placement-checks` });
   }
 
   /**

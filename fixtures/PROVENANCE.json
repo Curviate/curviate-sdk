@@ -1,8 +1,8 @@
 {
   "source_base_url": "http://127.0.0.1:18731",
-  "server_git_sha": "81de39f1ec3c8fd33aa337c82ae846fb56dc133c",
-  "fetched_at": "2026-11-18T19:00:09.880Z",
-  "paths": 264,
+  "server_git_sha": "4c1e6ef64ed52bc357b7bdc986d751c9597af3be",
+  "fetched_at": "2026-11-19T00:13:19.800Z",
+  "paths": 269,
   "servers_canonicalized": false,
   "note": "Written by scripts/refresh-fixture.mjs (pnpm gen:fixture). Do not hand-edit; refresh instead."
 }
