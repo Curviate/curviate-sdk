@@ -191,8 +191,8 @@ export interface PostPublishFailedPayload extends EventPayloadBase {
  * `emit` step is reached.
  *
  * `campaign.status_changed` carries `reason`, which is `tier_required` when the
- * Team lost the Tier that includes Campaigns: the Campaign reads `paused` with
- * `pause_reason: "tier_required"` until the Tier returns and you `resume` it.
+ * Team's subscription ended: the Campaign reads `paused` with
+ * `pause_reason: "tier_required"` until the Team subscribes again and you `resume` it.
  *
  * `account_id` is `null` on an event of no single account (`campaign.status_changed`,
  * and an `enrollment.skipped` with none assigned yet), which is why this does

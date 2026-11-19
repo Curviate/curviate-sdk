@@ -34,7 +34,7 @@ export class BillingSeatsResource {
 
   /**
    * Move an unused paid seat of this Team to another of your Teams, at no
-   * charge; it stays on this Team's invoice at its Tier. `seat_id` picks the
+   * charge; it stays on this Team's invoice at this Team's price. `seat_id` picks the
    * seat, or leave it out to lend the oldest unused one; each call lends one
    * more seat. Trial, occupied, unconfirmed, cancelling and already-lent seats
    * cannot move (`SEAT_NOT_FOUND`). The borrowing Team connects an Account

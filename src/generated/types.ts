@@ -5419,7 +5419,7 @@ export interface paths {
         };
         /**
          * List seats and billing summary
-         * @description Returns the Team's seats and billing state: each seat's status, Account and cost, the Tier bought, the next invoice, and trial state while the Team is on a free trial. A seat lent to another Team carries lent_to; a seat received from another Team carries lent_from. Owners only.
+         * @description Returns the Team's seats and billing state: each seat's status, Account and cost, the subscription's price code, the next invoice, and trial state while the Team is on a free trial. A seat lent to another Team carries lent_to; a seat received from another Team carries lent_from. Owners only.
          */
         get: operations["getV1BillingSeats"];
         put?: never;
@@ -5501,7 +5501,7 @@ export interface paths {
         put?: never;
         /**
          * Lend a seat to another Team
-         * @description Moves an unused paid seat of this Team to another of your Teams at no charge. It stays on this Team's invoice at its Tier. Only the Owner who pays for both Teams may lend. Trial, occupied, unconfirmed, cancelling and lent seats can't move. Each call lends one more seat.
+         * @description Moves an unused paid seat of this Team to another of your Teams at no charge. It stays on this Team's invoice at this Team's price. Only the Owner who pays for both Teams may lend. Trial, occupied, unconfirmed, cancelling and lent seats can't move. Each call lends one more seat.
          */
         post: operations["postV1BillingSeatsLend"];
         delete?: never;
@@ -5578,7 +5578,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Retrieve the Team's Tier
+         * Retrieve the Team's plan
          * @description Returns whether the Team holds the plan now and where it comes from: its subscription, the free trial while it runs, or a grant from Curviate, with the features included. Holding the plan includes every feature. Any member can read it. It reports no prices. A Team's first call starts its free trial when one is due.
          */
         get: operations["getV1BillingTier"];
@@ -5798,13 +5798,13 @@ export interface components {
             }[];
             /** @description Present on PAYMENT_REQUIRED and ACCOUNT_DISPUTED: the self-service page where the tenant resolves the payment problem, so an agent can hand a human one link. Null when no portal session could be opened; fall back to the dashboard. */
             portal_url?: string | null;
-            /** @description Present on TIER_REQUIRED: the feature the team's Tier does not include (drafts, leads, campaigns, network, unibox or keep_connected). */
+            /** @description Present on TIER_REQUIRED: the feature the refused call needs a subscription for (drafts, leads, campaigns, network, unibox or keep_connected). */
             feature?: string;
-            /** @description Present on TIER_REQUIRED: the lowest Tier that includes the feature. Null when no Tier includes it. */
+            /** @description Present on TIER_REQUIRED: "automate", the fixed code of the plan, which includes every feature. Null when nothing sold includes the feature. */
             required_tier?: string | null;
-            /** @description Present on TIER_REQUIRED: the team's Tier now, or the refused account's Tier when details.account_id is set. Null when there is none. */
+            /** @description Present on TIER_REQUIRED: what the team holds now, as a code: null without a subscription; "automate" is the plan's code. With details.account_id set, the refused account's. */
             current_tier?: string | null;
-            /** @description Present on TIER_REQUIRED for a team Owner only: the dashboard page where the Tier is changed. Any other role gets none and asks an Owner. */
+            /** @description Present on TIER_REQUIRED for a team Owner only: the dashboard page where the team subscribes. Any other role gets none and asks an Owner. */
             upgrade_url?: string;
             /** @description Present on CHECKPOINT_INVALID_CODE: how many more verification codes the checkpoint accepts before it locks. Stop and ask the account owner for a fresh code when it reaches zero, rather than guessing. */
             attempts_remaining?: number;
@@ -5826,7 +5826,7 @@ export interface components {
                 /** @description true: never connects from another country. */
                 strict?: boolean | null;
             };
-            /** @description Present on INVALID_REQUEST, CONNECTION_LOCATION_REQUIRED and PLATFORM_ERROR when an account PATCH's location change was refused (your own proxy, a country, clearing the proxy): account says where the account stands now, re-read after the attempt. Never any proxy field. Present on RATE_LIMIT_TENANT when an import of your team holds the team's Lead write lock: import_id and started_at name it. Read it with GET /v1/leads/imports/{id} (404 while an import of up to 500 rows is still being applied in its request: its record commits with its rows), then retry. Present on EXPORT_IN_PROGRESS: export_id names the export your team already has queued or running. It may be a teammate's, which GET /v1/exports/{id} answers 404; it finishes or fails within the hour, then start yours. Present on INVALID_REQUEST when a safety-policy write sent a removed key: removed_key names it. Drop that key from the request; limits are always enforced. Present on TIER_REQUIRED when one account lacks the feature while the team has it (an account on a seat another team lent this one carries that seat's Tier): account_id names it. Leave that account out, or ask the Owner who lent the seat. */
+            /** @description Present on INVALID_REQUEST, CONNECTION_LOCATION_REQUIRED and PLATFORM_ERROR when an account PATCH's location change was refused (your own proxy, a country, clearing the proxy): account says where the account stands now, re-read after the attempt. Never any proxy field. Present on RATE_LIMIT_TENANT when an import of your team holds the team's Lead write lock: import_id and started_at name it. Read it with GET /v1/leads/imports/{id} (404 while an import of up to 500 rows is still being applied in its request: its record commits with its rows), then retry. Present on EXPORT_IN_PROGRESS: export_id names the export your team already has queued or running. It may be a teammate's, which GET /v1/exports/{id} answers 404; it finishes or fails within the hour, then start yours. Present on INVALID_REQUEST when a safety-policy write sent a removed key: removed_key names it. Drop that key from the request; limits are always enforced. Present on TIER_REQUIRED when one account lacks the feature while the team has it (an account on a seat another team lent this one goes by the lending team's subscription): account_id names it. Leave that account out, or ask the Owner who lent the seat. */
             details?: {
                 export_id?: string;
                 import_id?: string;
@@ -20804,7 +20804,7 @@ export interface operations {
                              */
                             state: "paused" | "pending" | "syncing" | "complete";
                             /**
-                             * @description Set only when state is paused. disabled: Connection sync is switched off. tier_required: the team's Tier does not include Network, so nothing is read. account_unavailable: the account is not active. reconnect_hold: the 24 hours after a reconnect. rate_limited: LinkedIn pushed back on a sync read. halted: another limit on the account is halted. outside_window: outside the account's activity window. budget_exhausted: today's sync reads are used up.
+                             * @description Set only when state is paused. disabled: Connection sync is switched off. tier_required: the team has no subscription, so nothing is read. account_unavailable: the account is not active. reconnect_hold: the 24 hours after a reconnect. rate_limited: LinkedIn pushed back on a sync read. halted: another limit on the account is halted. outside_window: outside the account's activity window. budget_exhausted: today's sync reads are used up.
                              * @enum {string|null}
                              */
                             paused_reason: "disabled" | "tier_required" | "account_unavailable" | "reconnect_hold" | "rate_limited" | "halted" | "outside_window" | "budget_exhausted" | null;
@@ -21013,7 +21013,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A named account is in your team but you may not use it. INSUFFICIENT_ROLE: your role does not reach a teammate's account. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. Neither is fixed by retrying. TIER_REQUIRED: the team's Tier does not include Network. TIER_REQUIRED: the team has no subscription (Network needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description A named account is in your team but you may not use it. INSUFFICIENT_ROLE: your role does not reach a teammate's account. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. Neither is fixed by retrying. TIER_REQUIRED: the team has no subscription (Network needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -21107,7 +21107,7 @@ export interface operations {
                                  */
                                 state: "off" | "pending" | "syncing" | "complete" | "paused";
                                 /**
-                                 * @description Set only when state is paused. disabled: Unibox sync is not turned on for this account yet. tier_required: the team's Tier does not include the Unibox, so nothing is read. account_unavailable: the account is not active. reconnect_hold: the 24 hours after a reconnect. rate_limited: LinkedIn pushed back on a sync read. halted: another limit on the account is halted. outside_window: outside the account's activity window. budget_exhausted: today's sync reads are used up.
+                                 * @description Set only when state is paused. disabled: Unibox sync is not turned on for this account yet. tier_required: the team has no subscription, so nothing is read. account_unavailable: the account is not active. reconnect_hold: the 24 hours after a reconnect. rate_limited: LinkedIn pushed back on a sync read. halted: another limit on the account is halted. outside_window: outside the account's activity window. budget_exhausted: today's sync reads are used up.
                                  * @enum {string|null}
                                  */
                                 paused_reason: "disabled" | "tier_required" | "account_unavailable" | "reconnect_hold" | "rate_limited" | "halted" | "outside_window" | "budget_exhausted" | null;
@@ -21224,7 +21224,7 @@ export interface operations {
                              */
                             state: "off" | "pending" | "syncing" | "complete" | "paused";
                             /**
-                             * @description Set only when state is paused. disabled: Unibox sync is not turned on for this account yet. tier_required: the team's Tier does not include the Unibox, so nothing is read. account_unavailable: the account is not active. reconnect_hold: the 24 hours after a reconnect. rate_limited: LinkedIn pushed back on a sync read. halted: another limit on the account is halted. outside_window: outside the account's activity window. budget_exhausted: today's sync reads are used up.
+                             * @description Set only when state is paused. disabled: Unibox sync is not turned on for this account yet. tier_required: the team has no subscription, so nothing is read. account_unavailable: the account is not active. reconnect_hold: the 24 hours after a reconnect. rate_limited: LinkedIn pushed back on a sync read. halted: another limit on the account is halted. outside_window: outside the account's activity window. budget_exhausted: today's sync reads are used up.
                              * @enum {string|null}
                              */
                             paused_reason: "disabled" | "tier_required" | "account_unavailable" | "reconnect_hold" | "rate_limited" | "halted" | "outside_window" | "budget_exhausted" | null;
@@ -21270,7 +21270,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description ACCOUNT_OWNER_ONLY: only the person who connected the account can change this. INSUFFICIENT_ROLE: your role does not reach a teammate's account. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. TIER_REQUIRED: turning sync on needs a Tier with the Unibox; turning it off always works. */
+            /** @description ACCOUNT_OWNER_ONLY: only the person who connected the account can change this. INSUFFICIENT_ROLE: your role does not reach a teammate's account. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. TIER_REQUIRED: turning sync on needs a subscription; turning it off always works. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -22105,7 +22105,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: your role does not reach a teammate's account named in account_ids. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description INSUFFICIENT_ROLE: your role does not reach a teammate's account named in account_ids. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -22213,7 +22213,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: your role does not reach a teammate's account named in account_ids. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. NO_ACTIVE_SEAT: the account has no active seat. TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description INSUFFICIENT_ROLE: your role does not reach a teammate's account named in account_ids. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. NO_ACTIVE_SEAT: the account has no active seat. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -22400,7 +22400,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: your role does not reach a teammate's account named in account_ids. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. NO_ACTIVE_SEAT: the account has no active seat. TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description INSUFFICIENT_ROLE: your role does not reach a teammate's account named in account_ids. ACCOUNT_NOT_SHARED: the teammate turned team access off for it. NO_ACTIVE_SEAT: the account has no active seat. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -22711,7 +22711,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description Reply labels are part of the Unibox. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -23344,7 +23344,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description NO_ACTIVE_SEAT: the account has no active seat, so its LinkedIn chat is not marked. INSUFFICIENT_ROLE, ACCOUNT_NOT_SHARED: you can read this conversation but not change it. TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description NO_ACTIVE_SEAT: the account has no active seat, so its LinkedIn chat is not marked. INSUFFICIENT_ROLE, ACCOUNT_NOT_SHARED: you can read this conversation but not change it. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -23696,7 +23696,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE, ACCOUNT_NOT_SHARED: you can read this conversation but not send from its account. TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description INSUFFICIENT_ROLE, ACCOUNT_NOT_SHARED: you can read this conversation but not send from its account. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -23888,7 +23888,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description NO_ACTIVE_SEAT, INSUFFICIENT_ROLE, ACCOUNT_NOT_SHARED: you cannot search as the conversation's account. TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description NO_ACTIVE_SEAT, INSUFFICIENT_ROLE, ACCOUNT_NOT_SHARED: you cannot search as the conversation's account. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -24004,7 +24004,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include the Unibox. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description Reply labels are part of the Unibox. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -38135,7 +38135,7 @@ export interface operations {
                             /** @description True while the cap is biting and incoming events are not being retained. Delivery to a registered webhook is unaffected. */
                             at_row_cap?: boolean;
                         };
-                        /** @description Whether Curviate saves this account's Connections as Leads: each person becomes one Lead in your team, an existing Lead is only filled in, do-not-contact people are skipped. On by default. Absent when the account's plan has no Automate: nothing is saved then. Change it with PATCH. */
+                        /** @description Whether Curviate saves this account's Connections as Leads: each person becomes one Lead in your team, an existing Lead is only filled in, do-not-contact people are skipped. On by default. Absent when the account has no subscription: nothing is saved then. Change it with PATCH. */
                         save_connections_as_leads?: boolean;
                         /**
                          * @description Why saving is stopped while save_connections_as_leads is true: lead_limit_reached, your team holds its 100,000 Leads. Delete Leads you no longer need and saving resumes with the next synced Connections. null while saving. Absent with save_connections_as_leads.
@@ -38417,7 +38417,7 @@ export interface operations {
                     country?: "AE" | "AO" | "AR" | "AT" | "AU" | "BD" | "BE" | "BG" | "BR" | "CA" | "CH" | "CL" | "CN" | "CO" | "CY" | "CZ" | "DE" | "DK" | "EE" | "EG" | "ES" | "FI" | "FR" | "GB" | "GT" | "HK" | "ID" | "IE" | "IL" | "IN" | "IT" | "JP" | "KR" | "KZ" | "MA" | "MX" | "MY" | "NL" | "NO" | "PA" | "PH" | "PK" | "PL" | "PR" | "PT" | "RO" | "SA" | "SE" | "SG" | "TH" | "TN" | "TR" | "UA" | "US" | "VN" | "ZA";
                     /** @description Optional. false (the default with country or ip): only ever connect from that country; a connect fails when no connection is free there. true: a connection from another country may be used when none is free in the chosen one. Not accepted with proxy. */
                     allow_country_fallback?: boolean;
-                    /** @description Save this account's Connections as Leads (Automate; on by default): each person becomes one Lead in your team, an existing Lead is only filled in, do-not-contact people are skipped. true also saves the Connections already synced; false keeps the Leads saved so far. */
+                    /** @description Save this account's Connections as Leads (needs a subscription; on by default): each person becomes one Lead in your team, an existing Lead is only filled in, do-not-contact people are skipped. true also saves the Connections already synced; false keeps the Leads saved so far. */
                     save_connections_as_leads?: boolean;
                 };
             };
@@ -38569,7 +38569,7 @@ export interface operations {
                             /** @description The candidate zones while zone_state is unknown, empty otherwise. Empty while unknown means the window is closed. */
                             fallback_timezones?: string[];
                         };
-                        /** @description Whether Curviate saves this account's Connections as Leads: each person becomes one Lead in your team, an existing Lead is only filled in, do-not-contact people are skipped. On by default. Absent when the account's plan has no Automate: nothing is saved then. Change it with PATCH. */
+                        /** @description Whether Curviate saves this account's Connections as Leads: each person becomes one Lead in your team, an existing Lead is only filled in, do-not-contact people are skipped. On by default. Absent when the account has no subscription: nothing is saved then. Change it with PATCH. */
                         save_connections_as_leads?: boolean;
                         /**
                          * @description Why saving is stopped while save_connections_as_leads is true: lead_limit_reached, your team holds its 100,000 Leads. Delete Leads you no longer need and saving resumes with the next synced Connections. null while saving. Absent with save_connections_as_leads.
@@ -38588,7 +38588,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: save_connections_as_leads on an account without Automate (details.account_id names it). INSUFFICIENT_ROLE or ACCOUNT_NOT_SHARED: only the account's person, Owners and Managers change it. */
+            /** @description TIER_REQUIRED: save_connections_as_leads on an account without a subscription (details.account_id names it). INSUFFICIENT_ROLE or ACCOUNT_NOT_SHARED: only the account's person, Owners and Managers change it. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -45852,7 +45852,7 @@ export interface operations {
                             /** @description The team's logo, a public PNG URL, or null when it has none. Owners and Managers set it with PUT /v1/teams/current/logo. */
                             logo_url: string | null;
                             /**
-                             * @description The team's Tier, or the Tier of a seat lent to it; null with no subscription. Only with include=counts, on a team this credential may count (see the operation).
+                             * @description The team's plan as a code: "automate" while it holds the plan (a subscription, a trial, a grant, or a seat lent to it); null otherwise. Only with include=counts, on a team this credential may count (see the operation).
                              * @enum {string|null}
                              */
                             tier?: "build" | "automate" | null;
@@ -47724,7 +47724,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: incoming events are part of Campaigns; this team's Tier does not include them. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description Incoming events are part of Campaigns. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -47860,7 +47860,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: only the creator edits, rotates and captures; Owners and Managers switch one on or off and delete it. Or TIER_REQUIRED: incoming events are part of Campaigns; this team's Tier does not include them. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description INSUFFICIENT_ROLE: only the creator edits, rotates and captures; Owners and Managers switch one on or off and delete it. Incoming events are part of Campaigns. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -47996,7 +47996,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: only the creator edits, rotates and captures; Owners and Managers switch one on or off and delete it. Or TIER_REQUIRED: incoming events are part of Campaigns; this team's Tier does not include them. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description INSUFFICIENT_ROLE: only the creator edits, rotates and captures; Owners and Managers switch one on or off and delete it. Incoming events are part of Campaigns. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -48452,7 +48452,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: only the creator edits, rotates and captures; Owners and Managers switch one on or off and delete it. Or TIER_REQUIRED: incoming events are part of Campaigns; this team's Tier does not include them. */
+            /** @description INSUFFICIENT_ROLE: only the creator edits, rotates and captures; Owners and Managers switch one on or off and delete it. Or TIER_REQUIRED: editing or switching one on needs a subscription (incoming events are part of Campaigns); switching one off always works. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -57276,7 +57276,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Campaigns (Automate). Not fixed by retrying. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description Voice clips are part of Campaigns. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -57388,7 +57388,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Not used below Automate: a team that lost Campaigns can still read its clips. */
+            /** @description Not used without a subscription: a team that lost Campaigns can still read its clips. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -57489,7 +57489,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: the team's Tier does not include Campaigns (Automate). Not fixed by retrying. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description Attachments are part of Campaigns. TIER_REQUIRED: the team has no subscription (Campaigns need a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -57601,7 +57601,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Not used below Automate: a team that lost Campaigns can still read its files. */
+            /** @description Not used without a subscription: a team that lost Campaigns can still read its files. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -62782,7 +62782,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description TIER_REQUIRED: resume, retry, event and reassign need a Tier with Campaigns; pause and stop always work. A refusal of one Enrollment (your role, its account's team access) is that Enrollment's result, never a 403 of the call. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
+            /** @description TIER_REQUIRED: resume, retry, event and reassign need a subscription; pause and stop always work. A refusal of one Enrollment (your role, its account's team access) is that Enrollment's result, never a 403 of the call. In a team, a call on an account a teammate connected can also answer INSUFFICIENT_ROLE (your role may not do this), ACCOUNT_NOT_SHARED (the teammate turned team access off for the account) or ACCOUNT_OWNER_ONLY (only the person who connected the account may do this). None is fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -67621,7 +67621,7 @@ export interface operations {
                          */
                         billing_period: "none" | "monthly" | "annual";
                         /**
-                         * @description The Tier the subscription buys, or null.
+                         * @description The code of the subscription's price: "automate" on the current price; one still on a previous price can read "build". Null without a subscription.
                          * @enum {string|null}
                          */
                         bought_tier: "build" | "automate" | null;
@@ -68174,7 +68174,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description SEAT_NOT_FOUND: no unused paid seat to move (or seat_id is not one), or this Team has no Tier bought or is past due. */
+            /** @description SEAT_NOT_FOUND: no unused paid seat to move (or seat_id is not one), or this Team has no subscription or is past due. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -68511,7 +68511,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The Team's Tier. */
+            /** @description Whether the Team holds the plan. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -68526,12 +68526,12 @@ export interface operations {
                          */
                         object: "tier";
                         /**
-                         * @description Whether the Team holds the plan now, with every feature: the Tier with every feature while it pays, while its trial runs, or while Curviate grants it the plan. Null when it holds none.
+                         * @description "automate" while the Team holds the plan now, with every feature: while it pays, while its free trial runs, or while Curviate grants it the plan. Null when it holds none. The value is a fixed code, not a product name.
                          * @enum {string|null}
                          */
                         tier: "build" | "automate" | null;
                         /**
-                         * @description The Tier named by the Team's subscription price: a previous price's own name, or the Tier with every feature on the current price. Null without a live subscription.
+                         * @description The code of the Team's subscription price: "automate" on the current price; a subscription still on a previous price can read "build". Either holds the plan. Null without a live subscription.
                          * @enum {string|null}
                          */
                         bought_tier: "build" | "automate" | null;
@@ -68543,7 +68543,7 @@ export interface operations {
                         /** @description The free trial, while it runs. Null before it starts and once it has ended. */
                         trial: {
                             /**
-                             * @description The Tier the trial carries.
+                             * @description "automate": a running trial holds the plan.
                              * @enum {string}
                              */
                             tier: "build" | "automate";
@@ -68553,10 +68553,10 @@ export interface operations {
                              */
                             expires_at: string;
                         } | null;
-                        /** @description A Tier Curviate granted this Team regardless of its subscription, while it holds. Null otherwise. */
+                        /** @description The plan, granted to this Team by Curviate regardless of its subscription, while the grant holds. Null otherwise. */
                         override: {
                             /**
-                             * @description The Tier granted.
+                             * @description The code granted; either value holds the plan.
                              * @enum {string}
                              */
                             tier: "build" | "automate";
@@ -68566,7 +68566,7 @@ export interface operations {
                              */
                             expires_at: string | null;
                         } | null;
-                        /** @description The features the Team has now. Empty when it has no Tier, and for a Tier that adds none. */
+                        /** @description The features the Team has now. Empty when it does not hold the plan. */
                         features: ("drafts" | "leads" | "campaigns" | "network" | "unibox" | "keep_connected")[];
                     };
                 };

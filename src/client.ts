@@ -82,7 +82,7 @@ export class Curviate {
   readonly campaigns: CampaignsResource;
   /** One Lead x Campaign x account run of a Campaign. */
   readonly enrollments: EnrollmentsResource;
-  /** The Team's Tier and its features; `TIER_REQUIRED` explained. */
+  /** Whether the Team holds the plan, and its features; `TIER_REQUIRED` explained. */
   readonly tier: TierResource;
   /** Your Team's sending Mailboxes; connect one with `connectRequests.create({ mailbox })`. */
   readonly mailboxes: MailboxesResource;

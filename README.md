@@ -113,16 +113,16 @@ await curviate.billing.seats.return(seat_id);
 
 `teams.list({ include: "counts" })` adds counts on every row for a dashboard session and an All-Teams key, and only on its own row for a Team key. While a seat is lent, a connect naming it or a cancel of it throws `SEAT_LENT`. `curviate.billing.invoices.list()` pages the Team's invoices (Owners only) and `billing.invoices.pdf(number)` resolves with the PDF bytes. `TIER_REQUIRED` carries `err.details.account_id` when one Account (on a seat lent from another Team) lacks the feature while the Team has it.
 
-## Tiers
+## The plan
 
-A Team's Tier decides which features it has. Drafts, Leads, Campaigns (and Network and Unibox) need a subscription: a write in one of those groups on a Team without one is refused with `TIER_REQUIRED`, before the request is even validated. Reads, exports, deletes and stopping running work (`campaigns.pause`, `campaigns.archive`, `enrollments.stop`) pass without one. The refusal names what is missing:
+One plan includes every feature. Drafts, Leads, Campaigns (and Network and Unibox) need a subscription: a write in one of those groups on a Team without one is refused with `TIER_REQUIRED`, before the request is even validated. Reads, exports, deletes and stopping running work (`campaigns.pause`, `campaigns.archive`, `enrollments.stop`) pass without one. The refusal names what is missing:
 
 ```ts
 try {
   await curviate.campaigns.start("mot_123");
 } catch (err) {
   if (isCurviateError(err) && err.code === "TIER_REQUIRED") {
-    console.warn(`${err.feature} needs ${err.requiredTier}; this team has ${err.currentTier ?? "no Tier"}.`);
+    console.warn(`${err.feature} needs a subscription.`);
     // A team Owner also gets err.upgradeUrl; any other role has none and should ask an Owner.
   }
 }
@@ -130,7 +130,7 @@ try {
 const { tier, features } = await curviate.tier.get(); // check first: no write is sent
 ```
 
-`curviate.tier.get()` returns the Tier now (`null` for none), the bought Tier, the free trial or granted Tier that raises it, a downgrade due at the next renewal (`pending`), and the `features` it includes. It reports no prices. A Campaign or a sync that stopped for the Tier reads `pause_reason` / `paused_reason: "tier_required"`.
+`curviate.tier.get()` returns whether the Team holds the plan now (`tier` is `"automate"`, or `null` for none), its subscription's price code, the free trial or grant that gives it the plan, and the `features` it has. It reports no prices. A Campaign or a sync that stopped for want of a subscription reads `pause_reason` / `paused_reason: "tier_required"`.
 
 ## Leads, lists and Tags
 
@@ -453,9 +453,9 @@ try {
       console.warn(`change ${err.safetyHint?.parameter} to lift it`);
       break;
     case "TIER_REQUIRED":
-      // The team's Tier lacks err.feature; err.requiredTier has it. A team
-      // Owner also gets err.upgradeUrl. See "Tiers" above.
-      console.warn(`${err.feature} needs ${err.requiredTier}`);
+      // The team has no subscription, and err.feature needs one. A team
+      // Owner also gets err.upgradeUrl. See "The plan" above.
+      console.warn(`${err.feature} needs a subscription`);
       break;
     case "ACCOUNT_NOT_FOUND":
       console.error("Account does not exist for this tenant.");
