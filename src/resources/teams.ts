@@ -56,8 +56,8 @@ export class TeamsResource {
    * the team this credential acts in; `logo_url` is the team's public PNG or
    * `null`. Pages with an opaque `cursor` until it is `null`.
    *
-   * `include: "counts"` adds to each row `tier` (or the Tier of a seat lent to
-   * it; `null` with no subscription), `trial: { days_left }` while a trial is
+   * `include: "counts"` adds to each row `tier` (`"automate"` while the team
+   * holds the plan, a seat lent to it included; `null` otherwise), `trial: { days_left }` while a trial is
    * all the team has, `accounts` and `active_motions` (what you would read in
    * that team), and `seats: { used, total, lent_out, lent_in }` on rows where
    * you are an Owner. Which rows get counts depends on the credential: a

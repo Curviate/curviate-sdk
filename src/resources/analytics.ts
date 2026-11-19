@@ -3,7 +3,7 @@
  * `curviate.analytics.campaigns` (2 methods) and `curviate.analytics.events`
  * (1 method).
  *
- * Read-only results from what Curviate recorded: no LinkedIn call, any Tier.
+ * Read-only results from what Curviate recorded: no LinkedIn call, with or without a subscription.
  * A window is `from` and `to` (dates, inclusive) or `range` (`7d`, `30d`,
  * `90d`, `12m`, `all`), read in `timezone` (default UTC), and `bucket` groups
  * the daily series (`auto`, `day`, `week`, `month`). `account_id`, `campaign_id`

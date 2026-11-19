@@ -88,7 +88,7 @@ interface WireErrorEnvelope {
   errors?: unknown;
   /** `SEQUENCE_CONFLICT`: the stored Sequence. */
   current?: unknown;
-  /** `TIER_REQUIRED`: the feature, the lowest Tier with it, the team's Tier, an Owner's upgrade page. */
+  /** `TIER_REQUIRED`: the feature, the plan's code, what the team holds now, an Owner's subscribe page. */
   feature?: unknown;
   required_tier?: unknown;
   current_tier?: unknown;
@@ -257,7 +257,7 @@ async function errorFromResponse(res: Response): Promise<{ err: CurviateError; r
       ? { current: env.current as SequenceConflictCurrent }
       : {}),
     // `TIER_REQUIRED` details. `required_tier` / `current_tier` are null-BEARING
-    // (no Tier has it / the team has none), so null survives; a non-string
+    // (nothing sold has it / the team holds nothing), so null survives; a non-string
     // value (neither a name nor null) is dropped rather than mistyped.
     ...(typeof env?.feature === "string" ? { feature: env.feature } : {}),
     ...(typeof env?.required_tier === "string" || env?.required_tier === null

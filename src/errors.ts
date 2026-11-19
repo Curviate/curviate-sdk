@@ -287,17 +287,17 @@ export const ERROR_CODES = [
   "DRAFT_NOT_PUBLISHABLE",
   "SCHEDULE_CONFLICT",
   "DRAFT_PUBLISHING",
-  // Teams and Tiers. Neither clears on a retry; the fix is with a person.
+  // Teams and the plan. Neither clears on a retry; the fix is with a person.
   //
   // - `INSUFFICIENT_ROLE` (403): your role in the team may not do this on an
   //   account a teammate connected.
-  // - `TIER_REQUIRED` (403): the team's Tier does not include the feature. The
-  //   error body names it (`feature`), the lowest Tier that has it
-  //   (`required_tier`) and the Tier the team has (`current_tier`), read as
+  // - `TIER_REQUIRED` (403): the team has no subscription, and the feature
+  //   needs one. The error body names it (`feature`), the plan's code
+  //   (`required_tier`) and what the team holds (`current_tier`), read as
   //   `feature`, `requiredTier` and `currentTier` on {@link CurviateError}; a
   //   team Owner also gets `upgradeUrl`. When one Account lacks the feature
   //   while the Team has it (an Account on a seat another Team lent this one
-  //   carries that seat's Tier), `details.account_id` names it: leave it out,
+  //   goes by the lending Team's subscription), `details.account_id` names it: leave it out,
   //   or ask the Owner who lent the seat. Writes in Drafts, Leads and
   //   Campaigns (and Network and Unibox) need a subscription; reads, exports, deletes
   //   and stopping running work need none.
@@ -810,25 +810,25 @@ export interface CurviateErrorInit {
    */
   current?: SequenceConflictCurrent;
   /**
-   * On a `TIER_REQUIRED`: the feature the team's Tier does not include.
+   * On a `TIER_REQUIRED`: the feature the refused call needs a subscription for.
    * Wire field `feature`. A feature added later arrives as its own string,
    * so keep a default branch (the type stays open: the known names complete,
    * any other string allowed).
    */
   feature?: TierFeature | (string & {});
   /**
-   * On a `TIER_REQUIRED`: the lowest Tier that includes {@link CurviateErrorInit.feature}.
-   * Wire field `required_tier`. `null` when no Tier includes it.
+   * On a `TIER_REQUIRED`: `"automate"`, the plan's code (the plan includes
+   * {@link CurviateErrorInit.feature}). Wire field `required_tier`. `null` when nothing sold includes it.
    */
   requiredTier?: TierName | (string & {}) | null;
   /**
-   * On a `TIER_REQUIRED`: the Tier the team has now. Wire field `current_tier`.
-   * `null` when the team has none.
+   * On a `TIER_REQUIRED`: what the team holds now, as a code. Wire field
+   * `current_tier`. `null` without a subscription; `"automate"` is the plan's code.
    */
   currentTier?: TierName | (string & {}) | null;
   /**
    * On a `TIER_REQUIRED` for a team Owner only: the dashboard page where the
-   * Tier is changed. Wire field `upgrade_url`. Absent for any other role, who
+   * team subscribes. Wire field `upgrade_url`. Absent for any other role, who
    * should ask an Owner.
    */
   upgradeUrl?: string;
@@ -901,13 +901,13 @@ export class CurviateError extends Error {
   readonly errors: CurviateErrorDetail[] | undefined;
   /** The stored Sequence, on `SEQUENCE_CONFLICT`. See {@link CurviateErrorInit.current}. */
   readonly current: SequenceConflictCurrent | undefined;
-  /** The feature the Tier lacks, on `TIER_REQUIRED`. See {@link CurviateErrorInit.feature}. */
+  /** The feature that needs a subscription, on `TIER_REQUIRED`. See {@link CurviateErrorInit.feature}. */
   readonly feature: TierFeature | (string & {}) | undefined;
-  /** The lowest Tier with that feature; `null` when none has it. See {@link CurviateErrorInit.requiredTier}. */
+  /** The plan's code (`"automate"`); `null` when nothing sold has the feature. See {@link CurviateErrorInit.requiredTier}. */
   readonly requiredTier: TierName | (string & {}) | null | undefined;
-  /** The team's Tier now; `null` when it has none. See {@link CurviateErrorInit.currentTier}. */
+  /** What the team holds now, as a code; `null` without a subscription. See {@link CurviateErrorInit.currentTier}. */
   readonly currentTier: TierName | (string & {}) | null | undefined;
-  /** Where an Owner changes the Tier; absent for other roles. See {@link CurviateErrorInit.upgradeUrl}. */
+  /** Where an Owner subscribes; absent for other roles. See {@link CurviateErrorInit.upgradeUrl}. */
   readonly upgradeUrl: string | undefined;
   /** Per-code structured details. See {@link CurviateErrorDetails}. */
   readonly details: CurviateErrorDetails | undefined;
@@ -977,7 +977,7 @@ export class CurviateError extends Error {
     if (this.errors !== undefined) json.errors = this.errors;
     if (this.current !== undefined) json.current = this.current;
     if (this.feature !== undefined) json.feature = this.feature;
-    // Null-bearing like `resetAt`: `null` says no Tier has it / the team has none.
+    // Null-bearing like `resetAt`: `null` says nothing sold has it / the team holds nothing.
     if (this.requiredTier !== undefined) json.requiredTier = this.requiredTier;
     if (this.currentTier !== undefined) json.currentTier = this.currentTier;
     if (this.upgradeUrl !== undefined) json.upgradeUrl = this.upgradeUrl;
