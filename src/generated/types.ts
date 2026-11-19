@@ -4775,7 +4775,7 @@ export interface paths {
         };
         /**
          * List a campaign's weekly placement checks
-         * @description The Campaign's weekly placement checks, newest first (core/037 FR-005, FR-012): each calendar week its first email step, and each email step whose text changed that week, is sent from one of its Mailboxes in turn to Curviate's 6 business seed inboxes (3 Google Workspace, 3 Microsoft 365) and read like a placement test. Kept apart from warm-up readings and placement tests. Each check: week (its Monday), mailbox_id, step_id, status (running, complete, waiting, skipped), reason (no_mailbox, cap, seeds), and the google_workspace and microsoft_365 verdicts (inbox, partly_spam, spam) once complete. Its 6 copies count against the sending Mailbox's daily limit.
+         * @description The Campaign's weekly placement checks, newest first: each calendar week its first email step, and each email step whose text changed that week, is sent from one of its Mailboxes in turn to Curviate's 6 business seed inboxes (3 Google Workspace, 3 Microsoft 365) and read like a placement test. Kept apart from warm-up readings and placement tests. Each check: week (its Monday), mailbox_id, step_id, status (running, complete, waiting, skipped), reason (no_mailbox, cap, seeds), and the google_workspace and microsoft_365 verdicts (inbox, partly_spam, spam) once complete. Its 6 copies count against the sending Mailbox's daily limit.
          */
         get: operations["getV1CampaignsIdPlacementChecks"];
         put?: never;

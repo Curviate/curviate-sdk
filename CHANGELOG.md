@@ -9,7 +9,7 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [0.54.0] - 2026-11-18
 
-Regenerated `fixtures/openapi.json` and the generated types from the document staging serves at `4c1e6ef64` (`fixtures/PROVENANCE.json`); the Sequence validator and its corpus re-vendored. Nothing narrows: every change below adds a method, a field, a filter or a union member.
+Regenerated `fixtures/openapi.json` and the generated types from the document staging serves at `4c1e6ef64`, built locally from that tree with one description corrected (the Campaign placement checks' read named an internal reference; the server fix ships with this release) (`fixtures/PROVENANCE.json`); the Sequence validator and its corpus re-vendored. Nothing narrows: every change below adds a method, a field, a filter or a union member.
 
 ### Wider unions
 
