@@ -9,7 +9,7 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [0.54.0] - 2026-11-18
 
-Regenerated `fixtures/openapi.json` and the generated types from the document staging serves at `53ae9b3ea` (`fixtures/PROVENANCE.json`); the Sequence validator and its corpus re-vendored. Nothing narrows: every change below adds a method, a field, a filter or a union member.
+Regenerated `fixtures/openapi.json` and the generated types from the document staging serves at `42ad2358a` (`fixtures/PROVENANCE.json`); the Sequence validator and its corpus re-vendored. Nothing narrows: every change below adds a method, a field, a filter or a union member.
 
 ### Wider unions
 
@@ -25,6 +25,10 @@ An exhaustive `switch` must handle: `CurviateEvent` gains the eight `signal` eve
 ### Limit hits
 
 - **`accounts.listSafetyEvents(accountId, { budget_row?, since?, until?, limit?, cursor? })`** (`GET /v1/{account_id}/safety-events`): the actions Curviate refused at a safety limit or pause, newest first.
+
+### Email export
+
+- `analytics.export({ entity: "email_daily" })` streams your Campaign email's daily counts per Mailbox, Account, Campaign, step, variant and receiving provider (no `table`; at most 366 days), and `exports.create({ entity: "email_daily" })` builds it as a job.
 
 ### Mailboxes from Curviate
 

@@ -66285,7 +66285,9 @@ export interface operations {
                 campaign_id?: string;
                 /** @description campaign, unibox (the Unibox), api (any API key or MCP grant), direct (unibox and api). Default: all. Repeat the key, comma-separate or mix; empties ignored. */
                 origin?: string;
-                /** @description daily, accounts, campaigns, enrollments. Several: one ZIP. Repeat the key, comma-separate or mix; empties ignored. Default: all. */
+                /** @description analytics: the Analytics tables (table). email_daily: your Campaign email's daily counts per Mailbox, account, Campaign, step, variant and receiving provider (no table; at most 366 days). Default: analytics. */
+                entity?: "analytics" | "email_daily";
+                /** @description entity analytics: daily, accounts, campaigns, enrollments. Several: one ZIP. Repeat the key, comma-separate or mix; empties ignored. Default: all. */
                 table?: string;
                 /** @description csv (UTF-8, formula guard), json (an array) or ndjson (one JSON object per line; one table only). Default: csv. */
                 format?: "csv" | "json" | "ndjson";
@@ -66383,10 +66385,10 @@ export interface operations {
             content: {
                 "application/json": {
                     /**
-                     * @description What to export. analytics: the Analytics tables. campaign_activity: the Campaigns' activity records (sends, acceptances, replies, skips and failures). account_activity: the same plus direct actions (API, CLI, MCP, Unibox). account_metrics: each Account's own daily numbers. The activity and metrics files hold at most 366 days.
+                     * @description What to export. analytics: the Analytics tables. campaign_activity: the Campaigns' activity records (sends, acceptances, replies, skips and failures). account_activity: the same plus direct actions (API, CLI, MCP, Unibox). account_metrics: each Account's own daily numbers. email_daily: your Campaign email's daily counts per Mailbox, account, Campaign, step, variant and receiving provider. The activity, metrics and email files hold at most 366 days.
                      * @enum {string}
                      */
-                    entity: "analytics" | "campaign_activity" | "account_activity" | "account_metrics";
+                    entity: "analytics" | "campaign_activity" | "account_activity" | "account_metrics" | "email_daily";
                     /** @description analytics: daily, accounts, campaigns, enrollments. Several: one ZIP. Any other entity is one table of its own name: omit it. */
                     tables?: string[];
                     /**
