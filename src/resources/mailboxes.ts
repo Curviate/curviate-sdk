@@ -251,7 +251,10 @@ export class MailboxesResource {
    * served; there is nothing to compute from it.
    * `state` is `off`, `warming` (day N of the days picked) or `waiting`: on but
    * not running now, its day held; `reason` says why (`paused_by_curviate`,
-   * `reconnect_needed`, `trial`, `app_password`, `warm_up_app`, `allowance`).
+   * `reconnect_needed`, `trial`, `app_password`, `warm_up_app`, `allowance`,
+   * `address_check`: Curviate is confirming the address receives its mail,
+   * nothing to do; `address_unconfirmed`: it has not arrived, check the
+   * connection settings, Curviate tries again by itself).
    * `PATCH /v1/mailboxes/{id}`
    *
    * @example
