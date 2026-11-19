@@ -9,7 +9,7 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [0.55.0] - 2026-11-19
 
-Regenerated `fixtures/openapi.json` and the generated types from the document staging serves at `ed310e031` (`fixtures/PROVENANCE.json`). Nothing narrows: every change adds a method, a field or a union member.
+Regenerated `fixtures/openapi.json` and the generated types from the served document (staging `ed310e031`; production `e26a4d733` serves it byte for byte, recorded in `fixtures/PROVENANCE.json`). Nothing narrows: every change adds a method, a field or a union member.
 
 ### Mailboxes from Curviate: the price from the server
 
