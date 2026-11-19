@@ -166,6 +166,11 @@ export class MailboxPurchasesResource {
    * Curviate undid the charge in full; an order being reversed reads
    * `provisioning` until then). Neither `provisioning` nor `host_failed` is a
    * cue to retry or to order again: read the order again later.
+   * `charge_unknown` is true while Curviate cannot tell whether the order's
+   * charge was made (the order ended as the charge was sent): it is being
+   * checked, and a charge that was made is given back in full. Say "We are
+   * checking whether this order was charged. If it was, the charge is given
+   * back in full." and do not order again.
    * Its records: six rows to add at your domain exactly as shown (`mx`,
    * `spf`, `dkim`, `dmarc`, `verify`, `tracking`; `tracking` is not
    * required; the `mx` row also holds one CNAME that confirms the domain is

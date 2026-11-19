@@ -48688,6 +48688,8 @@ export interface operations {
                             expires_at: string;
                             /** Format: date-time */
                             charged_at: string | null;
+                            /** @description True when the order ended while whether its charge was made could not be read (its charge was sent as the subscription ended). It is being checked; if it was made, it is given back in full. False otherwise. */
+                            charge_unknown: boolean;
                             /** Format: date-time */
                             created_at: string;
                         }[];
@@ -48823,6 +48825,8 @@ export interface operations {
                         expires_at: string;
                         /** Format: date-time */
                         charged_at: string | null;
+                        /** @description True when the order ended while whether its charge was made could not be read (its charge was sent as the subscription ended). It is being checked; if it was made, it is given back in full. False otherwise. */
+                        charge_unknown: boolean;
                         /** Format: date-time */
                         created_at: string;
                     };
@@ -48989,6 +48993,8 @@ export interface operations {
                         expires_at: string;
                         /** Format: date-time */
                         charged_at: string | null;
+                        /** @description True when the order ended while whether its charge was made could not be read (its charge was sent as the subscription ended). It is being checked; if it was made, it is given back in full. False otherwise. */
+                        charge_unknown: boolean;
                         /** Format: date-time */
                         created_at: string;
                     };
@@ -49110,6 +49116,8 @@ export interface operations {
                         expires_at: string;
                         /** Format: date-time */
                         charged_at: string | null;
+                        /** @description True when the order ended while whether its charge was made could not be read (its charge was sent as the subscription ended). It is being checked; if it was made, it is given back in full. False otherwise. */
+                        charge_unknown: boolean;
                         /** Format: date-time */
                         created_at: string;
                     };
@@ -49240,6 +49248,8 @@ export interface operations {
                         expires_at: string;
                         /** Format: date-time */
                         charged_at: string | null;
+                        /** @description True when the order ended while whether its charge was made could not be read (its charge was sent as the subscription ended). It is being checked; if it was made, it is given back in full. False otherwise. */
+                        charge_unknown: boolean;
                         /** Format: date-time */
                         created_at: string;
                     };

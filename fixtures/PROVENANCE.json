@@ -1,8 +1,8 @@
 {
-  "source_base_url": "https://api.curviate.com",
-  "server_git_sha": "a8207d2c5ad1189ef4d9ae815c8253895372f0b9",
-  "fetched_at": "2026-11-19T18:50:40.626Z",
+  "source_base_url": "https://api.staging.curviate.com",
+  "server_git_sha": "745221b707e97f28b62e04069b03cde3e984c7ed",
+  "fetched_at": "2026-11-19T19:13:53.102Z",
   "paths": 271,
-  "servers_canonicalized": false,
-  "note": "Written by scripts/refresh-fixture.mjs (pnpm gen:fixture). Do not hand-edit; refresh instead."
+  "servers_canonicalized": true,
+  "note": "Served by a local instance at staging head 745221b707e97f28b62e04069b03cde3e984c7ed, which staging had not deployed yet (staging served e6927076b); diffed against staging's served document, the only differences are the charge_unknown schema, required and example entries on the Mailbox purchase reads. Refresh from the deployed document when it serves charge_unknown."
 }
