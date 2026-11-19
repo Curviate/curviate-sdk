@@ -98,8 +98,9 @@ export class MailboxPurchasesResource {
   constructor(private readonly ctx: RequestContext) {}
 
   /**
-   * Order 1 to 50 Mailboxes from Curviate on one domain your Team owns,
-   * warm-up included. Read the price first with `quote`, and show that. The
+   * Order 1 to 50 Mailboxes from Curviate on one domain your Team owns (a
+   * registrable domain, never a subdomain such as `mail.acme.com`), warm-up
+   * included. Read the price first with `quote`, and show that. The
    * order waits in `awaiting_dns` until the records it lists are found at your
    * domain; nothing is charged before. The answer's `price` is what this order
    * costs: when it differs from the quote the person agreed to, `cancel` it
@@ -118,7 +119,7 @@ export class MailboxPurchasesResource {
    *
    * @example
    * const order = await curviate.mailboxes.purchases.create({
-   *   domain: "acme-mail.example.test",
+   *   domain: "acme-mail.example",
    *   mailboxes: [{ local_part: "anna", display_name: "Anna Weber", sends_for: { kind: "shared" } }],
    * });
    */
