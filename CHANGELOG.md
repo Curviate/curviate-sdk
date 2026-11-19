@@ -9,7 +9,7 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [0.56.0] - 2026-11-19
 
-Docs, one added field. `fixtures/openapi.json` and the generated types are refreshed from the served document (production `a8207d2c5` for the first part; staging's head `745221b70` for `charge_unknown`, recorded in `fixtures/PROVENANCE.json`).
+Docs, one added field. `fixtures/openapi.json` and the generated types are refreshed from the served document (production `b1332f4c2`, recorded in `fixtures/PROVENANCE.json`; staging `745221b70` serves the same document).
 
 - **`charge_unknown`** (boolean, always present) on every Mailbox purchase read (`mailboxes.purchases.create`, `list`, `get`, `check`, `cancel`): true while Curviate cannot tell whether the order's charge was made, because the order ended as the charge was sent. It is being checked, and a charge that was made is given back in full: say so and do not order again. Typed on `MailboxPurchase`; a test double of an order needs the field.
 - **`MAILBOX_PURCHASE_TRIAL` and `not_orderable_reason: "trial"` say what the server does**: a Team without a paid plan cannot order Mailboxes from Curviate: on a trial, after a trial that ended without a purchase, never subscribed, or with a payment past due. Nothing is charged. The error docs, the `purchases.create` and `purchases.quote` docs and the generated types say so; they said "a Team on a trial".
