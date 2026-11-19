@@ -163,9 +163,11 @@ export class MailboxPurchasesResource {
    * Curviate undid the charge in full; an order being reversed reads
    * `provisioning` until then). Neither `provisioning` nor `host_failed` is a
    * cue to retry or to order again: read the order again later.
-   * Its records: the five to add at your domain (`mx`, `spf`,
-   * `dkim`, `dmarc`, `tracking`; `tracking` is not required) and which are
-   * found. Another Team's id answers `404 MAILBOX_PURCHASE_NOT_FOUND`, as an
+   * Its records: six rows to add at your domain exactly as shown (`mx`,
+   * `spf`, `dkim`, `dmarc`, `verify`, `tracking`; `tracking` is not
+   * required; the `mx` row also holds one CNAME that confirms the domain is
+   * yours, `verify` one TXT record that confirms this order is yours) and
+   * which are found. Tolerate a row `check` you do not know. Another Team's id answers `404 MAILBOX_PURCHASE_NOT_FOUND`, as an
    * unknown one.
    * `GET /v1/mailboxes/purchases/{id}`
    *
@@ -264,13 +266,16 @@ export class MailboxesResource {
    * Mailbox builds a sending history; `{ enabled: false }` turns it off. The
    * read carries `warm_up { enabled, days, day, state, reason }`. Owners and
    * Managers change any Mailbox; a Member only the ones they connected.
-   * `reputation` is a whole number 0 to 100, or `null` while there is not
-   * enough to say (show "gathering", never 0).
+   * `reputation` is a whole number 0 to 100, or `null`: with
+   * `reputation_reason` `warm_up_off` the Mailbox has no score because
+   * warm-up is off; otherwise not enough to say yet (show "gathering", never
+   * 0).
    * The read also carries `landing { google, microsoft, other, read_at }`:
    * where this Mailbox's own warm-up mail lands per receiving provider over the
    * last 7 days, a verdict (`inbox`, `partly_spam`, `spam`, or `gathering`
-   * while there is not enough to say), never a count. Show the verdict as
-   * served; there is nothing to compute from it.
+   * while there is not enough to say), never a count, and `landing.reason`
+   * `warm_up_off` when warm-up is off and there is nothing to read. Show the
+   * verdict as served; there is nothing to compute from it.
    * `state` is `off`, `warming` (day N of the days picked; past them it stays
    * `warming` until ready), `ready` (the warm-up's bar is met; sending does not
    * change) or `waiting`: on but

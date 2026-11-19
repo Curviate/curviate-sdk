@@ -48636,7 +48636,7 @@ export interface operations {
                             /** @description The domain object's id (dom_...). */
                             domain_id: string;
                             /**
-                             * @description `awaiting_dns` until the four required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
+                             * @description `awaiting_dns` until the five required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
                              * @enum {string}
                              */
                             state: "awaiting_dns" | "provisioning" | "active" | "cancelled";
@@ -48649,7 +48649,7 @@ export interface operations {
                                 /** @description Set once the Mailbox exists (`active`). */
                                 mailbox_id?: string | null;
                             }[];
-                            /** @description Five rows in order: mx, spf, dkim, dmarc, tracking. Add each entry at your domain's DNS host; `tracking` is not required. */
+                            /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours, and `verify` is one TXT record that confirms this order is yours. */
                             records: Record<string, never>[];
                             advice: string | null;
                             /** @description The order's monthly equivalent, minor units: the monthly price of one Mailbox times the Mailboxes. Not what a yearly Team is charged: read `price`. */
@@ -48771,7 +48771,7 @@ export interface operations {
                         /** @description The domain object's id (dom_...). */
                         domain_id: string;
                         /**
-                         * @description `awaiting_dns` until the four required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
+                         * @description `awaiting_dns` until the five required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
                          * @enum {string}
                          */
                         state: "awaiting_dns" | "provisioning" | "active" | "cancelled";
@@ -48784,7 +48784,7 @@ export interface operations {
                             /** @description Set once the Mailbox exists (`active`). */
                             mailbox_id?: string | null;
                         }[];
-                        /** @description Five rows in order: mx, spf, dkim, dmarc, tracking. Add each entry at your domain's DNS host; `tracking` is not required. */
+                        /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours, and `verify` is one TXT record that confirms this order is yours. */
                         records: Record<string, never>[];
                         advice: string | null;
                         /** @description The order's monthly equivalent, minor units: the monthly price of one Mailbox times the Mailboxes. Not what a yearly Team is charged: read `price`. */
@@ -48937,7 +48937,7 @@ export interface operations {
                         /** @description The domain object's id (dom_...). */
                         domain_id: string;
                         /**
-                         * @description `awaiting_dns` until the four required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
+                         * @description `awaiting_dns` until the five required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
                          * @enum {string}
                          */
                         state: "awaiting_dns" | "provisioning" | "active" | "cancelled";
@@ -48950,7 +48950,7 @@ export interface operations {
                             /** @description Set once the Mailbox exists (`active`). */
                             mailbox_id?: string | null;
                         }[];
-                        /** @description Five rows in order: mx, spf, dkim, dmarc, tracking. Add each entry at your domain's DNS host; `tracking` is not required. */
+                        /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours, and `verify` is one TXT record that confirms this order is yours. */
                         records: Record<string, never>[];
                         advice: string | null;
                         /** @description The order's monthly equivalent, minor units: the monthly price of one Mailbox times the Mailboxes. Not what a yearly Team is charged: read `price`. */
@@ -49058,7 +49058,7 @@ export interface operations {
                         /** @description The domain object's id (dom_...). */
                         domain_id: string;
                         /**
-                         * @description `awaiting_dns` until the four required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
+                         * @description `awaiting_dns` until the five required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
                          * @enum {string}
                          */
                         state: "awaiting_dns" | "provisioning" | "active" | "cancelled";
@@ -49071,7 +49071,7 @@ export interface operations {
                             /** @description Set once the Mailbox exists (`active`). */
                             mailbox_id?: string | null;
                         }[];
-                        /** @description Five rows in order: mx, spf, dkim, dmarc, tracking. Add each entry at your domain's DNS host; `tracking` is not required. */
+                        /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours, and `verify` is one TXT record that confirms this order is yours. */
                         records: Record<string, never>[];
                         advice: string | null;
                         /** @description The order's monthly equivalent, minor units: the monthly price of one Mailbox times the Mailboxes. Not what a yearly Team is charged: read `price`. */
@@ -49188,7 +49188,7 @@ export interface operations {
                         /** @description The domain object's id (dom_...). */
                         domain_id: string;
                         /**
-                         * @description `awaiting_dns` until the four required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
+                         * @description `awaiting_dns` until the five required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
                          * @enum {string}
                          */
                         state: "awaiting_dns" | "provisioning" | "active" | "cancelled";
@@ -49201,7 +49201,7 @@ export interface operations {
                             /** @description Set once the Mailbox exists (`active`). */
                             mailbox_id?: string | null;
                         }[];
-                        /** @description Five rows in order: mx, spf, dkim, dmarc, tracking. Add each entry at your domain's DNS host; `tracking` is not required. */
+                        /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours, and `verify` is one TXT record that confirms this order is yours. */
                         records: Record<string, never>[];
                         advice: string | null;
                         /** @description The order's monthly equivalent, minor units: the monthly price of one Mailbox times the Mailboxes. Not what a yearly Team is charged: read `price`. */
@@ -49486,9 +49486,19 @@ export interface operations {
                                 other: "inbox" | "partly_spam" | "spam" | "gathering";
                                 /** Format: date-time */
                                 read_at: string | null;
+                                /**
+                                 * @description Why nothing will be read: `warm_up_off` (turn warm-up on for this Mailbox). Null otherwise, including while a reading is still being gathered.
+                                 * @enum {string|null}
+                                 */
+                                reason: "warm_up_off" | null;
                             };
                             /** @description This Mailbox's reputation, 0 to 100: where its warm-up and test mail landed over the last 7 days, its domain setup, its bounces and how long it has been warming. Updated each night and when a placement test completes; null while there is not enough evidence yet. */
                             reputation: number | null;
+                            /**
+                             * @description Why `reputation` is null and will stay so: `warm_up_off` (turn warm-up on for this Mailbox). Null while a score is served or still being gathered.
+                             * @enum {string|null}
+                             */
+                            reputation_reason: "warm_up_off" | null;
                         }[];
                         cursor?: string | null;
                     };
@@ -49649,9 +49659,19 @@ export interface operations {
                             other: "inbox" | "partly_spam" | "spam" | "gathering";
                             /** Format: date-time */
                             read_at: string | null;
+                            /**
+                             * @description Why nothing will be read: `warm_up_off` (turn warm-up on for this Mailbox). Null otherwise, including while a reading is still being gathered.
+                             * @enum {string|null}
+                             */
+                            reason: "warm_up_off" | null;
                         };
                         /** @description This Mailbox's reputation, 0 to 100: where its warm-up and test mail landed over the last 7 days, its domain setup, its bounces and how long it has been warming. Updated each night and when a placement test completes; null while there is not enough evidence yet. */
                         reputation: number | null;
+                        /**
+                         * @description Why `reputation` is null and will stay so: `warm_up_off` (turn warm-up on for this Mailbox). Null while a score is served or still being gathered.
+                         * @enum {string|null}
+                         */
+                        reputation_reason: "warm_up_off" | null;
                     };
                 };
             };
@@ -49930,9 +49950,19 @@ export interface operations {
                             other: "inbox" | "partly_spam" | "spam" | "gathering";
                             /** Format: date-time */
                             read_at: string | null;
+                            /**
+                             * @description Why nothing will be read: `warm_up_off` (turn warm-up on for this Mailbox). Null otherwise, including while a reading is still being gathered.
+                             * @enum {string|null}
+                             */
+                            reason: "warm_up_off" | null;
                         };
                         /** @description This Mailbox's reputation, 0 to 100: where its warm-up and test mail landed over the last 7 days, its domain setup, its bounces and how long it has been warming. Updated each night and when a placement test completes; null while there is not enough evidence yet. */
                         reputation: number | null;
+                        /**
+                         * @description Why `reputation` is null and will stay so: `warm_up_off` (turn warm-up on for this Mailbox). Null while a score is served or still being gathered.
+                         * @enum {string|null}
+                         */
+                        reputation_reason: "warm_up_off" | null;
                     };
                 };
             };
@@ -50109,9 +50139,19 @@ export interface operations {
                             other: "inbox" | "partly_spam" | "spam" | "gathering";
                             /** Format: date-time */
                             read_at: string | null;
+                            /**
+                             * @description Why nothing will be read: `warm_up_off` (turn warm-up on for this Mailbox). Null otherwise, including while a reading is still being gathered.
+                             * @enum {string|null}
+                             */
+                            reason: "warm_up_off" | null;
                         };
                         /** @description This Mailbox's reputation, 0 to 100: where its warm-up and test mail landed over the last 7 days, its domain setup, its bounces and how long it has been warming. Updated each night and when a placement test completes; null while there is not enough evidence yet. */
                         reputation: number | null;
+                        /**
+                         * @description Why `reputation` is null and will stay so: `warm_up_off` (turn warm-up on for this Mailbox). Null while a score is served or still being gathered.
+                         * @enum {string|null}
+                         */
+                        reputation_reason: "warm_up_off" | null;
                     };
                 };
             };
@@ -50288,9 +50328,19 @@ export interface operations {
                             other: "inbox" | "partly_spam" | "spam" | "gathering";
                             /** Format: date-time */
                             read_at: string | null;
+                            /**
+                             * @description Why nothing will be read: `warm_up_off` (turn warm-up on for this Mailbox). Null otherwise, including while a reading is still being gathered.
+                             * @enum {string|null}
+                             */
+                            reason: "warm_up_off" | null;
                         };
                         /** @description This Mailbox's reputation, 0 to 100: where its warm-up and test mail landed over the last 7 days, its domain setup, its bounces and how long it has been warming. Updated each night and when a placement test completes; null while there is not enough evidence yet. */
                         reputation: number | null;
+                        /**
+                         * @description Why `reputation` is null and will stay so: `warm_up_off` (turn warm-up on for this Mailbox). Null while a score is served or still being gathered.
+                         * @enum {string|null}
+                         */
+                        reputation_reason: "warm_up_off" | null;
                     };
                 };
             };
@@ -52093,7 +52143,7 @@ export interface operations {
                                 found: number;
                                 /** @description A LinkedIn source: people skipped for the Do-not-contact list. */
                                 do_not_contact: number;
-                                /** @description A LinkedIn source: people imported who opted out of email only. */
+                                /** @description People imported who will get no email: a LinkedIn source counts those who opted out of email only; rows and CSV count rows whose email address (any spelling of it) opted out. They are imported; every email to them is refused. */
                                 no_email: number;
                             };
                             /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
@@ -52543,7 +52593,7 @@ export interface operations {
                             found: number;
                             /** @description A LinkedIn source: people skipped for the Do-not-contact list. */
                             do_not_contact: number;
-                            /** @description A LinkedIn source: people imported who opted out of email only. */
+                            /** @description People imported who will get no email: a LinkedIn source counts those who opted out of email only; rows and CSV count rows whose email address (any spelling of it) opted out. They are imported; every email to them is refused. */
                             no_email: number;
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
@@ -52645,7 +52695,7 @@ export interface operations {
                             found: number;
                             /** @description A LinkedIn source: people skipped for the Do-not-contact list. */
                             do_not_contact: number;
-                            /** @description A LinkedIn source: people imported who opted out of email only. */
+                            /** @description People imported who will get no email: a LinkedIn source counts those who opted out of email only; rows and CSV count rows whose email address (any spelling of it) opted out. They are imported; every email to them is refused. */
                             no_email: number;
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
@@ -52841,7 +52891,7 @@ export interface operations {
                             found: number;
                             /** @description A LinkedIn source: people skipped for the Do-not-contact list. */
                             do_not_contact: number;
-                            /** @description A LinkedIn source: people imported who opted out of email only. */
+                            /** @description People imported who will get no email: a LinkedIn source counts those who opted out of email only; rows and CSV count rows whose email address (any spelling of it) opted out. They are imported; every email to them is refused. */
                             no_email: number;
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
@@ -53001,7 +53051,7 @@ export interface operations {
                             found: number;
                             /** @description A LinkedIn source: people skipped for the Do-not-contact list. */
                             do_not_contact: number;
-                            /** @description A LinkedIn source: people imported who opted out of email only. */
+                            /** @description People imported who will get no email: a LinkedIn source counts those who opted out of email only; rows and CSV count rows whose email address (any spelling of it) opted out. They are imported; every email to them is refused. */
                             no_email: number;
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
@@ -53179,7 +53229,7 @@ export interface operations {
                             found: number;
                             /** @description A LinkedIn source: people skipped for the Do-not-contact list. */
                             do_not_contact: number;
-                            /** @description A LinkedIn source: people imported who opted out of email only. */
+                            /** @description People imported who will get no email: a LinkedIn source counts those who opted out of email only; rows and CSV count rows whose email address (any spelling of it) opted out. They are imported; every email to them is refused. */
                             no_email: number;
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
@@ -53357,7 +53407,7 @@ export interface operations {
                             found: number;
                             /** @description A LinkedIn source: people skipped for the Do-not-contact list. */
                             do_not_contact: number;
-                            /** @description A LinkedIn source: people imported who opted out of email only. */
+                            /** @description People imported who will get no email: a LinkedIn source counts those who opted out of email only; rows and CSV count rows whose email address (any spelling of it) opted out. They are imported; every email to them is refused. */
                             no_email: number;
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
@@ -66674,7 +66724,7 @@ export interface operations {
                             cap_lowered_to: number | null;
                             /** @description Emails it sent today, whatever the filters. */
                             sent_today: number;
-                            /** @description Emails it sent in the window under the filters. */
+                            /** @description Campaign emails it sent in the window under the filters. */
                             sent: number;
                             bounces: {
                                 /** @description Hard bounces of those emails. */
@@ -66756,6 +66806,11 @@ export interface operations {
                             };
                             /** @description Its reputation, 0 to 100, as GET /v1/mailboxes/{id} serves it; null while there is too little to judge (never 0 for that). */
                             reputation: number | null;
+                            /**
+                             * @description Why reputation is null and will stay so: warm_up_off. Null otherwise, as GET /v1/mailboxes/{id} serves it.
+                             * @enum {string|null}
+                             */
+                            reputation_reason: "warm_up_off" | null;
                             /** @description Why it is paused, as GET /v1/mailboxes/{id} serves it; null when it is not. */
                             pause_reason: string | null;
                             /** @description When a provider's pause ends (UTC), as GET /v1/mailboxes/{id} serves it; null otherwise. */
@@ -66809,6 +66864,11 @@ export interface operations {
                                 other: "inbox" | "partly_spam" | "spam" | "gathering";
                                 /** @description The hour the newest of these reads was made (UTC); null when none. */
                                 read_at: string | null;
+                                /**
+                                 * @description Why nothing will be read: warm_up_off, no Mailbox in scope has warm-up on. Null otherwise, including while a reading is still being gathered.
+                                 * @enum {string|null}
+                                 */
+                                reason: "warm_up_off" | null;
                             };
                             /** @description The newest weekly check of a Campaign's email from a Mailbox in scope, the last 30 days. */
                             weekly_check: {
@@ -66824,6 +66884,11 @@ export interface operations {
                                 microsoft_365: "inbox" | "partly_spam" | "spam" | "gathering";
                                 /** @description When that check finished (UTC); null when none. */
                                 completed_at: string | null;
+                                /**
+                                 * @description With no check on file: no_test_inboxes when weekly checks are not available. Null otherwise.
+                                 * @enum {string|null}
+                                 */
+                                reason: "no_test_inboxes" | null;
                             };
                             /** @description The newest test you ran from a Mailbox in scope, the last 30 days. */
                             tests: {
@@ -66849,6 +66914,11 @@ export interface operations {
                                 outlook_com: "inbox" | "partly_spam" | "spam" | "gathering";
                                 /** @description When that test finished (UTC); null when none. */
                                 completed_at: string | null;
+                                /**
+                                 * @description With no test on file: no_test_inboxes when tests are not available, no_test_run when none was run yet. Null otherwise.
+                                 * @enum {string|null}
+                                 */
+                                reason: "no_test_inboxes" | "no_test_run" | null;
                             };
                         };
                         /** @description With include=forecast: the emails your Campaigns' email steps are expected to send, per day from today, over the accounts you can see. Each Mailbox counts its daily cap (the lowered cap where Curviate lowered it); a Mailbox shared by several accounts' Campaigns counts its cap once across them; a paused Mailbox, or one to reconnect, counts nothing. Sends only: replies are not forecast. */
