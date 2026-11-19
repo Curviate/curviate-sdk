@@ -54,6 +54,11 @@ export const step: {
    *   with: { subject: "Quick question", text: "Hi {{lead.first_name|there}},\n\n...\n\n{{mailbox.signature}}" },
    *   next: "end",
    * });
+   * // Files go up first (`campaigns.attachments.upload`), then by id: up to 10, 20 MiB in all.
+   * step.do("email_2", "email.send", {
+   *   with: { subject: "The pricing", text: "Hi {{lead.first_name|there}}, the pricing is attached.", attachment_ids: ["cat_123"] },
+   *   next: "end",
+   * });
    */
   do<const Id extends string, const F extends DoFields<"post.comment">>(
     id: Id & CheckId<Id>,

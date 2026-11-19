@@ -135,7 +135,13 @@ export class MailboxPurchasesResource {
   }
 
   /**
-   * One order: its state, the five records to add at your domain (`mx`, `spf`,
+   * One order. `state`: `awaiting_dns` (waiting for the records), `provisioning`
+   * (charged, the Mailboxes being set up), `active`, or `cancelled` with a
+   * `reason`: `requested`, `expired`, or `host_failed` (setting up failed and
+   * Curviate undid the charge in full; an order being reversed reads
+   * `provisioning` until then). Neither `provisioning` nor `host_failed` is a
+   * cue to retry or to order again: read the order again later.
+   * Its records: the five to add at your domain (`mx`, `spf`,
    * `dkim`, `dmarc`, `tracking`; `tracking` is not required) and which are
    * found. Another Team's id answers `404 MAILBOX_PURCHASE_NOT_FOUND`, as an
    * unknown one.

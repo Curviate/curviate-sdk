@@ -96,6 +96,8 @@ export interface ActionParams {
     opt_out_link_text?: string;
     opt_out_link_word?: string;
     track_opens?: boolean;
+    /** Files uploaded first (`campaigns.attachments.upload`), by id: at most 10, 20 MiB in all. Never a URL or a path. */
+    attachment_ids?: readonly string[];
   };
   "post.react": { post?: "latest"; newer_than?: string; reaction?: Reaction };
   "post.comment": { post?: "latest"; newer_than?: string; text?: string; fallback?: string; on_missing?: OnMissing };

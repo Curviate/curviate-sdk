@@ -52,7 +52,7 @@ describe("builder and embedded schema speak Lead and Campaign", () => {
         step.do("m", "message.send", { with: { text: "Hi {{lead.first_name|there}}" }, next: "w" }),
         step.wait("w", "3bd", { next: "e" }),
         step.do("e", "email.send", {
-          with: { subject: "Hi {{lead.first_name|there}}", text: "Hello {{lead.first_name|there}}\n\n{{mailbox.signature}}", on_missing: "skip" },
+          with: { subject: "Hi {{lead.first_name|there}}", text: "Hello {{lead.first_name|there}}\n\n{{mailbox.signature}}", on_missing: "skip", attachment_ids: ["cat_01J8Z3K9P0Q1R2S3T4V5W6X7Y8"] },
           next: "u",
         }),
         step.until("u", "message.replied", { timeout: "5bd", then: "end", else: "v" }),
@@ -66,6 +66,8 @@ describe("builder and embedded schema speak Lead and Campaign", () => {
       )
       .toDocument();
     expect(validateSequence(doc)).toEqual({ errors: [], warnings: expect.any(Array) });
+    // EML-38: the builder emits the same document the CLI and REST take: attachment_ids by id, never a file.
+    expect((doc.steps.find((x) => x.id === "e") as { with: { attachment_ids: string[] } }).with.attachment_ids).toEqual(["cat_01J8Z3K9P0Q1R2S3T4V5W6X7Y8"]);
     // @ts-expect-error a duration is m, h, d or bd
     step.wait("x", "3w");
     // @ts-expect-error a message variable without its own fallback needs the step's
