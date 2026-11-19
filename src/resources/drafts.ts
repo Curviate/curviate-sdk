@@ -72,7 +72,7 @@ export class DraftsResource {
    * Store a Draft. Every field is optional, `account_id` and `text` included.
    * `POST /v1/drafts`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * With `scheduled_at` (ISO 8601 with offset, between 5 minutes and 365 days
    * ahead) the Draft is scheduled in the same call and needs an account and
@@ -132,7 +132,7 @@ export class DraftsResource {
    * Partial update: an omitted field is left as is, `null` clears it.
    * `PATCH /v1/drafts/{id}`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * `attachments` replaces the whole list (`{ id }` keeps a file, a base64
    * object adds one, anything left out is deleted). `scheduled_at` schedules,
@@ -169,7 +169,7 @@ export class DraftsResource {
    * Publish the Draft now, under the same rules and safety limits as
    * `posts.create`. `POST /v1/drafts/{id}/publish`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * Success deletes the Draft and its media, writes a publish record and
    * returns `{ object: "post_created", id }`; no webhook is sent. A known
@@ -193,7 +193,7 @@ export class DraftsResource {
    * every route. One file per call.
    * `POST /v1/drafts/{id}/attachments?filename=...`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * Small files (up to 5 MiB) can instead ride inline in `create` / `update`
    * as base64. Resolves with the Draft, the new attachment last.

@@ -125,7 +125,7 @@ export class VoiceClipsResource {
    * refused with `411`), so pass the bytes, not a stream.
    * `POST /v1/campaigns/voice-clips?filename=...`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * Limits: 1 to 120 seconds (a clip is never shortened: otherwise
    * `VOICE_CLIP_INVALID`, 422, naming the reason), up to 20 MiB
@@ -153,7 +153,7 @@ export class VoiceClipsResource {
   /**
    * One clip: `id`, `duration_ms`, `bytes`, `filename`, `created_at`. No
    * download link. Another Team's id is `RESOURCE_NOT_FOUND`, the same as an
-   * unknown one. Reads pass below Automate, as every Campaign read.
+   * unknown one. Reads need no subscription, as every Campaign read.
    * `GET /v1/campaigns/voice-clips/{id}`
    *
    * @example
@@ -176,7 +176,7 @@ export class CampaignAttachmentsResource {
    * lands better than a file.
    * `POST /v1/campaigns/attachments?filename=...`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * Limits: up to 20 MiB (`PAYLOAD_TOO_LARGE`, 413), 100 uploads per Team per
    * 24 hours (`RATE_LIMIT_TENANT`, 429, `Retry-After` is the wait). The type
@@ -233,7 +233,7 @@ export class CampaignsResource {
    * of hand-written JSON pass `Sequence.fromDocument(json)`.
    * `POST /v1/campaigns`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * Days and hours in `schedule` are read in each sending account's own time
    * zone. `schedule.timezone` and `settings.stop_on_engagement` are retired:
@@ -316,7 +316,7 @@ export class CampaignsResource {
    * (default 5; below 2 warns W20) and `settings.reply_scope` (`both`, the
    * default, or `own_channel`).
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * @example
    * const campaign = await curviate.campaigns.get("mot_123");
@@ -353,7 +353,7 @@ export class CampaignsResource {
    * send for.
    * `POST /v1/campaigns/{id}/start`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * @example
    * await curviate.campaigns.check("mot_123");
@@ -413,7 +413,7 @@ export class CampaignsResource {
    * included.
    * `POST /v1/campaigns/{id}/resume`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * @example
    * await curviate.campaigns.resume("mot_123");
@@ -494,7 +494,7 @@ export class CampaignsResource {
    * `filtered_out`, ...). Not on an `archived` Campaign.
    * `POST /v1/campaigns/{id}/leads`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * @example
    * const { results } = await curviate.campaigns.addLeads("mot_123", { lead_ids: ["con_123"] });
@@ -601,7 +601,7 @@ export class EnrollmentsResource {
    * `ENROLLMENT_NOT_ACTIVE`.
    * `POST /v1/enrollments/{id}/resume`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * @example
    * await curviate.enrollments.resume("enr_123"); // lift your pause
@@ -619,7 +619,7 @@ export class EnrollmentsResource {
    * listing the awaited names.
    * `POST /v1/enrollments/{id}/events`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * @example
    * await curviate.enrollments.events("enr_123", { name: "research_ready" });
@@ -637,7 +637,7 @@ export class EnrollmentsResource {
    * `ALREADY_ENROLLED_ON_ACCOUNT`, `KNOWN_CHAT` or `STEP_IN_FLIGHT`.
    * `POST /v1/enrollments/{id}/reassign`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * @example
    * const { warnings } = await curviate.enrollments.reassign("enr_123", { account_id: "acc_456" });
@@ -652,7 +652,7 @@ export class EnrollmentsResource {
    * required). Each is decided alone, as its single call would be, with its
    * own result (`ok`, or `error` with that call's code; a server error on one
    * is `INTERNAL` for it); not atomic. List with the same filter to see the
-   * matches first. Below Automate only `pause` and `stop` run.
+   * matches first. Without a subscription only `pause` and `stop` run.
    * `POST /v1/enrollments/bulk`
    *
    * @example
@@ -675,7 +675,7 @@ export class EnrollmentsResource {
    * with no `httpStatus`. Sent as `bulk` with this one id.
    * `POST /v1/enrollments/bulk`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * @example
    * try {
@@ -703,7 +703,7 @@ export class EnrollmentsResource {
    * plus a `Deprecation` header and warning W13; accepted until 2027-01-19.
    * `POST /v1/enrollments/{id}/signal`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * @deprecated Use `enrollments.events`; `signal` stops working on 2027-01-19.
    *

@@ -98,8 +98,8 @@ export class UniboxAccountsResource {
    * 15 minutes.
    * `PATCH /v1/unibox/accounts/{account_id}`
    *
-   * Needs Automate to turn it on: a Team below that Tier is refused with
-   * `TIER_REQUIRED`. Turning it off passes on any Tier.
+   * Needs a subscription to turn it on: a Team without one is refused with
+   * `TIER_REQUIRED`. Turning it off needs none.
    *
    * @example
    * await curviate.unibox.accounts.update("acc_123", { sync_full_inbox: true });
@@ -312,7 +312,7 @@ export class UniboxResource {
    * `paused`, when the pause ends, `null` if unknown). A disconnected account
    * named here is ignored and claims no cooldown.
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * @example
    * const { accounts } = await curviate.unibox.refresh();
@@ -326,7 +326,7 @@ export class UniboxResource {
    * you hold) and add `tags`, never removing any.
    * `POST /v1/unibox/chats/{account_id}/{chat_id}/lead`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * @example
    * const { lead_id } = await curviate.unibox.tagLead("acc_123", "chat_123", { tags: ["warm"] });
@@ -342,7 +342,7 @@ export class UniboxResource {
    * with does not apply; every other rule does.
    * `POST /v1/unibox/chats/{account_id}/{chat_id}/enrollments`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * @example
    * const enrollment = await curviate.unibox.enroll("acc_123", "chat_123", { campaign_id: "mot_123" });
@@ -374,7 +374,7 @@ export class UniboxResource {
    * `not_interested` when your team turned that on; `out_of_office` makes the
    * Lead wait 7 days, then the Campaign goes on (correcting it away ends the
    * wait and counts the reply); your team's Tag for the label is added to the
-   * Lead. No LinkedIn call. Needs Automate.
+   * Lead. No LinkedIn call. Needs a subscription.
    * `PATCH /v1/unibox/messages/{message_id}`
    *
    * @example

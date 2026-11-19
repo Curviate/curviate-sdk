@@ -115,7 +115,7 @@ await curviate.billing.seats.return(seat_id);
 
 ## Tiers
 
-A Team's Tier decides which features it has. Drafts, Leads, Campaigns (and Network and Unibox) need Automate: a write in one of those groups on a Team below it is refused with `TIER_REQUIRED`, before the request is even validated. Reads, exports, deletes and stopping running work (`campaigns.pause`, `campaigns.archive`, `enrollments.stop`) pass on any Tier. The refusal names what is missing:
+A Team's Tier decides which features it has. Drafts, Leads, Campaigns (and Network and Unibox) need a subscription: a write in one of those groups on a Team without one is refused with `TIER_REQUIRED`, before the request is even validated. Reads, exports, deletes and stopping running work (`campaigns.pause`, `campaigns.archive`, `enrollments.stop`) pass without one. The refusal names what is missing:
 
 ```ts
 try {
@@ -302,7 +302,7 @@ Every rate is the outcome so far over what was sent in the window, not over old 
 
 Unibox traps. A send through the API (`messaging.sendMessage`, `startChat`, `sendInMail`) marks the chat read, so `unread` turns `false` and `marked_unread` clears; a Campaign send leaves it. `marked_unread` is `{origin: "unibox" | "api" | "linkedin", at}` when a chat was made unread without a new message from them. A disconnected account stays in `unibox.accounts.list()` and `unibox.list()` (`account_status: "disconnected"`), read-only: its messages come from the stored copy (`coverage.complete`, attachments `unavailable`), and a write on it throws `REAUTH_REQUIRED` (409). `unibox.refresh` runs once per account per 2 minutes (`cooldown` with `next_allowed_at` after that) and covers accounts with Campaign chats or Campaign outreach even without full-inbox sync; `not_synced` means none of those apply. A sent message carries `origin` (`campaign`, `unibox`, `api`, `linkedin`; omitted when unknown, never on a received message or `last_message`) and `is_deleted`. Analytics `origin` is `campaign`, `unibox` or `api`; `direct` is an alias for `unibox` and `api`.
 
-Needs Automate: `network.resync`, `unibox.refresh`, `unibox.tagLead`, `unibox.enroll` and turning full-inbox sync on (off passes on any Tier). Messages and actions on a chat stay on `curviate.account(id).messaging`.
+Needs a subscription: `network.resync`, `unibox.refresh`, `unibox.tagLead`, `unibox.enroll` and turning full-inbox sync on (off passes without one). Messages and actions on a chat stay on `curviate.account(id).messaging`.
 
 ## Drafts and scheduled posts
 

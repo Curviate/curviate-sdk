@@ -36,7 +36,7 @@ export class LeadListsResource {
    * and `lead_count` is how many Leads matched.
    * `POST /v1/lead-lists`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * @example
    * const list = await curviate.leadLists.create({ name: "Q4 webinar" });
@@ -84,7 +84,7 @@ export class LeadListsResource {
    * Rename a Lead list or change its `description`.
    * `PATCH /v1/lead-lists/{id}`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * @example
    * await curviate.leadLists.update("cl_123", { name: "Q4 webinar (attended)" });

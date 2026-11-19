@@ -299,8 +299,8 @@ export const ERROR_CODES = [
   //   while the Team has it (an Account on a seat another Team lent this one
   //   carries that seat's Tier), `details.account_id` names it: leave it out,
   //   or ask the Owner who lent the seat. Writes in Drafts, Leads and
-  //   Campaigns (and Network and Unibox) need Automate; reads, exports, deletes
-  //   and stopping running work pass on any Tier.
+  //   Campaigns (and Network and Unibox) need a subscription; reads, exports, deletes
+  //   and stopping running work need none.
   "INSUFFICIENT_ROLE",
   "TIER_REQUIRED",
   // - `TEAM_ACCESS_DENIED` (403): the request names a team (the `team` client
@@ -408,7 +408,9 @@ export const ERROR_CODES = [
   //   waiting for its records (being charged, being set up, active or
   //   cancelled); the message names its state. During a charge, read the
   //   order again later; never retry the cancel.
-  // - `MAILBOX_PURCHASE_TRIAL` (403): a Team on a trial cannot order.
+  // - `MAILBOX_PURCHASE_TRIAL` (403): a Team without a paid plan cannot order: on a trial,
+  //   after a trial that ended without a purchase, never subscribed, or with a
+  //   payment past due. Nothing was charged.
   // - `DOMAIN_IN_USE` (409): the domain already has Mailboxes from Curviate or
   //   an order; name another domain.
   // - `DOMAIN_IS_COMPANY_EMAIL` (422): the domain your company email runs on;

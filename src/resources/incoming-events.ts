@@ -8,7 +8,7 @@
  * switch it on with `update`. The `url` is in full only in the `create` and
  * `rotate` results, masked on every read: treat it like a password. A post to
  * a URL that was rotated out (after its 24 h) or deleted answers `410
- * INCOMING_URL_RETIRED`. Needs Automate.
+ * INCOMING_URL_RETIRED`. Needs a subscription.
  */
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";

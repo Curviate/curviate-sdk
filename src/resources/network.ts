@@ -88,7 +88,7 @@ export class NetworkResource {
    * `starts_at`. Branch on `object`.
    * `POST /v1/network/resync`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * @example
    * await curviate.network.resync({ account_id: "acc_123" });

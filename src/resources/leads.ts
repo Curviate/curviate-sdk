@@ -94,7 +94,7 @@ export class LeadImportsResource {
    * LinkedIn's last results), `restart: true` reads from the beginning. An
    * open import of the same source is `IMPORT_STATUS_CONFLICT`.
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * A malformed request (an unknown key, a wrong type) is refused whole; a row
    * with a bad value is skipped and named in the report. Not retry-safe: a
@@ -166,7 +166,7 @@ export class LeadImportsResource {
    * Pause an import from a LinkedIn source: no page is read until it
    * resumes; a page in flight is stored, and the Account is free for its
    * next import meanwhile. `IMPORT_STATUS_CONFLICT` unless queued or
-   * running. Needs Automate.
+   * running. Needs a subscription.
    * `POST /v1/leads/imports/{id}/pause`
    *
    * @example
@@ -179,7 +179,7 @@ export class LeadImportsResource {
   /**
    * Resume a paused import: it reads on from where it stopped, after the
    * Account's running import if there is one, at the same pace.
-   * `IMPORT_STATUS_CONFLICT` unless paused. Needs Automate.
+   * `IMPORT_STATUS_CONFLICT` unless paused. Needs a subscription.
    * `POST /v1/leads/imports/{id}/resume`
    *
    * @example
@@ -192,7 +192,7 @@ export class LeadImportsResource {
   /**
    * Stop an import for good: the people found so far stay and the position
    * is kept, so a new import of the same source with `continue_from` reads
-   * on from there. `IMPORT_STATUS_CONFLICT` once finished. Needs Automate.
+   * on from there. `IMPORT_STATUS_CONFLICT` once finished. Needs a subscription.
    * `POST /v1/leads/imports/{id}/stop`
    *
    * @example
@@ -266,7 +266,7 @@ export class LeadsResource {
    * adds it to a list (a new name creates the list).
    * `POST /v1/leads`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * @example
    * const { id, outcome } = await curviate.leads.upsert({
@@ -289,7 +289,7 @@ export class LeadsResource {
    * `linkedin_url` cannot change.
    * `PATCH /v1/leads/{id}`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * @example
    * await curviate.leads.update("con_123", { company: "Acme", extra: { plan: "pro" } });
@@ -353,7 +353,7 @@ export class LeadsResource {
    * cap throws `INVALID_REQUEST` naming the count and changes nothing.
    * `POST /v1/leads/update`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * @example
    * await curviate.leads.updateMany({ lead_ids: ["con_1", "con_2"], add_tags: ["vip"], add_list_name: "Q4" });
@@ -376,7 +376,7 @@ export class LeadsResource {
    * `refill`, `cache_only` (never a visit, no `account_id` needed) or `live`.
    * `POST /v1/leads/enrich`
    *
-   * Needs Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * @example
    * const { counts } = await curviate.leads.enrich({ list_id: "cl_123", account_id: "acc_123" });

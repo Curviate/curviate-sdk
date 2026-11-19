@@ -3813,7 +3813,7 @@ export interface paths {
         put?: never;
         /**
          * Buy Mailboxes from Curviate
-         * @description Orders 1 to 50 Mailboxes on one domain your Team owns, warm-up included, at the price `GET /v1/mailboxes/purchases/quote` gives your Team (the answer's `price` is the same object). The order waits in `awaiting_dns` until the records it shows are found at your domain; nothing is charged before. Owners only. An order through an API key counts under the team's cap on Mailboxes from Curviate: from 80% of it the order carries a SPENDING_CAP_NEAR notice, past it the order is refused 403 SPENDING_CAP_REACHED and nothing is ordered. A Team on a trial cannot order; the domain your company email runs on is refused; a domain already ordered by your Team and still waiting answers `409 MAILBOX_PURCHASE_PENDING`.
+         * @description Orders 1 to 50 Mailboxes on one domain your Team owns, warm-up included, at the price `GET /v1/mailboxes/purchases/quote` gives your Team (the answer's `price` is the same object). The order waits in `awaiting_dns` until the records it shows are found at your domain; nothing is charged before. Owners only. An order through an API key counts under the team's cap on Mailboxes from Curviate: from 80% of it the order carries a SPENDING_CAP_NEAR notice, past it the order is refused 403 SPENDING_CAP_REACHED and nothing is ordered. A Team without a paid plan (on a trial, or with a payment past due) cannot order; the domain your company email runs on is refused; a domain already ordered by your Team and still waiting answers `409 MAILBOX_PURCHASE_PENDING`.
          */
         post: operations["postV1MailboxesPurchases"];
         delete?: never;
@@ -48546,7 +48546,7 @@ export interface operations {
                         /** @description Whether your Team can place this order now. */
                         orderable: boolean;
                         /**
-                         * @description trial: available once your Team pays; sales_paused: Mailboxes from Curviate cannot be ordered at the moment.
+                         * @description trial: available once your Team pays (a Team on a trial or without a paid plan, or with a payment past due); sales_paused: Mailboxes from Curviate cannot be ordered at the moment.
                          * @enum {string|null}
                          */
                         not_orderable_reason: "trial" | "sales_paused" | null;
@@ -48846,7 +48846,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE (not an Owner), MAILBOX_PURCHASE_TRIAL (a Team on a trial) or SPENDING_CAP_REACHED (an agent's order past the cap on Mailboxes from Curviate; carries cap_mailboxes and room_mailboxes). */
+            /** @description INSUFFICIENT_ROLE (not an Owner), MAILBOX_PURCHASE_TRIAL (a Team without a paid plan: on a trial, its trial ended, or a payment past due) or SPENDING_CAP_REACHED (an agent's order past the cap on Mailboxes from Curviate; carries cap_mailboxes and room_mailboxes). */
             403: {
                 headers: {
                     [name: string]: unknown;
