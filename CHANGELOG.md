@@ -22,6 +22,10 @@ An exhaustive `switch` must handle: `CurviateEvent` gains the eight `signal` eve
 - **`campaigns.placementChecks(campaignId)`**: the Campaign's weekly placement checks.
 - Mailbox `warm_up.state` gains `waiting` (on, but not running now; its day held) with `reason`: `reconnect_needed`, `trial`, `app_password`, `warm_up_app` or `allowance`.
 
+### Limit hits
+
+- **`accounts.listSafetyEvents(accountId, { budget_row?, since?, until?, limit?, cursor? })`** (`GET /v1/{account_id}/safety-events`): the actions Curviate refused at a safety limit or pause, newest first.
+
 ### Mailboxes from Curviate
 
 - **`mailboxes.purchases.create({ domain, mailboxes })`**, **`list({ state? })`** and **`get(id)`**: order Mailboxes on a domain your Team owns and read the order, its state and the five records to add. Today an order is placed by an Owner in the dashboard: `create` with an API key answers `401 UNAUTHORIZED`. New codes `MAILBOX_PURCHASE_NOT_FOUND`, `MAILBOX_PURCHASE_PENDING`, `MAILBOX_PURCHASE_TRIAL`, `DOMAIN_IN_USE`, `DOMAIN_IS_COMPANY_EMAIL`, `MAILBOX_SALES_PAUSED`.

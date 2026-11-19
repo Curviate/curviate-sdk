@@ -80,6 +80,8 @@ export type AccountMetricList =
   paths["/v1/accounts/{account_id}/metrics"]["get"]["responses"]["200"]["content"]["application/json"];
 
 /** `GET /v1/{account_id}/safety-policy` 200 body: every configurable field per budget row, plus the derived `warm_up` and `activity_window`. */
+export type SafetyEventListParams = NonNullable<paths["/v1/{account_id}/safety-events"]["get"]["parameters"]["query"]>;
+export type SafetyEventListPage = paths["/v1/{account_id}/safety-events"]["get"]["responses"]["200"]["content"]["application/json"];
 export type SafetyPolicy =
   paths["/v1/{account_id}/safety-policy"]["get"]["responses"]["200"]["content"]["application/json"];
 
@@ -489,6 +491,24 @@ export class AccountsResource {
     return this.ctx.request<SafetyPolicy>({
       method: "GET",
       path: apiPath`/v1/${accountId}/safety-policy`,
+    });
+  }
+
+  /**
+   * The account's limit hits, newest first: each entry is an action Curviate
+   * refused at a safety limit or pause (`blocked: true`), or a record of a
+   * pause lifted early. Filter by `budget_row`, `since` and `until`; page with
+   * `cursor` until it is `null`. One HTTP call per page.
+   * `GET /v1/{account_id}/safety-events`
+   *
+   * @example
+   * const { items } = await curviate.accounts.listSafetyEvents("acc_123", { budget_row: "profile_views" });
+   */
+  listSafetyEvents(accountId: string, params?: SafetyEventListParams): Promise<SafetyEventListPage> {
+    return this.ctx.request<SafetyEventListPage>({
+      method: "GET",
+      path: apiPath`/v1/${accountId}/safety-events`,
+      ...(params ? { query: params } : {}),
     });
   }
 
