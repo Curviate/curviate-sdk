@@ -49218,10 +49218,10 @@ export interface operations {
                                  */
                                 state: "off" | "warming" | "waiting";
                                 /**
-                                 * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (a Microsoft Mailbox: connect the Curviate Warm-up app for it again), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added).
+                                 * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (a Microsoft Mailbox: connect the Curviate Warm-up app for it again), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added), `address_check` (Curviate is confirming that mail to this address reaches this Mailbox: one email to the address, warm-up starts once it arrives), `address_unconfirmed` (mail to this address has not reached this Mailbox: check its connection settings; Curviate tries again by itself, within 30 days).
                                  * @enum {string|null}
                                  */
-                                reason: "paused_by_curviate" | "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
+                                reason: "paused_by_curviate" | "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | "address_check" | "address_unconfirmed" | null;
                             };
                             /** @description Where this Mailbox's warm-up mail lands, per receiving provider, over the last 7 days: `inbox`, `partly_spam`, `spam`, or `gathering` while there is not enough to say. `read_at` is the last reading counted. Its own warm-up only; a verdict, never a count. */
                             landing: {
@@ -49381,10 +49381,10 @@ export interface operations {
                              */
                             state: "off" | "warming" | "waiting";
                             /**
-                             * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (a Microsoft Mailbox: connect the Curviate Warm-up app for it again), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added).
+                             * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (a Microsoft Mailbox: connect the Curviate Warm-up app for it again), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added), `address_check` (Curviate is confirming that mail to this address reaches this Mailbox: one email to the address, warm-up starts once it arrives), `address_unconfirmed` (mail to this address has not reached this Mailbox: check its connection settings; Curviate tries again by itself, within 30 days).
                              * @enum {string|null}
                              */
-                            reason: "paused_by_curviate" | "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
+                            reason: "paused_by_curviate" | "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | "address_check" | "address_unconfirmed" | null;
                         };
                         /** @description Where this Mailbox's warm-up mail lands, per receiving provider, over the last 7 days: `inbox`, `partly_spam`, `spam`, or `gathering` while there is not enough to say. `read_at` is the last reading counted. Its own warm-up only; a verdict, never a count. */
                         landing: {
@@ -49653,10 +49653,10 @@ export interface operations {
                              */
                             state: "off" | "warming" | "waiting";
                             /**
-                             * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (a Microsoft Mailbox: connect the Curviate Warm-up app for it again), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added).
+                             * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (a Microsoft Mailbox: connect the Curviate Warm-up app for it again), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added), `address_check` (Curviate is confirming that mail to this address reaches this Mailbox: one email to the address, warm-up starts once it arrives), `address_unconfirmed` (mail to this address has not reached this Mailbox: check its connection settings; Curviate tries again by itself, within 30 days).
                              * @enum {string|null}
                              */
-                            reason: "paused_by_curviate" | "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
+                            reason: "paused_by_curviate" | "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | "address_check" | "address_unconfirmed" | null;
                         };
                         /** @description Where this Mailbox's warm-up mail lands, per receiving provider, over the last 7 days: `inbox`, `partly_spam`, `spam`, or `gathering` while there is not enough to say. `read_at` is the last reading counted. Its own warm-up only; a verdict, never a count. */
                         landing: {
@@ -49832,10 +49832,10 @@ export interface operations {
                              */
                             state: "off" | "warming" | "waiting";
                             /**
-                             * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (a Microsoft Mailbox: connect the Curviate Warm-up app for it again), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added).
+                             * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (a Microsoft Mailbox: connect the Curviate Warm-up app for it again), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added), `address_check` (Curviate is confirming that mail to this address reaches this Mailbox: one email to the address, warm-up starts once it arrives), `address_unconfirmed` (mail to this address has not reached this Mailbox: check its connection settings; Curviate tries again by itself, within 30 days).
                              * @enum {string|null}
                              */
-                            reason: "paused_by_curviate" | "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
+                            reason: "paused_by_curviate" | "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | "address_check" | "address_unconfirmed" | null;
                         };
                         /** @description Where this Mailbox's warm-up mail lands, per receiving provider, over the last 7 days: `inbox`, `partly_spam`, `spam`, or `gathering` while there is not enough to say. `read_at` is the last reading counted. Its own warm-up only; a verdict, never a count. */
                         landing: {
@@ -50011,10 +50011,10 @@ export interface operations {
                              */
                             state: "off" | "warming" | "waiting";
                             /**
-                             * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (a Microsoft Mailbox: connect the Curviate Warm-up app for it again), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added).
+                             * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (a Microsoft Mailbox: connect the Curviate Warm-up app for it again), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added), `address_check` (Curviate is confirming that mail to this address reaches this Mailbox: one email to the address, warm-up starts once it arrives), `address_unconfirmed` (mail to this address has not reached this Mailbox: check its connection settings; Curviate tries again by itself, within 30 days).
                              * @enum {string|null}
                              */
-                            reason: "paused_by_curviate" | "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
+                            reason: "paused_by_curviate" | "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | "address_check" | "address_unconfirmed" | null;
                         };
                         /** @description Where this Mailbox's warm-up mail lands, per receiving provider, over the last 7 days: `inbox`, `partly_spam`, `spam`, or `gathering` while there is not enough to say. `read_at` is the last reading counted. Its own warm-up only; a verdict, never a count. */
                         landing: {
