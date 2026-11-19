@@ -204,6 +204,7 @@ export type {
   MailboxPurchaseCreateBody,
   MailboxPurchaseListParams,
   MailboxPurchaseListPage,
+  MailboxQuote,
 } from "./resources/mailboxes.js";
 export type { DomainChecks } from "./resources/domains.js";
 

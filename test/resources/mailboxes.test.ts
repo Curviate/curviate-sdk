@@ -44,6 +44,7 @@ describe("Mailbox, Domain and Team-policy operations", () => {
     ["mailboxes.purchases.list", () => c.mailboxes.purchases.list({ state: "awaiting_dns" }), { method: "GET", path: "/v1/mailboxes/purchases", query: "?state=awaiting_dns" }],
     ["mailboxes.purchases.get", () => c.mailboxes.purchases.get("mpu_1"), { method: "GET", path: "/v1/mailboxes/purchases/mpu_1" }],
     ["mailboxes.purchases.cancel", () => c.mailboxes.purchases.cancel("mpu_1"), { method: "DELETE", path: "/v1/mailboxes/purchases/mpu_1" }],
+    ["mailboxes.purchases.quote", () => c.mailboxes.purchases.quote(3), { method: "GET", path: "/v1/mailboxes/purchases/quote", query: "?mailboxes=3" }],
     ["mailboxes.purchases.check", () => c.mailboxes.purchases.check("mpu_1"), { method: "POST", path: "/v1/mailboxes/purchases/mpu_1/check" }],
     ["domains.check", () => c.domains.check("acme.example"), { method: "GET", path: "/v1/domains/acme.example/checks" }],
     ["domains.check now", () => c.domains.check("acme.example", { now: true }), { method: "POST", path: "/v1/domains/acme.example/checks" }],

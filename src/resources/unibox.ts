@@ -225,11 +225,17 @@ export class UniboxResource {
    * one address with no signature and no opt-out line, counts against the
    * Mailbox's daily limit, and ends the Lead's open Enrollments on that
    * Account as a reply would. `cc` and `bcc` (at most 20 addresses together)
-   * and `attachments` (`{filename, content_type, content}` with base64
-   * content, at most 10, 20 MiB in all; executables, scripts and
-   * macro-enabled Office files refused) ride along; from a Microsoft sign-in
-   * Mailbox, files of about 2.2 MB in all go today, and more is refused with
-   * `PLATFORM_ERROR` (`retryLikelyToSucceed` false, nothing sent). When the receiving server
+   * ride along, and files: `attachment_ids` (`cat_...` ids from
+   * `campaigns.attachments.upload`; an id that is not your Team's upload is
+   * `404 RESOURCE_NOT_FOUND`, nothing sent) and/or inline `attachments`
+   * (`{filename, content_type, content}` with base64 content; the route reads
+   * at most 9 MiB of JSON, so inline files reach about 6.7 MiB): at most 10
+   * files and 20 MiB in all; executables, scripts and macro-enabled Office
+   * files refused. A Microsoft sign-in Mailbox takes about 2.2 MB of files in
+   * all: more is refused before anything is sent with `PLATFORM_ERROR`,
+   * `reason` `attachment_refused` (`retryLikelyToSucceed` false; the daily
+   * limit untouched). Bcc is never shown to the other recipients, and a reader
+   * who may not operate the Account reads `bcc: null`. When the receiving server
    * refused some Cc or Bcc addresses but took the Lead's, the answer carries
    * `warnings: [{ code: "recipients_refused", addresses }]`. Read `email` on
    * `getConversation` first: it says whether email is available and from which
@@ -237,11 +243,14 @@ export class UniboxResource {
    * call, never retried by the SDK. A `PLATFORM_ERROR` with
    * `err.outcomeUnknown` means the provider stopped answering after it had the
    * whole email: it may have been sent and is kept as sent. Never send it
-   * again; read the conversation first.
+   * again; read the conversation first. The same holds for a timeout or a lost
+   * connection: a retry can send the email twice.
    * `POST /v1/unibox/conversations/{conversation_id}/emails`
    *
    * @example
    * await curviate.unibox.sendEmail("cnv_123", { thread_id: "thr_123", text: "Thanks, Thursday works." });
+   * const { id } = await curviate.campaigns.attachments.upload(file, { filename: "deck.pdf" });
+   * await curviate.unibox.sendEmail("cnv_123", { thread_id: "thr_123", text: "The deck, as promised.", attachment_ids: [id] });
    */
   sendEmail(conversationId: string, body: UniboxSendEmailBody): Promise<UniboxSentEmail> {
     return this.ctx.request<UniboxSentEmail>({ method: "POST", path: apiPath`/v1/unibox/conversations/${conversationId}/emails`, body });
