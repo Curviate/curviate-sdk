@@ -188,7 +188,9 @@ export class AnalyticsResource {
    * day, from the Campaign engine's simulation). Read from an hourly rollup of each
    * send: no email or inbox is read. `tracking` says whether `open` covers
    * every email (`set_up`), some (`partial`) or none (`not_set_up`, `open`
-   * is `null`). Read-only.
+   * is `null`). Each rate is still maturing while more than a third of its
+   * emails were sent under 7 days ago (`maturing`): it may still rise. A
+   * bounce rate needs 50 emails sent to mean anything. Read-only.
    * `GET /v1/analytics/email`
    *
    * @example
