@@ -43,11 +43,13 @@ describe("Mailbox, Domain and Team-policy operations", () => {
     ["mailboxes.purchases.create", () => c.mailboxes.purchases.create({ domain: "acme-mail.example.test", mailboxes: [{ local_part: "anna", display_name: "Anna Weber", sends_for: { kind: "shared" } }] }), { method: "POST", path: "/v1/mailboxes/purchases", body: { domain: "acme-mail.example.test", mailboxes: [{ local_part: "anna", display_name: "Anna Weber", sends_for: { kind: "shared" } }] } }],
     ["mailboxes.purchases.list", () => c.mailboxes.purchases.list({ state: "awaiting_dns" }), { method: "GET", path: "/v1/mailboxes/purchases", query: "?state=awaiting_dns" }],
     ["mailboxes.purchases.get", () => c.mailboxes.purchases.get("mpu_1"), { method: "GET", path: "/v1/mailboxes/purchases/mpu_1" }],
+    ["mailboxes.purchases.check", () => c.mailboxes.purchases.check("mpu_1"), { method: "POST", path: "/v1/mailboxes/purchases/mpu_1/check" }],
     ["domains.check", () => c.domains.check("acme.example"), { method: "GET", path: "/v1/domains/acme.example/checks" }],
     ["domains.check now", () => c.domains.check("acme.example", { now: true }), { method: "POST", path: "/v1/domains/acme.example/checks" }],
     ["connectRequests.create mailbox", () => c.connectRequests.create({ mailbox }), { method: "POST", path: "/v1/auth/connect-requests", body: { mailbox } }],
     ["connectRequests.create reconnect + sealed credentials", () => c.connectRequests.create({ mailbox_id: "mbx_1", credentials: { password: "fake-not-a-password" } }), { method: "POST", body: { mailbox_id: "mbx_1", credentials: { password: "fake-not-a-password" } } }],
     ["connectRequests.create google_sign_in", () => c.connectRequests.create({ mailbox: { connection: "google_sign_in", address: "a@acme.example" } }), { method: "POST", body: { mailbox: { connection: "google_sign_in", address: "a@acme.example" } } }],
+    ["exports.create email_daily", () => c.exports.create({ entity: "email_daily", format: "csv", filters: { range: "30d" } }), { method: "POST", path: "/v1/exports", body: { entity: "email_daily", format: "csv", filters: { range: "30d" } } }],
     ["accounts.listSafetyEvents", () => c.accounts.listSafetyEvents("acc_1", { budget_row: "profile_views", limit: 5 }), { method: "GET", path: "/v1/acc_1/safety-events", query: "?budget_row=profile_views&limit=5" }],
     ["accounts.getTeamSafetyPolicy", () => c.accounts.getTeamSafetyPolicy(), { method: "GET", path: "/v1/safety-policy" }],
     ["accounts.updateTeamSafetyPolicy email", () => c.accounts.updateTeamSafetyPolicy({ email: { default_daily_cap: 40, opt_out_scope: "email_only", opt_out_link_word: "Abmelden" } }), { method: "PATCH", path: "/v1/safety-policy", body: { email: { default_daily_cap: 40, opt_out_scope: "email_only", opt_out_link_word: "Abmelden" } } }],
@@ -75,7 +77,7 @@ describe("Mailbox, Domain and Team-policy operations", () => {
   it.each([
     ["PLACEMENT_TEST_ALLOWANCE_EXHAUSTED", 429, () => c.mailboxes.placementTests.run("mbx_1", { subject: "s", body: "b" })],
     ["PLACEMENT_TESTS_UNAVAILABLE", 503, () => c.mailboxes.placementTests.run("mbx_1", { subject: "s", body: "b" })],
-    ["UNAUTHORIZED", 401, () => c.mailboxes.purchases.create({ domain: "acme-mail.example.test", mailboxes: [{ local_part: "anna", display_name: "Anna" }] })],
+    ["SPENDING_CAP_REACHED", 403, () => c.mailboxes.purchases.create({ domain: "acme-mail.example.test", mailboxes: [{ local_part: "anna", display_name: "Anna" }] })],
     ["MAILBOX_SALES_PAUSED", 409, () => c.mailboxes.purchases.create({ domain: "acme-mail.example.test", mailboxes: [{ local_part: "anna", display_name: "Anna" }] })],
   ] as const)("%s (%i) decodes to itself after exactly one request, never retried", async (code, status, run) => {
     let calls = 0;

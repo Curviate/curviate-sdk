@@ -1,6 +1,6 @@
 /**
  * Mailboxes resource: 7 methods (root-scoped), `curviate.mailboxes`, with
- * `curviate.mailboxes.placementTests` (3) and `curviate.mailboxes.purchases` (3).
+ * `curviate.mailboxes.placementTests` (3) and `curviate.mailboxes.purchases` (4).
  *
  * A Mailbox is an email address your Team sends from. Connecting one is a
  * Connect request (`curviate.connectRequests.create({ mailbox: ... })`): there
@@ -100,13 +100,16 @@ export class MailboxPurchasesResource {
    * Order 1 to 50 Mailboxes from Curviate on one domain your Team owns, $5 a
    * month each, warm-up included. The order waits in `awaiting_dns` until the
    * records it lists are found at your domain; nothing is charged before.
-   * Today an order is placed by a Team Owner in the dashboard: an API key is
-   * refused with `401 UNAUTHORIZED`, and a key of a Manager or Member with
-   * `403 INSUFFICIENT_ROLE`. Other refusals: `MAILBOX_PURCHASE_TRIAL` (a Team
-   * on a trial), `MAILBOX_PURCHASE_PENDING` (this domain already has an order
-   * waiting), `DOMAIN_IN_USE`, `DOMAIN_IS_COMPANY_EMAIL` (the domain your
-   * company email runs on), `MAILBOX_SALES_PAUSED` (orders cannot be placed at
-   * the moment). No answer ever holds a password.
+   * Owners only (another role: `403 INSUFFICIENT_ROLE`). An order through an
+   * API key counts under the Team's cap on Mailboxes from Curviate, which an
+   * Owner sets in the dashboard (`billing.spendingCap()` reads `mailbox_cap`):
+   * from 80% of it the order carries a `SPENDING_CAP_NEAR` notice; past it,
+   * `403 SPENDING_CAP_REACHED` and nothing is ordered. Other refusals:
+   * `MAILBOX_PURCHASE_TRIAL` (a Team on a trial), `MAILBOX_PURCHASE_PENDING`
+   * (this domain already has an order waiting), `DOMAIN_IN_USE`,
+   * `DOMAIN_IS_COMPANY_EMAIL` (the domain your company email runs on),
+   * `MAILBOX_SALES_PAUSED` (orders cannot be placed at the moment). One HTTP
+   * call, never retried. No answer ever holds a password.
    * `POST /v1/mailboxes/purchases`
    *
    * @example
@@ -143,6 +146,21 @@ export class MailboxPurchasesResource {
    */
   get(purchaseId: string): Promise<MailboxPurchase> {
     return this.ctx.request<MailboxPurchase>({ method: "GET", path: apiPath`/v1/mailboxes/purchases/${purchaseId}` });
+  }
+
+  /**
+   * Look up the order's records now instead of waiting for Curviate's own
+   * checks (every 15 minutes for 2 hours after the order, then hourly), and
+   * answer the order with each row's `found`. Once a minute per order: sooner
+   * is `429 PLATFORM_RATE_LIMIT`. An order no longer waiting for its records
+   * is answered as it is. Owners only.
+   * `POST /v1/mailboxes/purchases/{id}/check`
+   *
+   * @example
+   * const { state, records } = await curviate.mailboxes.purchases.check("mpu_123");
+   */
+  check(purchaseId: string): Promise<MailboxPurchase> {
+    return this.ctx.request<MailboxPurchase>({ method: "POST", path: apiPath`/v1/mailboxes/purchases/${purchaseId}/check` });
   }
 }
 
