@@ -138,6 +138,8 @@ const RETRYABLE_CODES: ReadonlySet<string> = new Set([
   // nothing reached LinkedIn, nothing was spent, and a monthly row's reset can
   // be weeks out, so a backoff loop burns retries against a wall that will not
   // move. The recovery is `resetAt` / `safetyHint`, not a sleep.
+  // PLACEMENT_TEST_ALLOWANCE_EXHAUSTED (a 429 too) is not here for the same
+  // reason: a monthly allowance, lifted by a paid seat or the new month.
 ]);
 
 const WRITE_METHODS: ReadonlySet<HttpMethod> = new Set(["POST", "PATCH", "PUT", "DELETE"]);

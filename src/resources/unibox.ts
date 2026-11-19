@@ -227,7 +227,9 @@ export class UniboxResource {
    * Account as a reply would. `cc` and `bcc` (at most 20 addresses together)
    * and `attachments` (`{filename, content_type, content}` with base64
    * content, at most 10, 20 MiB in all; executables, scripts and
-   * macro-enabled Office files refused) ride along. When the receiving server
+   * macro-enabled Office files refused) ride along; from a Microsoft sign-in
+   * Mailbox, files of about 2.2 MB in all go today, and more is refused with
+   * `PLATFORM_ERROR` (`retryLikelyToSucceed` false, nothing sent). When the receiving server
    * refused some Cc or Bcc addresses but took the Lead's, the answer carries
    * `warnings: [{ code: "recipients_refused", addresses }]`. Read `email` on
    * `getConversation` first: it says whether email is available and from which

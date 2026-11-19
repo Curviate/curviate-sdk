@@ -163,6 +163,7 @@ export type {
   CampaignPreview,
   CampaignStartBody,
   CampaignLeadCheck,
+  CampaignPlacementChecks,
   SequenceVersionParams,
   SequenceVersion,
   CampaignAddLeadsBody,
@@ -193,6 +194,14 @@ export type {
   MailboxUpdateBody,
   MailboxRemoveResult,
   MailboxDiscoverResult,
+  PlacementTest,
+  PlacementTestRunBody,
+  PlacementTestListParams,
+  PlacementTestListPage,
+  MailboxPurchase,
+  MailboxPurchaseCreateBody,
+  MailboxPurchaseListParams,
+  MailboxPurchaseListPage,
 } from "./resources/mailboxes.js";
 export type { DomainChecks } from "./resources/domains.js";
 

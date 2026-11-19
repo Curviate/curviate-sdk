@@ -9,11 +9,22 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [0.54.0] - 2026-11-18
 
-Regenerated `fixtures/openapi.json` and the generated types from the document the server tree at `81de39f1e` serves (`fixtures/PROVENANCE.json`: built locally, because no deployed environment carried the Cc, Bcc and files of an email from a conversation yet; re-check with `check:types` against the deployed document before the publish); the Sequence validator and its corpus re-vendored from the same tree. Nothing narrows: every change below adds a method, a field, a filter or a union member.
+Regenerated `fixtures/openapi.json` and the generated types from the document staging serves at `4c1e6ef64` (`fixtures/PROVENANCE.json`); the Sequence validator and its corpus re-vendored. Nothing narrows: every change below adds a method, a field, a filter or a union member.
 
 ### Wider unions
 
 An exhaustive `switch` must handle: `CurviateEvent` gains the eight `signal` events (`signal.post_engaged`, `signal.post_reposted`, `signal.network_posted`, `signal.profile_viewed`, `signal.followed_you`, `signal.mentioned_you`, `signal.connection_added`, `signal.matched`); Enrollment `reason` gains `attachment_missing` and `attachment_refused`; a Signal rule outcome `type` gains `enroll`; Campaign warnings gain W23 (`attachment_refused`: the email provider refused a file on the step); the preview's `excluded` reason gains `same_company`.
+
+### Placement tests and warm-up states
+
+- **`mailboxes.placementTests.run(mailboxId, { subject, body })`** sends your exact email from the Mailbox to 12 test inboxes at four providers and reads where each copy lands; **`list(mailboxId)`** and **`get(mailboxId, testId)`** read the tests, a verdict per provider (`inbox`, `partly_spam`, `spam`) and the Team's allowance `{ used, total, resets_at }` (10 per paid seat a month).
+- New codes `PLACEMENT_TEST_ALLOWANCE_EXHAUSTED` (429, never retried: the allowance is monthly) and `PLACEMENT_TESTS_UNAVAILABLE` (503).
+- **`campaigns.placementChecks(campaignId)`**: the Campaign's weekly placement checks.
+- Mailbox `warm_up.state` gains `waiting` (on, but not running now; its day held) with `reason`: `reconnect_needed`, `trial`, `app_password`, `warm_up_app` or `allowance`.
+
+### Mailboxes from Curviate
+
+- **`mailboxes.purchases.create({ domain, mailboxes })`**, **`list({ state? })`** and **`get(id)`**: order Mailboxes on a domain your Team owns and read the order, its state and the five records to add. Today an order is placed by an Owner in the dashboard: `create` with an API key answers `401 UNAUTHORIZED`. New codes `MAILBOX_PURCHASE_NOT_FOUND`, `MAILBOX_PURCHASE_PENDING`, `MAILBOX_PURCHASE_TRIAL`, `DOMAIN_IN_USE`, `DOMAIN_IS_COMPANY_EMAIL`, `MAILBOX_SALES_PAUSED`.
 
 ### Email attachments
 
@@ -47,7 +58,7 @@ An exhaustive `switch` must handle: `CurviateEvent` gains the eight `signal` eve
 
 ### Email from a conversation: Cc, Bcc, files, and an unknown outcome
 
-- `unibox.sendEmail` takes `cc`, `bcc` (at most 20 addresses together) and `attachments` (`{filename, content_type, content}` base64, at most 10, 20 MiB in all). The answer may carry `warnings: [{ code: "recipients_refused", addresses }]`: those Cc or Bcc addresses got nothing, everyone else did.
+- `unibox.sendEmail` takes `cc`, `bcc` (at most 20 addresses together) and `attachments` (`{filename, content_type, content}` base64, at most 10, 20 MiB in all). The answer may carry `warnings: [{ code: "recipients_refused", addresses }]`: those Cc or Bcc addresses got nothing, everyone else did. From a Microsoft sign-in Mailbox, files of about 2.2 MB in all go today; more is refused with `PLATFORM_ERROR`, nothing sent.
 - **`CurviateError.outcomeUnknown`**: `true` on `reason: "outcome_unknown"` (the provider stopped answering after it had the whole email: it may have been sent, and is kept as sent). Never send it again.
 - `unibox.unreadCount()` counts conversations, LinkedIn and email alike.
 - **Fixed:** `billing.switchPeriod()` sends `{ to: "annual" }`, which the route requires (it answered 400 before).

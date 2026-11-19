@@ -3778,6 +3778,50 @@ export interface paths {
         patch: operations["patchV1IncomingEventsId"];
         trace?: never;
     };
+    "/v1/mailboxes/purchases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Mailbox purchases
+         * @description This team's orders of Mailboxes from Curviate, newest first, every role. Filter by `state`.
+         */
+        get: operations["getV1MailboxesPurchases"];
+        put?: never;
+        /**
+         * Buy Mailboxes from Curviate
+         * @description Orders 1 to 50 Mailboxes on one domain your Team owns, at $5 a month each, warm-up included. The order waits in `awaiting_dns` until the records it shows are found at your domain; nothing is charged before. Owners only, in the dashboard. A Team on a trial cannot order; the domain your company email runs on is refused; a domain already ordered by your Team and still waiting answers `409 MAILBOX_PURCHASE_PENDING`.
+         */
+        post: operations["postV1MailboxesPurchases"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/mailboxes/purchases/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a Mailbox purchase
+         * @description One order of this team, every role: the records to add and which are found. Another team's id answers as an unknown one.
+         */
+        get: operations["getV1MailboxesPurchasesId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/mailboxes/discover": {
         parameters: {
             query?: never;
@@ -3880,6 +3924,50 @@ export interface paths {
          * @description Resumes a paused Mailbox: it goes to `ramping`, starting again at 5 emails a day. A Mailbox that is not paused, a provider pause before its `paused_until`, and one Curviate is fixing answer `409 MAILBOX_STATE_CONFLICT`.
          */
         post: operations["postV1MailboxesIdResume"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/mailboxes/{id}/placement-tests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List placement tests
+         * @description This Mailbox's placement tests, newest first, with the Team's allowance `{used, total, resets_at}`. Every role reads them. Another team's Mailbox answers the same `404 RESOURCE_NOT_FOUND` as an unknown id.
+         */
+        get: operations["getV1MailboxesIdPlacementTests"];
+        put?: never;
+        /**
+         * Run a placement test
+         * @description Sends your exact subject and body from this Mailbox to 12 test inboxes, 3 at each provider (Google Workspace, Microsoft 365, Gmail, Outlook.com), and reads where each copy lands; results within an hour. Answers `202` with the running test; read it again for the verdicts. The 12 copies count against the Mailbox's daily cap, so the Mailbox needs room for 12 today. Each test draws one from the Team's allowance: 10 per paid seat a month, pooled across the Team, no daily limit; past it `429 PLACEMENT_TEST_ALLOWANCE_EXHAUSTED` and nothing is sent. Owners and Managers test any Mailbox; a Member only the ones they connected.
+         */
+        post: operations["postV1MailboxesIdPlacementTests"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/mailboxes/{id}/placement-tests/{test_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a placement test
+         * @description One placement test: `running` or `complete`, a verdict per provider (`inbox`, `partly_spam` or `spam`), with the Team's allowance. Another team's test answers the same `404 RESOURCE_NOT_FOUND` as an unknown id.
+         */
+        get: operations["getV1MailboxesIdPlacementTestsTestId"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -4676,6 +4764,26 @@ export interface paths {
          * @description Partial update in every status but archived. schedule and settings merge key by key; lists, accounts, where and sequence are replaced whole. After start, a sequence edit to text, waits, notes or variant weights applies in place (sequence_change copy); any other is a new Sequence version (structural). Needs a subscription.
          */
         patch: operations["patchV1CampaignsId"];
+        trace?: never;
+    };
+    "/v1/campaigns/{id}/placement-checks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a campaign's weekly placement checks
+         * @description The Campaign's weekly placement checks, newest first (core/037 FR-005, FR-012): each calendar week its first email step, and each email step whose text changed that week, is sent from one of its Mailboxes in turn to Curviate's 6 business seed inboxes (3 Google Workspace, 3 Microsoft 365) and read like a placement test. Kept apart from warm-up readings and placement tests. Each check: week (its Monday), mailbox_id, step_id, status (running, complete, waiting, skipped), reason (no_mailbox, cap, seeds), and the google_workspace and microsoft_365 verdicts (inbox, partly_spam, spam) once complete. Its 6 copies count against the sending Mailbox's daily limit.
+         */
+        get: operations["getV1CampaignsIdPlacementChecks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/v1/campaigns/{id}/start": {
@@ -37552,7 +37660,7 @@ export interface operations {
                                 resets_at: string | null;
                                 /** @description Where the account stands: actions counted in the current window for a debit row, the summed tally for `total_actions`, the observed backlog for the gauge. A debit row with no activity reports 0, never null. Only the gauge can be `null`, and only before anything has observed it: 0 there would be a backlog nobody looked at. */
                                 used: number | null;
-                                /** @description What this account is allowed on this row in this window, as configured. `null` where the row deliberately has no ceiling: the tally is reported and never enforced, and an uncalibrated row has no figure at all. Change it on the safety policy; Curviate never clamps what you set. */
+                                /** @description What this account is allowed on this row in this window, as configured. `null` where the row deliberately has no ceiling: the tally is reported and never enforced, and an uncalibrated row has no figure at all. Change it on the safety policy: a value is stored as you set it; what is enforced is held at the row's hard maximum (hard_maximum, interface_hard_maximum; above_hard_maximum says when the value is above it). */
                                 ceiling: number | null;
                                 /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (its ramp after warm-up was turned on, at connect or later, or while it recovers from a restriction) the two differ: on the ramp's first day the effective ceiling is 30 percent of `ceiling`. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
                                 effective_ceiling?: number | null;
@@ -37835,7 +37943,7 @@ export interface operations {
                             resets_at: string | null;
                             /** @description Where the account stands: actions counted in the current window for a debit row, the summed tally for `total_actions`, the observed backlog for the gauge. A debit row with no activity reports 0, never null. Only the gauge can be `null`, and only before anything has observed it: 0 there would be a backlog nobody looked at. */
                             used: number | null;
-                            /** @description What this account is allowed on this row in this window, as configured. `null` where the row deliberately has no ceiling: the tally is reported and never enforced, and an uncalibrated row has no figure at all. Change it on the safety policy; Curviate never clamps what you set. */
+                            /** @description What this account is allowed on this row in this window, as configured. `null` where the row deliberately has no ceiling: the tally is reported and never enforced, and an uncalibrated row has no figure at all. Change it on the safety policy: a value is stored as you set it; what is enforced is held at the row's hard maximum (hard_maximum, interface_hard_maximum; above_hard_maximum says when the value is above it). */
                             ceiling: number | null;
                             /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (its ramp after warm-up was turned on, at connect or later, or while it recovers from a restriction) the two differ: on the ramp's first day the effective ceiling is 30 percent of `ceiling`. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
                             effective_ceiling?: number | null;
@@ -40844,7 +40952,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description MAILBOX_APP_PASSWORD_REQUIRED: google_sign_in for a private Gmail address (gmail.com, googlemail.com). Connect it with google_app_password. */
+            /** @description MAILBOX_APP_PASSWORD_REQUIRED: google_sign_in for a private Gmail address (gmail.com, googlemail.com). Connect it with google_app_password. MAILBOX_LIMIT_REACHED: the team holds all the own Mailboxes its allowance takes (100 per paid seat, 20 in the trial); add a seat or remove a Mailbox. A reconnect never counts. */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -48332,6 +48440,358 @@ export interface operations {
             };
         };
     };
+    getV1MailboxesPurchases: {
+        parameters: {
+            query?: {
+                /** @description Only orders in this state. */
+                state?: "awaiting_dns" | "provisioning" | "active" | "cancelled";
+                /** @description Items a page, 1 to 100. */
+                limit?: number;
+                /** @description Opaque pagination cursor from a previous response; pass it back verbatim */
+                cursor?: string;
+            };
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: {
+                            /** @description Purchase id (mpu_...), opaque. */
+                            id: string;
+                            domain: string;
+                            /** @description The domain object's id (dom_...). */
+                            domain_id: string;
+                            /**
+                             * @description `awaiting_dns` until the four required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
+                             * @enum {string}
+                             */
+                            state: "awaiting_dns" | "provisioning" | "active" | "cancelled";
+                            /** @description Why a cancelled order ended; null otherwise. */
+                            reason: string | null;
+                            mailboxes: {
+                                address?: string;
+                                display_name?: string;
+                                sends_for?: Record<string, never> | null;
+                                /** @description Set once the Mailbox exists (`active`). */
+                                mailbox_id?: string | null;
+                            }[];
+                            /** @description Five rows in order: mx, spf, dkim, dmarc, tracking. Add each entry at your domain's DNS host; `tracking` is not required. */
+                            records: Record<string, never>[];
+                            advice: string | null;
+                            /** @description The order's price a month, USD minor units ($5 a Mailbox). */
+                            amount_monthly: number;
+                            /** Format: date-time */
+                            checked_at: string | null;
+                            /**
+                             * Format: date-time
+                             * @description An order still waiting for its records then is cancelled; nothing is charged.
+                             */
+                            expires_at: string;
+                            /** Format: date-time */
+                            charged_at: string | null;
+                            /** Format: date-time */
+                            created_at: string;
+                        }[];
+                        has_more?: boolean;
+                        next_cursor?: string | null;
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1MailboxesPurchases: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The domain the Mailboxes send from, one the Team owns, e.g. `acme-mail.com`. */
+                    domain: string;
+                    /** @description 1 to 50 Mailboxes, each named. */
+                    mailboxes: {
+                        /** @description The address part before the @, e.g. `anna`. */
+                        local_part: string;
+                        /** @description The name recipients see in From ("Name" <address>), at most 100 characters, one line. Not set: the name of the Account the Mailbox sends for, else the bare address. */
+                        display_name: string;
+                        /** @description The Account the Mailbox sends for, `{kind: "shared"}`, or omitted (it then needs a link once created). */
+                        sends_for?: ({
+                            /** @constant */
+                            kind: "account";
+                            account_id: string;
+                        } | {
+                            /** @constant */
+                            kind: "shared";
+                        }) | null;
+                    }[];
+                };
+            };
+        };
+        responses: {
+            /** @description The order, waiting for its records. */
+            201: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Purchase id (mpu_...), opaque. */
+                        id: string;
+                        domain: string;
+                        /** @description The domain object's id (dom_...). */
+                        domain_id: string;
+                        /**
+                         * @description `awaiting_dns` until the four required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
+                         * @enum {string}
+                         */
+                        state: "awaiting_dns" | "provisioning" | "active" | "cancelled";
+                        /** @description Why a cancelled order ended; null otherwise. */
+                        reason: string | null;
+                        mailboxes: {
+                            address?: string;
+                            display_name?: string;
+                            sends_for?: Record<string, never> | null;
+                            /** @description Set once the Mailbox exists (`active`). */
+                            mailbox_id?: string | null;
+                        }[];
+                        /** @description Five rows in order: mx, spf, dkim, dmarc, tracking. Add each entry at your domain's DNS host; `tracking` is not required. */
+                        records: Record<string, never>[];
+                        advice: string | null;
+                        /** @description The order's price a month, USD minor units ($5 a Mailbox). */
+                        amount_monthly: number;
+                        /** Format: date-time */
+                        checked_at: string | null;
+                        /**
+                         * Format: date-time
+                         * @description An order still waiting for its records then is cancelled; nothing is charged.
+                         */
+                        expires_at: string;
+                        /** Format: date-time */
+                        charged_at: string | null;
+                        /** Format: date-time */
+                        created_at: string;
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: a malformed domain or address part, more than 50 Mailboxes, an address named twice. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description A dashboard session is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE (not an Owner) or MAILBOX_PURCHASE_TRIAL (a Team on a trial). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description ACCOUNT_NOT_FOUND: an Account a Mailbox sends for is not in this team. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_PURCHASE_PENDING, DOMAIN_IN_USE, MAILBOX_ALREADY_CONNECTED or MAILBOX_SALES_PAUSED. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description DOMAIN_IS_COMPANY_EMAIL. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1MailboxesPurchasesId: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Purchase id (mpu_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The order. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Purchase id (mpu_...), opaque. */
+                        id: string;
+                        domain: string;
+                        /** @description The domain object's id (dom_...). */
+                        domain_id: string;
+                        /**
+                         * @description `awaiting_dns` until the four required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
+                         * @enum {string}
+                         */
+                        state: "awaiting_dns" | "provisioning" | "active" | "cancelled";
+                        /** @description Why a cancelled order ended; null otherwise. */
+                        reason: string | null;
+                        mailboxes: {
+                            address?: string;
+                            display_name?: string;
+                            sends_for?: Record<string, never> | null;
+                            /** @description Set once the Mailbox exists (`active`). */
+                            mailbox_id?: string | null;
+                        }[];
+                        /** @description Five rows in order: mx, spf, dkim, dmarc, tracking. Add each entry at your domain's DNS host; `tracking` is not required. */
+                        records: Record<string, never>[];
+                        advice: string | null;
+                        /** @description The order's price a month, USD minor units ($5 a Mailbox). */
+                        amount_monthly: number;
+                        /** Format: date-time */
+                        checked_at: string | null;
+                        /**
+                         * Format: date-time
+                         * @description An order still waiting for its records then is cancelled; nothing is charged.
+                         */
+                        expires_at: string;
+                        /** Format: date-time */
+                        charged_at: string | null;
+                        /** Format: date-time */
+                        created_at: string;
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_PURCHASE_NOT_FOUND: no purchase with this id in this team (another team's id answers the same). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     getV1MailboxesDiscover: {
         parameters: {
             query: {
@@ -48521,12 +48981,15 @@ export interface operations {
                                 /** @description Warm-up day: 1 on the day it was turned on, then one more each calendar day; null while off. */
                                 day: number | null;
                                 /**
-                                 * @description `off`, or `warming` (day N of the days picked).
+                                 * @description `off`; `warming` (day N of the days picked); `waiting`: warm-up is on but cannot run now: no warm-up mail goes from or to it, and its day does not advance.
                                  * @enum {string}
                                  */
-                                state: "off" | "warming";
-                                /** @description Why warm-up is waiting; null otherwise. */
-                                reason: string | null;
+                                state: "off" | "warming" | "waiting";
+                                /**
+                                 * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (the warm-up app is not consented yet), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added).
+                                 * @enum {string|null}
+                                 */
+                                reason: "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
                             };
                         }[];
                         cursor?: string | null;
@@ -48668,12 +49131,15 @@ export interface operations {
                             /** @description Warm-up day: 1 on the day it was turned on, then one more each calendar day; null while off. */
                             day: number | null;
                             /**
-                             * @description `off`, or `warming` (day N of the days picked).
+                             * @description `off`; `warming` (day N of the days picked); `waiting`: warm-up is on but cannot run now: no warm-up mail goes from or to it, and its day does not advance.
                              * @enum {string}
                              */
-                            state: "off" | "warming";
-                            /** @description Why warm-up is waiting; null otherwise. */
-                            reason: string | null;
+                            state: "off" | "warming" | "waiting";
+                            /**
+                             * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (the warm-up app is not consented yet), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added).
+                             * @enum {string|null}
+                             */
+                            reason: "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
                         };
                     };
                 };
@@ -48924,12 +49390,15 @@ export interface operations {
                             /** @description Warm-up day: 1 on the day it was turned on, then one more each calendar day; null while off. */
                             day: number | null;
                             /**
-                             * @description `off`, or `warming` (day N of the days picked).
+                             * @description `off`; `warming` (day N of the days picked); `waiting`: warm-up is on but cannot run now: no warm-up mail goes from or to it, and its day does not advance.
                              * @enum {string}
                              */
-                            state: "off" | "warming";
-                            /** @description Why warm-up is waiting; null otherwise. */
-                            reason: string | null;
+                            state: "off" | "warming" | "waiting";
+                            /**
+                             * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (the warm-up app is not consented yet), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added).
+                             * @enum {string|null}
+                             */
+                            reason: "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
                         };
                     };
                 };
@@ -49087,12 +49556,15 @@ export interface operations {
                             /** @description Warm-up day: 1 on the day it was turned on, then one more each calendar day; null while off. */
                             day: number | null;
                             /**
-                             * @description `off`, or `warming` (day N of the days picked).
+                             * @description `off`; `warming` (day N of the days picked); `waiting`: warm-up is on but cannot run now: no warm-up mail goes from or to it, and its day does not advance.
                              * @enum {string}
                              */
-                            state: "off" | "warming";
-                            /** @description Why warm-up is waiting; null otherwise. */
-                            reason: string | null;
+                            state: "off" | "warming" | "waiting";
+                            /**
+                             * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (the warm-up app is not consented yet), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added).
+                             * @enum {string|null}
+                             */
+                            reason: "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
                         };
                     };
                 };
@@ -49250,12 +49722,15 @@ export interface operations {
                             /** @description Warm-up day: 1 on the day it was turned on, then one more each calendar day; null while off. */
                             day: number | null;
                             /**
-                             * @description `off`, or `warming` (day N of the days picked).
+                             * @description `off`; `warming` (day N of the days picked); `waiting`: warm-up is on but cannot run now: no warm-up mail goes from or to it, and its day does not advance.
                              * @enum {string}
                              */
-                            state: "off" | "warming";
-                            /** @description Why warm-up is waiting; null otherwise. */
-                            reason: string | null;
+                            state: "off" | "warming" | "waiting";
+                            /**
+                             * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (the warm-up app is not consented yet), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added).
+                             * @enum {string|null}
+                             */
+                            reason: "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
                         };
                     };
                 };
@@ -49298,6 +49773,384 @@ export interface operations {
             };
             /** @description MAILBOX_STATE_CONFLICT: not paused, a provider pause before its `paused_until` (the message names the time), or one Curviate is fixing. */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1MailboxesIdPlacementTests: {
+        parameters: {
+            query?: {
+                /** @description Opaque pagination cursor from a previous response; pass it back verbatim */
+                cursor?: string;
+                /** @description Max items per page (1-100, default 50) */
+                limit?: number;
+            };
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Mailbox id (mbx_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The Mailbox's placement tests, newest first, with the Team's allowance. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object?: "list";
+                        items?: {
+                            id?: string;
+                            mailbox_id?: string;
+                            /** @enum {string} */
+                            status?: "running" | "complete";
+                            /** Format: date-time */
+                            created_at?: string;
+                            /** Format: date-time */
+                            completed_at?: string | null;
+                            verdicts?: {
+                                /**
+                                 * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                                 * @enum {string|null}
+                                 */
+                                google_workspace: "inbox" | "partly_spam" | "spam" | null;
+                                /**
+                                 * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                                 * @enum {string|null}
+                                 */
+                                microsoft_365: "inbox" | "partly_spam" | "spam" | null;
+                                /**
+                                 * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                                 * @enum {string|null}
+                                 */
+                                gmail: "inbox" | "partly_spam" | "spam" | null;
+                                /**
+                                 * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                                 * @enum {string|null}
+                                 */
+                                outlook_com: "inbox" | "partly_spam" | "spam" | null;
+                            };
+                        }[];
+                        cursor?: string | null;
+                        /** @description The Team's placement tests this month: 10 per paid seat, pooled across the Team (the trial has 0). */
+                        allowance?: {
+                            used: number;
+                            total: number;
+                            /** Format: date-time */
+                            resets_at: string;
+                        };
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: limit out of range or a malformed cursor. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Mailbox or test in this team (another team's id answers the same). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    postV1MailboxesIdPlacementTests: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Mailbox id (mbx_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description The subject, exactly as your Campaign sends it: 1 to 998 characters on one line. */
+                    subject: string;
+                    /** @description The text, exactly as your Campaign sends it: plain text, 1 to 10,000 characters. */
+                    body: string;
+                };
+            };
+        };
+        responses: {
+            /** @description The test is running: 12 copies go out over the next minutes, and the results are complete within an hour. */
+            202: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        mailbox_id: string;
+                        /** @enum {string} */
+                        status: "running" | "complete";
+                        /** Format: date-time */
+                        created_at: string;
+                        /** Format: date-time */
+                        completed_at: string | null;
+                        verdicts: {
+                            /**
+                             * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                             * @enum {string|null}
+                             */
+                            google_workspace: "inbox" | "partly_spam" | "spam" | null;
+                            /**
+                             * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                             * @enum {string|null}
+                             */
+                            microsoft_365: "inbox" | "partly_spam" | "spam" | null;
+                            /**
+                             * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                             * @enum {string|null}
+                             */
+                            gmail: "inbox" | "partly_spam" | "spam" | null;
+                            /**
+                             * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                             * @enum {string|null}
+                             */
+                            outlook_com: "inbox" | "partly_spam" | "spam" | null;
+                        };
+                        /** @description The Team's placement tests this month: 10 per paid seat, pooled across the Team (the trial has 0). */
+                        allowance: {
+                            used: number;
+                            total: number;
+                            /** Format: date-time */
+                            resets_at: string;
+                        };
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: `subject` empty, above 998 characters or with a line break; `body` empty or above 10,000 characters; a NUL or malformed Unicode; an unknown field; or the Mailbox cannot send 12 more emails today (`mailbox_id`). Nothing was sent and nothing drawn from the allowance. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: a Member testing a Mailbox they did not connect. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Mailbox or test in this team (another team's id answers the same). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_STATE_CONFLICT: the Mailbox cannot send now (paused, reconnect needed, or a connection that cannot send yet). Nothing was sent. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large, the request body exceeds the size limit. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description PLACEMENT_TEST_ALLOWANCE_EXHAUSTED: this month's allowance is used (or the Team has no paid seat yet); `allowance` says when it resets. Nothing was sent. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description PLACEMENT_TESTS_UNAVAILABLE: placement tests cannot run right now. Nothing was sent and nothing drawn from the allowance. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    getV1MailboxesIdPlacementTestsTestId: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Mailbox id (mbx_...). */
+                id: string;
+                /** @description Placement test id (plt_...). */
+                test_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One placement test with the Team's allowance. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        id: string;
+                        mailbox_id: string;
+                        /** @enum {string} */
+                        status: "running" | "complete";
+                        /** Format: date-time */
+                        created_at: string;
+                        /** Format: date-time */
+                        completed_at: string | null;
+                        verdicts: {
+                            /**
+                             * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                             * @enum {string|null}
+                             */
+                            google_workspace: "inbox" | "partly_spam" | "spam" | null;
+                            /**
+                             * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                             * @enum {string|null}
+                             */
+                            microsoft_365: "inbox" | "partly_spam" | "spam" | null;
+                            /**
+                             * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                             * @enum {string|null}
+                             */
+                            gmail: "inbox" | "partly_spam" | "spam" | null;
+                            /**
+                             * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                             * @enum {string|null}
+                             */
+                            outlook_com: "inbox" | "partly_spam" | "spam" | null;
+                        };
+                        /** @description The Team's placement tests this month: 10 per paid seat, pooled across the Team (the trial has 0). */
+                        allowance: {
+                            used: number;
+                            total: number;
+                            /** Format: date-time */
+                            resets_at: string;
+                        };
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Mailbox or test in this team (another team's id answers the same). */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -50830,7 +51683,7 @@ export interface operations {
                     /** @description A LinkedIn source Curviate reads page by page on its server, from source.account_id, inside that Account's limits and Active hours: answers 202 queued. Send rows, csv or source, exactly one. */
                     source?: {
                         /**
-                         * @description What to import: people_search, sales_nav_search and recruiter_search take a pasted search URL or built filters, company_people a company search URL or filters plus titles, sales_nav_lead_list a Sales Navigator list id, post_engagers a post id or URL, group_members a group id. The other kinds are not available yet.
+                         * @description What to import: people_search, sales_nav_search and recruiter_search take a pasted search URL or built filters, company_people a company search URL or filters plus titles, sales_nav_lead_list a Sales Navigator lead list id, sales_nav_account_list a Sales Navigator account list id (titles optional), sales_nav_company_people a Sales Navigator account search URL or filters plus titles, post_engagers a post id or URL, group_members a group id.
                          * @enum {string}
                          */
                         kind: "people_search" | "company_people" | "sales_nav_search" | "sales_nav_lead_list" | "sales_nav_account_list" | "sales_nav_company_people" | "recruiter_search" | "post_engagers" | "group_members";
@@ -50842,13 +51695,13 @@ export interface operations {
                         filters?: {
                             [key: string]: unknown;
                         };
-                        /** @description A Sales Navigator lead list id (sales_nav_lead_list). */
+                        /** @description A Sales Navigator lead list id (sales_nav_lead_list) or account list id (sales_nav_account_list). */
                         list_id?: string;
                         /** @description A post id or URL (post_engagers). */
                         post_id?: string;
                         /** @description A LinkedIn group id the Account belongs to (group_members). */
                         group_id?: string;
-                        /** @description Job titles to keep (company_people: required; only people with one of these titles are imported, never a whole company). */
+                        /** @description Job titles to keep (company_people and sales_nav_company_people: required; sales_nav_account_list: optional; only people with one of these titles are imported, never a whole company). */
                         titles?: string[];
                         /** @description Stop after this many people (default and maximum: the kind's cap, 1,000 for people_search, 2,500 for the Sales Navigator kinds). */
                         max?: number;
@@ -57331,6 +58184,97 @@ export interface operations {
             };
         };
     };
+    getV1CampaignsIdPlacementChecks: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Campaign id (mot_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The checks, at most 26 (half a year). */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object?: "list";
+                        items?: {
+                            /** @description The week's Monday, YYYY-MM-DD (UTC). */
+                            week?: string;
+                            /** @description The Mailbox it went from; null when it did not go. */
+                            mailbox_id?: string | null;
+                            /** @description The email step checked. */
+                            step_id?: string;
+                            /** @enum {string} */
+                            status?: "running" | "complete" | "waiting" | "skipped";
+                            /**
+                             * @description Why it waits or was skipped.
+                             * @enum {string|null}
+                             */
+                            reason?: "no_mailbox" | "cap" | "seeds" | null;
+                            /** @enum {string|null} */
+                            google_workspace?: "inbox" | "partly_spam" | "spam" | null;
+                            /** @enum {string|null} */
+                            microsoft_365?: "inbox" | "partly_spam" | "spam" | null;
+                        }[];
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND: no such Campaign. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     postV1CampaignsIdStart: {
         parameters: {
             query?: never;
@@ -63444,7 +64388,7 @@ export interface operations {
                                 resets_at: string | null;
                                 /** @description Where the account stands: actions counted in the current window for a debit row, the summed tally for `total_actions`, the observed backlog for the gauge. A debit row with no activity reports 0, never null. Only the gauge can be `null`, and only before anything has observed it: 0 there would be a backlog nobody looked at. */
                                 used: number | null;
-                                /** @description What this account is allowed on this row in this window, as configured. `null` where the row deliberately has no ceiling: the tally is reported and never enforced, and an uncalibrated row has no figure at all. Change it on the safety policy; Curviate never clamps what you set. */
+                                /** @description What this account is allowed on this row in this window, as configured. `null` where the row deliberately has no ceiling: the tally is reported and never enforced, and an uncalibrated row has no figure at all. Change it on the safety policy: a value is stored as you set it; what is enforced is held at the row's hard maximum (hard_maximum, interface_hard_maximum; above_hard_maximum says when the value is above it). */
                                 ceiling: number | null;
                                 /** @description What this row is ACTUALLY held to right now: `ceiling` with the account's warm-up ramp applied. Compare `used` against THIS one, and `band` is computed against it too. While warm-up holds an account back (its ramp after warm-up was turned on, at connect or later, or while it recovers from a restriction) the two differ: on the ramp's first day the effective ceiling is 30 percent of `ceiling`. Equal to `ceiling` once the ramp is over, and `null` wherever `ceiling` is null. The account's ramp, its factor and the triggers behind it are on GET /v1/{account_id}/safety-policy as `warm_up`. */
                                 effective_ceiling?: number | null;
