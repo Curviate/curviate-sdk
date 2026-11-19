@@ -7,6 +7,27 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [0.55.0] - 2026-11-19
+
+Regenerated `fixtures/openapi.json` and the generated types from the document staging serves at `ed310e031` (`fixtures/PROVENANCE.json`). Nothing narrows: every change adds a method, a field or a union member.
+
+### Mailboxes from Curviate: the price from the server
+
+- **`mailboxes.purchases.quote(mailboxes)`**: what that many Mailboxes cost your Team now, from the price the charge uses: `unit_amount`, `amount`, `currency` and `billing_period`; `charged` (`with_next_invoice` monthly, `when_records_found` for a yearly Team, which pays the rest of its year that day, `never`), `prorated`, `plus_tax`, `orderable` with `not_orderable_reason`, `charge_waits_for`. Owners only, one call, no charge.
+- Every order (`create`, `list`, `get`) carries `price` with the same fields: when it differs from the quote the person agreed to, cancel the order while it is `awaiting_dns` (free). `amount_monthly` stays, the monthly equivalent.
+- No price is written in the SDK's docs any more: read it with `quote`.
+- An order's `records` are six rows: `verify` (one TXT record that confirms the order is yours) joins `mx`, `spf`, `dkim`, `dmarc` and `tracking`, and the `mx` row may hold one CNAME that confirms the domain is yours. A `switch` on a row's `check` must tolerate a value it does not know.
+
+### Unibox email
+
+- `unibox.sendEmail` takes `attachment_ids` (uploads from `campaigns.attachments.upload`) beside inline `attachments`, at most 10 files and 20 MiB in all; inline files reach about 6.7 MiB. A Microsoft sign-in Mailbox's files over its limit are refused before anything is sent: `PLATFORM_ERROR` with `reason` `attachment_refused`. A reader who may not operate the Account reads `bcc: null`. A retry after a timeout can send the email twice.
+
+### Imports and warm-up
+
+- `leads.imports.create`: `source.filters` is typed per kind (`people_search`, `company_people`, `sales_nav_search`, `sales_nav_company_people`, `recruiter_search`); a key no kind offers no longer compiles.
+- Mailbox `warm_up.state` gains `ready`.
+- Readings say why there is nothing to read: the Mailbox read's `landing.reason` and `reputation_reason` (`warm_up_off`); `analytics.email` `landing.warm_up.reason` (`warm_up_off`), `landing.weekly_check.reason` (`no_test_inboxes`), `landing.tests.reason` (`no_test_inboxes`, `no_test_run`) and each Mailbox's `reputation_reason`.
+
 ## [0.54.0] - 2026-11-18
 
 Regenerated `fixtures/openapi.json` and the generated types from the document staging serves at `00abf89b6` (`fixtures/PROVENANCE.json`); the Sequence validator and its corpus re-vendored. Nothing narrows: every change below adds a method, a field, a filter or a union member.

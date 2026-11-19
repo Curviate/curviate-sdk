@@ -84,7 +84,8 @@ export class LeadImportsResource {
    * Or send `source`: a LinkedIn source Curviate reads page by page from
    * `source.account_id`, inside that Account's limits and Active hours
    * (answers `queued`). `kind` is `people_search`, `sales_nav_search` or
-   * `recruiter_search` (a pasted search `url` or built `filters`),
+   * `recruiter_search` (a pasted search `url` or built `filters`, typed per
+   * kind; a key the kind does not offer is a 400 naming it),
    * `company_people` (a company search plus `titles`, required),
    * `sales_nav_lead_list` (`list_id`), `post_engagers` (`post_id`) or
    * `group_members` (`group_id`); `max` caps it. A source read before

@@ -1,6 +1,6 @@
 /**
  * Mailboxes resource: 7 methods (root-scoped), `curviate.mailboxes`, with
- * `curviate.mailboxes.placementTests` (3) and `curviate.mailboxes.purchases` (5).
+ * `curviate.mailboxes.placementTests` (3) and `curviate.mailboxes.purchases` (6).
  *
  * A Mailbox is an email address your Team sends from. Connecting one is a
  * Connect request (`curviate.connectRequests.create({ mailbox: ... })`): there
@@ -32,6 +32,7 @@ export type MailboxPurchaseCreateBody = NonNullable<paths["/v1/mailboxes/purchas
 export type MailboxPurchase = paths["/v1/mailboxes/purchases/{id}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type MailboxPurchaseListParams = NonNullable<paths["/v1/mailboxes/purchases"]["get"]["parameters"]["query"]>;
 export type MailboxPurchaseListPage = paths["/v1/mailboxes/purchases"]["get"]["responses"]["200"]["content"]["application/json"];
+export type MailboxQuote = paths["/v1/mailboxes/purchases/quote"]["get"]["responses"]["200"]["content"]["application/json"];
 
 // ─── Resource class ───────────────────────────────────────────────────────────
 
@@ -97,9 +98,13 @@ export class MailboxPurchasesResource {
   constructor(private readonly ctx: RequestContext) {}
 
   /**
-   * Order 1 to 50 Mailboxes from Curviate on one domain your Team owns, $5 a
-   * month each, warm-up included. The order waits in `awaiting_dns` until the
-   * records it lists are found at your domain; nothing is charged before.
+   * Order 1 to 50 Mailboxes from Curviate on one domain your Team owns (a
+   * registrable domain, never a subdomain such as `mail.acme.com`), warm-up
+   * included. Read the price first with `quote`, and show that. The
+   * order waits in `awaiting_dns` until the records it lists are found at your
+   * domain; nothing is charged before. The answer's `price` is what this order
+   * costs: when it differs from the quote the person agreed to, `cancel` it
+   * while it is `awaiting_dns` (free) and tell them.
    * Owners only (another role: `403 INSUFFICIENT_ROLE`). An order through an
    * API key counts under the Team's cap on Mailboxes from Curviate, which an
    * Owner sets in the dashboard (`billing.spendingCap()` reads `mailbox_cap`):
@@ -114,12 +119,30 @@ export class MailboxPurchasesResource {
    *
    * @example
    * const order = await curviate.mailboxes.purchases.create({
-   *   domain: "acme-mail.example.test",
+   *   domain: "acme-mail.example",
    *   mailboxes: [{ local_part: "anna", display_name: "Anna Weber", sends_for: { kind: "shared" } }],
    * });
    */
   create(body: MailboxPurchaseCreateBody): Promise<MailboxPurchase> {
     return this.ctx.request<MailboxPurchase>({ method: "POST", path: "/v1/mailboxes/purchases", body });
+  }
+
+  /**
+   * What `mailboxes` Mailboxes from Curviate cost your Team, read now from the
+   * price the charge uses: `unit_amount` and `amount` (minor units, before
+   * tax) for the Team's `billing_period`, `charged` (`with_next_invoice` for a
+   * monthly Team; `when_records_found` for a yearly Team, which pays the rest
+   * of its year that day; `never`), `prorated`, `plus_tax`, and `orderable`
+   * with `not_orderable_reason` (`trial`, `sales_paused`). `charge_waits_for`
+   * (`payment`, `subscription`) says the charge would wait. Show these as
+   * served, never a price of your own. Owners only. One HTTP call, no charge.
+   * `GET /v1/mailboxes/purchases/quote`
+   *
+   * @example
+   * const { amount, currency, billing_period, charged } = await curviate.mailboxes.purchases.quote(3);
+   */
+  quote(mailboxes: number): Promise<MailboxQuote> {
+    return this.ctx.request<MailboxQuote>({ method: "GET", path: "/v1/mailboxes/purchases/quote", query: { mailboxes } });
   }
 
   /**
@@ -141,9 +164,11 @@ export class MailboxPurchasesResource {
    * Curviate undid the charge in full; an order being reversed reads
    * `provisioning` until then). Neither `provisioning` nor `host_failed` is a
    * cue to retry or to order again: read the order again later.
-   * Its records: the five to add at your domain (`mx`, `spf`,
-   * `dkim`, `dmarc`, `tracking`; `tracking` is not required) and which are
-   * found. Another Team's id answers `404 MAILBOX_PURCHASE_NOT_FOUND`, as an
+   * Its records: six rows to add at your domain exactly as shown (`mx`,
+   * `spf`, `dkim`, `dmarc`, `verify`, `tracking`; `tracking` is not
+   * required; the `mx` row also holds one CNAME that confirms the domain is
+   * yours, `verify` one TXT record that confirms this order is yours) and
+   * which are found. Tolerate a row `check` you do not know. Another Team's id answers `404 MAILBOX_PURCHASE_NOT_FOUND`, as an
    * unknown one.
    * `GET /v1/mailboxes/purchases/{id}`
    *
@@ -242,14 +267,19 @@ export class MailboxesResource {
    * Mailbox builds a sending history; `{ enabled: false }` turns it off. The
    * read carries `warm_up { enabled, days, day, state, reason }`. Owners and
    * Managers change any Mailbox; a Member only the ones they connected.
-   * `reputation` is a whole number 0 to 100, or `null` while there is not
-   * enough to say (show "gathering", never 0).
+   * `reputation` is a whole number 0 to 100, or `null`: with
+   * `reputation_reason` `warm_up_off` the Mailbox has no score because
+   * warm-up is off; otherwise not enough to say yet (show "gathering", never
+   * 0).
    * The read also carries `landing { google, microsoft, other, read_at }`:
    * where this Mailbox's own warm-up mail lands per receiving provider over the
    * last 7 days, a verdict (`inbox`, `partly_spam`, `spam`, or `gathering`
-   * while there is not enough to say), never a count. Show the verdict as
-   * served; there is nothing to compute from it.
-   * `state` is `off`, `warming` (day N of the days picked) or `waiting`: on but
+   * while there is not enough to say), never a count, and `landing.reason`
+   * `warm_up_off` when warm-up is off and there is nothing to read. Show the
+   * verdict as served; there is nothing to compute from it.
+   * `state` is `off`, `warming` (day N of the days picked; past them it stays
+   * `warming` until ready), `ready` (the warm-up's bar is met; sending does not
+   * change) or `waiting`: on but
    * not running now, its day held; `reason` says why (`paused_by_curviate`,
    * `reconnect_needed`, `trial`, `app_password`, `warm_up_app`, `allowance`,
    * `address_check`: Curviate is confirming the address receives its mail,
@@ -305,10 +335,10 @@ export class MailboxesResource {
    * Remove a Mailbox and delete its stored credentials in one step. It changes
    * no seat count. A Member removes only a Mailbox they connected. A Mailbox
    * from Curviate is an Owner's to remove (`403 INSUFFICIENT_ROLE` otherwise);
-   * it is deleted with its mail, and its $5 a month stops at the end of the
+   * it is deleted with its mail, and its charge stops at the end of the
    * billing period. `409 MAILBOX_STATE_CONFLICT` "Too many Mailbox changes are
-   * still settling with billing" means nothing was changed: try again later,
-   * never in a loop.
+   * still settling with billing" means nothing was changed: the person may try
+   * again later; never resend it on your own.
    * `DELETE /v1/mailboxes/{id}`
    *
    * @example

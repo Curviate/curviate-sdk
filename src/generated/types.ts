@@ -3778,6 +3778,26 @@ export interface paths {
         patch: operations["patchV1IncomingEventsId"];
         trace?: never;
     };
+    "/v1/mailboxes/purchases/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Price an order of Mailboxes from Curviate
+         * @description What an order of `mailboxes` Mailboxes would cost your Team, read now from the price the charge uses: your billing period, the amount per Mailbox and for the order, when it is charged (monthly: with your next invoice; yearly: invoiced and paid the day the records are found), and that tax is added where it applies. Show this to your user before ordering; the order's `price` carries the same object. Nothing is written or charged. Owners only. It answers while sales are paused (`orderable` false).
+         */
+        get: operations["getV1MailboxesPurchasesQuote"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/mailboxes/purchases": {
         parameters: {
             query?: never;
@@ -3793,7 +3813,7 @@ export interface paths {
         put?: never;
         /**
          * Buy Mailboxes from Curviate
-         * @description Orders 1 to 50 Mailboxes on one domain your Team owns, at $5 a month each, warm-up included. The order waits in `awaiting_dns` until the records it shows are found at your domain; nothing is charged before. Owners only. An order through an API key counts under the team's cap on Mailboxes from Curviate: from 80% of it the order carries a SPENDING_CAP_NEAR notice, past it the order is refused 403 SPENDING_CAP_REACHED and nothing is ordered. A Team on a trial cannot order; the domain your company email runs on is refused; a domain already ordered by your Team and still waiting answers `409 MAILBOX_PURCHASE_PENDING`.
+         * @description Orders 1 to 50 Mailboxes on one domain your Team owns, warm-up included, at the price `GET /v1/mailboxes/purchases/quote` gives your Team (the answer's `price` is the same object). The order waits in `awaiting_dns` until the records it shows are found at your domain; nothing is charged before. Owners only. An order through an API key counts under the team's cap on Mailboxes from Curviate: from 80% of it the order carries a SPENDING_CAP_NEAR notice, past it the order is refused 403 SPENDING_CAP_REACHED and nothing is ordered. A Team on a trial cannot order; the domain your company email runs on is refused; a domain already ordered by your Team and still waiting answers `409 MAILBOX_PURCHASE_PENDING`.
          */
         post: operations["postV1MailboxesPurchases"];
         delete?: never;
@@ -3902,7 +3922,7 @@ export interface paths {
         post?: never;
         /**
          * Remove a Mailbox
-         * @description Removes the Mailbox and deletes its stored credentials in one step. It changes no seat count and makes no Stripe call.
+         * @description Removes the Mailbox and deletes its stored credentials in one step. A Mailbox your Team connected itself changes no seat count and nothing in billing. Only an Owner removes a Mailbox from Curviate. A Mailbox from Curviate is deleted at once, with all its mail. Its billing ends at the end of the current billing period, with no credit for the time left. Its emails stay in your Campaigns and the Unibox. Once the last Mailbox on its domain is gone, remove Curviate's records from that domain's DNS. The subscription's Mailbox count is lowered once, also when the removal is retried.
          */
         delete: operations["deleteV1MailboxesId"];
         options?: never;
@@ -4709,7 +4729,7 @@ export interface paths {
         put?: never;
         /**
          * Upload a Campaign attachment
-         * @description Uploads one file as the raw request body and returns an id for an email step's attachment_ids. Content-Length is required; the filename query names the file as the recipient sees it. Up to 20 MiB, 100 uploads per team per 24 hours. The media type is read from the file's bytes; executables, scripts and macro-enabled Office files are refused. A retry stores a second file. A file no Sequence uses is deleted 30 days after its upload. A link usually lands better than a file. Needs a subscription.
+         * @description Uploads one file as the raw request body and returns an id for an email step's attachment_ids, or a Unibox email's (POST /v1/unibox/conversations/{conversation_id}/emails). Content-Length is required; the filename query names the file as the recipient sees it. Up to 20 MiB, 100 uploads per team per 24 hours. The media type is read from the file's bytes; executables, scripts and macro-enabled Office files are refused. A retry stores a second file. A file no Sequence uses is deleted 30 days after its upload, a Unibox email's too. A link usually lands better than a file. Needs a subscription.
          */
         post: operations["postV1CampaignsAttachments"];
         delete?: never;
@@ -23580,7 +23600,7 @@ export interface operations {
                     cc?: string[];
                     /** @description Bcc: email addresses no other recipient sees. At most 20 addresses in Cc and Bcc together. */
                     bcc?: string[];
-                    /** @description Files, at most 10, up to 20 MiB in all (decoded). Executables, scripts and macro-enabled Office files are refused. Not kept by Curviate: the email keeps their name, type, size and hash. */
+                    /** @description Files inline, base64: at most 10 with attachment_ids, 20 MiB in all (decoded). Executables, scripts and macro-enabled Office files are refused. Not kept by Curviate: the email keeps their name, type, size and hash. This route reads at most 9 MiB of JSON, so inline files reach about 6.7 MiB; send larger ones by attachment_ids. */
                     attachments?: {
                         /** @description The file's name, without a path. */
                         filename: string;
@@ -23589,6 +23609,8 @@ export interface operations {
                         /** @description The file's bytes, base64. */
                         content: string;
                     }[];
+                    /** @description Files uploaded first with POST /v1/campaigns/attachments (or in the dashboard), by id: at most 10 files and 20 MiB in all, with attachments. A file of another team, or one deleted (30 days after its upload unless a Sequence uses it), is not found and nothing is sent. */
+                    attachment_ids?: string[];
                 };
             };
         };
@@ -23638,7 +23660,7 @@ export interface operations {
                          * @enum {string}
                          */
                         origin: "unibox" | "api";
-                        /** @description The files sent: name, the type their bytes show, size in bytes. Curviate keeps no file. */
+                        /** @description The files sent: name, the type their bytes show, size in bytes. The email keeps no file; one sent by attachment_ids stays an upload of your team until its retention ends. */
                         attachments?: {
                             filename?: string;
                             content_type?: string;
@@ -23656,7 +23678,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST: text is missing or over 10,000 characters; a to field (it always goes to the Lead); a new thread without subject; mailbox_id is not one of the conversation's Mailboxes, or names another Mailbox than a reply's thread (start a new thread to use another), or is missing while more than one can send; thread_id is not a thread of this conversation; a Cc or Bcc that is not one email address (named with its index, cc[1]), or more than 20 addresses in Cc and Bcc together; an attachment that is not base64 or has no file name. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: text is missing or over 10,000 characters; a to field (it always goes to the Lead); a new thread without subject; mailbox_id is not one of the conversation's Mailboxes, or names another Mailbox than a reply's thread (start a new thread to use another), or is missing while more than one can send; thread_id is not a thread of this conversation; a Cc or Bcc that is not one email address (named with its index, cc[1]), or more than 20 addresses in Cc and Bcc together; an attachment that is not base64 or has no file name; an attachment_ids entry that is not a cat_ id, the same id twice, or more than 10 files in all. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -23683,7 +23705,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RESOURCE_NOT_FOUND: no such conversation in your Unibox, the same answer for an id that does not exist, another team's, and one you cannot see. MAILBOX_NOT_FOUND: mailbox_id is not a Mailbox of your team. */
+            /** @description RESOURCE_NOT_FOUND: no such conversation in your Unibox, the same answer for an id that does not exist, another team's, and one you cannot see; or an attachment_ids file that is not your team's upload (unknown, another team's, or deleted), named with its index. MAILBOX_NOT_FOUND: mailbox_id is not a Mailbox of your team. Nothing was sent. */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -23740,7 +23762,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description PLATFORM_ERROR: the Mailbox's provider did not take the email. Nothing was sent and the daily limit was given back; the Lead's own address refused stops the whole email, Cc and Bcc included. retry_likely_to_succeed is false when the provider refused this email itself (its content or files): sent again unchanged, it is refused again. reason outcome_unknown: the provider stopped answering after it had the whole email, so it may have been sent; it is kept in the conversation as sent with outcome_unknown true, the daily limit stays spent. Do not send it again. */
+            /** @description PLATFORM_ERROR: the Mailbox's provider did not take the email. Nothing was sent and the daily limit was given back; the Lead's own address refused stops the whole email, Cc and Bcc included. retry_likely_to_succeed is false when the provider refused this email itself (its content or files): sent again unchanged, it is refused again. reason attachment_refused: the files were refused, as a Campaign step's are: from a Microsoft sign-in Mailbox, files of more than about 2.2 MB in all are refused before anything is sent (the daily limit untouched); or the provider refused them. Send a link or smaller files. reason outcome_unknown: the provider stopped answering after it had the whole email, so it may have been sent; it is kept in the conversation as sent with outcome_unknown true, the daily limit stays spent. Do not send it again. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -48471,6 +48493,112 @@ export interface operations {
             };
         };
     };
+    getV1MailboxesPurchasesQuote: {
+        parameters: {
+            query: {
+                /** @description How many Mailboxes, 1 to 50. */
+                mailboxes: number;
+            };
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The quote. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @enum {string} */
+                        object: "mailbox_quote";
+                        mailboxes: number;
+                        currency: string;
+                        /**
+                         * @description Your Team's billing period: the period one Mailbox is billed for.
+                         * @enum {string}
+                         */
+                        billing_period: "monthly" | "annual";
+                        /** @description One Mailbox for one billing period. */
+                        unit_amount: number;
+                        /** @description unit_amount times mailboxes: one full billing period of the order. The first charge is this prorated to the end of the current period. */
+                        amount: number;
+                        /** @description The monthly equivalent (the order's amount_monthly). */
+                        amount_monthly: number;
+                        /**
+                         * @description monthly: added to the next invoice; annual: invoiced and paid the day the records are found; never: nothing is charged for this Team.
+                         * @enum {string}
+                         */
+                        charged: "with_next_invoice" | "when_records_found" | "never";
+                        /** @description The first charge covers only the rest of the current billing period. */
+                        prorated: boolean;
+                        /** @description Tax is added at charge time where it applies; no tax figure is given here. */
+                        plus_tax: boolean;
+                        /** @description Whether your Team can place this order now. */
+                        orderable: boolean;
+                        /**
+                         * @description trial: available once your Team pays; sales_paused: Mailboxes from Curviate cannot be ordered at the moment.
+                         * @enum {string|null}
+                         */
+                        not_orderable_reason: "trial" | "sales_paused" | null;
+                        /**
+                         * @description payment: your subscription is past due, the charge waits until it is paid; subscription: no subscription to charge, the order waits uncharged.
+                         * @enum {string|null}
+                         */
+                        charge_waits_for: "payment" | "subscription" | null;
+                    };
+                };
+            };
+            /** @description INVALID_REQUEST: mailboxes is not a whole number from 1 to 50. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Missing or invalid API key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description INSUFFICIENT_ROLE: not an Owner. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     getV1MailboxesPurchases: {
         parameters: {
             query?: {
@@ -48508,7 +48636,7 @@ export interface operations {
                             /** @description The domain object's id (dom_...). */
                             domain_id: string;
                             /**
-                             * @description `awaiting_dns` until the four required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
+                             * @description `awaiting_dns` until the five required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
                              * @enum {string}
                              */
                             state: "awaiting_dns" | "provisioning" | "active" | "cancelled";
@@ -48521,11 +48649,36 @@ export interface operations {
                                 /** @description Set once the Mailbox exists (`active`). */
                                 mailbox_id?: string | null;
                             }[];
-                            /** @description Five rows in order: mx, spf, dkim, dmarc, tracking. Add each entry at your domain's DNS host; `tracking` is not required. */
+                            /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours, and `verify` is one TXT record that confirms this order is yours. */
                             records: Record<string, never>[];
                             advice: string | null;
-                            /** @description The order's price a month, USD minor units ($5 a Mailbox). */
+                            /** @description The order's monthly equivalent, minor units: the monthly price of one Mailbox times the Mailboxes. Not what a yearly Team is charged: read `price`. */
                             amount_monthly: number;
+                            /** @description What the order costs your Team, read now from the same price the charge uses. Amounts are minor units, before tax. */
+                            price: {
+                                mailboxes: number;
+                                currency: string;
+                                /**
+                                 * @description Your Team's billing period: the period one Mailbox is billed for.
+                                 * @enum {string}
+                                 */
+                                billing_period: "monthly" | "annual";
+                                /** @description One Mailbox for one billing period. */
+                                unit_amount: number;
+                                /** @description unit_amount times mailboxes: one full billing period of the order. The first charge is this prorated to the end of the current period. */
+                                amount: number;
+                                /** @description The monthly equivalent (the order's amount_monthly). */
+                                amount_monthly: number;
+                                /**
+                                 * @description monthly: added to the next invoice; annual: invoiced and paid the day the records are found; never: nothing is charged for this Team.
+                                 * @enum {string}
+                                 */
+                                charged: "with_next_invoice" | "when_records_found" | "never";
+                                /** @description The first charge covers only the rest of the current billing period. */
+                                prorated: boolean;
+                                /** @description Tax is added at charge time where it applies; no tax figure is given here. */
+                                plus_tax: boolean;
+                            };
                             /** Format: date-time */
                             checked_at: string | null;
                             /**
@@ -48618,7 +48771,7 @@ export interface operations {
                         /** @description The domain object's id (dom_...). */
                         domain_id: string;
                         /**
-                         * @description `awaiting_dns` until the four required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
+                         * @description `awaiting_dns` until the five required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
                          * @enum {string}
                          */
                         state: "awaiting_dns" | "provisioning" | "active" | "cancelled";
@@ -48631,11 +48784,36 @@ export interface operations {
                             /** @description Set once the Mailbox exists (`active`). */
                             mailbox_id?: string | null;
                         }[];
-                        /** @description Five rows in order: mx, spf, dkim, dmarc, tracking. Add each entry at your domain's DNS host; `tracking` is not required. */
+                        /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours, and `verify` is one TXT record that confirms this order is yours. */
                         records: Record<string, never>[];
                         advice: string | null;
-                        /** @description The order's price a month, USD minor units ($5 a Mailbox). */
+                        /** @description The order's monthly equivalent, minor units: the monthly price of one Mailbox times the Mailboxes. Not what a yearly Team is charged: read `price`. */
                         amount_monthly: number;
+                        /** @description What the order costs your Team, read now from the same price the charge uses. Amounts are minor units, before tax. */
+                        price: {
+                            mailboxes: number;
+                            currency: string;
+                            /**
+                             * @description Your Team's billing period: the period one Mailbox is billed for.
+                             * @enum {string}
+                             */
+                            billing_period: "monthly" | "annual";
+                            /** @description One Mailbox for one billing period. */
+                            unit_amount: number;
+                            /** @description unit_amount times mailboxes: one full billing period of the order. The first charge is this prorated to the end of the current period. */
+                            amount: number;
+                            /** @description The monthly equivalent (the order's amount_monthly). */
+                            amount_monthly: number;
+                            /**
+                             * @description monthly: added to the next invoice; annual: invoiced and paid the day the records are found; never: nothing is charged for this Team.
+                             * @enum {string}
+                             */
+                            charged: "with_next_invoice" | "when_records_found" | "never";
+                            /** @description The first charge covers only the rest of the current billing period. */
+                            prorated: boolean;
+                            /** @description Tax is added at charge time where it applies; no tax figure is given here. */
+                            plus_tax: boolean;
+                        };
                         /** Format: date-time */
                         checked_at: string | null;
                         /**
@@ -48759,7 +48937,7 @@ export interface operations {
                         /** @description The domain object's id (dom_...). */
                         domain_id: string;
                         /**
-                         * @description `awaiting_dns` until the four required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
+                         * @description `awaiting_dns` until the five required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
                          * @enum {string}
                          */
                         state: "awaiting_dns" | "provisioning" | "active" | "cancelled";
@@ -48772,11 +48950,36 @@ export interface operations {
                             /** @description Set once the Mailbox exists (`active`). */
                             mailbox_id?: string | null;
                         }[];
-                        /** @description Five rows in order: mx, spf, dkim, dmarc, tracking. Add each entry at your domain's DNS host; `tracking` is not required. */
+                        /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours, and `verify` is one TXT record that confirms this order is yours. */
                         records: Record<string, never>[];
                         advice: string | null;
-                        /** @description The order's price a month, USD minor units ($5 a Mailbox). */
+                        /** @description The order's monthly equivalent, minor units: the monthly price of one Mailbox times the Mailboxes. Not what a yearly Team is charged: read `price`. */
                         amount_monthly: number;
+                        /** @description What the order costs your Team, read now from the same price the charge uses. Amounts are minor units, before tax. */
+                        price: {
+                            mailboxes: number;
+                            currency: string;
+                            /**
+                             * @description Your Team's billing period: the period one Mailbox is billed for.
+                             * @enum {string}
+                             */
+                            billing_period: "monthly" | "annual";
+                            /** @description One Mailbox for one billing period. */
+                            unit_amount: number;
+                            /** @description unit_amount times mailboxes: one full billing period of the order. The first charge is this prorated to the end of the current period. */
+                            amount: number;
+                            /** @description The monthly equivalent (the order's amount_monthly). */
+                            amount_monthly: number;
+                            /**
+                             * @description monthly: added to the next invoice; annual: invoiced and paid the day the records are found; never: nothing is charged for this Team.
+                             * @enum {string}
+                             */
+                            charged: "with_next_invoice" | "when_records_found" | "never";
+                            /** @description The first charge covers only the rest of the current billing period. */
+                            prorated: boolean;
+                            /** @description Tax is added at charge time where it applies; no tax figure is given here. */
+                            plus_tax: boolean;
+                        };
                         /** Format: date-time */
                         checked_at: string | null;
                         /**
@@ -48855,7 +49058,7 @@ export interface operations {
                         /** @description The domain object's id (dom_...). */
                         domain_id: string;
                         /**
-                         * @description `awaiting_dns` until the four required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
+                         * @description `awaiting_dns` until the five required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
                          * @enum {string}
                          */
                         state: "awaiting_dns" | "provisioning" | "active" | "cancelled";
@@ -48868,11 +49071,36 @@ export interface operations {
                             /** @description Set once the Mailbox exists (`active`). */
                             mailbox_id?: string | null;
                         }[];
-                        /** @description Five rows in order: mx, spf, dkim, dmarc, tracking. Add each entry at your domain's DNS host; `tracking` is not required. */
+                        /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours, and `verify` is one TXT record that confirms this order is yours. */
                         records: Record<string, never>[];
                         advice: string | null;
-                        /** @description The order's price a month, USD minor units ($5 a Mailbox). */
+                        /** @description The order's monthly equivalent, minor units: the monthly price of one Mailbox times the Mailboxes. Not what a yearly Team is charged: read `price`. */
                         amount_monthly: number;
+                        /** @description What the order costs your Team, read now from the same price the charge uses. Amounts are minor units, before tax. */
+                        price: {
+                            mailboxes: number;
+                            currency: string;
+                            /**
+                             * @description Your Team's billing period: the period one Mailbox is billed for.
+                             * @enum {string}
+                             */
+                            billing_period: "monthly" | "annual";
+                            /** @description One Mailbox for one billing period. */
+                            unit_amount: number;
+                            /** @description unit_amount times mailboxes: one full billing period of the order. The first charge is this prorated to the end of the current period. */
+                            amount: number;
+                            /** @description The monthly equivalent (the order's amount_monthly). */
+                            amount_monthly: number;
+                            /**
+                             * @description monthly: added to the next invoice; annual: invoiced and paid the day the records are found; never: nothing is charged for this Team.
+                             * @enum {string}
+                             */
+                            charged: "with_next_invoice" | "when_records_found" | "never";
+                            /** @description The first charge covers only the rest of the current billing period. */
+                            prorated: boolean;
+                            /** @description Tax is added at charge time where it applies; no tax figure is given here. */
+                            plus_tax: boolean;
+                        };
                         /** Format: date-time */
                         checked_at: string | null;
                         /**
@@ -48960,7 +49188,7 @@ export interface operations {
                         /** @description The domain object's id (dom_...). */
                         domain_id: string;
                         /**
-                         * @description `awaiting_dns` until the four required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
+                         * @description `awaiting_dns` until the five required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
                          * @enum {string}
                          */
                         state: "awaiting_dns" | "provisioning" | "active" | "cancelled";
@@ -48973,11 +49201,36 @@ export interface operations {
                             /** @description Set once the Mailbox exists (`active`). */
                             mailbox_id?: string | null;
                         }[];
-                        /** @description Five rows in order: mx, spf, dkim, dmarc, tracking. Add each entry at your domain's DNS host; `tracking` is not required. */
+                        /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours, and `verify` is one TXT record that confirms this order is yours. */
                         records: Record<string, never>[];
                         advice: string | null;
-                        /** @description The order's price a month, USD minor units ($5 a Mailbox). */
+                        /** @description The order's monthly equivalent, minor units: the monthly price of one Mailbox times the Mailboxes. Not what a yearly Team is charged: read `price`. */
                         amount_monthly: number;
+                        /** @description What the order costs your Team, read now from the same price the charge uses. Amounts are minor units, before tax. */
+                        price: {
+                            mailboxes: number;
+                            currency: string;
+                            /**
+                             * @description Your Team's billing period: the period one Mailbox is billed for.
+                             * @enum {string}
+                             */
+                            billing_period: "monthly" | "annual";
+                            /** @description One Mailbox for one billing period. */
+                            unit_amount: number;
+                            /** @description unit_amount times mailboxes: one full billing period of the order. The first charge is this prorated to the end of the current period. */
+                            amount: number;
+                            /** @description The monthly equivalent (the order's amount_monthly). */
+                            amount_monthly: number;
+                            /**
+                             * @description monthly: added to the next invoice; annual: invoiced and paid the day the records are found; never: nothing is charged for this Team.
+                             * @enum {string}
+                             */
+                            charged: "with_next_invoice" | "when_records_found" | "never";
+                            /** @description The first charge covers only the rest of the current billing period. */
+                            prorated: boolean;
+                            /** @description Tax is added at charge time where it applies; no tax figure is given here. */
+                            plus_tax: boolean;
+                        };
                         /** Format: date-time */
                         checked_at: string | null;
                         /**
@@ -49213,10 +49466,10 @@ export interface operations {
                                 /** @description Warm-up day: 1 on the day it was turned on, then one more each calendar day; null while off. */
                                 day: number | null;
                                 /**
-                                 * @description `off`; `warming` (day N of the days picked); `waiting`: warm-up is on but cannot run now: no warm-up mail goes from or to it, and its day does not advance.
+                                 * @description `off`; `warming` (day N of the days picked); `waiting`: warm-up is on but cannot run now: no warm-up mail goes from or to it, and its day does not advance. `ready`: the days picked have passed and its warm-up mail lands well enough; warm-up goes on as before and sending does not change. Past its days and not ready yet, it stays `warming`.
                                  * @enum {string}
                                  */
-                                state: "off" | "warming" | "waiting";
+                                state: "off" | "warming" | "waiting" | "ready";
                                 /**
                                  * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (a Microsoft Mailbox: connect the Curviate Warm-up app for it again), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added), `address_check` (Curviate is confirming that mail to this address reaches this Mailbox: one email to the address, warm-up starts once it arrives), `address_unconfirmed` (mail to this address has not reached this Mailbox: check its connection settings; Curviate tries again by itself, within 30 days).
                                  * @enum {string|null}
@@ -49233,9 +49486,19 @@ export interface operations {
                                 other: "inbox" | "partly_spam" | "spam" | "gathering";
                                 /** Format: date-time */
                                 read_at: string | null;
+                                /**
+                                 * @description Why nothing will be read: `warm_up_off` (turn warm-up on for this Mailbox). Null otherwise, including while a reading is still being gathered.
+                                 * @enum {string|null}
+                                 */
+                                reason: "warm_up_off" | null;
                             };
                             /** @description This Mailbox's reputation, 0 to 100: where its warm-up and test mail landed over the last 7 days, its domain setup, its bounces and how long it has been warming. Updated each night and when a placement test completes; null while there is not enough evidence yet. */
                             reputation: number | null;
+                            /**
+                             * @description Why `reputation` is null and will stay so: `warm_up_off` (turn warm-up on for this Mailbox). Null while a score is served or still being gathered.
+                             * @enum {string|null}
+                             */
+                            reputation_reason: "warm_up_off" | null;
                         }[];
                         cursor?: string | null;
                     };
@@ -49376,10 +49639,10 @@ export interface operations {
                             /** @description Warm-up day: 1 on the day it was turned on, then one more each calendar day; null while off. */
                             day: number | null;
                             /**
-                             * @description `off`; `warming` (day N of the days picked); `waiting`: warm-up is on but cannot run now: no warm-up mail goes from or to it, and its day does not advance.
+                             * @description `off`; `warming` (day N of the days picked); `waiting`: warm-up is on but cannot run now: no warm-up mail goes from or to it, and its day does not advance. `ready`: the days picked have passed and its warm-up mail lands well enough; warm-up goes on as before and sending does not change. Past its days and not ready yet, it stays `warming`.
                              * @enum {string}
                              */
-                            state: "off" | "warming" | "waiting";
+                            state: "off" | "warming" | "waiting" | "ready";
                             /**
                              * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (a Microsoft Mailbox: connect the Curviate Warm-up app for it again), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added), `address_check` (Curviate is confirming that mail to this address reaches this Mailbox: one email to the address, warm-up starts once it arrives), `address_unconfirmed` (mail to this address has not reached this Mailbox: check its connection settings; Curviate tries again by itself, within 30 days).
                              * @enum {string|null}
@@ -49396,9 +49659,19 @@ export interface operations {
                             other: "inbox" | "partly_spam" | "spam" | "gathering";
                             /** Format: date-time */
                             read_at: string | null;
+                            /**
+                             * @description Why nothing will be read: `warm_up_off` (turn warm-up on for this Mailbox). Null otherwise, including while a reading is still being gathered.
+                             * @enum {string|null}
+                             */
+                            reason: "warm_up_off" | null;
                         };
                         /** @description This Mailbox's reputation, 0 to 100: where its warm-up and test mail landed over the last 7 days, its domain setup, its bounces and how long it has been warming. Updated each night and when a placement test completes; null while there is not enough evidence yet. */
                         reputation: number | null;
+                        /**
+                         * @description Why `reputation` is null and will stay so: `warm_up_off` (turn warm-up on for this Mailbox). Null while a score is served or still being gathered.
+                         * @enum {string|null}
+                         */
+                        reputation_reason: "warm_up_off" | null;
                     };
                 };
             };
@@ -49495,7 +49768,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE: a Member removing a Mailbox they did not connect. */
+            /** @description INSUFFICIENT_ROLE: a Member removing a Mailbox they did not connect, or anyone but an Owner removing a Mailbox from Curviate. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -49506,6 +49779,15 @@ export interface operations {
             };
             /** @description MAILBOX_NOT_FOUND: no Mailbox with this id in this team (another team's id answers the same), or RESOURCE_NOT_FOUND where Mailboxes are not available to this team. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_STATE_CONFLICT: a Mailbox from Curviate still being created, or too many Mailbox changes still settling with billing (nothing changed; try again later). */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -49648,10 +49930,10 @@ export interface operations {
                             /** @description Warm-up day: 1 on the day it was turned on, then one more each calendar day; null while off. */
                             day: number | null;
                             /**
-                             * @description `off`; `warming` (day N of the days picked); `waiting`: warm-up is on but cannot run now: no warm-up mail goes from or to it, and its day does not advance.
+                             * @description `off`; `warming` (day N of the days picked); `waiting`: warm-up is on but cannot run now: no warm-up mail goes from or to it, and its day does not advance. `ready`: the days picked have passed and its warm-up mail lands well enough; warm-up goes on as before and sending does not change. Past its days and not ready yet, it stays `warming`.
                              * @enum {string}
                              */
-                            state: "off" | "warming" | "waiting";
+                            state: "off" | "warming" | "waiting" | "ready";
                             /**
                              * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (a Microsoft Mailbox: connect the Curviate Warm-up app for it again), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added), `address_check` (Curviate is confirming that mail to this address reaches this Mailbox: one email to the address, warm-up starts once it arrives), `address_unconfirmed` (mail to this address has not reached this Mailbox: check its connection settings; Curviate tries again by itself, within 30 days).
                              * @enum {string|null}
@@ -49668,9 +49950,19 @@ export interface operations {
                             other: "inbox" | "partly_spam" | "spam" | "gathering";
                             /** Format: date-time */
                             read_at: string | null;
+                            /**
+                             * @description Why nothing will be read: `warm_up_off` (turn warm-up on for this Mailbox). Null otherwise, including while a reading is still being gathered.
+                             * @enum {string|null}
+                             */
+                            reason: "warm_up_off" | null;
                         };
                         /** @description This Mailbox's reputation, 0 to 100: where its warm-up and test mail landed over the last 7 days, its domain setup, its bounces and how long it has been warming. Updated each night and when a placement test completes; null while there is not enough evidence yet. */
                         reputation: number | null;
+                        /**
+                         * @description Why `reputation` is null and will stay so: `warm_up_off` (turn warm-up on for this Mailbox). Null while a score is served or still being gathered.
+                         * @enum {string|null}
+                         */
+                        reputation_reason: "warm_up_off" | null;
                     };
                 };
             };
@@ -49827,10 +50119,10 @@ export interface operations {
                             /** @description Warm-up day: 1 on the day it was turned on, then one more each calendar day; null while off. */
                             day: number | null;
                             /**
-                             * @description `off`; `warming` (day N of the days picked); `waiting`: warm-up is on but cannot run now: no warm-up mail goes from or to it, and its day does not advance.
+                             * @description `off`; `warming` (day N of the days picked); `waiting`: warm-up is on but cannot run now: no warm-up mail goes from or to it, and its day does not advance. `ready`: the days picked have passed and its warm-up mail lands well enough; warm-up goes on as before and sending does not change. Past its days and not ready yet, it stays `warming`.
                              * @enum {string}
                              */
-                            state: "off" | "warming" | "waiting";
+                            state: "off" | "warming" | "waiting" | "ready";
                             /**
                              * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (a Microsoft Mailbox: connect the Curviate Warm-up app for it again), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added), `address_check` (Curviate is confirming that mail to this address reaches this Mailbox: one email to the address, warm-up starts once it arrives), `address_unconfirmed` (mail to this address has not reached this Mailbox: check its connection settings; Curviate tries again by itself, within 30 days).
                              * @enum {string|null}
@@ -49847,9 +50139,19 @@ export interface operations {
                             other: "inbox" | "partly_spam" | "spam" | "gathering";
                             /** Format: date-time */
                             read_at: string | null;
+                            /**
+                             * @description Why nothing will be read: `warm_up_off` (turn warm-up on for this Mailbox). Null otherwise, including while a reading is still being gathered.
+                             * @enum {string|null}
+                             */
+                            reason: "warm_up_off" | null;
                         };
                         /** @description This Mailbox's reputation, 0 to 100: where its warm-up and test mail landed over the last 7 days, its domain setup, its bounces and how long it has been warming. Updated each night and when a placement test completes; null while there is not enough evidence yet. */
                         reputation: number | null;
+                        /**
+                         * @description Why `reputation` is null and will stay so: `warm_up_off` (turn warm-up on for this Mailbox). Null while a score is served or still being gathered.
+                         * @enum {string|null}
+                         */
+                        reputation_reason: "warm_up_off" | null;
                     };
                 };
             };
@@ -50006,10 +50308,10 @@ export interface operations {
                             /** @description Warm-up day: 1 on the day it was turned on, then one more each calendar day; null while off. */
                             day: number | null;
                             /**
-                             * @description `off`; `warming` (day N of the days picked); `waiting`: warm-up is on but cannot run now: no warm-up mail goes from or to it, and its day does not advance.
+                             * @description `off`; `warming` (day N of the days picked); `waiting`: warm-up is on but cannot run now: no warm-up mail goes from or to it, and its day does not advance. `ready`: the days picked have passed and its warm-up mail lands well enough; warm-up goes on as before and sending does not change. Past its days and not ready yet, it stays `warming`.
                              * @enum {string}
                              */
-                            state: "off" | "warming" | "waiting";
+                            state: "off" | "warming" | "waiting" | "ready";
                             /**
                              * @description Why warm-up is waiting, null otherwise: `reconnect_needed` (reconnect the Mailbox), `trial` (warm-up starts at day 1 once the Team pays), `app_password` (add an app password), `warm_up_app` (a Microsoft Mailbox: connect the Curviate Warm-up app for it again), `allowance` (the Team's count of new warm-up runs for the last 30 days, 100 per paid seat, is used up: it starts once the count allows or a seat is added), `address_check` (Curviate is confirming that mail to this address reaches this Mailbox: one email to the address, warm-up starts once it arrives), `address_unconfirmed` (mail to this address has not reached this Mailbox: check its connection settings; Curviate tries again by itself, within 30 days).
                              * @enum {string|null}
@@ -50026,9 +50328,19 @@ export interface operations {
                             other: "inbox" | "partly_spam" | "spam" | "gathering";
                             /** Format: date-time */
                             read_at: string | null;
+                            /**
+                             * @description Why nothing will be read: `warm_up_off` (turn warm-up on for this Mailbox). Null otherwise, including while a reading is still being gathered.
+                             * @enum {string|null}
+                             */
+                            reason: "warm_up_off" | null;
                         };
                         /** @description This Mailbox's reputation, 0 to 100: where its warm-up and test mail landed over the last 7 days, its domain setup, its bounces and how long it has been warming. Updated each night and when a placement test completes; null while there is not enough evidence yet. */
                         reputation: number | null;
+                        /**
+                         * @description Why `reputation` is null and will stay so: `warm_up_off` (turn warm-up on for this Mailbox). Null while a score is served or still being gathered.
+                         * @enum {string|null}
+                         */
+                        reputation_reason: "warm_up_off" | null;
                     };
                 };
             };
@@ -51831,7 +52143,7 @@ export interface operations {
                                 found: number;
                                 /** @description A LinkedIn source: people skipped for the Do-not-contact list. */
                                 do_not_contact: number;
-                                /** @description A LinkedIn source: people imported who opted out of email only. */
+                                /** @description People imported who will get no email: a LinkedIn source counts those who opted out of email only; rows and CSV count rows whose email address (any spelling of it) opted out. They are imported; every email to them is refused. */
                                 no_email: number;
                             };
                             /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
@@ -51988,9 +52300,248 @@ export interface operations {
                         account_id: string;
                         /** @description A pasted LinkedIn search URL (people_search: linkedin.com/search/results/people/...). */
                         url?: string;
-                        /** @description A built search instead of a URL: the filters the kind offers. Send url or filters, not both. */
+                        /** @description A built search instead of a URL: the filters the kind offers, one shape per kind (people_search, company_people, sales_nav_search, sales_nav_company_people, recruiter_search); a key the kind does not offer is a 400 naming it. Send url or filters, not both. */
                         filters?: {
-                            [key: string]: unknown;
+                            /** @description Full-text keyword search across all profile fields. */
+                            keywords?: string;
+                            advanced_keywords?: {
+                                title?: string;
+                            };
+                            /** @description Opaque location IDs from GET .../search/parameters?type=LOCATION. */
+                            location?: string[];
+                            /** @description Opaque current company IDs from GET .../search/parameters?type=COMPANY. */
+                            current_company?: string[];
+                            /** @description Opaque past company IDs from GET .../search/parameters?type=COMPANY. */
+                            past_company?: string[];
+                            /** @description Opaque school IDs from GET .../search/parameters?type=SCHOOL. */
+                            school?: string[];
+                            /** @description Opaque industry IDs from GET .../search/parameters?type=INDUSTRY. */
+                            industry?: string[];
+                            /** @description Opaque service IDs from GET .../search/parameters?type=SERVICE. */
+                            service?: string[];
+                            /** @description Filter by network distance: 1 = 1st degree, 2 = 2nd degree, 3 = 3rd degree. */
+                            network_distance?: (1 | 2 | 3)[];
+                        } | {
+                            /** @description Full-text keyword search across company profiles. */
+                            keywords?: string;
+                            /** @description Opaque industry IDs from GET .../search/parameters?type=INDUSTRY. */
+                            industry?: string[];
+                            /** @description Opaque location IDs from GET .../search/parameters?type=LOCATION. */
+                            location?: string[];
+                            /** @description Filter by company size buckets. Each entry is a { min, max } object (e.g. { min: 51, max: 200 }). */
+                            headcount?: {
+                                /** @description Lower bound of a company-size bucket. Valid values: 1, 11, 51, 201, 501, 1001, 5001, 10001. */
+                                min: number;
+                                /** @description Upper bound of a company-size bucket. Valid values: 1, 10, 50, 200, 500, 1000, 5000, 10000. */
+                                max: number;
+                            }[];
+                            /** @description Filter to companies with active job postings. */
+                            has_job_postings?: boolean;
+                        } | {
+                            /** @description Free-text keyword filter. */
+                            keywords?: string;
+                            /** @description Current-employer COMPANY parameter IDs to include or exclude. */
+                            current_company?: {
+                                include?: string[];
+                                exclude?: string[];
+                            };
+                            /** @description Past-employer COMPANY parameter IDs to include or exclude. */
+                            past_company?: {
+                                include?: string[];
+                                exclude?: string[];
+                            };
+                            /** @description LOCATION parameter IDs for the current company's HQ to include or exclude. */
+                            company_location?: {
+                                include?: string[];
+                                exclude?: string[];
+                            };
+                            /** @description ACCOUNT_LIST parameter IDs to include or exclude. */
+                            account_list?: {
+                                include?: string[];
+                                exclude?: string[];
+                            };
+                            /** @description JOB_FUNCTION parameter IDs to include or exclude. */
+                            function?: {
+                                include?: string[];
+                                exclude?: string[];
+                            };
+                            current_job_title?: {
+                                include?: string[];
+                                exclude?: string[];
+                            };
+                            past_job_title?: {
+                                include?: string[];
+                                exclude?: string[];
+                            };
+                            /** @description PERSONA parameter IDs to filter by. */
+                            persona?: string[];
+                            /** @description LOCATION parameter IDs to include or exclude. */
+                            location?: {
+                                include?: string[];
+                                exclude?: string[];
+                            };
+                            /** @description POSTAL_CODE parameter IDs to include or exclude, plus an optional radius in miles. */
+                            postal_code?: {
+                                include?: string[];
+                                exclude?: string[];
+                                /**
+                                 * @description Search radius in miles around the postal code location: 1, 5, 10, 25, 35, 50, 75, or 100.
+                                 * @enum {number}
+                                 */
+                                radius?: 1 | 5 | 10 | 25 | 35 | 50 | 75 | 100;
+                            };
+                            /** @description INDUSTRY parameter IDs to include or exclude. */
+                            industry?: {
+                                include?: string[];
+                                exclude?: string[];
+                            };
+                            /** @description GROUP parameter IDs to include or exclude. */
+                            group?: {
+                                include?: string[];
+                                exclude?: string[];
+                            };
+                            /** @description SCHOOL parameter IDs to include or exclude. */
+                            school?: {
+                                include?: string[];
+                                exclude?: string[];
+                            };
+                            /** @description PROFILE_LANGUAGE parameter IDs to filter by. */
+                            profile_language?: string[];
+                            /** @description LEAD_LIST parameter IDs to include or exclude. */
+                            lead_list?: {
+                                include?: string[];
+                                exclude?: string[];
+                            };
+                            /** @description Seniority levels to include or exclude. */
+                            seniority?: {
+                                include?: ("OWNER/PARTNER" | "CXO" | "VICE_PRESIDENT" | "DIRECTOR" | "EXPERIENCED_MANAGER" | "ENTRY_LEVEL_MANAGER" | "STRATEGIC" | "SENIOR" | "ENTRY_LEVEL" | "IN_TRAINING")[];
+                                exclude?: ("OWNER/PARTNER" | "CXO" | "VICE_PRESIDENT" | "DIRECTOR" | "EXPERIENCED_MANAGER" | "ENTRY_LEVEL_MANAGER" | "STRATEGIC" | "SENIOR" | "ENTRY_LEVEL" | "IN_TRAINING")[];
+                            };
+                            company_headcount?: {
+                                min?: number;
+                                max?: number;
+                            }[];
+                            years_in_company?: {
+                                min?: number;
+                                max?: number;
+                            }[];
+                            years_in_position?: {
+                                min?: number;
+                                max?: number;
+                            }[];
+                            years_of_experience?: {
+                                min?: number;
+                                max?: number;
+                            }[];
+                            /** @description Company type filter. */
+                            company_type?: ("PUBLIC_COMPANY" | "PRIVATELY_HELD" | "NON_PROFIT" | "EDUCATIONAL_INSTITUTION" | "PARTNERSHIP" | "SELF_EMPLOYED" | "SELF_OWNED" | "GOVERNMENT_AGENCY")[];
+                            /** @description Connection distance: 1 (1st), 2 (2nd), 3 (3rd+), 'GROUP' (group members). */
+                            network_distance?: (1 | 2 | 3 | "GROUP")[];
+                            /** @description RELATION parameter IDs used to filter to connections of these members. */
+                            connections_of?: string[];
+                            /** @description First names to filter by. */
+                            first_name?: string[];
+                            /** @description Last names to filter by. */
+                            last_name?: string[];
+                            /** @description Filter by recent interaction with the operator account. */
+                            recent_interaction?: {
+                                viewed_profile?: boolean;
+                                messaged?: boolean;
+                            };
+                            /** @description Include results from the operator's saved leads/accounts. */
+                            saved_resources?: {
+                                saved_leads?: boolean;
+                                saved_accounts?: boolean;
+                            };
+                            /** @description Filter to members following your company. */
+                            following_your_company?: boolean;
+                            /** @description Filter to members who viewed your profile recently. */
+                            viewed_your_profile_recently?: boolean;
+                            /** @description Filter to past colleagues. */
+                            past_colleague?: boolean;
+                            /** @description Filter to members with shared experiences. */
+                            shared_experiences?: boolean;
+                            /** @description Filter to members who recently changed jobs. */
+                            changed_jobs?: boolean;
+                            /** @description Filter to members who recently posted on LinkedIn. */
+                            posted_on_linkedin?: boolean;
+                        } | {
+                            /** @description Free-text keyword filter. */
+                            keywords?: string;
+                            /** @description Annual revenue range. */
+                            annual_revenue?: {
+                                /** @description Minimum annual revenue (millions). */
+                                min?: number;
+                                /** @description Maximum annual revenue (millions). */
+                                max?: number;
+                                /** @description ISO 4217 three-character currency code (e.g. 'USD'). */
+                                currency: string;
+                            };
+                            headcount?: {
+                                min?: number;
+                                max?: number;
+                            }[];
+                            /** @description Follower count ranges. */
+                            followers?: {
+                                min: number;
+                                max: number;
+                            }[];
+                            /** @description Fortune ranking ranges. */
+                            fortune?: {
+                                min: number;
+                                max: number;
+                            }[];
+                            /** @description Headcount growth percentage range. */
+                            headcount_growth?: {
+                                min: number;
+                                max: number;
+                            };
+                            /** @description Filter by department headcount. department, min, and max are all required when this filter is present. */
+                            department_headcount?: {
+                                /** @description A single JOB_FUNCTION parameter ID (required, singular). */
+                                department: string;
+                                min: number;
+                                max: number;
+                            };
+                            /** @description Filter by department headcount growth. department, min, and max are all required when this filter is present. */
+                            department_headcount_growth?: {
+                                /** @description A single JOB_FUNCTION parameter ID (required, singular). */
+                                department: string;
+                                min: number;
+                                max: number;
+                            };
+                            /** @description LOCATION parameter IDs to include or exclude. */
+                            location?: {
+                                include?: string[];
+                                exclude?: string[];
+                            };
+                            /** @description POSTAL_CODE parameter IDs to include or exclude (no radius for companies). */
+                            postal_code?: {
+                                include?: string[];
+                                exclude?: string[];
+                            };
+                            /** @description INDUSTRY parameter IDs to include or exclude. */
+                            industry?: {
+                                include?: string[];
+                                exclude?: string[];
+                            };
+                            /** @description ACCOUNT_LIST parameter IDs to include or exclude. */
+                            account_list?: {
+                                include?: string[];
+                                exclude?: string[];
+                            };
+                            /** @description Company activity spotlights to filter by. */
+                            spotlights?: ("HIRING_ON_LINKEDIN" | "RECENT_LEADERSHIP_CHANGE" | "RECENT_FUNDING_EVENTS" | "FIRST_DEGREE_CONNECTIONS")[];
+                            /** @description Filter to the operator's saved accounts. */
+                            saved_accounts?: boolean;
+                        } | {
+                            /** @description Free-text keyword search. Trimmed before use; never persisted. */
+                            keywords?: string;
+                            /** @description Resolved JOB_FUNCTION parameter ids. */
+                            job_function?: string[];
+                            workplace_type?: ("ON_SITE" | "HYBRID" | "REMOTE")[];
+                            /** @description Resolved GROUP parameter ids. */
+                            group?: string[];
                         };
                         /** @description A Sales Navigator lead list id (sales_nav_lead_list) or account list id (sales_nav_account_list). */
                         list_id?: string;
@@ -52042,7 +52593,7 @@ export interface operations {
                             found: number;
                             /** @description A LinkedIn source: people skipped for the Do-not-contact list. */
                             do_not_contact: number;
-                            /** @description A LinkedIn source: people imported who opted out of email only. */
+                            /** @description People imported who will get no email: a LinkedIn source counts those who opted out of email only; rows and CSV count rows whose email address (any spelling of it) opted out. They are imported; every email to them is refused. */
                             no_email: number;
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
@@ -52144,7 +52695,7 @@ export interface operations {
                             found: number;
                             /** @description A LinkedIn source: people skipped for the Do-not-contact list. */
                             do_not_contact: number;
-                            /** @description A LinkedIn source: people imported who opted out of email only. */
+                            /** @description People imported who will get no email: a LinkedIn source counts those who opted out of email only; rows and CSV count rows whose email address (any spelling of it) opted out. They are imported; every email to them is refused. */
                             no_email: number;
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
@@ -52340,7 +52891,7 @@ export interface operations {
                             found: number;
                             /** @description A LinkedIn source: people skipped for the Do-not-contact list. */
                             do_not_contact: number;
-                            /** @description A LinkedIn source: people imported who opted out of email only. */
+                            /** @description People imported who will get no email: a LinkedIn source counts those who opted out of email only; rows and CSV count rows whose email address (any spelling of it) opted out. They are imported; every email to them is refused. */
                             no_email: number;
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
@@ -52500,7 +53051,7 @@ export interface operations {
                             found: number;
                             /** @description A LinkedIn source: people skipped for the Do-not-contact list. */
                             do_not_contact: number;
-                            /** @description A LinkedIn source: people imported who opted out of email only. */
+                            /** @description People imported who will get no email: a LinkedIn source counts those who opted out of email only; rows and CSV count rows whose email address (any spelling of it) opted out. They are imported; every email to them is refused. */
                             no_email: number;
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
@@ -52678,7 +53229,7 @@ export interface operations {
                             found: number;
                             /** @description A LinkedIn source: people skipped for the Do-not-contact list. */
                             do_not_contact: number;
-                            /** @description A LinkedIn source: people imported who opted out of email only. */
+                            /** @description People imported who will get no email: a LinkedIn source counts those who opted out of email only; rows and CSV count rows whose email address (any spelling of it) opted out. They are imported; every email to them is refused. */
                             no_email: number;
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
@@ -52856,7 +53407,7 @@ export interface operations {
                             found: number;
                             /** @description A LinkedIn source: people skipped for the Do-not-contact list. */
                             do_not_contact: number;
-                            /** @description A LinkedIn source: people imported who opted out of email only. */
+                            /** @description People imported who will get no email: a LinkedIn source counts those who opted out of email only; rows and CSV count rows whose email address (any spelling of it) opted out. They are imported; every email to them is refused. */
                             no_email: number;
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
@@ -66173,7 +66724,7 @@ export interface operations {
                             cap_lowered_to: number | null;
                             /** @description Emails it sent today, whatever the filters. */
                             sent_today: number;
-                            /** @description Emails it sent in the window under the filters. */
+                            /** @description Campaign emails it sent in the window under the filters. */
                             sent: number;
                             bounces: {
                                 /** @description Hard bounces of those emails. */
@@ -66253,6 +66804,17 @@ export interface operations {
                                 /** @description Why it waits; null otherwise. */
                                 reason: string | null;
                             };
+                            /** @description Its reputation, 0 to 100, as GET /v1/mailboxes/{id} serves it; null while there is too little to judge (never 0 for that). */
+                            reputation: number | null;
+                            /**
+                             * @description Why reputation is null and will stay so: warm_up_off. Null otherwise, as GET /v1/mailboxes/{id} serves it.
+                             * @enum {string|null}
+                             */
+                            reputation_reason: "warm_up_off" | null;
+                            /** @description Why it is paused, as GET /v1/mailboxes/{id} serves it; null when it is not. */
+                            pause_reason: string | null;
+                            /** @description When a provider's pause ends (UTC), as GET /v1/mailboxes/{id} serves it; null otherwise. */
+                            paused_until: string | null;
                         }[];
                         /** @description With include=domains: the sending domains of those Mailboxes, by name. */
                         domains?: {
@@ -66274,7 +66836,7 @@ export interface operations {
                                 tracking: "pass" | "fail" | "unknown";
                             };
                             /**
-                             * @description Where the checks come from: dns, from DNS lookups.
+                             * @description dns: DNS lookups only. dns_and_mail: DNS, and warm-up or test mail of the domain was read (warm-up in the last 7 days, a test or weekly check in the last 30).
                              * @enum {string}
                              */
                             source: "dns" | "dns_and_mail";
@@ -66302,6 +66864,11 @@ export interface operations {
                                 other: "inbox" | "partly_spam" | "spam" | "gathering";
                                 /** @description The hour the newest of these reads was made (UTC); null when none. */
                                 read_at: string | null;
+                                /**
+                                 * @description Why nothing will be read: warm_up_off, no Mailbox in scope has warm-up on. Null otherwise, including while a reading is still being gathered.
+                                 * @enum {string|null}
+                                 */
+                                reason: "warm_up_off" | null;
                             };
                             /** @description The newest weekly check of a Campaign's email from a Mailbox in scope, the last 30 days. */
                             weekly_check: {
@@ -66317,6 +66884,11 @@ export interface operations {
                                 microsoft_365: "inbox" | "partly_spam" | "spam" | "gathering";
                                 /** @description When that check finished (UTC); null when none. */
                                 completed_at: string | null;
+                                /**
+                                 * @description With no check on file: no_test_inboxes when weekly checks are not available. Null otherwise.
+                                 * @enum {string|null}
+                                 */
+                                reason: "no_test_inboxes" | null;
                             };
                             /** @description The newest test you ran from a Mailbox in scope, the last 30 days. */
                             tests: {
@@ -66342,6 +66914,11 @@ export interface operations {
                                 outlook_com: "inbox" | "partly_spam" | "spam" | "gathering";
                                 /** @description When that test finished (UTC); null when none. */
                                 completed_at: string | null;
+                                /**
+                                 * @description With no test on file: no_test_inboxes when tests are not available, no_test_run when none was run yet. Null otherwise.
+                                 * @enum {string|null}
+                                 */
+                                reason: "no_test_inboxes" | "no_test_run" | null;
                             };
                         };
                         /** @description With include=forecast: the emails your Campaigns' email steps are expected to send, per day from today, over the accounts you can see. Each Mailbox counts its daily cap (the lowered cap where Curviate lowered it); a Mailbox shared by several accounts' Campaigns counts its cap once across them; a paused Mailbox, or one to reconnect, counts nothing. Sends only: replies are not forecast. */

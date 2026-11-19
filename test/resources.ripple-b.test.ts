@@ -4,6 +4,7 @@ import { http, HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
 import { server } from "./msw/server.js";
 import { Curviate, isCurviateError } from "../src/index.js";
+import type { LeadImportCreateBody } from "../src/resources/leads.js";
 
 const BASE = "https://app.curviate.test";
 const client = new Curviate({ apiKey: "cvt_test_ripple_b", baseUrl: BASE, maxRetries: 0 });
@@ -80,6 +81,11 @@ describe("request shapes", () => {
     await client.unibox.updateMessage("m_1", { reply_label: "out_of_office" });
     await client.teams.getReplyLabels();
     await client.teams.updateReplyLabels({ enabled: true, tags: { interested: "tag_1", other: null } });
+    await client.leads.imports.create({ source: { kind: "people_search", account_id: "acc_1", filters: { keywords: "cto", network_distance: [2] } } });
+    // IMP-25: `filters` is typed per kind from the served document; a key no kind offers does not compile.
+    // @ts-expect-error not_a_filter is offered by no kind
+    const typedFilters: LeadImportCreateBody = { source: { kind: "people_search", account_id: "acc_1", filters: { not_a_filter: 1 } } };
+    void typedFilters;
     await client.leads.imports.pause("imp_1");
     await client.leads.imports.resume("imp_1");
     await client.leads.imports.stop("imp_1");
@@ -105,6 +111,7 @@ describe("request shapes", () => {
       ["PATCH", "/v1/unibox/messages/m_1", {}, { reply_label: "out_of_office" }],
       ["GET", "/v1/teams/current/reply-labels", {}, null],
       ["PATCH", "/v1/teams/current/reply-labels", {}, { enabled: true, tags: { interested: "tag_1", other: null } }],
+      ["POST", "/v1/leads/imports", {}, { source: { kind: "people_search", account_id: "acc_1", filters: { keywords: "cto", network_distance: [2] } } }],
       ["POST", "/v1/leads/imports/imp_1/pause", {}, null],
       ["POST", "/v1/leads/imports/imp_1/resume", {}, null],
       ["POST", "/v1/leads/imports/imp_1/stop", {}, null],
