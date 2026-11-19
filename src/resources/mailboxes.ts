@@ -110,7 +110,8 @@ export class MailboxPurchasesResource {
    * Owner sets in the dashboard (`billing.spendingCap()` reads `mailbox_cap`):
    * from 80% of it the order carries a `SPENDING_CAP_NEAR` notice; past it,
    * `403 SPENDING_CAP_REACHED` and nothing is ordered. Other refusals:
-   * `MAILBOX_PURCHASE_TRIAL` (a Team on a trial), `MAILBOX_PURCHASE_PENDING`
+   * `MAILBOX_PURCHASE_TRIAL` (a Team without a paid plan: on a trial, its
+   * trial ended, never subscribed, or a payment past due), `MAILBOX_PURCHASE_PENDING`
    * (this domain already has an order waiting), `DOMAIN_IN_USE`,
    * `DOMAIN_IS_COMPANY_EMAIL` (the domain your company email runs on),
    * `MAILBOX_SALES_PAUSED` (orders cannot be placed at the moment). One HTTP
@@ -133,7 +134,8 @@ export class MailboxPurchasesResource {
    * tax) for the Team's `billing_period`, `charged` (`with_next_invoice` for a
    * monthly Team; `when_records_found` for a yearly Team, which pays the rest
    * of its year that day; `never`), `prorated`, `plus_tax`, and `orderable`
-   * with `not_orderable_reason` (`trial`, `sales_paused`). `charge_waits_for`
+   * with `not_orderable_reason` (`trial`: the Team has no paid plan, or a payment
+   * is past due; `sales_paused`). `charge_waits_for`
    * (`payment`, `subscription`) says the charge would wait. Show these as
    * served, never a price of your own. Owners only. One HTTP call, no charge.
    * `GET /v1/mailboxes/purchases/quote`
@@ -164,6 +166,11 @@ export class MailboxPurchasesResource {
    * Curviate undid the charge in full; an order being reversed reads
    * `provisioning` until then). Neither `provisioning` nor `host_failed` is a
    * cue to retry or to order again: read the order again later.
+   * `charge_unknown` is true while Curviate cannot tell whether the order's
+   * charge was made (the order ended as the charge was sent): it is being
+   * checked, and a charge that was made is given back in full. Say "We are
+   * checking whether this order was charged. If it was, the charge is given
+   * back in full." and do not order again.
    * Its records: six rows to add at your domain exactly as shown (`mx`,
    * `spf`, `dkim`, `dmarc`, `verify`, `tracking`; `tracking` is not
    * required; the `mx` row also holds one CNAME that confirms the domain is

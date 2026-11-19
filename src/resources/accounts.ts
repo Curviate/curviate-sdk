@@ -296,11 +296,11 @@ export class AccountsResource {
    * proxy can only take a `country` together with `proxy: null`. The
    * `proxy.password`, if given, is never returned.
    *
-   * `save_connections_as_contacts` (Automate; on by default) saves the
+   * `save_connections_as_contacts` (needs a subscription; on by default) saves the
    * account's Connections as Leads: each person becomes one Lead in your
    * team, an existing Lead is only filled in, do-not-contact people are
    * skipped. `true` also saves the Connections already synced; `false` keeps
-   * the Leads saved so far. Without Automate it throws `TIER_REQUIRED`, and
+   * the Leads saved so far. Without a subscription it throws `TIER_REQUIRED`, and
    * `get` omits the field. `save_connections_paused_reason` reads
    * `"lead_limit_reached"` while your team holds its 100,000 Leads.
    *

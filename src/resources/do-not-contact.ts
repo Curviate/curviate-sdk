@@ -66,8 +66,8 @@ export class DoNotContactResource {
    * Add one person by `lead_id` or `linkedin_url` (someone who is not a
    * Lead yet becomes one first, from stored data only), with an optional
    * `reason` and `scope` (`everything`, the default, or `email_only`). A person already on the list resolves with their existing entry,
-   * unchanged. Any team member may add. For many people use {@link DoNotContactResource.import}. Needs
-   * Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * unchanged. Any team member may add. For many people use {@link DoNotContactResource.import}. Needs a
+   * subscription: a Team without one is refused with `TIER_REQUIRED`.
    * `POST /v1/do-not-contact`
    *
    * @example
@@ -79,8 +79,8 @@ export class DoNotContactResource {
   }
 
   /**
-   * Set the entry's `reason` from the fixed list; `null` clears it. Needs
-   * Automate: a Team below that Tier is refused with `TIER_REQUIRED`.
+   * Set the entry's `reason` from the fixed list; `null` clears it. Needs a
+   * subscription: a Team without one is refused with `TIER_REQUIRED`.
    * `PATCH /v1/do-not-contact/{id}`
    *
    * @example
@@ -121,7 +121,7 @@ export class DoNotContactResource {
    * a person already listed is `unchanged`, their entry and reason stay. A bad
    * URL, reason or scope skips its row (`skip_reason`) and the others apply; a bad
    * structure rejects the file. Resolves with the per-row report. Any team
-   * member may import. Needs Automate.
+   * member may import. Needs a subscription.
    * `POST /v1/do-not-contact/import`
    *
    * @example

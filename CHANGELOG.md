@@ -7,6 +7,15 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [0.56.0] - 2026-11-19
+
+Docs, one added field. `fixtures/openapi.json` and the generated types are refreshed from the served document (production `a8207d2c5` for the first part; staging's head `745221b70` for `charge_unknown`, recorded in `fixtures/PROVENANCE.json`).
+
+- **`charge_unknown`** (boolean, always present) on every Mailbox purchase read (`mailboxes.purchases.create`, `list`, `get`, `check`, `cancel`): true while Curviate cannot tell whether the order's charge was made, because the order ended as the charge was sent. It is being checked, and a charge that was made is given back in full: say so and do not order again. Typed on `MailboxPurchase`; a test double of an order needs the field.
+- **`MAILBOX_PURCHASE_TRIAL` and `not_orderable_reason: "trial"` say what the server does**: a Team without a paid plan cannot order Mailboxes from Curviate: on a trial, after a trial that ended without a purchase, never subscribed, or with a payment past due. Nothing is charged. The error docs, the `purchases.create` and `purchases.quote` docs and the generated types say so; they said "a Team on a trial".
+- **`analytics.email` says what an agent must pass on**: a rate is still maturing while more than a third of its emails were sent under 7 days ago, and a bounce rate needs 50 emails sent to mean anything.
+- **"Needs Automate" is gone from the docs**: the one plan includes every feature, so the doc comments and the README say "Needs a subscription" (a Team without one is refused with `TIER_REQUIRED`). The previous prices keep their names in `billing.moveToCurrentPrice`.
+
 ## [0.55.0] - 2026-11-19
 
 Regenerated `fixtures/openapi.json` and the generated types from the served document (staging `ed310e031`; production `e26a4d733` serves it byte for byte, recorded in `fixtures/PROVENANCE.json`). Nothing narrows: every change adds a method, a field or a union member.
