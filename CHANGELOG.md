@@ -9,7 +9,7 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [0.54.0] - 2026-11-18
 
-Regenerated `fixtures/openapi.json` and the generated types from the document staging serves at `42ad2358a` (`fixtures/PROVENANCE.json`); the Sequence validator and its corpus re-vendored. Nothing narrows: every change below adds a method, a field, a filter or a union member.
+Regenerated `fixtures/openapi.json` and the generated types from the document staging serves at `9377cabb4` (`fixtures/PROVENANCE.json`); the Sequence validator and its corpus re-vendored. Nothing narrows: every change below adds a method, a field, a filter or a union member.
 
 ### Wider unions
 
@@ -20,6 +20,7 @@ An exhaustive `switch` must handle: `CurviateEvent` gains the eight `signal` eve
 - **`mailboxes.placementTests.run(mailboxId, { subject, body })`** sends your exact email from the Mailbox to 12 test inboxes at four providers and reads where each copy lands; **`list(mailboxId)`** and **`get(mailboxId, testId)`** read the tests, a verdict per provider (`inbox`, `partly_spam`, `spam`) and the Team's allowance `{ used, total, resets_at }` (10 per paid seat a month).
 - New codes `PLACEMENT_TEST_ALLOWANCE_EXHAUSTED` (429, never retried: the allowance is monthly) and `PLACEMENT_TESTS_UNAVAILABLE` (503).
 - **`campaigns.placementChecks(campaignId)`**: the Campaign's weekly placement checks.
+- The Mailbox read carries `landing { google, microsoft, other, read_at }`: where its own warm-up mail lands per receiving provider over 7 days, a verdict (`inbox`, `partly_spam`, `spam`, `gathering`), never a count.
 - Mailbox `warm_up.state` gains `waiting` (on, but not running now; its day held) with `reason`: `reconnect_needed`, `trial`, `app_password`, `warm_up_app` or `allowance`.
 
 ### Limit hits
@@ -32,7 +33,7 @@ An exhaustive `switch` must handle: `CurviateEvent` gains the eight `signal` eve
 
 ### Mailboxes from Curviate
 
-- **`mailboxes.purchases.create({ domain, mailboxes })`**, **`list({ state? })`**, **`get(id)`** and **`check(id)`**: order Mailboxes on a domain your Team owns, read the order, its state and the five records to add, and look the records up now (once a minute). Owners only. An order through an API key counts under the Team's cap on Mailboxes from Curviate (`billing.spendingCap()` reads `mailbox_cap`, set by an Owner in the dashboard): past it, `403 SPENDING_CAP_REACHED` and nothing is ordered. New codes `MAILBOX_PURCHASE_NOT_FOUND`, `MAILBOX_PURCHASE_PENDING`, `MAILBOX_PURCHASE_TRIAL`, `DOMAIN_IN_USE`, `DOMAIN_IS_COMPANY_EMAIL`, `MAILBOX_SALES_PAUSED`.
+- **`mailboxes.purchases.create({ domain, mailboxes })`**, **`list({ state? })`**, **`get(id)`**, **`check(id)`** and **`cancel(id)`**: order Mailboxes on a domain your Team owns, read the order, its state and the five records to add, look the records up now (once a minute), and cancel an order still waiting for its records (nothing was charged). `MAILBOX_PURCHASE_STATE_CONFLICT` (409) answers a cancel of an order being charged, set up, active or cancelled: during a charge, read the order again later, never retry. Owners only. An order through an API key counts under the Team's cap on Mailboxes from Curviate (`billing.spendingCap()` reads `mailbox_cap`, set by an Owner in the dashboard): past it, `403 SPENDING_CAP_REACHED` and nothing is ordered. New codes `MAILBOX_PURCHASE_NOT_FOUND`, `MAILBOX_PURCHASE_PENDING`, `MAILBOX_PURCHASE_TRIAL`, `DOMAIN_IN_USE`, `DOMAIN_IS_COMPANY_EMAIL`, `MAILBOX_SALES_PAUSED`.
 - `billing.changes()` gains `mailbox_cap_change`; Mailbox warm-up `reason` `warm_up_app` also covers a Microsoft Mailbox whose Curviate Warm-up app needs connecting again.
 
 ### Email attachments

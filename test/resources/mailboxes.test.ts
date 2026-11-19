@@ -43,6 +43,7 @@ describe("Mailbox, Domain and Team-policy operations", () => {
     ["mailboxes.purchases.create", () => c.mailboxes.purchases.create({ domain: "acme-mail.example.test", mailboxes: [{ local_part: "anna", display_name: "Anna Weber", sends_for: { kind: "shared" } }] }), { method: "POST", path: "/v1/mailboxes/purchases", body: { domain: "acme-mail.example.test", mailboxes: [{ local_part: "anna", display_name: "Anna Weber", sends_for: { kind: "shared" } }] } }],
     ["mailboxes.purchases.list", () => c.mailboxes.purchases.list({ state: "awaiting_dns" }), { method: "GET", path: "/v1/mailboxes/purchases", query: "?state=awaiting_dns" }],
     ["mailboxes.purchases.get", () => c.mailboxes.purchases.get("mpu_1"), { method: "GET", path: "/v1/mailboxes/purchases/mpu_1" }],
+    ["mailboxes.purchases.cancel", () => c.mailboxes.purchases.cancel("mpu_1"), { method: "DELETE", path: "/v1/mailboxes/purchases/mpu_1" }],
     ["mailboxes.purchases.check", () => c.mailboxes.purchases.check("mpu_1"), { method: "POST", path: "/v1/mailboxes/purchases/mpu_1/check" }],
     ["domains.check", () => c.domains.check("acme.example"), { method: "GET", path: "/v1/domains/acme.example/checks" }],
     ["domains.check now", () => c.domains.check("acme.example", { now: true }), { method: "POST", path: "/v1/domains/acme.example/checks" }],
@@ -78,6 +79,7 @@ describe("Mailbox, Domain and Team-policy operations", () => {
     ["PLACEMENT_TEST_ALLOWANCE_EXHAUSTED", 429, () => c.mailboxes.placementTests.run("mbx_1", { subject: "s", body: "b" })],
     ["PLACEMENT_TESTS_UNAVAILABLE", 503, () => c.mailboxes.placementTests.run("mbx_1", { subject: "s", body: "b" })],
     ["SPENDING_CAP_REACHED", 403, () => c.mailboxes.purchases.create({ domain: "acme-mail.example.test", mailboxes: [{ local_part: "anna", display_name: "Anna" }] })],
+    ["MAILBOX_PURCHASE_STATE_CONFLICT", 409, () => c.mailboxes.purchases.cancel("mpu_1")],
     ["MAILBOX_SALES_PAUSED", 409, () => c.mailboxes.purchases.create({ domain: "acme-mail.example.test", mailboxes: [{ local_part: "anna", display_name: "Anna" }] })],
   ] as const)("%s (%i) decodes to itself after exactly one request, never retried", async (code, status, run) => {
     let calls = 0;
@@ -88,7 +90,7 @@ describe("Mailbox, Domain and Team-policy operations", () => {
   });
 
   it("the Mailbox and Domain codes are exported and decode to themselves, not INTERNAL", async () => {
-    const codes = ["PLACEMENT_TEST_ALLOWANCE_EXHAUSTED", "PLACEMENT_TESTS_UNAVAILABLE", "MAILBOX_PURCHASE_NOT_FOUND", "MAILBOX_PURCHASE_PENDING", "MAILBOX_PURCHASE_TRIAL", "DOMAIN_IN_USE", "DOMAIN_IS_COMPANY_EMAIL", "MAILBOX_SALES_PAUSED", "MAILBOX_NOT_FOUND", "DOMAIN_NOT_FOUND", "MAILBOX_STATE_CONFLICT", "MAILBOX_LIMIT_REACHED", "MAILBOX_ALREADY_CONNECTED", "MAILBOX_APP_PASSWORD_REQUIRED", "MAILBOX_CREDENTIAL_REJECTED", "MAILBOX_TLS_FAILED", "MAILBOX_ADMIN_APPROVAL_REQUIRED", "MAILBOX_ADDRESS_MISMATCH"];
+    const codes = ["PLACEMENT_TEST_ALLOWANCE_EXHAUSTED", "PLACEMENT_TESTS_UNAVAILABLE", "MAILBOX_PURCHASE_NOT_FOUND", "MAILBOX_PURCHASE_PENDING", "MAILBOX_PURCHASE_TRIAL", "MAILBOX_PURCHASE_STATE_CONFLICT", "DOMAIN_IN_USE", "DOMAIN_IS_COMPANY_EMAIL", "MAILBOX_SALES_PAUSED", "MAILBOX_NOT_FOUND", "DOMAIN_NOT_FOUND", "MAILBOX_STATE_CONFLICT", "MAILBOX_LIMIT_REACHED", "MAILBOX_ALREADY_CONNECTED", "MAILBOX_APP_PASSWORD_REQUIRED", "MAILBOX_CREDENTIAL_REJECTED", "MAILBOX_TLS_FAILED", "MAILBOX_ADMIN_APPROVAL_REQUIRED", "MAILBOX_ADDRESS_MISMATCH"];
     for (const code of codes) expect(ERROR_CODES, code).toContain(code);
     server.use(http.get(`${BASE}/v1/mailboxes/mbx_x`, () => HttpResponse.json({ code: "MAILBOX_NOT_FOUND", message: "No such Mailbox.", user_fixable: true, retry_likely_to_succeed: false }, { status: 404 })));
     const err = await c.mailboxes.get("mbx_x").catch((e: unknown) => e);

@@ -3389,7 +3389,7 @@ export interface paths {
         head?: never;
         /**
          * Update an account's safety policy
-         * @description Updates this account's safety policy. Send only the fields you're changing; null clears an override back to the tenant or Curviate default. Any value is accepted, none are clamped. Limits are always enforced: to send more, raise the limit. Fields and precedence: /reference/safety.
+         * @description Updates this account's safety policy. Send only the fields you're changing; null clears an override back to the tenant or Curviate default. Any value is stored as set; what runs is held at the row's hard maximum (`hard_maximum`). Limits are always enforced: to send more, raise the limit. Fields and precedence: /reference/safety.
          */
         patch: operations["patchV1AccountIdSafetyPolicy"];
         trace?: never;
@@ -3816,7 +3816,11 @@ export interface paths {
         get: operations["getV1MailboxesPurchasesId"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Cancel a Mailbox purchase
+         * @description Cancels an order still waiting for its records. Nothing was charged, so nothing is refunded. An order being charged, being set up or active cannot be cancelled.
+         */
+        delete: operations["deleteV1MailboxesPurchasesId"];
         options?: never;
         head?: never;
         patch?: never;
@@ -44506,7 +44510,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST. The row name or source class is not one of the accepted values, `warm_up.enabled` is not a boolean, or a number is not a number (a negative ceiling). A value is never rejected for being unsafe: any limit may be set to any value, and a high one is reported rather than refused. A time zone is not a setting: any value but null in `timezone` or a row's `activity_window_timezone` is refused with "The time zone follows where this account connects from. Change it with PATCH /v1/accounts/{account_id} and `country`, or your own `proxy`." Null is accepted and ignored, so a document read before this change can be sent back once its zones are null. `posture` and `tenant_default_posture` were removed: limits are always enforced; to send more, raise the limit. Until 2027-02-01 (the last accepted day) the value "enforce" or null is still accepted, stores nothing and earns a POSTURE_REMOVED entry in `notices` plus a `Deprecation: true` header; "warn" on any day, or any value after that day, is refused with a message naming the key. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST. The row name or source class is not one of the accepted values, `warm_up.enabled` is not a boolean, or a number is not a number (a negative ceiling). A value is never rejected for being unsafe: any limit may be set to any value and is stored as set, a high one reported rather than refused; what runs is held at the row's hard maximum. A time zone is not a setting: any value but null in `timezone` or a row's `activity_window_timezone` is refused with "The time zone follows where this account connects from. Change it with PATCH /v1/accounts/{account_id} and `country`, or your own `proxy`." Null is accepted and ignored, so a document read before this change can be sent back once its zones are null. `posture` and `tenant_default_posture` were removed: limits are always enforced; to send more, raise the limit. Until 2027-02-01 (the last accepted day) the value "enforce" or null is still accepted, stores nothing and earns a POSTURE_REMOVED entry in `notices` plus a `Deprecation: true` header; "warn" on any day, or any value after that day, is refused with a message naming the key. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -48812,6 +48816,111 @@ export interface operations {
             };
         };
     };
+    deleteV1MailboxesPurchasesId: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The team id to act in (GET /v1/teams lists yours). Required with an All-Teams key, except on account routes. A team key accepts only its own team. */
+                "X-Curviate-Team"?: string;
+                /** @description Informational: which Curviate client sent the call (`sdk/<version>`, `cli/<version>`). It only feeds the dashboard's Integrations status lines and changes nothing about the request. The SDK and CLI send it for you. */
+                "Curviate-Client"?: string;
+            };
+            path: {
+                /** @description Purchase id (mpu_...). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The order, cancelled. */
+            200: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Purchase id (mpu_...), opaque. */
+                        id: string;
+                        domain: string;
+                        /** @description The domain object's id (dom_...). */
+                        domain_id: string;
+                        /**
+                         * @description `awaiting_dns` until the four required records are found, then `provisioning`, then `active`; `cancelled` with a `reason`.
+                         * @enum {string}
+                         */
+                        state: "awaiting_dns" | "provisioning" | "active" | "cancelled";
+                        /** @description Why a cancelled order ended; null otherwise. */
+                        reason: string | null;
+                        mailboxes: {
+                            address?: string;
+                            display_name?: string;
+                            sends_for?: Record<string, never> | null;
+                            /** @description Set once the Mailbox exists (`active`). */
+                            mailbox_id?: string | null;
+                        }[];
+                        /** @description Five rows in order: mx, spf, dkim, dmarc, tracking. Add each entry at your domain's DNS host; `tracking` is not required. */
+                        records: Record<string, never>[];
+                        advice: string | null;
+                        /** @description The order's price a month, USD minor units ($5 a Mailbox). */
+                        amount_monthly: number;
+                        /** Format: date-time */
+                        checked_at: string | null;
+                        /**
+                         * Format: date-time
+                         * @description An order still waiting for its records then is cancelled; nothing is charged.
+                         */
+                        expires_at: string;
+                        /** Format: date-time */
+                        charged_at: string | null;
+                        /** Format: date-time */
+                        created_at: string;
+                    };
+                };
+            };
+            /** @description TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_PURCHASE_NOT_FOUND: no purchase with this id in this team (another team's id answers the same). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description MAILBOX_PURCHASE_STATE_CONFLICT: the order is not waiting for its records (being charged, being set up, active or cancelled); the message names its state. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limited, slow down and retry after the hinted delay. */
+            429: {
+                headers: {
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "Retry-After": components["headers"]["Retry-After"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     postV1MailboxesPurchasesIdCheck: {
         parameters: {
             query?: never;
@@ -49107,6 +49216,17 @@ export interface operations {
                                  */
                                 reason: "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
                             };
+                            /** @description Where this Mailbox's warm-up mail lands, per receiving provider, over the last 7 days: `inbox`, `partly_spam`, `spam`, or `gathering` while there is not enough to say. `read_at` is the last reading counted. Its own warm-up only; a verdict, never a count. */
+                            landing: {
+                                /** @enum {string} */
+                                google: "inbox" | "partly_spam" | "spam" | "gathering";
+                                /** @enum {string} */
+                                microsoft: "inbox" | "partly_spam" | "spam" | "gathering";
+                                /** @enum {string} */
+                                other: "inbox" | "partly_spam" | "spam" | "gathering";
+                                /** Format: date-time */
+                                read_at: string | null;
+                            };
                         }[];
                         cursor?: string | null;
                     };
@@ -49256,6 +49376,17 @@ export interface operations {
                              * @enum {string|null}
                              */
                             reason: "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
+                        };
+                        /** @description Where this Mailbox's warm-up mail lands, per receiving provider, over the last 7 days: `inbox`, `partly_spam`, `spam`, or `gathering` while there is not enough to say. `read_at` is the last reading counted. Its own warm-up only; a verdict, never a count. */
+                        landing: {
+                            /** @enum {string} */
+                            google: "inbox" | "partly_spam" | "spam" | "gathering";
+                            /** @enum {string} */
+                            microsoft: "inbox" | "partly_spam" | "spam" | "gathering";
+                            /** @enum {string} */
+                            other: "inbox" | "partly_spam" | "spam" | "gathering";
+                            /** Format: date-time */
+                            read_at: string | null;
                         };
                     };
                 };
@@ -49516,6 +49647,17 @@ export interface operations {
                              */
                             reason: "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
                         };
+                        /** @description Where this Mailbox's warm-up mail lands, per receiving provider, over the last 7 days: `inbox`, `partly_spam`, `spam`, or `gathering` while there is not enough to say. `read_at` is the last reading counted. Its own warm-up only; a verdict, never a count. */
+                        landing: {
+                            /** @enum {string} */
+                            google: "inbox" | "partly_spam" | "spam" | "gathering";
+                            /** @enum {string} */
+                            microsoft: "inbox" | "partly_spam" | "spam" | "gathering";
+                            /** @enum {string} */
+                            other: "inbox" | "partly_spam" | "spam" | "gathering";
+                            /** Format: date-time */
+                            read_at: string | null;
+                        };
                     };
                 };
             };
@@ -49682,6 +49824,17 @@ export interface operations {
                              */
                             reason: "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
                         };
+                        /** @description Where this Mailbox's warm-up mail lands, per receiving provider, over the last 7 days: `inbox`, `partly_spam`, `spam`, or `gathering` while there is not enough to say. `read_at` is the last reading counted. Its own warm-up only; a verdict, never a count. */
+                        landing: {
+                            /** @enum {string} */
+                            google: "inbox" | "partly_spam" | "spam" | "gathering";
+                            /** @enum {string} */
+                            microsoft: "inbox" | "partly_spam" | "spam" | "gathering";
+                            /** @enum {string} */
+                            other: "inbox" | "partly_spam" | "spam" | "gathering";
+                            /** Format: date-time */
+                            read_at: string | null;
+                        };
                     };
                 };
             };
@@ -49847,6 +50000,17 @@ export interface operations {
                              * @enum {string|null}
                              */
                             reason: "reconnect_needed" | "trial" | "app_password" | "warm_up_app" | "allowance" | null;
+                        };
+                        /** @description Where this Mailbox's warm-up mail lands, per receiving provider, over the last 7 days: `inbox`, `partly_spam`, `spam`, or `gathering` while there is not enough to say. `read_at` is the last reading counted. Its own warm-up only; a verdict, never a count. */
+                        landing: {
+                            /** @enum {string} */
+                            google: "inbox" | "partly_spam" | "spam" | "gathering";
+                            /** @enum {string} */
+                            microsoft: "inbox" | "partly_spam" | "spam" | "gathering";
+                            /** @enum {string} */
+                            other: "inbox" | "partly_spam" | "spam" | "gathering";
+                            /** Format: date-time */
+                            read_at: string | null;
                         };
                     };
                 };
