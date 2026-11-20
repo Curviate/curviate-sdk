@@ -7,6 +7,17 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [0.58.0] - 2026-11-20
+
+Additive. `fixtures/openapi.json` and the generated types are refreshed from the served document (recorded in `fixtures/PROVENANCE.json`).
+
+- **Search pacing.** Search is paced per Account in LinkedIn result pages, on every search surface: one call reads at most one page; a `limit` above the page size (10 on classic search, 25 on jobs, Sales Navigator and Recruiter) returns one page and a `cursor`. Ask for a full page and follow the cursor. The `search` module doc says so.
+- **`CurviateError.searchBudget`** (new, typed `SearchBudgetName`, exported): on a `BUDGET_EXHAUSTED` with `budgetRow: "search"`, which search budget refused: `gap` (the random pause between two pages, not a setting: wait `retryAfterSeconds` and call again), `hour`, `day`, `lines`, `month` (the Account's own `search_pacing` settings, lifting at `resetAt`), `active_hours`, `commercial_use` (LinkedIn's own monthly limit). Also on `toJSON()`. An unknown future name is kept as sent.
+- **`retryAfterSeconds`** is documented on a search refusal and on a `PLATFORM_ERROR` (502) naming a row: LinkedIn answered recent calls on that row with server errors, so it pauses; retry after that many seconds. A response naming a row is never retried by the SDK and never slept on.
+- **`accounts.getSafetyPolicy`** carries `search_pacing`: `plan`, `pages_per_day`, `pages_per_hour`, `pages_per_month` (each `{value, effective, default, maximum, used, source, saved}`; the month is null on Sales Navigator and Recruiter), `lines_per_day`, the pause (`min_gap_seconds`, `max_gap_seconds`), `month_resets_at`, `next_page_at`, `stopped`. **`accounts.updateSafetyPolicy`** takes `search_pacing: { pages_per_day, pages_per_hour, pages_per_month }`, each 1 to its maximum or `null` for the default; above it, or any other key, is `400 INVALID_REQUEST` naming it.
+- **Mailboxes from Curviate**: the quote's `not_orderable_reason` gains `"currency"` (the Team's subscription is billed in another currency than US dollars: contact support); an order may end `cancelled` with `reason: "currency"`, nothing charged. The order's other reasons are listed in the docs.
+- The generated types carry the import's `waiting` kinds as served (`active_hours`, `budget`, `pushback`, `search_limited`).
+
 ## [0.57.0] - 2026-11-20
 
 Docs only; no method, field or type changes. `fixtures/openapi.json` and the generated types are refreshed from the served document (production `c17f1b853`, recorded in `fixtures/PROVENANCE.json`): descriptions only in the types; the fixture's `TIER_REQUIRED` examples now show `current_tier: null`, what a refusal returns.

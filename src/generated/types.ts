@@ -3813,7 +3813,7 @@ export interface paths {
         put?: never;
         /**
          * Buy Mailboxes from Curviate
-         * @description Orders 1 to 50 Mailboxes on one domain your Team owns, warm-up included, at the price `GET /v1/mailboxes/purchases/quote` gives your Team (the answer's `price` is the same object). The order waits in `awaiting_dns` until the records it shows are found at your domain; nothing is charged before. Owners only. An order through an API key counts under the team's cap on Mailboxes from Curviate: from 80% of it the order carries a SPENDING_CAP_NEAR notice, past it the order is refused 403 SPENDING_CAP_REACHED and nothing is ordered. A Team without a paid plan (on a trial, or with a payment past due) cannot order; the domain your company email runs on is refused; a domain already ordered by your Team and still waiting answers `409 MAILBOX_PURCHASE_PENDING`.
+         * @description Orders 1 to 50 Mailboxes on one domain your Team owns, warm-up included, at the price `GET /v1/mailboxes/purchases/quote` gives your Team (the answer's `price` is the same object). The order waits in `awaiting_dns` until the records it shows are found at your domain; nothing is charged before. Owners only. An order through an API key counts under the team's cap on Mailboxes from Curviate: from 80% of it the order carries a SPENDING_CAP_NEAR notice, past it the order is refused 403 SPENDING_CAP_REACHED and nothing is ordered. A Team without a paid plan (on a trial, or with a payment past due) cannot order; nor a Team whose subscription is billed in another currency than US dollars (400 INVALID_REQUEST); a subscription on a previous price orders as it is; the domain your company email runs on is refused; a domain already ordered by your Team and still waiting answers `409 MAILBOX_PURCHASE_PENDING`.
          */
         post: operations["postV1MailboxesPurchases"];
         delete?: never;
@@ -5723,6 +5723,11 @@ export interface components {
             row?: string | null;
             /** @description Present on BUDGET_EXHAUSTED: the instant the refusal lifts, as an absolute instant rather than a duration, so it stays true however long you hold it. It is the window roll on a ceiling refusal and the next window open on an activity-window one. It is null in the two cases where no clock frees the account: the pending_invites gauge, whose backlog falls when invitations are accepted or withdrawn, and an InMail credit exhaustion (row inmail, hint.parameter inmail_credits), which LinkedIn regrants on a schedule this product cannot read. */
             reset_at?: string | null;
+            /**
+             * @description Present on BUDGET_EXHAUSTED for row search only: which search budget refused. gap: the random pause between two search pages of one account (15 to 60 seconds on a free account), not a setting: retry after retry_after seconds. hour, day: search pages in the last 60 minutes or 24 hours; lines: search result lines in the last 24 hours; month: classic search pages in LinkedIn's month (from the 1st, 00:00 Pacific). hour, day and month are the account's own settings (hint.parameter search_pacing.pages_per_hour and so on, on PATCH /v1/{account_id}/safety-policy or update_safety_policy in MCP), from 1 to a maximum. active_hours: outside the account's active hours. commercial_use: LinkedIn showed this account its monthly search limit, so classic search stops until LinkedIn's month starts again; not a setting. retry_after (seconds) and reset_at (the instant) say when a retry can land. Nothing reached LinkedIn.
+             * @enum {string}
+             */
+            budget?: "gap" | "hour" | "day" | "lines" | "month" | "active_hours" | "commercial_use";
             /** @description Present on BUDGET_EXHAUSTED: the exact setting to change, as a field rather than as prose. Limits are always enforced: to send more, raise the limit. parameter is addressable on PATCH /v1/{account_id}/safety-policy (update_safety_policy in MCP), so an agent can decide between waiting until reset_at, escalating to a human, and raising the limit, without parsing the message. The one exception is inmail_credits: not a policy field, LinkedIn's own InMail balance. Wait for LinkedIn to regrant credits; a reply to an InMail refunds its credit. */
             hint?: {
                 /** @description The setting to change, for example profile_views.ceiling, active_hours (the account's or the Team's; the message names which), rows[posts].activity_window_end, profiles[basic].rows[posts].activity_window_start on the Team policy, or inmail_credits (LinkedIn's own balance, not a policy field). */
@@ -5739,7 +5744,7 @@ export interface components {
             blocked?: boolean;
             /** @description Present on RESOURCE_NOT_FOUND for a Lead id that was merged into another Lead (two records turned out to be one person): the id to use instead. */
             merged_into?: string;
-            /** @description Present alongside row: whole seconds until that row is usable again. This response carries no Retry-After header and no delay retry_hint, deliberately: a paused row can be paused for an hour, and a client that sleeps that inside the call hangs. Do not retry this row before the wait elapses; switch to other work instead. Seconds, not milliseconds. */
+            /** @description Present alongside row: whole seconds until that row is usable again. This response carries no Retry-After header and no delay retry_hint, deliberately: a paused row can be paused for an hour, and a client that sleeps that inside the call hangs. Do not retry this row before the wait elapses; switch to other work instead. Seconds, not milliseconds. Also present on a BUDGET_EXHAUSTED for row search: whole seconds until reset_at, when a retry can land. */
             retry_after?: number;
             /** @description Present on SEQUENCE_INVALID: every failure of the refused Sequence document, not only the first (the first 100; the message counts them all), in step order, so one fix round covers them all, each compiler-style with code, message, pointer, hint and docs_url. Also on WEBHOOK_TEMPLATE_INVALID: every finding of the refused body_template, in template order, in the same shape plus line and col. Also on CAMPAIGN_NOT_STARTABLE: every gap that keeps the Campaign from starting, as path and rule only. path is relative to the document (for example opener.variants.opener_named.text or invite.with.withdraw_after); rule says what to change. The message repeats the first entry. */
             errors?: {
@@ -43439,6 +43444,102 @@ export interface operations {
                             /** @description The ramp day, counted in the account's sending days since the ramp began, from 1; the day of the recovery ramp while that supplies `factor`. Null when no ramp applies. `factor` is that day's percentage over 100, and `week` is null. */
                             day?: number | null;
                         };
+                        /** @description How fast this account reads LinkedIn search result pages. One LinkedIn result page is one counted page, on every search surface (people, companies, posts, jobs, a pasted search URL, Sales Navigator, Recruiter, imports); a call that asks for more than one page gets one page and the `cursor`. Ask for a full page (`limit` at the page size: 10 classic, 25 jobs, Sales Navigator and Recruiter) and page by `cursor`: a `limit` below the page size costs a whole page each call, because the next call asks LinkedIn for the same page again. Pages are read only inside the account's active hours, at least a random 15 to 60 seconds apart on a free account (10 to 45 Premium Business, 8 to 30 Sales Navigator and Recruiter), shared by every surface; a call inside that pause is held up to 20 seconds, else refused with BUDGET_EXHAUSTED, `budget: gap`. `plan` picks the numbers: `classic_free` (free, Premium Career, or not yet detected), `classic_business`, `sales_navigator`, `recruiter`. It is what Curviate detected on LinkedIn; a pinned `limit_profile` can lower it, never raise it. Pages a day and an hour are counted per search surface (classic, Sales Navigator, Recruiter), so a plan change moves the limits, never the count. Set `search_pacing.pages_per_day`, `pages_per_hour` and (classic plans) `pages_per_month` with PATCH /v1/{account_id}/safety-policy, from 1 to `maximum`; null goes back to the default; any other key is refused with 400 naming it (the keys of this object sent back are accepted and ignored). `maximum` is this account's own plan's; classic search on a Sales Navigator or Recruiter account is held to the same settings within the `classic_business` maximums, and to that plan's pages a month. */
+                        search_pacing?: {
+                            /**
+                             * @description The set of numbers this account's own search surface is held to.
+                             * @enum {string}
+                             */
+                            plan: "classic_free" | "classic_business" | "sales_navigator" | "recruiter";
+                            /** @description Search pages in the last 24 hours (rolling). */
+                            pages_per_day: {
+                                /** @description The value in force before warm-up: this Account's own setting, else the default. */
+                                value: number;
+                                /** @description `value` with the warm-up factor applied: what a page is held to now. */
+                                effective: number;
+                                /** @description Curviate's default for this Account's plan. */
+                                default: number;
+                                /** @description The highest value a setting may take on this plan. A write above it is refused with 400 INVALID_REQUEST naming it. Pages an hour may go up to the plan's daily maximum. */
+                                maximum: number;
+                                /** @description Search pages read in the window: the last 24 hours, the last 60 minutes, or LinkedIn's month (from the 1st, 00:00 Pacific). */
+                                used: number;
+                                /**
+                                 * @description `account`: this Account's own setting; `default`: none set; `maximum`: this Account's setting (`saved`) is above what its plan allows now (it was saved under another plan), so the maximum is in force.
+                                 * @enum {string}
+                                 */
+                                source: "account" | "default" | "maximum";
+                                /** @description This Account's own stored setting, or null. */
+                                saved: number | null;
+                            };
+                            /** @description Search pages in the last 60 minutes (rolling). */
+                            pages_per_hour: {
+                                /** @description The value in force before warm-up: this Account's own setting, else the default. */
+                                value: number;
+                                /** @description `value` with the warm-up factor applied: what a page is held to now. */
+                                effective: number;
+                                /** @description Curviate's default for this Account's plan. */
+                                default: number;
+                                /** @description The highest value a setting may take on this plan. A write above it is refused with 400 INVALID_REQUEST naming it. Pages an hour may go up to the plan's daily maximum. */
+                                maximum: number;
+                                /** @description Search pages read in the window: the last 24 hours, the last 60 minutes, or LinkedIn's month (from the 1st, 00:00 Pacific). */
+                                used: number;
+                                /**
+                                 * @description `account`: this Account's own setting; `default`: none set; `maximum`: this Account's setting (`saved`) is above what its plan allows now (it was saved under another plan), so the maximum is in force.
+                                 * @enum {string}
+                                 */
+                                source: "account" | "default" | "maximum";
+                                /** @description This Account's own stored setting, or null. */
+                                saved: number | null;
+                            };
+                            /** @description Classic search pages in LinkedIn's month, which starts on the 1st at 00:00 Pacific time. Null on Sales Navigator and Recruiter. */
+                            pages_per_month: {
+                                /** @description The value in force before warm-up: this Account's own setting, else the default. */
+                                value: number;
+                                /** @description `value` with the warm-up factor applied: what a page is held to now. */
+                                effective: number;
+                                /** @description Curviate's default for this Account's plan. */
+                                default: number;
+                                /** @description The highest value a setting may take on this plan. A write above it is refused with 400 INVALID_REQUEST naming it. Pages an hour may go up to the plan's daily maximum. */
+                                maximum: number;
+                                /** @description Search pages read in the window: the last 24 hours, the last 60 minutes, or LinkedIn's month (from the 1st, 00:00 Pacific). */
+                                used: number;
+                                /**
+                                 * @description `account`: this Account's own setting; `default`: none set; `maximum`: this Account's setting (`saved`) is above what its plan allows now (it was saved under another plan), so the maximum is in force.
+                                 * @enum {string}
+                                 */
+                                source: "account" | "default" | "maximum";
+                                /** @description This Account's own stored setting, or null. */
+                                saved: number | null;
+                            } | null;
+                            /** @description Search result lines in the last 24 hours. Not a setting: it follows `pages_per_day` (about one page's lines per page). */
+                            lines_per_day: {
+                                effective: number;
+                                used: number;
+                            };
+                            /** @description The shortest random pause between two pages. Not a setting. */
+                            min_gap_seconds: number;
+                            /** @description The longest random pause between two pages. Not a setting. */
+                            max_gap_seconds: number;
+                            /**
+                             * Format: date-time
+                             * @description When LinkedIn's month starts again (the 1st, 00:00 Pacific). Null without a monthly budget.
+                             */
+                            month_resets_at: string | null;
+                            /**
+                             * Format: date-time
+                             * @description The end of the current pause, or null when a page can be read now.
+                             */
+                            next_page_at: string | null;
+                            /** @description LinkedIn showed this account its monthly search limit: classic search stops until LinkedIn's month starts again. Null otherwise. */
+                            stopped: {
+                                /** @enum {string} */
+                                reason?: "commercial_use";
+                                /** Format: date-time */
+                                until?: string;
+                            } | null;
+                            /** @description One plain sentence on why the defaults are low. */
+                            why: string;
+                        };
                         /** @description Whether Curviate withdraws this account's old Campaign-sent invitations on its own (default true). Past 400 pending invitations, those over 14 days old go oldest first, at most the larger of 25 and the day's invitation allowance a day, one at a time inside the account's working hours, each after a check that it is still pending. Invitations sent by hand or through the API are never withdrawn, and a withdrawn person is never invited again by a Campaign. It runs while invitations are stopped at 650 pending. Set it with PATCH /v1/{account_id}/safety-policy and `auto_withdraw`; a change is recorded in the account's ledger. */
                         auto_withdraw?: boolean;
                         /**
@@ -44060,6 +44161,15 @@ export interface operations {
                         /** @description Custom: sending days between steps, 1 to 7. */
                         every?: number | null;
                     };
+                    /** @description This account's own search budgets (one LinkedIn result page = one page). Any subset; null clears a key back to the default; a value above the plan's maximum is refused with 400 INVALID_REQUEST naming the maximum, never lowered for you. The read's other keys (`plan`, `why` ...) and its budget objects (`{value, default, maximum, used ...}`) are accepted and ignored, so the read's object round-trips; any other key is refused with 400 naming it. A change is recorded in the account's ledger. */
+                    search_pacing?: {
+                        /** @description Search pages in the last 24 hours, 1 to the plan's maximum (`search_pacing.pages_per_day.maximum` on the read). Null: the default. */
+                        pages_per_day?: (number | Record<string, never>) | null;
+                        /** @description Search pages in the last 60 minutes, 1 to the plan's maximum (up to the plan's daily maximum). Null: the default. */
+                        pages_per_hour?: (number | Record<string, never>) | null;
+                        /** @description Classic plans only: classic search pages in LinkedIn's month (from the 1st, 00:00 Pacific), 1 to the plan's maximum. Null: the default. */
+                        pages_per_month?: (number | Record<string, never>) | null;
+                    };
                     /** @description Automatic withdrawal of old invitations Curviate sent for this account's Campaigns, default true. While this account has more than 400 pending invitations, Curviate withdraws the Campaign-sent ones older than 14 days, oldest first, a few a day (at most the larger of 25 and the day's invitation allowance), inside its working hours and one at a time with the usual gaps, after checking each is still pending. It never touches an invitation you sent by hand or through the API, and never invites a withdrawn person again. It keeps working while invitations are stopped at 650 pending, which is how the account comes back under. Set false to keep every old invitation pending; the level then falls only as people accept or you withdraw. */
                     auto_withdraw?: boolean;
                     /** @description Read-only: the time zone the activity window is read in, from where this account connects. Accepted and ignored, so the read's object can be sent back unchanged. The window's settable inputs are per row: `activity_window_start`, `activity_window_end`, `activity_window_applies_to`. */
@@ -44127,6 +44237,102 @@ export interface operations {
                             every?: number | null;
                             /** @description The ramp day, counted in the account's sending days since the ramp began, from 1; the day of the recovery ramp while that supplies `factor`. Null when no ramp applies. `factor` is that day's percentage over 100, and `week` is null. */
                             day?: number | null;
+                        };
+                        /** @description How fast this account reads LinkedIn search result pages. One LinkedIn result page is one counted page, on every search surface (people, companies, posts, jobs, a pasted search URL, Sales Navigator, Recruiter, imports); a call that asks for more than one page gets one page and the `cursor`. Ask for a full page (`limit` at the page size: 10 classic, 25 jobs, Sales Navigator and Recruiter) and page by `cursor`: a `limit` below the page size costs a whole page each call, because the next call asks LinkedIn for the same page again. Pages are read only inside the account's active hours, at least a random 15 to 60 seconds apart on a free account (10 to 45 Premium Business, 8 to 30 Sales Navigator and Recruiter), shared by every surface; a call inside that pause is held up to 20 seconds, else refused with BUDGET_EXHAUSTED, `budget: gap`. `plan` picks the numbers: `classic_free` (free, Premium Career, or not yet detected), `classic_business`, `sales_navigator`, `recruiter`. It is what Curviate detected on LinkedIn; a pinned `limit_profile` can lower it, never raise it. Pages a day and an hour are counted per search surface (classic, Sales Navigator, Recruiter), so a plan change moves the limits, never the count. Set `search_pacing.pages_per_day`, `pages_per_hour` and (classic plans) `pages_per_month` with PATCH /v1/{account_id}/safety-policy, from 1 to `maximum`; null goes back to the default; any other key is refused with 400 naming it (the keys of this object sent back are accepted and ignored). `maximum` is this account's own plan's; classic search on a Sales Navigator or Recruiter account is held to the same settings within the `classic_business` maximums, and to that plan's pages a month. */
+                        search_pacing?: {
+                            /**
+                             * @description The set of numbers this account's own search surface is held to.
+                             * @enum {string}
+                             */
+                            plan: "classic_free" | "classic_business" | "sales_navigator" | "recruiter";
+                            /** @description Search pages in the last 24 hours (rolling). */
+                            pages_per_day: {
+                                /** @description The value in force before warm-up: this Account's own setting, else the default. */
+                                value: number;
+                                /** @description `value` with the warm-up factor applied: what a page is held to now. */
+                                effective: number;
+                                /** @description Curviate's default for this Account's plan. */
+                                default: number;
+                                /** @description The highest value a setting may take on this plan. A write above it is refused with 400 INVALID_REQUEST naming it. Pages an hour may go up to the plan's daily maximum. */
+                                maximum: number;
+                                /** @description Search pages read in the window: the last 24 hours, the last 60 minutes, or LinkedIn's month (from the 1st, 00:00 Pacific). */
+                                used: number;
+                                /**
+                                 * @description `account`: this Account's own setting; `default`: none set; `maximum`: this Account's setting (`saved`) is above what its plan allows now (it was saved under another plan), so the maximum is in force.
+                                 * @enum {string}
+                                 */
+                                source: "account" | "default" | "maximum";
+                                /** @description This Account's own stored setting, or null. */
+                                saved: number | null;
+                            };
+                            /** @description Search pages in the last 60 minutes (rolling). */
+                            pages_per_hour: {
+                                /** @description The value in force before warm-up: this Account's own setting, else the default. */
+                                value: number;
+                                /** @description `value` with the warm-up factor applied: what a page is held to now. */
+                                effective: number;
+                                /** @description Curviate's default for this Account's plan. */
+                                default: number;
+                                /** @description The highest value a setting may take on this plan. A write above it is refused with 400 INVALID_REQUEST naming it. Pages an hour may go up to the plan's daily maximum. */
+                                maximum: number;
+                                /** @description Search pages read in the window: the last 24 hours, the last 60 minutes, or LinkedIn's month (from the 1st, 00:00 Pacific). */
+                                used: number;
+                                /**
+                                 * @description `account`: this Account's own setting; `default`: none set; `maximum`: this Account's setting (`saved`) is above what its plan allows now (it was saved under another plan), so the maximum is in force.
+                                 * @enum {string}
+                                 */
+                                source: "account" | "default" | "maximum";
+                                /** @description This Account's own stored setting, or null. */
+                                saved: number | null;
+                            };
+                            /** @description Classic search pages in LinkedIn's month, which starts on the 1st at 00:00 Pacific time. Null on Sales Navigator and Recruiter. */
+                            pages_per_month: {
+                                /** @description The value in force before warm-up: this Account's own setting, else the default. */
+                                value: number;
+                                /** @description `value` with the warm-up factor applied: what a page is held to now. */
+                                effective: number;
+                                /** @description Curviate's default for this Account's plan. */
+                                default: number;
+                                /** @description The highest value a setting may take on this plan. A write above it is refused with 400 INVALID_REQUEST naming it. Pages an hour may go up to the plan's daily maximum. */
+                                maximum: number;
+                                /** @description Search pages read in the window: the last 24 hours, the last 60 minutes, or LinkedIn's month (from the 1st, 00:00 Pacific). */
+                                used: number;
+                                /**
+                                 * @description `account`: this Account's own setting; `default`: none set; `maximum`: this Account's setting (`saved`) is above what its plan allows now (it was saved under another plan), so the maximum is in force.
+                                 * @enum {string}
+                                 */
+                                source: "account" | "default" | "maximum";
+                                /** @description This Account's own stored setting, or null. */
+                                saved: number | null;
+                            } | null;
+                            /** @description Search result lines in the last 24 hours. Not a setting: it follows `pages_per_day` (about one page's lines per page). */
+                            lines_per_day: {
+                                effective: number;
+                                used: number;
+                            };
+                            /** @description The shortest random pause between two pages. Not a setting. */
+                            min_gap_seconds: number;
+                            /** @description The longest random pause between two pages. Not a setting. */
+                            max_gap_seconds: number;
+                            /**
+                             * Format: date-time
+                             * @description When LinkedIn's month starts again (the 1st, 00:00 Pacific). Null without a monthly budget.
+                             */
+                            month_resets_at: string | null;
+                            /**
+                             * Format: date-time
+                             * @description The end of the current pause, or null when a page can be read now.
+                             */
+                            next_page_at: string | null;
+                            /** @description LinkedIn showed this account its monthly search limit: classic search stops until LinkedIn's month starts again. Null otherwise. */
+                            stopped: {
+                                /** @enum {string} */
+                                reason?: "commercial_use";
+                                /** Format: date-time */
+                                until?: string;
+                            } | null;
+                            /** @description One plain sentence on why the defaults are low. */
+                            why: string;
                         };
                         /** @description Whether Curviate withdraws this account's old Campaign-sent invitations on its own (default true). Past 400 pending invitations, those over 14 days old go oldest first, at most the larger of 25 and the day's invitation allowance a day, one at a time inside the account's working hours, each after a check that it is still pending. Invitations sent by hand or through the API are never withdrawn, and a withdrawn person is never invited again by a Campaign. It runs while invitations are stopped at 650 pending. Set it with PATCH /v1/{account_id}/safety-policy and `auto_withdraw`; a change is recorded in the account's ledger. */
                         auto_withdraw?: boolean;
@@ -48546,10 +48752,10 @@ export interface operations {
                         /** @description Whether your Team can place this order now. */
                         orderable: boolean;
                         /**
-                         * @description trial: available once your Team pays (a Team on a trial or without a paid plan, or with a payment past due); sales_paused: Mailboxes from Curviate cannot be ordered at the moment.
+                         * @description trial: available once your Team pays (a Team on a trial or without a paid plan, or with a payment past due); currency: your subscription is billed in another currency than Mailboxes from Curviate (US dollars): contact support to move it to the current price, then order; sales_paused: Mailboxes from Curviate cannot be ordered at the moment.
                          * @enum {string|null}
                          */
-                        not_orderable_reason: "trial" | "sales_paused" | null;
+                        not_orderable_reason: "trial" | "currency" | "sales_paused" | null;
                         /**
                          * @description payment: your subscription is past due, the charge waits until it is paid; subscription: no subscription to charge, the order waits uncharged.
                          * @enum {string|null}
@@ -48832,7 +49038,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST: a malformed domain or address part, more than 50 Mailboxes, an address named twice. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: a malformed domain or address part, more than 50 Mailboxes, an address named twice, or a subscription billed in another currency than US dollars (contact support to move it to the current price). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -52158,7 +52364,7 @@ export interface operations {
                             };
                             /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                             source?: Record<string, never> | null;
-                            /** @description Why no page is being read now: active_hours (outside the Account's Active hours) or budget (the Account's search lines for today are spent, or Campaign work went first), with until the next opening. Null while reading or between paced pages. */
+                            /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search lines for today are spent, or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
                             waiting?: {
                                 kind?: string;
                                 until?: string | null;
@@ -52608,7 +52814,7 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours) or budget (the Account's search lines for today are spent, or Campaign work went first), with until the next opening. Null while reading or between paced pages. */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search lines for today are spent, or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
                         waiting?: {
                             kind?: string;
                             until?: string | null;
@@ -52710,7 +52916,7 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours) or budget (the Account's search lines for today are spent, or Campaign work went first), with until the next opening. Null while reading or between paced pages. */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search lines for today are spent, or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
                         waiting?: {
                             kind?: string;
                             until?: string | null;
@@ -52906,7 +53112,7 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours) or budget (the Account's search lines for today are spent, or Campaign work went first), with until the next opening. Null while reading or between paced pages. */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search lines for today are spent, or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
                         waiting?: {
                             kind?: string;
                             until?: string | null;
@@ -53066,7 +53272,7 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours) or budget (the Account's search lines for today are spent, or Campaign work went first), with until the next opening. Null while reading or between paced pages. */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search lines for today are spent, or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
                         waiting?: {
                             kind?: string;
                             until?: string | null;
@@ -53244,7 +53450,7 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours) or budget (the Account's search lines for today are spent, or Campaign work went first), with until the next opening. Null while reading or between paced pages. */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search lines for today are spent, or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
                         waiting?: {
                             kind?: string;
                             until?: string | null;
@@ -53422,7 +53628,7 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours) or budget (the Account's search lines for today are spent, or Campaign work went first), with until the next opening. Null while reading or between paced pages. */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search lines for today are spent, or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
                         waiting?: {
                             kind?: string;
                             until?: string | null;

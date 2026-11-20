@@ -677,7 +677,7 @@ export type SafetyReason = "ceiling" | "activity_window";
  * Open: a budget added later arrives as its own string, so keep a default
  * branch.
  */
-export type SearchBudgetName = "gap" | "hour" | "day" | "lines" | "month" | "active_hours" | "commercial_use";
+export type SearchBudgetName = NonNullable<components["schemas"]["Error"]["budget"]>;
 
 /**
  * The exact setting to change to lift a `BUDGET_EXHAUSTED`, as data rather
