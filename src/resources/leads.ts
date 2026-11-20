@@ -136,7 +136,10 @@ export class LeadImportsResource {
    * short search, days for a long one. Read when to look again instead of
    * polling in a loop: `next_page_at` (when its next page is read) and
    * `waiting` (why no page is read now, with `until`): `budget` (a search
-   * limit, named by `waiting.budget`: `hour`, `day`, `lines` or `month`),
+   * limit, named by `waiting.budget`: `hour`, `day`, `lines`, `month`, or
+   * `warm_up` when the Account's warm-up holds its search at 0 pages; while
+   * an import runs it and the Account's plain searches each are sure of half
+   * the hour's and the day's pages),
    * `active_hours`, `pushback`, `search_limited`, `halt`,
    * `account_unavailable` (reconnect the Account) or `import_ahead` (queued
    * behind `waiting.import_id` on the same Account). `estimate.seconds_min`

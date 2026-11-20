@@ -32,7 +32,16 @@ export type MailboxPurchaseCreateBody = NonNullable<paths["/v1/mailboxes/purchas
 export type MailboxPurchase = paths["/v1/mailboxes/purchases/{id}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type MailboxPurchaseListParams = NonNullable<paths["/v1/mailboxes/purchases"]["get"]["parameters"]["query"]>;
 export type MailboxPurchaseListPage = paths["/v1/mailboxes/purchases"]["get"]["responses"]["200"]["content"]["application/json"];
-export type MailboxQuote = paths["/v1/mailboxes/purchases/quote"]["get"]["responses"]["200"]["content"]["application/json"];
+type MailboxQuoteServed = paths["/v1/mailboxes/purchases/quote"]["get"]["responses"]["200"]["content"]["application/json"];
+export type MailboxQuote = Omit<MailboxQuoteServed, "charge_waits_for"> & {
+  /**
+   * @deprecated Always null: a Team whose charge would wait (a payment
+   * outstanding, no subscription) cannot order, and `not_orderable_reason`
+   * says why. Read `not_orderable_reason`, and an order's `waiting_for`.
+   * Removed in a later version.
+   */
+  charge_waits_for: null;
+};
 
 // ─── Resource class ───────────────────────────────────────────────────────────
 
@@ -111,11 +120,16 @@ export class MailboxPurchasesResource {
    * from 80% of it the order carries a `SPENDING_CAP_NEAR` notice; past it,
    * `403 SPENDING_CAP_REACHED` and nothing is ordered. Other refusals:
    * `MAILBOX_PURCHASE_TRIAL` (a Team without a paid plan: on a trial, its
-   * trial ended, never subscribed, or a payment past due), `MAILBOX_PURCHASE_PENDING`
-   * (this domain already has an order waiting), `DOMAIN_IN_USE`,
+   * trial ended or never subscribed; or a payment outstanding, and then its
+   * message says to update the payment method in Billing), `MAILBOX_PURCHASE_PENDING`
+   * (this domain already has an order waiting), `DOMAIN_IN_USE` (the domain
+   * already has Mailboxes from Curviate or a confirmed order, yours or another
+   * Team's: name another domain),
    * `DOMAIN_IS_COMPANY_EMAIL` (the domain your company email runs on),
-   * `MAILBOX_SALES_PAUSED` (orders cannot be placed at the moment). One HTTP
-   * call, never retried. No answer ever holds a password.
+   * `MAILBOX_NO_ROOM` (Curviate has no room for this many new Mailboxes at the
+   * moment: order fewer, or order again later), `MAILBOX_SALES_PAUSED`
+   * (orders cannot be placed at the moment). Nothing is ordered or charged on
+   * any of them. One HTTP call, never retried. No answer ever holds a password.
    * `POST /v1/mailboxes/purchases`
    *
    * @example
@@ -134,12 +148,15 @@ export class MailboxPurchasesResource {
    * tax) for the Team's `billing_period`, `charged` (`with_next_invoice` for a
    * monthly Team; `when_records_found` for a yearly Team, which pays the rest
    * of its year that day; `never`), `prorated`, `plus_tax`, and `orderable`
-   * with `not_orderable_reason` (`trial`: the Team has no paid plan, or a payment
-   * is past due; `currency`: the Team's subscription is billed in another
-   * currency than Mailboxes from Curviate (US dollars), so tell the person to
-   * contact support; `sales_paused`). `charge_waits_for`
-   * (`payment`, `subscription`) says the charge would wait. Show these as
-   * served, never a price of your own. Owners only. One HTTP call, no charge.
+   * with `not_orderable_reason` (`trial`: the Team has no paid plan;
+   * `payment`: the Team has a payment outstanding, so tell the person to
+   * update the payment method in Billing, then order; `currency`: the Team's
+   * subscription is billed in another currency than Mailboxes from Curviate
+   * (US dollars), so tell the person to contact support; `sales_paused`;
+   * `capacity`: Curviate has no room for this many new Mailboxes at the
+   * moment, so order fewer, or order again later). `charge_waits_for` is
+   * always null and deprecated. Show these as served, never a price of your
+   * own. Owners only. One HTTP call, no charge.
    * `GET /v1/mailboxes/purchases/quote`
    *
    * @example
@@ -167,9 +184,20 @@ export class MailboxPurchasesResource {
    * `reason`: `requested`, `expired`, `subscription_ended`, `payment_failed`,
    * `spending_cap_reached`, `currency` (the Team's subscription is billed in
    * another currency than US dollars; nothing was charged: tell the person to
-   * contact support), or `host_failed` (setting up failed and Curviate undid
-   * the charge in full; an order being reversed reads `provisioning` until
-   * then). Keep a default branch: the field is an open string. Neither `provisioning` nor `host_failed` is a
+   * contact support), `payment_outstanding` (the records were found, but the
+   * Team's payment stayed outstanding for 14 days: update the payment method
+   * in Billing, then order again), `held_by_curviate` (the records were found,
+   * but Curviate could not create the Mailboxes within 14 days: order again),
+   * `domain_taken` (another order for this domain was confirmed first), or
+   * `host_failed` (setting up failed and Curviate undid the charge in full;
+   * an order being reversed reads `provisioning` until then). Nothing was
+   * charged on any of them unless `charged_at` is set. While `awaiting_dns`,
+   * `waiting_for` says what the order waits for: `records` (add the records
+   * before `expires_at`), `payment` (the records are found; the charge waits
+   * for the Team's outstanding payment: update the payment method in Billing
+   * and it continues by itself), `curviate` (the records are found; it waits
+   * on Curviate's side, nothing to do) or `charge` (being charged: read it
+   * again in a few minutes); null in every other state. Keep a default branch: the field is an open string. Neither `provisioning` nor `host_failed` is a
    * cue to retry or to order again: read the order again later.
    * `charge_unknown` is true while Curviate cannot tell whether the order's
    * charge was made (the order ended as the charge was sent): it is being
