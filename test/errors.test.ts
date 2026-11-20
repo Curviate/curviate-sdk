@@ -449,7 +449,7 @@ describe("outcomeUnknown: a send that may have happened", () => {
   });
 });
 
-describe("search pacing refusals (#3701): budget and retry_after typed, never slept or retried", () => {
+describe("search pacing refusals: budget and retry_after typed, never slept or retried", () => {
   const BASE = "https://app.curviate.test";
   const rows = [
     // [label, method, path, status, body, expected [code, budgetRow, searchBudget, retryAfterSeconds, resetAt]]
