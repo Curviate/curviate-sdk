@@ -152,6 +152,8 @@ const { items: skipped } = await curviate.leads.imports.rows(imp.id, { outcome: 
 // Or a LinkedIn source, read page by page inside the Account's limits; pause, resume or stop it.
 const src = await curviate.leads.imports.create({ source: { kind: "people_search", account_id: "acc_1", url: "https://www.linkedin.com/search/results/people/?keywords=cto" } });
 await curviate.leads.imports.pause(src.id); // resume(id), stop(id); continue a stopped one with continue_from
+// While it runs, `next_page_at` says when its next page is read, `waiting` why not now (a search limit, Active hours,
+// an import ahead of it), `estimate.seconds_min`/`seconds_max` how long it still runs: look again then, not in a loop.
 
 // Your Team's own company fields, read in a Sequence as {{company.extra.<key>}}.
 await curviate.companies.update("1234567", { extra: { tier: "A" } });

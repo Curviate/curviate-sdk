@@ -131,12 +131,22 @@ export class LeadImportsResource {
   }
 
   /**
-   * Read an import: its `status` and counts. Poll a background import until
-   * `status` is `completed` or `failed`.
+   * Read an import: its `status` and counts. A background import runs until
+   * `status` is `completed` or `failed`; a LinkedIn source takes minutes for a
+   * short search, days for a long one. Read when to look again instead of
+   * polling in a loop: `next_page_at` (when its next page is read) and
+   * `waiting` (why no page is read now, with `until`): `budget` (a search
+   * limit, named by `waiting.budget`: `hour`, `day`, `lines` or `month`),
+   * `active_hours`, `pushback`, `search_limited`, `halt`,
+   * `account_unavailable` (reconnect the Account) or `import_ahead` (queued
+   * behind `waiting.import_id` on the same Account). `estimate.seconds_min`
+   * and `seconds_max` say how long it still runs (`working_days_*` are
+   * deprecated). `counts.updated` counts Leads this import filled a field on.
    * `GET /v1/leads/imports/{id}`
    *
    * @example
-   * const { status } = await curviate.leads.imports.get("imp_123");
+   * const imp = await curviate.leads.imports.get("imp_123");
+   * if (imp.status === "running" || imp.status === "queued") console.log(imp.next_page_at, imp.waiting, imp.estimate?.seconds_max);
    */
   get(importId: string): Promise<LeadImportGetResult> {
     return this.ctx.request<LeadImportGetResult>({
