@@ -657,6 +657,29 @@ export interface RetryHint {
 export type SafetyReason = "ceiling" | "activity_window";
 
 /**
+ * Which search budget refused, on a `BUDGET_EXHAUSTED` with `row: "search"`.
+ * Wire field `budget`. Search is paced per Account in LinkedIn result pages:
+ * one call reads at most one page.
+ *
+ * `gap`: the random pause between two pages of one Account; not a setting.
+ * Wait {@link CurviateError.retryAfterSeconds} and call again.
+ * `hour`, `day`: pages in the last 60 minutes or 24 hours; `month`: classic
+ * pages in LinkedIn's month (from the 1st, 00:00 Pacific); `lines`: result
+ * lines in the last 24 hours, which follow pages a day. These lift at
+ * {@link CurviateError.resetAt}, or sooner when the Account's own setting
+ * ({@link CurviateError.safetyHint}'s parameter, for example
+ * `search_pacing.pages_per_hour`) is raised, up to its maximum
+ * (`search_pacing` on `accounts.getSafetyPolicy`).
+ * `active_hours`: outside the Account's Active hours.
+ * `commercial_use`: LinkedIn showed the Account its monthly search limit, so
+ * classic search stops until LinkedIn's month starts again; not a setting.
+ *
+ * Open: a budget added later arrives as its own string, so keep a default
+ * branch.
+ */
+export type SearchBudgetName = NonNullable<components["schemas"]["Error"]["budget"]>;
+
+/**
  * The exact setting to change to lift a `BUDGET_EXHAUSTED`, as data rather
  * than as prose. Wire field `hint`.
  *
@@ -731,7 +754,7 @@ export interface CurviateErrorInit {
   /**
    * The account-safety budget row this response names. Wire field `row`.
    *
-   * TWO CODES CARRY IT AND THEY MEAN DIFFERENT THINGS. Read {@link
+   * THREE CODES CARRY IT AND THEY MEAN DIFFERENT THINGS. Read {@link
    * CurviateErrorInit.code} to tell them apart:
    *
    * - `PLATFORM_RATE_LIMIT`: the row is PAUSED. LinkedIn refused a recent call
@@ -740,18 +763,27 @@ export interface CurviateErrorInit {
    *   working, so the recovery is to switch work, never to retry this row
    *   before {@link CurviateErrorInit.retryAfterSeconds} elapses, because retrying
    *   into a LinkedIn rate limit is what escalates it into a restriction.
+   * - `PLATFORM_ERROR` (502): the row is PAUSED because LinkedIn answered
+   *   recent calls on it with server errors (two within 60 seconds). Nothing
+   *   was sent. Not a rate limit: retry after
+   *   {@link CurviateErrorInit.retryAfterSeconds}.
    * - `BUDGET_EXHAUSTED`: the row hit the CEILING you configured, or the
    *   account is outside its activity window (never for a direct message).
    *   Nothing reached LinkedIn and
    *   nothing was spent. Wait until {@link CurviateErrorInit.resetAt} or
-   *   change {@link CurviateErrorInit.safetyHint}'s parameter.
+   *   change {@link CurviateErrorInit.safetyHint}'s parameter. On `row:
+   *   "search"`, {@link CurviateErrorInit.searchBudget} says which search
+   *   budget refused.
    *
    * Either way the SDK never auto-retries a response carrying this field.
    */
   budgetRow?: string;
   /**
    * Seconds until the PAUSED {@link CurviateErrorInit.budgetRow} is usable
-   * again, on a `PLATFORM_RATE_LIMIT`. Wire field `retry_after`.
+   * again, on a `PLATFORM_RATE_LIMIT` or a `PLATFORM_ERROR` naming a row; on a
+   * `BUDGET_EXHAUSTED` with `row: "search"`, seconds until
+   * {@link CurviateErrorInit.resetAt}, when a retry can land. Wire field
+   * `retry_after`.
    *
    * A SEPARATE FIELD FROM {@link CurviateErrorInit.retryAfterMs}, on purpose.
    * `retryAfterMs` is the transport's own sleep budget and is acted on
@@ -782,6 +814,8 @@ export interface CurviateErrorInit {
   safetyHint?: SafetyHint;
   /** Which safety rule refused, on a `BUDGET_EXHAUSTED`. Wire field `reason`. */
   safetyReason?: SafetyReason;
+  /** Which search budget refused, on a `BUDGET_EXHAUSTED` with `row: "search"`. Wire field `budget`. See {@link SearchBudgetName}. */
+  searchBudget?: SearchBudgetName | (string & {});
   /** `reason: "outcome_unknown"` on the wire: the message may have been sent; never send it again. */
   outcomeUnknown?: boolean;
   /**
@@ -851,6 +885,7 @@ export interface CurviateErrorJSON {
   resetAt?: string | null;
   safetyHint?: SafetyHint;
   safetyReason?: SafetyReason;
+  searchBudget?: SearchBudgetName | (string & {});
   blocked?: boolean;
   connectionLocation?: ConnectionLocation;
   errors?: CurviateErrorDetail[];
@@ -893,6 +928,8 @@ export class CurviateError extends Error {
   readonly safetyHint: SafetyHint | undefined;
   /** Which safety rule refused. See {@link CurviateErrorInit.safetyReason}. */
   readonly safetyReason: SafetyReason | undefined;
+  /** Which search budget refused. See {@link SearchBudgetName}. */
+  readonly searchBudget: SearchBudgetName | (string & {}) | undefined;
   /** Whether the action was refused. See {@link CurviateErrorInit.blocked}. */
   readonly blocked: boolean | undefined;
   /** Where the account connects from now. See {@link CurviateErrorInit.connectionLocation}. */
@@ -931,6 +968,7 @@ export class CurviateError extends Error {
     this.resetAt = init.resetAt;
     this.safetyHint = init.safetyHint;
     this.safetyReason = init.safetyReason;
+    this.searchBudget = init.searchBudget;
     this.outcomeUnknown = init.outcomeUnknown === true;
     this.blocked = init.blocked;
     this.connectionLocation = init.connectionLocation;
@@ -971,6 +1009,7 @@ export class CurviateError extends Error {
     if (this.resetAt !== undefined) json.resetAt = this.resetAt;
     if (this.safetyHint !== undefined) json.safetyHint = this.safetyHint;
     if (this.safetyReason !== undefined) json.safetyReason = this.safetyReason;
+    if (this.searchBudget !== undefined) json.searchBudget = this.searchBudget;
     if (this.outcomeUnknown) json.outcomeUnknown = true;
     if (this.blocked !== undefined) json.blocked = this.blocked;
     if (this.connectionLocation !== undefined) json.connectionLocation = this.connectionLocation;

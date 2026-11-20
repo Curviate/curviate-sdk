@@ -449,6 +449,14 @@ try {
       // resetAt is null in the three cases no clock frees: the pending_invites
       // backlog, an InMail credit pool LinkedIn regrants on its own schedule,
       // and an account whose time zone is not known yet.
+      // On a search (budgetRow "search"), err.searchBudget names the budget and
+      // err.retryAfterSeconds the wait: "gap" is the random pause between two
+      // pages, seconds long, so wait it and call again; "hour", "day", "month"
+      // are the account's own search_pacing settings.
+      if (err.searchBudget === "gap") {
+        await sleep((err.retryAfterSeconds ?? 60) * 1000);
+        break;
+      }
       console.warn(`${err.budgetRow} is spent until ${err.resetAt ?? "no fixed time"}`);
       console.warn(`change ${err.safetyHint?.parameter} to lift it`);
       break;

@@ -448,3 +448,37 @@ describe("outcomeUnknown: a send that may have happened", () => {
     expect(((await send()) as InstanceType<typeof CurviateError>).outcomeUnknown).toBe(false);
   });
 });
+
+describe("search pacing refusals: budget and retry_after typed, never slept or retried", () => {
+  const BASE = "https://app.curviate.test";
+  const rows = [
+    // [label, method, path, status, body, expected [code, budgetRow, searchBudget, retryAfterSeconds, resetAt]]
+    ["gap on a search page", "post", "/v1/acc_1/search/people", 429,
+      { code: "BUDGET_EXHAUSTED", message: "pause", row: "search", budget: "gap", retry_after: 40, reset_at: "2026-11-20T10:00:40Z", reason: "ceiling", blocked: true, hint: { parameter: "none", message: "This pause is not a setting." } },
+      ["BUDGET_EXHAUSTED", "search", "gap", 40, "2026-11-20T10:00:40Z"]],
+    ["hour, the Account's own setting", "post", "/v1/acc_1/search/people", 429,
+      { code: "BUDGET_EXHAUSTED", message: "hour", row: "search", budget: "hour", retry_after: 1800, reset_at: "2026-11-20T10:30:00Z", reason: "ceiling", blocked: true, hint: { parameter: "search_pacing.pages_per_hour", message: "raise it" } },
+      ["BUDGET_EXHAUSTED", "search", "hour", 1800, "2026-11-20T10:30:00Z"]],
+    ["a future budget name kept as sent", "post", "/v1/acc_1/search/people", 429,
+      { code: "BUDGET_EXHAUSTED", message: "new", row: "search", budget: "fortnight", retry_after: 5 },
+      ["BUDGET_EXHAUSTED", "search", "fortnight", 5, undefined]],
+    ["a row halted by server errors, on a read", "get", "/v1/acc_1/search/parameters", 502,
+      { code: "PLATFORM_ERROR", message: "paused", row: "search", retry_after: 60, user_fixable: false, retry_likely_to_succeed: true },
+      ["PLATFORM_ERROR", "search", undefined, 60, undefined]],
+  ] as const;
+  it.each(rows)("%s", async (_label, method, path, status, body, expected) => {
+    const { http, HttpResponse } = await import("msw");
+    const { server } = await import("./msw/server.js");
+    const { Curviate } = await import("../src/index.js");
+    let calls = 0;
+    server.use(http[method](`${BASE}${path}`, () => { calls++; return HttpResponse.json(body, { status }); }));
+    const scoped = new Curviate({ apiKey: "cvt_test_sp", baseUrl: BASE }).account("acc_1");
+    const started = Date.now();
+    const call = method === "post" ? scoped.search.people({ keywords: "cfo" }) : scoped.search.getParameters({ type: "LOCATION", keywords: "Berlin" } as never);
+    const err = (await call.then(() => null, (e: unknown) => e)) as CurviateError;
+    expect([err.code, err.budgetRow, err.searchBudget, err.retryAfterSeconds, err.resetAt]).toEqual(expected);
+    expect(err.toJSON().searchBudget).toBe(expected[2]);
+    // One request, no sleep: a refusal naming a row is the caller's to schedule.
+    expect([calls, Date.now() - started < 2000]).toEqual([1, true]);
+  });
+});

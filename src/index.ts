@@ -22,6 +22,7 @@ export {
   type RetryHint,
   type SafetyHint,
   type SafetyReason,
+  type SearchBudgetName,
   type ConnectionLocation,
   type CurviateErrorInit,
   type CurviateErrorJSON,
