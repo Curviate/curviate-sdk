@@ -5724,10 +5724,10 @@ export interface components {
             /** @description Present on BUDGET_EXHAUSTED: the instant the refusal lifts, as an absolute instant rather than a duration, so it stays true however long you hold it. It is the window roll on a ceiling refusal and the next window open on an activity-window one. It is null in the two cases where no clock frees the account: the pending_invites gauge, whose backlog falls when invitations are accepted or withdrawn, and an InMail credit exhaustion (row inmail, hint.parameter inmail_credits), which LinkedIn regrants on a schedule this product cannot read. */
             reset_at?: string | null;
             /**
-             * @description Present on BUDGET_EXHAUSTED for row search only: which search budget refused. gap: the random pause between two search pages of one account (15 to 60 seconds on a free account), not a setting: retry after retry_after seconds. hour, day: search pages in the last 60 minutes or 24 hours; lines: search result lines in the last 24 hours; month: classic search pages in LinkedIn's month (from the 1st, 00:00 Pacific). hour, day and month are the account's own settings (hint.parameter search_pacing.pages_per_hour and so on, on PATCH /v1/{account_id}/safety-policy or update_safety_policy in MCP), from 1 to a maximum. active_hours: outside the account's active hours. commercial_use: LinkedIn showed this account its monthly search limit, so classic search stops until LinkedIn's month starts again; not a setting. retry_after (seconds) and reset_at (the instant) say when a retry can land. Nothing reached LinkedIn.
+             * @description Present on BUDGET_EXHAUSTED for row search only: which search budget refused. gap: the random pause between two search pages of one account (15 to 60 seconds on a free account), not a setting: retry after retry_after seconds. hour, day: search pages in the last 60 minutes or 24 hours; lines: search result lines in the last 24 hours; month: classic search pages in LinkedIn's month (from the 1st, 00:00 Pacific). hour, day and month are the account's own settings (hint.parameter search_pacing.pages_per_hour and so on, on PATCH /v1/{account_id}/safety-policy or update_safety_policy in MCP), from 1 to a maximum. active_hours: outside the account's active hours. commercial_use: LinkedIn showed this account its monthly search limit, so classic search stops until LinkedIn's month starts again; not a setting. warm_up: the account's warm-up factor is 0 for now, so no search page can be read; not a search setting. While an import from a LinkedIn source reads on the account, the import and plain searches each are sure of at least half of every hour's and day's search pages and each may use what the other leaves: a plain call refused hour or day for that, or gap for the slot the import's next page is due in, says so in hint.message. retry_after (seconds) and reset_at (the instant) say when a retry can land. Nothing reached LinkedIn.
              * @enum {string}
              */
-            budget?: "gap" | "hour" | "day" | "lines" | "month" | "active_hours" | "commercial_use";
+            budget?: "gap" | "hour" | "day" | "lines" | "month" | "active_hours" | "commercial_use" | "warm_up";
             /** @description Present on BUDGET_EXHAUSTED: the exact setting to change, as a field rather than as prose. Limits are always enforced: to send more, raise the limit. parameter is addressable on PATCH /v1/{account_id}/safety-policy (update_safety_policy in MCP), so an agent can decide between waiting until reset_at, escalating to a human, and raising the limit, without parsing the message. The one exception is inmail_credits: not a policy field, LinkedIn's own InMail balance. Wait for LinkedIn to regrant credits; a reply to an InMail refunds its credit. */
             hint?: {
                 /** @description The setting to change, for example profile_views.ceiling, active_hours (the account's or the Team's; the message names which), rows[posts].activity_window_end, profiles[basic].rows[posts].activity_window_start on the Team policy, or inmail_credits (LinkedIn's own balance, not a policy field). */
@@ -12588,7 +12588,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -12822,7 +12822,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -13024,7 +13024,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -13281,7 +13281,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -13550,7 +13550,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -13851,7 +13851,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -14001,7 +14001,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -14202,7 +14202,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -14347,7 +14347,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -30276,7 +30276,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -31651,7 +31651,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -32000,7 +32000,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -36869,7 +36869,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -37145,7 +37145,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -37550,7 +37550,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -52389,6 +52389,7 @@ export interface operations {
                             total_rows: number;
                             counts: {
                                 created: number;
+                                /** @description Leads with at least one field filled by this import. */
                                 updated: number;
                                 unchanged: number;
                                 skipped: number;
@@ -52401,15 +52402,16 @@ export interface operations {
                             };
                             /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                             source?: Record<string, never> | null;
-                            /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
+                            /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first; or warm_up, the Account's warm-up factor is 0 for now). While an import reads, it and the Account's plain searches each are sure of at least half of the search pages of every hour and day, and each may use what the other leaves. A change to the Account's search limits, Active hours or activity level is looked at again at once: pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
                             waiting?: {
-                                kind?: string;
+                                /** @enum {string} */
+                                kind?: "active_hours" | "budget" | "pushback" | "search_limited" | "halt" | "account_unavailable" | "import_ahead";
                                 until?: string | null;
                                 /**
-                                 * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first) or LinkedIn's month.
+                                 * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first), LinkedIn's month, or warm_up (the Account's warm-up factor is 0: no search page can be read for now).
                                  * @enum {string}
                                  */
-                                budget?: "hour" | "day" | "lines" | "month";
+                                budget?: "hour" | "day" | "lines" | "month" | "warm_up";
                                 /** @description With kind import_ahead: the import just ahead of this one on its Account. */
                                 import_id?: string;
                             } | null;
@@ -52858,6 +52860,7 @@ export interface operations {
                         total_rows: number;
                         counts: {
                             created: number;
+                            /** @description Leads with at least one field filled by this import. */
                             updated: number;
                             unchanged: number;
                             skipped: number;
@@ -52870,15 +52873,16 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first; or warm_up, the Account's warm-up factor is 0 for now). While an import reads, it and the Account's plain searches each are sure of at least half of the search pages of every hour and day, and each may use what the other leaves. A change to the Account's search limits, Active hours or activity level is looked at again at once: pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
                         waiting?: {
-                            kind?: string;
+                            /** @enum {string} */
+                            kind?: "active_hours" | "budget" | "pushback" | "search_limited" | "halt" | "account_unavailable" | "import_ahead";
                             until?: string | null;
                             /**
-                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first) or LinkedIn's month.
+                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first), LinkedIn's month, or warm_up (the Account's warm-up factor is 0: no search page can be read for now).
                              * @enum {string}
                              */
-                            budget?: "hour" | "day" | "lines" | "month";
+                            budget?: "hour" | "day" | "lines" | "month" | "warm_up";
                             /** @description With kind import_ahead: the import just ahead of this one on its Account. */
                             import_id?: string;
                         } | null;
@@ -52979,6 +52983,7 @@ export interface operations {
                         total_rows: number;
                         counts: {
                             created: number;
+                            /** @description Leads with at least one field filled by this import. */
                             updated: number;
                             unchanged: number;
                             skipped: number;
@@ -52991,15 +52996,16 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first; or warm_up, the Account's warm-up factor is 0 for now). While an import reads, it and the Account's plain searches each are sure of at least half of the search pages of every hour and day, and each may use what the other leaves. A change to the Account's search limits, Active hours or activity level is looked at again at once: pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
                         waiting?: {
-                            kind?: string;
+                            /** @enum {string} */
+                            kind?: "active_hours" | "budget" | "pushback" | "search_limited" | "halt" | "account_unavailable" | "import_ahead";
                             until?: string | null;
                             /**
-                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first) or LinkedIn's month.
+                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first), LinkedIn's month, or warm_up (the Account's warm-up factor is 0: no search page can be read for now).
                              * @enum {string}
                              */
-                            budget?: "hour" | "day" | "lines" | "month";
+                            budget?: "hour" | "day" | "lines" | "month" | "warm_up";
                             /** @description With kind import_ahead: the import just ahead of this one on its Account. */
                             import_id?: string;
                         } | null;
@@ -53194,6 +53200,7 @@ export interface operations {
                         total_rows: number;
                         counts: {
                             created: number;
+                            /** @description Leads with at least one field filled by this import. */
                             updated: number;
                             unchanged: number;
                             skipped: number;
@@ -53206,15 +53213,16 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first; or warm_up, the Account's warm-up factor is 0 for now). While an import reads, it and the Account's plain searches each are sure of at least half of the search pages of every hour and day, and each may use what the other leaves. A change to the Account's search limits, Active hours or activity level is looked at again at once: pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
                         waiting?: {
-                            kind?: string;
+                            /** @enum {string} */
+                            kind?: "active_hours" | "budget" | "pushback" | "search_limited" | "halt" | "account_unavailable" | "import_ahead";
                             until?: string | null;
                             /**
-                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first) or LinkedIn's month.
+                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first), LinkedIn's month, or warm_up (the Account's warm-up factor is 0: no search page can be read for now).
                              * @enum {string}
                              */
-                            budget?: "hour" | "day" | "lines" | "month";
+                            budget?: "hour" | "day" | "lines" | "month" | "warm_up";
                             /** @description With kind import_ahead: the import just ahead of this one on its Account. */
                             import_id?: string;
                         } | null;
@@ -53373,6 +53381,7 @@ export interface operations {
                         total_rows: number;
                         counts: {
                             created: number;
+                            /** @description Leads with at least one field filled by this import. */
                             updated: number;
                             unchanged: number;
                             skipped: number;
@@ -53385,15 +53394,16 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first; or warm_up, the Account's warm-up factor is 0 for now). While an import reads, it and the Account's plain searches each are sure of at least half of the search pages of every hour and day, and each may use what the other leaves. A change to the Account's search limits, Active hours or activity level is looked at again at once: pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
                         waiting?: {
-                            kind?: string;
+                            /** @enum {string} */
+                            kind?: "active_hours" | "budget" | "pushback" | "search_limited" | "halt" | "account_unavailable" | "import_ahead";
                             until?: string | null;
                             /**
-                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first) or LinkedIn's month.
+                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first), LinkedIn's month, or warm_up (the Account's warm-up factor is 0: no search page can be read for now).
                              * @enum {string}
                              */
-                            budget?: "hour" | "day" | "lines" | "month";
+                            budget?: "hour" | "day" | "lines" | "month" | "warm_up";
                             /** @description With kind import_ahead: the import just ahead of this one on its Account. */
                             import_id?: string;
                         } | null;
@@ -53570,6 +53580,7 @@ export interface operations {
                         total_rows: number;
                         counts: {
                             created: number;
+                            /** @description Leads with at least one field filled by this import. */
                             updated: number;
                             unchanged: number;
                             skipped: number;
@@ -53582,15 +53593,16 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first; or warm_up, the Account's warm-up factor is 0 for now). While an import reads, it and the Account's plain searches each are sure of at least half of the search pages of every hour and day, and each may use what the other leaves. A change to the Account's search limits, Active hours or activity level is looked at again at once: pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
                         waiting?: {
-                            kind?: string;
+                            /** @enum {string} */
+                            kind?: "active_hours" | "budget" | "pushback" | "search_limited" | "halt" | "account_unavailable" | "import_ahead";
                             until?: string | null;
                             /**
-                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first) or LinkedIn's month.
+                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first), LinkedIn's month, or warm_up (the Account's warm-up factor is 0: no search page can be read for now).
                              * @enum {string}
                              */
-                            budget?: "hour" | "day" | "lines" | "month";
+                            budget?: "hour" | "day" | "lines" | "month" | "warm_up";
                             /** @description With kind import_ahead: the import just ahead of this one on its Account. */
                             import_id?: string;
                         } | null;
@@ -53767,6 +53779,7 @@ export interface operations {
                         total_rows: number;
                         counts: {
                             created: number;
+                            /** @description Leads with at least one field filled by this import. */
                             updated: number;
                             unchanged: number;
                             skipped: number;
@@ -53779,15 +53792,16 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first; or warm_up, the Account's warm-up factor is 0 for now). While an import reads, it and the Account's plain searches each are sure of at least half of the search pages of every hour and day, and each may use what the other leaves. A change to the Account's search limits, Active hours or activity level is looked at again at once: pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
                         waiting?: {
-                            kind?: string;
+                            /** @enum {string} */
+                            kind?: "active_hours" | "budget" | "pushback" | "search_limited" | "halt" | "account_unavailable" | "import_ahead";
                             until?: string | null;
                             /**
-                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first) or LinkedIn's month.
+                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first), LinkedIn's month, or warm_up (the Account's warm-up factor is 0: no search page can be read for now).
                              * @enum {string}
                              */
-                            budget?: "hour" | "day" | "lines" | "month";
+                            budget?: "hour" | "day" | "lines" | "month" | "warm_up";
                             /** @description With kind import_ahead: the import just ahead of this one on its Account. */
                             import_id?: string;
                         } | null;
