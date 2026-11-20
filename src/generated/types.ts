@@ -52364,14 +52364,33 @@ export interface operations {
                             };
                             /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                             source?: Record<string, never> | null;
-                            /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search limit is reached: its search pages for the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
+                            /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
                             waiting?: {
                                 kind?: string;
                                 until?: string | null;
+                                /**
+                                 * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first) or LinkedIn's month.
+                                 * @enum {string}
+                                 */
+                                budget?: "hour" | "day" | "lines" | "month";
+                                /** @description With kind import_ahead: the import just ahead of this one on its Account. */
+                                import_id?: string;
                             } | null;
-                            /** @description A range of working days left, from the Account's limits and the conservative search pace; never a time. Null when finished. */
+                            /** @description When the next page of a LinkedIn source is read: after the pause between pages, or when the wait in waiting ends; queued behind another import of the Account, when its first page is expected. Null while paused, waiting for the Account to be reconnected, and on row, CSV and finished imports. */
+                            next_page_at?: string | null;
+                            /** @description How long the import still runs, in seconds: at the usual pace and at the slow end, from this Account's search limits and own settings, its Active hours and the pages left, after the imports ahead of it on the Account; never a clock time, and never 0 before it finishes. Null when finished, and while waiting for the Account to be reconnected. A finished import took finished_at minus started_at. */
                             estimate?: {
+                                seconds_min?: number;
+                                seconds_max?: number;
+                                /**
+                                 * @deprecated
+                                 * @description Deprecated: seconds_min in the Account's Active-hours days, at least 1. Read seconds_min; removed in a later version.
+                                 */
                                 working_days_min?: number;
+                                /**
+                                 * @deprecated
+                                 * @description Deprecated: seconds_max in the Account's Active-hours days, at least 1. Read seconds_max; removed in a later version.
+                                 */
                                 working_days_max?: number;
                             } | null;
                             /** @description How many people the source holds, when LinkedIn says; null for a people search. */
@@ -52814,14 +52833,33 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search limit is reached: its search pages for the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
                         waiting?: {
                             kind?: string;
                             until?: string | null;
+                            /**
+                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first) or LinkedIn's month.
+                             * @enum {string}
+                             */
+                            budget?: "hour" | "day" | "lines" | "month";
+                            /** @description With kind import_ahead: the import just ahead of this one on its Account. */
+                            import_id?: string;
                         } | null;
-                        /** @description A range of working days left, from the Account's limits and the conservative search pace; never a time. Null when finished. */
+                        /** @description When the next page of a LinkedIn source is read: after the pause between pages, or when the wait in waiting ends; queued behind another import of the Account, when its first page is expected. Null while paused, waiting for the Account to be reconnected, and on row, CSV and finished imports. */
+                        next_page_at?: string | null;
+                        /** @description How long the import still runs, in seconds: at the usual pace and at the slow end, from this Account's search limits and own settings, its Active hours and the pages left, after the imports ahead of it on the Account; never a clock time, and never 0 before it finishes. Null when finished, and while waiting for the Account to be reconnected. A finished import took finished_at minus started_at. */
                         estimate?: {
+                            seconds_min?: number;
+                            seconds_max?: number;
+                            /**
+                             * @deprecated
+                             * @description Deprecated: seconds_min in the Account's Active-hours days, at least 1. Read seconds_min; removed in a later version.
+                             */
                             working_days_min?: number;
+                            /**
+                             * @deprecated
+                             * @description Deprecated: seconds_max in the Account's Active-hours days, at least 1. Read seconds_max; removed in a later version.
+                             */
                             working_days_max?: number;
                         } | null;
                         /** @description How many people the source holds, when LinkedIn says; null for a people search. */
@@ -52880,7 +52918,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description More rows than that, or a source: queued and processed in the background. A source is read page by page from its Account, inside that Account's limits and Active hours, after its Campaign work and at a human pace: expect days, not minutes (estimate). Poll GET /v1/leads/imports/{id}. */
+            /** @description More rows than that, or a source: queued and processed in the background. A source is read page by page from its Account, inside that Account's limits and Active hours, after its Campaign work and at a human pace: minutes for a short search, days for a long one (estimate, next_page_at). Poll GET /v1/leads/imports/{id}. */
             202: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -52916,14 +52954,33 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search limit is reached: its search pages for the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
                         waiting?: {
                             kind?: string;
                             until?: string | null;
+                            /**
+                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first) or LinkedIn's month.
+                             * @enum {string}
+                             */
+                            budget?: "hour" | "day" | "lines" | "month";
+                            /** @description With kind import_ahead: the import just ahead of this one on its Account. */
+                            import_id?: string;
                         } | null;
-                        /** @description A range of working days left, from the Account's limits and the conservative search pace; never a time. Null when finished. */
+                        /** @description When the next page of a LinkedIn source is read: after the pause between pages, or when the wait in waiting ends; queued behind another import of the Account, when its first page is expected. Null while paused, waiting for the Account to be reconnected, and on row, CSV and finished imports. */
+                        next_page_at?: string | null;
+                        /** @description How long the import still runs, in seconds: at the usual pace and at the slow end, from this Account's search limits and own settings, its Active hours and the pages left, after the imports ahead of it on the Account; never a clock time, and never 0 before it finishes. Null when finished, and while waiting for the Account to be reconnected. A finished import took finished_at minus started_at. */
                         estimate?: {
+                            seconds_min?: number;
+                            seconds_max?: number;
+                            /**
+                             * @deprecated
+                             * @description Deprecated: seconds_min in the Account's Active-hours days, at least 1. Read seconds_min; removed in a later version.
+                             */
                             working_days_min?: number;
+                            /**
+                             * @deprecated
+                             * @description Deprecated: seconds_max in the Account's Active-hours days, at least 1. Read seconds_max; removed in a later version.
+                             */
                             working_days_max?: number;
                         } | null;
                         /** @description How many people the source holds, when LinkedIn says; null for a people search. */
@@ -53112,14 +53169,33 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search limit is reached: its search pages for the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
                         waiting?: {
                             kind?: string;
                             until?: string | null;
+                            /**
+                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first) or LinkedIn's month.
+                             * @enum {string}
+                             */
+                            budget?: "hour" | "day" | "lines" | "month";
+                            /** @description With kind import_ahead: the import just ahead of this one on its Account. */
+                            import_id?: string;
                         } | null;
-                        /** @description A range of working days left, from the Account's limits and the conservative search pace; never a time. Null when finished. */
+                        /** @description When the next page of a LinkedIn source is read: after the pause between pages, or when the wait in waiting ends; queued behind another import of the Account, when its first page is expected. Null while paused, waiting for the Account to be reconnected, and on row, CSV and finished imports. */
+                        next_page_at?: string | null;
+                        /** @description How long the import still runs, in seconds: at the usual pace and at the slow end, from this Account's search limits and own settings, its Active hours and the pages left, after the imports ahead of it on the Account; never a clock time, and never 0 before it finishes. Null when finished, and while waiting for the Account to be reconnected. A finished import took finished_at minus started_at. */
                         estimate?: {
+                            seconds_min?: number;
+                            seconds_max?: number;
+                            /**
+                             * @deprecated
+                             * @description Deprecated: seconds_min in the Account's Active-hours days, at least 1. Read seconds_min; removed in a later version.
+                             */
                             working_days_min?: number;
+                            /**
+                             * @deprecated
+                             * @description Deprecated: seconds_max in the Account's Active-hours days, at least 1. Read seconds_max; removed in a later version.
+                             */
                             working_days_max?: number;
                         } | null;
                         /** @description How many people the source holds, when LinkedIn says; null for a people search. */
@@ -53272,14 +53348,33 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search limit is reached: its search pages for the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
                         waiting?: {
                             kind?: string;
                             until?: string | null;
+                            /**
+                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first) or LinkedIn's month.
+                             * @enum {string}
+                             */
+                            budget?: "hour" | "day" | "lines" | "month";
+                            /** @description With kind import_ahead: the import just ahead of this one on its Account. */
+                            import_id?: string;
                         } | null;
-                        /** @description A range of working days left, from the Account's limits and the conservative search pace; never a time. Null when finished. */
+                        /** @description When the next page of a LinkedIn source is read: after the pause between pages, or when the wait in waiting ends; queued behind another import of the Account, when its first page is expected. Null while paused, waiting for the Account to be reconnected, and on row, CSV and finished imports. */
+                        next_page_at?: string | null;
+                        /** @description How long the import still runs, in seconds: at the usual pace and at the slow end, from this Account's search limits and own settings, its Active hours and the pages left, after the imports ahead of it on the Account; never a clock time, and never 0 before it finishes. Null when finished, and while waiting for the Account to be reconnected. A finished import took finished_at minus started_at. */
                         estimate?: {
+                            seconds_min?: number;
+                            seconds_max?: number;
+                            /**
+                             * @deprecated
+                             * @description Deprecated: seconds_min in the Account's Active-hours days, at least 1. Read seconds_min; removed in a later version.
+                             */
                             working_days_min?: number;
+                            /**
+                             * @deprecated
+                             * @description Deprecated: seconds_max in the Account's Active-hours days, at least 1. Read seconds_max; removed in a later version.
+                             */
                             working_days_max?: number;
                         } | null;
                         /** @description How many people the source holds, when LinkedIn says; null for a people search. */
@@ -53450,14 +53545,33 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search limit is reached: its search pages for the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
                         waiting?: {
                             kind?: string;
                             until?: string | null;
+                            /**
+                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first) or LinkedIn's month.
+                             * @enum {string}
+                             */
+                            budget?: "hour" | "day" | "lines" | "month";
+                            /** @description With kind import_ahead: the import just ahead of this one on its Account. */
+                            import_id?: string;
                         } | null;
-                        /** @description A range of working days left, from the Account's limits and the conservative search pace; never a time. Null when finished. */
+                        /** @description When the next page of a LinkedIn source is read: after the pause between pages, or when the wait in waiting ends; queued behind another import of the Account, when its first page is expected. Null while paused, waiting for the Account to be reconnected, and on row, CSV and finished imports. */
+                        next_page_at?: string | null;
+                        /** @description How long the import still runs, in seconds: at the usual pace and at the slow end, from this Account's search limits and own settings, its Active hours and the pages left, after the imports ahead of it on the Account; never a clock time, and never 0 before it finishes. Null when finished, and while waiting for the Account to be reconnected. A finished import took finished_at minus started_at. */
                         estimate?: {
+                            seconds_min?: number;
+                            seconds_max?: number;
+                            /**
+                             * @deprecated
+                             * @description Deprecated: seconds_min in the Account's Active-hours days, at least 1. Read seconds_min; removed in a later version.
+                             */
                             working_days_min?: number;
+                            /**
+                             * @deprecated
+                             * @description Deprecated: seconds_max in the Account's Active-hours days, at least 1. Read seconds_max; removed in a later version.
+                             */
                             working_days_max?: number;
                         } | null;
                         /** @description How many people the source holds, when LinkedIn says; null for a people search. */
@@ -53628,14 +53742,33 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search limit is reached: its search pages for the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
                         waiting?: {
                             kind?: string;
                             until?: string | null;
+                            /**
+                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first) or LinkedIn's month.
+                             * @enum {string}
+                             */
+                            budget?: "hour" | "day" | "lines" | "month";
+                            /** @description With kind import_ahead: the import just ahead of this one on its Account. */
+                            import_id?: string;
                         } | null;
-                        /** @description A range of working days left, from the Account's limits and the conservative search pace; never a time. Null when finished. */
+                        /** @description When the next page of a LinkedIn source is read: after the pause between pages, or when the wait in waiting ends; queued behind another import of the Account, when its first page is expected. Null while paused, waiting for the Account to be reconnected, and on row, CSV and finished imports. */
+                        next_page_at?: string | null;
+                        /** @description How long the import still runs, in seconds: at the usual pace and at the slow end, from this Account's search limits and own settings, its Active hours and the pages left, after the imports ahead of it on the Account; never a clock time, and never 0 before it finishes. Null when finished, and while waiting for the Account to be reconnected. A finished import took finished_at minus started_at. */
                         estimate?: {
+                            seconds_min?: number;
+                            seconds_max?: number;
+                            /**
+                             * @deprecated
+                             * @description Deprecated: seconds_min in the Account's Active-hours days, at least 1. Read seconds_min; removed in a later version.
+                             */
                             working_days_min?: number;
+                            /**
+                             * @deprecated
+                             * @description Deprecated: seconds_max in the Account's Active-hours days, at least 1. Read seconds_max; removed in a later version.
+                             */
                             working_days_max?: number;
                         } | null;
                         /** @description How many people the source holds, when LinkedIn says; null for a people search. */

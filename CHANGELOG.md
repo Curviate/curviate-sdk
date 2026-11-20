@@ -7,6 +7,16 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [0.59.0] - 2026-11-20
+
+Additive. `fixtures/openapi.json` and the generated types are refreshed from the served document (production `a1cf764ff`, recorded in `fixtures/PROVENANCE.json`). No method or error changes.
+
+- **`next_page_at`** (new, date-time or null) on a Lead import: when the next page of a LinkedIn source is read, after the pause between pages or when the wait in `waiting` ends; for an import queued behind another, when its first page is expected. Null while paused, waiting for a reconnect, and on row, CSV and finished imports. Read it (and `waiting.until`) to know when to look again instead of polling in a loop.
+- **`waiting.budget`** (new, `"hour" | "day" | "lines" | "month"`): with `waiting.kind: "budget"`, which search limit was reached. **`waiting.kind: "import_ahead"`** (new) with **`waiting.import_id`**: queued behind another import of the same Account; `until` is when its first page is expected. The served description also lists `halt` and `account_unavailable`.
+- **`estimate.seconds_min` / `estimate.seconds_max`** (new): how long the import still runs, in seconds, from the Account's own search limits, Active hours and the imports ahead of it; never 0 before it finishes, null when finished (a finished import took `finished_at` minus `started_at`). **`estimate.working_days_min` / `working_days_max` are deprecated** (marked `@deprecated` in the types, derived from the seconds, removed in a later version).
+- **`counts.updated`** now counts Leads the import filled at least one empty field on; a Lead it only added to the list counts as `unchanged`.
+- `imports.get` documents the fields above. The MCP server's `start_linkedin_import` and `list_imports` now declare output schemas; no SDK effect.
+
 ## [0.58.0] - 2026-11-20
 
 Additive. `fixtures/openapi.json` and the generated types are refreshed from the served document (production `200a41f02`, recorded in `fixtures/PROVENANCE.json`). The search `limit` descriptions say one call reads one LinkedIn page.
