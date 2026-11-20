@@ -481,11 +481,19 @@ export class AccountsResource {
    * while warm-up is on or the account's health is not `healthy`). Rows carry
    * `target` (what the account aims at today, drawn from its limit and green
    * figure at the level in force) and `effective_target` (read-only). Limits
-   * are always enforced.
+   * are always enforced. `search_pacing` is how fast the account reads
+   * LinkedIn search result pages: `plan` (what Curviate detected:
+   * `classic_free`, `classic_business`, `sales_navigator`, `recruiter`),
+   * `pages_per_day`, `pages_per_hour` and `pages_per_month` (null on Sales
+   * Navigator and Recruiter), each `{value, effective, default, maximum, used,
+   * source, saved}`, `lines_per_day`, the random pause
+   * (`min_gap_seconds`, `max_gap_seconds`), `month_resets_at`, `next_page_at`
+   * and `stopped` (LinkedIn's own monthly limit showed).
    * `GET /v1/{account_id}/safety-policy`
    *
    * @example
    * const { warm_up } = await curviate.accounts.getSafetyPolicy("acc_123");
+   * const { pages_per_hour } = (await curviate.accounts.getSafetyPolicy("acc_123")).search_pacing;
    */
   getSafetyPolicy(accountId: string): Promise<SafetyPolicy> {
     return this.ctx.request<SafetyPolicy>({
@@ -541,11 +549,18 @@ export class AccountsResource {
    * ignored, so a read document can be sent back unchanged. A time zone is not
    * a setting: `timezone` and a row's `activity_window_timezone` other than
    * `null` are `400 INVALID_REQUEST`; change the account's `country` or own
-   * `proxy` instead.
+   * `proxy` instead. `search_pacing: { pages_per_day, pages_per_hour,
+   * pages_per_month }` sets the account's own search budgets, each a whole
+   * number from 1 to its `maximum` on the read (pages an hour up to the daily
+   * maximum; pages a month on classic plans only), `null` for the default.
+   * Above the maximum, or any other key under `search_pacing`, is
+   * `400 INVALID_REQUEST` naming it; nothing is lowered for you. The random
+   * pause between pages is not a setting.
    * `PATCH /v1/{account_id}/safety-policy`
    *
    * @example
    * await curviate.accounts.updateSafetyPolicy("acc_123", { warm_up: { enabled: true } });
+   * await curviate.accounts.updateSafetyPolicy("acc_123", { search_pacing: { pages_per_hour: 12 } });
    */
   updateSafetyPolicy(accountId: string, body: SafetyPolicyUpdateBody): Promise<SafetyPolicyUpdateResult> {
     return this.ctx.request<SafetyPolicyUpdateResult>({

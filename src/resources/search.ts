@@ -17,6 +17,20 @@
  * resolves human-readable service-category/location terms into the opaque
  * filter ids `services()` accepts, mirroring `getParameters()` for the
  * classic search filters.
+ *
+ * Search is paced per Account in LinkedIn result pages, on every search
+ * surface (these methods, `salesNavigator`, `recruiter`, `jobs` search,
+ * `groups` search, imports): each call reads at most ONE LinkedIn page. A
+ * `limit` above the page size (10 on classic search, 25 on jobs, Sales
+ * Navigator and Recruiter) returns one page and a `cursor`. Ask for a full
+ * page and follow the `cursor`: a smaller `limit` still costs a whole page,
+ * because the next call asks LinkedIn for the same page again. A call that
+ * lands inside the random pause between two pages is held by the server up to
+ * 20 seconds (keep `timeout` at its 30 s default or above), else refused with
+ * `BUDGET_EXHAUSTED`, `budgetRow: "search"`, `searchBudget: "gap"` and
+ * `retryAfterSeconds`. The Account's budgets, use and maximums are
+ * `search_pacing` on `accounts.getSafetyPolicy`; the budget names are
+ * `SearchBudgetName`.
  */
 import type { RequestContext } from "../internal/context.js";
 import type { paths } from "../generated/types.js";

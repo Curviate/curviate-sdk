@@ -72,7 +72,7 @@ interface WireErrorEnvelope {
    * field, two meanings, discriminated by `code`.
    */
   row?: string;
-  /** Seconds until a paused row is usable again. Mirrors the `Retry-After` header. */
+  /** Seconds until a paused row is usable again, or until a search budget lifts. No `Retry-After` header carries it. */
   retry_after?: number;
   /** `BUDGET_EXHAUSTED`: when the refusal lifts. Null when no clock frees it (gauge, InMail credits, unknown zone). */
   reset_at?: string | null;
@@ -80,6 +80,8 @@ interface WireErrorEnvelope {
   hint?: { parameter?: unknown; message?: unknown };
   /** `BUDGET_EXHAUSTED`: which rule refused. */
   reason?: string;
+  /** `BUDGET_EXHAUSTED` on `row: "search"`: which search budget refused. */
+  budget?: unknown;
   /** `BUDGET_EXHAUSTED`: always true. */
   blocked?: boolean;
   /** `CONNECTION_LOCATION_UNAVAILABLE` after an applied change: where the account connects from now. */
@@ -248,6 +250,7 @@ async function errorFromResponse(res: Response): Promise<{ err: CurviateError; r
       : {}),
     ...(safetyHint !== undefined ? { safetyHint } : {}),
     ...(safetyReason !== undefined ? { safetyReason } : {}),
+    ...(typeof env?.budget === "string" ? { searchBudget: env.budget } : {}),
     ...(typeof env?.blocked === "boolean" ? { blocked: env.blocked } : {}),
     ...(env?.connection_location !== null && typeof env?.connection_location === "object"
       ? { connectionLocation: env.connection_location as ConnectionLocation }
@@ -396,6 +399,7 @@ export async function execute<T = unknown>(
     // A RESPONSE NAMING A BUDGET ROW IS NEVER RETRIED, on any method. Neither
     // condition that carries `row` is a transient rate limit: on
     // PLATFORM_RATE_LIMIT the row is paused because LinkedIn already refused it
+    // (on PLATFORM_ERROR it is paused after LinkedIn server errors, 60 seconds)
     // and retrying into that is what escalates it into an account restriction;
     // on BUDGET_EXHAUSTED the ceiling is Curviate's own and no amount of
     // waiting inside this call moves it. Surface it and let the caller switch

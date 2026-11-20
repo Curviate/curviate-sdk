@@ -135,7 +135,9 @@ export class MailboxPurchasesResource {
    * monthly Team; `when_records_found` for a yearly Team, which pays the rest
    * of its year that day; `never`), `prorated`, `plus_tax`, and `orderable`
    * with `not_orderable_reason` (`trial`: the Team has no paid plan, or a payment
-   * is past due; `sales_paused`). `charge_waits_for`
+   * is past due; `currency`: the Team's subscription is billed in another
+   * currency than Mailboxes from Curviate (US dollars), so tell the person to
+   * contact support; `sales_paused`). `charge_waits_for`
    * (`payment`, `subscription`) says the charge would wait. Show these as
    * served, never a price of your own. Owners only. One HTTP call, no charge.
    * `GET /v1/mailboxes/purchases/quote`
@@ -162,9 +164,12 @@ export class MailboxPurchasesResource {
   /**
    * One order. `state`: `awaiting_dns` (waiting for the records), `provisioning`
    * (charged, the Mailboxes being set up), `active`, or `cancelled` with a
-   * `reason`: `requested`, `expired`, or `host_failed` (setting up failed and
-   * Curviate undid the charge in full; an order being reversed reads
-   * `provisioning` until then). Neither `provisioning` nor `host_failed` is a
+   * `reason`: `requested`, `expired`, `subscription_ended`, `payment_failed`,
+   * `spending_cap_reached`, `currency` (the Team's subscription is billed in
+   * another currency than US dollars; nothing was charged: tell the person to
+   * contact support), or `host_failed` (setting up failed and Curviate undid
+   * the charge in full; an order being reversed reads `provisioning` until
+   * then). Keep a default branch: the field is an open string. Neither `provisioning` nor `host_failed` is a
    * cue to retry or to order again: read the order again later.
    * `charge_unknown` is true while Curviate cannot tell whether the order's
    * charge was made (the order ended as the charge was sent): it is being
