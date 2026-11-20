@@ -5719,7 +5719,7 @@ export interface components {
             user_fixable: boolean;
             /** @description True when an identical retry is likely to succeed. */
             retry_likely_to_succeed: boolean;
-            /** @description Present on a PLATFORM_RATE_LIMIT raised because one account-safety budget row is paused: LinkedIn refused a recent call on that row, so this one was refused locally without reaching LinkedIn. Names the paused row (for example profile_views, connection_requests_no_note). The pause is scoped to this row on this account; every other row keeps working. Absent on every other rate limit. Also present on BUDGET_EXHAUSTED, where it names the row that hit its CEILING rather than one LinkedIn paused: read the code to tell the two apart, because the recovery differs. Null on a BUDGET_EXHAUSTED whose reason is activity_window and whose action spends no budget of its own, because there is no row to name; hint.parameter still names the setting to change (active_hours). Never null on a rate limit. */
+            /** @description Present on a PLATFORM_RATE_LIMIT raised because one account-safety budget row is paused: LinkedIn refused a recent call on that row, so this one was refused locally without reaching LinkedIn. Names the paused row (for example profile_views, connection_requests_no_note). The pause is scoped to this row on this account; every other row keeps working. Absent on every other rate limit. Also present on BUDGET_EXHAUSTED, where it names the row that hit its CEILING rather than one LinkedIn paused: read the code to tell the two apart, because the recovery differs. Null on a BUDGET_EXHAUSTED whose reason is activity_window and whose action spends no budget of its own, because there is no row to name; hint.parameter still names the setting to change (active_hours). Never null on a rate limit. Also present on a 502 PLATFORM_ERROR: LinkedIn answered recent calls on that row with server errors (two within 60 seconds), so the row is paused for retry_after seconds and this call was not sent; not a rate limit. */
             row?: string | null;
             /** @description Present on BUDGET_EXHAUSTED: the instant the refusal lifts, as an absolute instant rather than a duration, so it stays true however long you hold it. It is the window roll on a ceiling refusal and the next window open on an activity-window one. It is null in the two cases where no clock frees the account: the pending_invites gauge, whose backlog falls when invitations are accepted or withdrawn, and an InMail credit exhaustion (row inmail, hint.parameter inmail_credits), which LinkedIn regrants on a schedule this product cannot read. */
             reset_at?: string | null;
@@ -12588,7 +12588,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Rate limited, slow down and retry after the hinted delay. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -12609,7 +12609,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description PLATFORM_ERROR: a temporary upstream error, worth retrying. When the body carries `row: "search"` and `retry_after`, LinkedIn answered two search requests of this account with server errors within 60 seconds, so search is paused for `retry_after` seconds and this call was not sent: wait that long, then retry. Not a rate limit. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -12643,7 +12643,7 @@ export interface operations {
             query?: {
                 /** @description Zero-based pagination offset (default 0). */
                 offset?: number;
-                /** @description Maximum results per page (1-50, default 10). */
+                /** @description Maximum results per page (1-50, default 10). One call reads one LinkedIn result page (10 results): a larger limit gets that page and a cursor, and a smaller one still costs the whole page, so ask for 10 and page by cursor. */
                 limit?: number;
                 /** @description Opaque pagination cursor returned from a previous response. */
                 cursor?: string;
@@ -12822,7 +12822,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Rate limited, slow down and retry after the hinted delay. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -12843,7 +12843,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description PLATFORM_ERROR: a temporary upstream error, worth retrying. When the body carries `row: "search"` and `retry_after`, LinkedIn answered two search requests of this account with server errors within 60 seconds, so search is paused for `retry_after` seconds and this call was not sent: wait that long, then retry. Not a rate limit. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -12877,7 +12877,7 @@ export interface operations {
             query?: {
                 /** @description Zero-based pagination offset (default 0). */
                 offset?: number;
-                /** @description Maximum results per page (2-50, default 10). Company search requires a minimum of 2. */
+                /** @description Maximum results per page (2-50, default 10). Company search requires a minimum of 2. One call reads one LinkedIn result page (10 results): a larger limit gets that page and a cursor, and a smaller one still costs the whole page, so ask for 10 and page by cursor. */
                 limit?: number;
                 /** @description Opaque pagination cursor returned from a previous response. */
                 cursor?: string;
@@ -13024,7 +13024,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Rate limited, slow down and retry after the hinted delay. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -13045,7 +13045,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description PLATFORM_ERROR: a temporary upstream error, worth retrying. When the body carries `row: "search"` and `retry_after`, LinkedIn answered two search requests of this account with server errors within 60 seconds, so search is paused for `retry_after` seconds and this call was not sent: wait that long, then retry. Not a rate limit. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -13079,7 +13079,7 @@ export interface operations {
             query?: {
                 /** @description Zero-based pagination offset (default 0). */
                 offset?: number;
-                /** @description Maximum results per page (1-50, default 10). */
+                /** @description Maximum results per page (1-50, default 10). One call reads one LinkedIn result page (10 results): a larger limit gets that page and a cursor, and a smaller one still costs the whole page, so ask for 10 and page by cursor. */
                 limit?: number;
                 /** @description Opaque pagination cursor returned from a previous response. */
                 cursor?: string;
@@ -13281,7 +13281,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Rate limited, slow down and retry after the hinted delay. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -13302,7 +13302,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description PLATFORM_ERROR: a temporary upstream error, worth retrying. When the body carries `row: "search"` and `retry_after`, LinkedIn answered two search requests of this account with server errors within 60 seconds, so search is paused for `retry_after` seconds and this call was not sent: wait that long, then retry. Not a rate limit. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -13336,7 +13336,7 @@ export interface operations {
             query?: {
                 /** @description Zero-based pagination offset (default 0). */
                 offset?: number;
-                /** @description Maximum results per page (1-100, default 25). */
+                /** @description Maximum results per page (1-100, default 25). One call reads one LinkedIn result page (25 results): a larger limit gets that page and a cursor, and a smaller one still costs the whole page, so ask for 25 and page by cursor. */
                 limit?: number;
                 /** @description Opaque pagination cursor returned from a previous response. */
                 cursor?: string;
@@ -13550,7 +13550,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Rate limited, slow down and retry after the hinted delay. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -13571,7 +13571,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description PLATFORM_ERROR: a temporary upstream error, worth retrying. When the body carries `row: "search"` and `retry_after`, LinkedIn answered two search requests of this account with server errors within 60 seconds, so search is paused for `retry_after` seconds and this call was not sent: wait that long, then retry. Not a rate limit. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -13605,7 +13605,7 @@ export interface operations {
             query?: {
                 /** @description Zero-based pagination offset (default 0). */
                 offset?: number;
-                /** @description Maximum results per page (1-50, default 10). */
+                /** @description Maximum results per page (1-50, default 10). One call reads one LinkedIn result page (10 results): a larger limit gets that page and a cursor, and a smaller one still costs the whole page, so ask for 10 and page by cursor. */
                 limit?: number;
                 /** @description Opaque pagination cursor returned from a previous response. */
                 cursor?: string;
@@ -13851,7 +13851,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Rate limited, slow down and retry after the hinted delay. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -13872,7 +13872,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description PLATFORM_ERROR: a temporary upstream error, worth retrying. When the body carries `row: "search"` and `retry_after`, LinkedIn answered two search requests of this account with server errors within 60 seconds, so search is paused for `retry_after` seconds and this call was not sent: wait that long, then retry. Not a rate limit. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -13906,7 +13906,7 @@ export interface operations {
             query: {
                 /** @description Search terms for LinkedIn groups (multi-word supported, e.g. 'gtm engineering'). */
                 keywords: string;
-                /** @description Maximum groups to return per page (1-100, default 10). */
+                /** @description Maximum groups to return per page (1-100, default 10). One call reads one LinkedIn result page (10 results): a larger limit gets that page and a cursor, and a smaller one still costs the whole page, so ask for 10 and page by cursor. */
                 limit?: number;
                 /** @description Opaque pagination cursor returned from a previous response. */
                 cursor?: string;
@@ -14001,7 +14001,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Rate limited, slow down and retry after the hinted delay. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -14022,7 +14022,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. */
+            /** @description A temporary upstream error occurred, or the upstream response could not be interpreted. Check `retry_likely_to_succeed`: a temporary error is worth retrying, a response that could not be interpreted is not, and carries `retry_hint: {"kind": "never"}`. PLATFORM_ERROR: a temporary upstream error, worth retrying. When the body carries `row: "search"` and `retry_after`, LinkedIn answered two search requests of this account with server errors within 60 seconds, so search is paused for `retry_after` seconds and this call was not sent: wait that long, then retry. Not a rate limit. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -14054,7 +14054,7 @@ export interface operations {
     postV1AccountIdSearchServices: {
         parameters: {
             query?: {
-                /** @description Maximum results per page (1-50, default 10). */
+                /** @description Maximum results per page (1-50, default 10). One call reads one LinkedIn result page (10 results): a larger limit gets that page and a cursor, and a smaller one still costs the whole page, so ask for 10 and page by cursor. */
                 limit?: number;
                 /** @description Opaque pagination cursor returned from a previous response. */
                 cursor?: string;
@@ -14202,7 +14202,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Rate limited, slow down and retry after the hinted delay. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -14223,7 +14223,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description PLATFORM_ERROR: a temporary upstream error, worth retrying. When the body carries `row: "search"` and `retry_after`, LinkedIn answered two search requests of this account with server errors within 60 seconds, so search is paused for `retry_after` seconds and this call was not sent: wait that long, then retry. Not a rate limit. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -14347,7 +14347,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Rate limited, slow down and retry after the hinted delay. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -14368,7 +14368,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description PLATFORM_ERROR: a temporary upstream error, worth retrying. When the body carries `row: "search"` and `retry_after`, LinkedIn answered two search requests of this account with server errors within 60 seconds, so search is paused for `retry_after` seconds and this call was not sent: wait that long, then retry. Not a rate limit. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -30023,7 +30023,7 @@ export interface operations {
             query?: {
                 /** @description Opaque pagination cursor from a previous response. Omit for the first page. */
                 cursor?: string;
-                /** @description Number of results to return (1-100). Defaults to 25. */
+                /** @description Number of results to return (1-100). Defaults to 25. One call reads one LinkedIn result page (25 results): a larger limit gets that page and a cursor, and a smaller one still costs the whole page, so ask for 25 and page by cursor. */
                 limit?: number;
             };
             header?: {
@@ -30276,7 +30276,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT, too many requests. Retry with exponential backoff. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -30297,7 +30297,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description PLATFORM_ERROR. A temporary error occurred. Typically temporary. */
+            /** @description PLATFORM_ERROR: a temporary upstream error, worth retrying. When the body carries `row: "search"` and `retry_after`, LinkedIn answered two search requests of this account with server errors within 60 seconds, so search is paused for `retry_after` seconds and this call was not sent: wait that long, then retry. Not a rate limit. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -31394,7 +31394,7 @@ export interface operations {
             query?: {
                 /** @description Opaque pagination cursor from a previous response. Omit for the first page. */
                 cursor?: string;
-                /** @description Number of results to return (1-100). Defaults to 25. */
+                /** @description Number of results to return (1-100). Defaults to 25. One call reads one LinkedIn result page (25 results): a larger limit gets that page and a cursor, and a smaller one still costs the whole page, so ask for 25 and page by cursor. */
                 limit?: number;
             };
             header?: {
@@ -31651,7 +31651,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT, too many requests. Retry with exponential backoff. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -31672,7 +31672,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description PLATFORM_ERROR. A temporary error occurred. Typically temporary. */
+            /** @description PLATFORM_ERROR: a temporary upstream error, worth retrying. When the body carries `row: "search"` and `retry_after`, LinkedIn answered two search requests of this account with server errors within 60 seconds, so search is paused for `retry_after` seconds and this call was not sent: wait that long, then retry. Not a rate limit. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -31706,7 +31706,7 @@ export interface operations {
             query?: {
                 /** @description Opaque pagination cursor from a previous response. Omit for the first page. */
                 cursor?: string;
-                /** @description Number of results to return (1-5000; the effective cap depends on the URL kind). Defaults to 25. */
+                /** @description Number of results to return (1-5000; the effective cap depends on the URL kind). Defaults to 25. One call reads one LinkedIn result page (25 results): a larger limit gets that page and a cursor, and a smaller one still costs the whole page, so ask for 25 and page by cursor. */
                 limit?: number;
             };
             header?: {
@@ -32000,7 +32000,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT, too many requests. Retry with exponential backoff. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -32021,7 +32021,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description PLATFORM_ERROR. A temporary error occurred. Typically temporary. */
+            /** @description PLATFORM_ERROR: a temporary upstream error, worth retrying. When the body carries `row: "search"` and `retry_after`, LinkedIn answered two search requests of this account with server errors within 60 seconds, so search is paused for `retry_after` seconds and this call was not sent: wait that long, then retry. Not a rate limit. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -36428,7 +36428,7 @@ export interface operations {
     postV1AccountIdSalesNavigatorSearchPeople: {
         parameters: {
             query?: {
-                /** @description Number of results to return (1-100). Default 25. */
+                /** @description Number of results to return (1-100). Default 25. One call reads one LinkedIn result page (25 results): a larger limit gets that page and a cursor, and a smaller one still costs the whole page, so ask for 25 and page by cursor. */
                 limit?: number;
                 /** @description Opaque pagination cursor from a previous response. */
                 cursor?: string;
@@ -36869,7 +36869,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT, request rate exceeded. Retry after the period indicated in the Retry-After header. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -36890,7 +36890,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description PLATFORM_ERROR: a temporary upstream error, worth retrying. When the body carries `row: "search"` and `retry_after`, LinkedIn answered two search requests of this account with server errors within 60 seconds, so search is paused for `retry_after` seconds and this call was not sent: wait that long, then retry. Not a rate limit. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -36922,7 +36922,7 @@ export interface operations {
     postV1AccountIdSalesNavigatorSearchCompanies: {
         parameters: {
             query?: {
-                /** @description Number of results to return (1-100). Default 25. */
+                /** @description Number of results to return (1-100). Default 25. One call reads one LinkedIn result page (25 results): a larger limit gets that page and a cursor, and a smaller one still costs the whole page, so ask for 25 and page by cursor. */
                 limit?: number;
                 /** @description Opaque pagination cursor from a previous response. */
                 cursor?: string;
@@ -37145,7 +37145,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT, request rate exceeded. Retry after the period indicated in the Retry-After header. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -37166,7 +37166,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description PLATFORM_ERROR: a temporary upstream error, worth retrying. When the body carries `row: "search"` and `retry_after`, LinkedIn answered two search requests of this account with server errors within 60 seconds, so search is paused for `retry_after` seconds and this call was not sent: wait that long, then retry. Not a rate limit. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -37198,7 +37198,7 @@ export interface operations {
     postV1AccountIdSalesNavigatorSearch: {
         parameters: {
             query?: {
-                /** @description Number of results to return (1-50). Default 10. */
+                /** @description Number of results to return (1-50). Default 10. One call reads one LinkedIn result page (25 results): a larger limit gets that page and a cursor, and a smaller one still costs the whole page, so ask for 25 and page by cursor. */
                 limit?: number;
                 /** @description Opaque pagination cursor from a previous response. */
                 cursor?: string;
@@ -37550,7 +37550,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT, request rate exceeded. Retry after the period indicated in the Retry-After header. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -37571,7 +37571,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description A temporary error occurred. Please try again. */
+            /** @description PLATFORM_ERROR: a temporary upstream error, worth retrying. When the body carries `row: "search"` and `retry_after`, LinkedIn answered two search requests of this account with server errors within 60 seconds, so search is paused for `retry_after` seconds and this call was not sent: wait that long, then retry. Not a rate limit. */
             502: {
                 headers: {
                     [name: string]: unknown;
@@ -44163,11 +44163,11 @@ export interface operations {
                     };
                     /** @description This account's own search budgets (one LinkedIn result page = one page). Any subset; null clears a key back to the default; a value above the plan's maximum is refused with 400 INVALID_REQUEST naming the maximum, never lowered for you. The read's other keys (`plan`, `why` ...) and its budget objects (`{value, default, maximum, used ...}`) are accepted and ignored, so the read's object round-trips; any other key is refused with 400 naming it. A change is recorded in the account's ledger. */
                     search_pacing?: {
-                        /** @description Search pages in the last 24 hours, 1 to the plan's maximum (`search_pacing.pages_per_day.maximum` on the read). Null: the default. */
+                        /** @description An integer: search pages in the last 24 hours, 1 to the plan's maximum (`search_pacing.pages_per_day.maximum` on the read). Null: back to the default. Or the read's own budget object for this key (`{value, effective, default, maximum, used, source, saved}`), sent back unchanged: accepted and ignored, so the read round-trips. Integer or null is the write. */
                         pages_per_day?: (number | Record<string, never>) | null;
-                        /** @description Search pages in the last 60 minutes, 1 to the plan's maximum (up to the plan's daily maximum). Null: the default. */
+                        /** @description An integer: search pages in the last 60 minutes, 1 to the plan's maximum (up to the plan's daily maximum). Null: back to the default. Or the read's own budget object for this key (`{value, effective, default, maximum, used, source, saved}`), sent back unchanged: accepted and ignored, so the read round-trips. Integer or null is the write. */
                         pages_per_hour?: (number | Record<string, never>) | null;
-                        /** @description Classic plans only: classic search pages in LinkedIn's month (from the 1st, 00:00 Pacific), 1 to the plan's maximum. Null: the default. */
+                        /** @description An integer, classic plans only: classic search pages in LinkedIn's month (from the 1st, 00:00 Pacific), 1 to the plan's maximum. Null: back to the default. Or the read's own budget object for this key (`{value, effective, default, maximum, used, source, saved}`), sent back unchanged: accepted and ignored, so the read round-trips. Integer or null is the write. */
                         pages_per_month?: (number | Record<string, never>) | null;
                     };
                     /** @description Automatic withdrawal of old invitations Curviate sent for this account's Campaigns, default true. While this account has more than 400 pending invitations, Curviate withdraws the Campaign-sent ones older than 14 days, oldest first, a few a day (at most the larger of 25 and the day's invitation allowance), inside its working hours and one at a time with the usual gaps, after checking each is still pending. It never touches an invitation you sent by hand or through the API, and never invites a withdrawn person again. It keeps working while invitations are stopped at 650 pending, which is how the account comes back under. Set false to keep every old invitation pending; the level then falls only as people accept or you withdraw. */
@@ -52364,7 +52364,7 @@ export interface operations {
                             };
                             /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                             source?: Record<string, never> | null;
-                            /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search lines for today are spent, or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
+                            /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search limit is reached: its search pages for the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
                             waiting?: {
                                 kind?: string;
                                 until?: string | null;
@@ -52814,7 +52814,7 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search lines for today are spent, or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search limit is reached: its search pages for the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
                         waiting?: {
                             kind?: string;
                             until?: string | null;
@@ -52916,7 +52916,7 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search lines for today are spent, or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search limit is reached: its search pages for the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
                         waiting?: {
                             kind?: string;
                             until?: string | null;
@@ -53112,7 +53112,7 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search lines for today are spent, or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search limit is reached: its search pages for the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
                         waiting?: {
                             kind?: string;
                             until?: string | null;
@@ -53272,7 +53272,7 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search lines for today are spent, or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search limit is reached: its search pages for the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
                         waiting?: {
                             kind?: string;
                             until?: string | null;
@@ -53450,7 +53450,7 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search lines for today are spent, or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search limit is reached: its search pages for the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
                         waiting?: {
                             kind?: string;
                             until?: string | null;
@@ -53628,7 +53628,7 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search lines for today are spent, or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (the Account's search limit is reached: its search pages for the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down) or search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), with until the next opening. Null while reading or between paced pages. */
                         waiting?: {
                             kind?: string;
                             until?: string | null;

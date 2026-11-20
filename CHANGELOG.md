@@ -9,7 +9,7 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [0.58.0] - 2026-11-20
 
-Additive. `fixtures/openapi.json` and the generated types are refreshed from the served document (recorded in `fixtures/PROVENANCE.json`).
+Additive. `fixtures/openapi.json` and the generated types are refreshed from the served document (production `200a41f02`, recorded in `fixtures/PROVENANCE.json`). The search `limit` descriptions say one call reads one LinkedIn page.
 
 - **Search pacing.** Search is paced per Account in LinkedIn result pages, on every search surface: one call reads at most one page; a `limit` above the page size (10 on classic search, 25 on jobs, Sales Navigator and Recruiter) returns one page and a `cursor`. Ask for a full page and follow the cursor. The `search` module doc says so.
 - **`CurviateError.searchBudget`** (new, typed `SearchBudgetName`, exported): on a `BUDGET_EXHAUSTED` with `budgetRow: "search"`, which search budget refused: `gap` (the random pause between two pages, not a setting: wait `retryAfterSeconds` and call again), `hour`, `day`, `lines`, `month` (the Account's own `search_pacing` settings, lifting at `resetAt`), `active_hours`, `commercial_use` (LinkedIn's own monthly limit). Also on `toJSON()`. An unknown future name is kept as sent.
