@@ -7,6 +7,14 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [0.61.0] - 2026-11-21
+
+Additive. `fixtures/openapi.json` and the generated types are refreshed from the served document (recorded in `fixtures/PROVENANCE.json`).
+
+- **Mailbox order**: **`previous_provider_until`** (new, date-time or null, on every order read: create, get, list, check, cancel). Once set and still ahead, until about when some senders can keep delivering the domain's mail to its previous mail provider: other mail servers keep the old MX records for their TTL. Set once the order's MX records are seen in place. Nothing is lost on Curviate's side; tell the person to check the old mailbox until then.
+- **Mailbox order records**: a row's `found` is only what Curviate's last check saw in DNS, asked at the domain's own name servers. Curviate's side not being ready yet reads `waiting_for: "curviate"`, never a row not found. A row not found can carry `advice`, now also that the domain's name servers did not answer the last check: not a failure, the next check asks again.
+- **Mailbox quote**: `charge_waits_for` is marked deprecated in the served document (always null). `MailboxQuote` is now the served type as is; the field stays `@deprecated` and is removed in a later version.
+
 ## [0.60.0] - 2026-11-21
 
 Additive. `fixtures/openapi.json` and the generated types are refreshed from the served document (recorded in `fixtures/PROVENANCE.json`).
