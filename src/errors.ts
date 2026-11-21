@@ -409,13 +409,18 @@ export const ERROR_CODES = [
   //   cancelled); the message names its state. During a charge, read the
   //   order again later; never retry the cancel.
   // - `MAILBOX_PURCHASE_TRIAL` (403): a Team without a paid plan cannot order: on a trial,
-  //   after a trial that ended without a purchase, never subscribed, or with a
-  //   payment past due. Nothing was charged.
+  //   after a trial that ended without a purchase, or never subscribed; or a
+  //   Team with a payment outstanding, and then the message says to update the
+  //   payment method in Billing. Nothing was charged.
   // - `DOMAIN_IN_USE` (409): the domain already has Mailboxes from Curviate or
-  //   an order; name another domain.
+  //   a confirmed order, of your Team or another; name another domain.
   // - `DOMAIN_IS_COMPANY_EMAIL` (422): the domain your company email runs on;
   //   use a separate domain.
   // - `MAILBOX_SALES_PAUSED` (409): orders cannot be placed at the moment.
+  // - `MAILBOX_NO_ROOM` (409): Curviate has no room for this many new Mailboxes
+  //   at the moment and is adding more. Nothing was ordered or charged. Order
+  //   fewer, or order again later (the quote's `not_orderable_reason:
+  //   "capacity"` says it before ordering).
   "MAILBOX_PURCHASE_NOT_FOUND",
   "MAILBOX_PURCHASE_PENDING",
   "MAILBOX_PURCHASE_TRIAL",
@@ -423,6 +428,7 @@ export const ERROR_CODES = [
   "DOMAIN_IN_USE",
   "DOMAIN_IS_COMPANY_EMAIL",
   "MAILBOX_SALES_PAUSED",
+  "MAILBOX_NO_ROOM",
 
   // Seats and the Team's spending cap, from an agent's seat call.
   //
@@ -673,6 +679,15 @@ export type SafetyReason = "ceiling" | "activity_window";
  * `active_hours`: outside the Account's Active hours.
  * `commercial_use`: LinkedIn showed the Account its monthly search limit, so
  * classic search stops until LinkedIn's month starts again; not a setting.
+ * `warm_up`: the Account's warm-up factor is 0 for now, so no search page can
+ * be read; not a search setting.
+ *
+ * While an import from a LinkedIn source reads on the Account, it and plain
+ * searches each are sure of at least half of every hour's and day's pages,
+ * and each may use what the other leaves: a plain call refused `hour` or
+ * `day` for that share, or `gap` for the slot the import's next page is due
+ * in, says so in its message. That is not an error: retry at
+ * {@link CurviateError.retryAfterSeconds}.
  *
  * Open: a budget added later arrives as its own string, so keep a default
  * branch.

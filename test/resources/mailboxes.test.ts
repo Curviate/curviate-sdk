@@ -82,6 +82,7 @@ describe("Mailbox, Domain and Team-policy operations", () => {
     ["SPENDING_CAP_REACHED", 403, () => c.mailboxes.purchases.create({ domain: "acme-mail.example.test", mailboxes: [{ local_part: "anna", display_name: "Anna" }] })],
     ["MAILBOX_PURCHASE_STATE_CONFLICT", 409, () => c.mailboxes.purchases.cancel("mpu_1")],
     ["MAILBOX_SALES_PAUSED", 409, () => c.mailboxes.purchases.create({ domain: "acme-mail.example.test", mailboxes: [{ local_part: "anna", display_name: "Anna" }] })],
+    ["MAILBOX_NO_ROOM", 409, () => c.mailboxes.purchases.create({ domain: "acme-mail.example.test", mailboxes: [{ local_part: "anna", display_name: "Anna" }] })],
   ] as const)("%s (%i) decodes to itself after exactly one request, never retried", async (code, status, run) => {
     let calls = 0;
     server.use(http.all(`${BASE}/*`, () => { calls++; return HttpResponse.json({ code, message: "refused", user_fixable: true }, { status }); }));
@@ -91,7 +92,7 @@ describe("Mailbox, Domain and Team-policy operations", () => {
   });
 
   it("the Mailbox and Domain codes are exported and decode to themselves, not INTERNAL", async () => {
-    const codes = ["PLACEMENT_TEST_ALLOWANCE_EXHAUSTED", "PLACEMENT_TESTS_UNAVAILABLE", "MAILBOX_PURCHASE_NOT_FOUND", "MAILBOX_PURCHASE_PENDING", "MAILBOX_PURCHASE_TRIAL", "MAILBOX_PURCHASE_STATE_CONFLICT", "DOMAIN_IN_USE", "DOMAIN_IS_COMPANY_EMAIL", "MAILBOX_SALES_PAUSED", "MAILBOX_NOT_FOUND", "DOMAIN_NOT_FOUND", "MAILBOX_STATE_CONFLICT", "MAILBOX_LIMIT_REACHED", "MAILBOX_ALREADY_CONNECTED", "MAILBOX_APP_PASSWORD_REQUIRED", "MAILBOX_CREDENTIAL_REJECTED", "MAILBOX_TLS_FAILED", "MAILBOX_ADMIN_APPROVAL_REQUIRED", "MAILBOX_ADDRESS_MISMATCH"];
+    const codes = ["PLACEMENT_TEST_ALLOWANCE_EXHAUSTED", "PLACEMENT_TESTS_UNAVAILABLE", "MAILBOX_PURCHASE_NOT_FOUND", "MAILBOX_PURCHASE_PENDING", "MAILBOX_PURCHASE_TRIAL", "MAILBOX_PURCHASE_STATE_CONFLICT", "DOMAIN_IN_USE", "DOMAIN_IS_COMPANY_EMAIL", "MAILBOX_SALES_PAUSED", "MAILBOX_NO_ROOM", "MAILBOX_NOT_FOUND", "DOMAIN_NOT_FOUND", "MAILBOX_STATE_CONFLICT", "MAILBOX_LIMIT_REACHED", "MAILBOX_ALREADY_CONNECTED", "MAILBOX_APP_PASSWORD_REQUIRED", "MAILBOX_CREDENTIAL_REJECTED", "MAILBOX_TLS_FAILED", "MAILBOX_ADMIN_APPROVAL_REQUIRED", "MAILBOX_ADDRESS_MISMATCH"];
     for (const code of codes) expect(ERROR_CODES, code).toContain(code);
     server.use(http.get(`${BASE}/v1/mailboxes/mbx_x`, () => HttpResponse.json({ code: "MAILBOX_NOT_FOUND", message: "No such Mailbox.", user_fixable: true, retry_likely_to_succeed: false }, { status: 404 })));
     const err = await c.mailboxes.get("mbx_x").catch((e: unknown) => e);

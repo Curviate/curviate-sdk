@@ -3787,7 +3787,7 @@ export interface paths {
         };
         /**
          * Price an order of Mailboxes from Curviate
-         * @description What an order of `mailboxes` Mailboxes would cost your Team, read now from the price the charge uses: your billing period, the amount per Mailbox and for the order, when it is charged (monthly: with your next invoice; yearly: invoiced and paid the day the records are found), and that tax is added where it applies. Show this to your user before ordering; the order's `price` carries the same object. Nothing is written or charged. Owners only. It answers while sales are paused (`orderable` false).
+         * @description What an order of `mailboxes` Mailboxes would cost your Team, read now from the price the charge uses: your billing period, the amount per Mailbox and for the order, when it is charged (monthly: with your next invoice; yearly: invoiced and paid the day the records are found), and that tax is added where it applies. Show this to your user before ordering; the order's `price` carries the same object. Nothing is written or charged. Owners only. It answers whenever the order would be refused (`orderable` false, `not_orderable_reason` says why, as the order's refusal would).
          */
         get: operations["getV1MailboxesPurchasesQuote"];
         put?: never;
@@ -3813,7 +3813,7 @@ export interface paths {
         put?: never;
         /**
          * Buy Mailboxes from Curviate
-         * @description Orders 1 to 50 Mailboxes on one domain your Team owns, warm-up included, at the price `GET /v1/mailboxes/purchases/quote` gives your Team (the answer's `price` is the same object). The order waits in `awaiting_dns` until the records it shows are found at your domain; nothing is charged before. Owners only. An order through an API key counts under the team's cap on Mailboxes from Curviate: from 80% of it the order carries a SPENDING_CAP_NEAR notice, past it the order is refused 403 SPENDING_CAP_REACHED and nothing is ordered. A Team without a paid plan (on a trial, or with a payment past due) cannot order; nor a Team whose subscription is billed in another currency than US dollars (400 INVALID_REQUEST); a subscription on a previous price orders as it is; the domain your company email runs on is refused; a domain already ordered by your Team and still waiting answers `409 MAILBOX_PURCHASE_PENDING`.
+         * @description Orders 1 to 50 Mailboxes on one domain your Team owns, warm-up included, at the price `GET /v1/mailboxes/purchases/quote` gives your Team (the answer's `price` is the same object). The order waits in `awaiting_dns` until the records it shows are found at your domain; nothing is charged before. Owners only. An order through an API key counts under the team's cap on Mailboxes from Curviate: from 80% of it the order carries a SPENDING_CAP_NEAR notice, past it the order is refused 403 SPENDING_CAP_REACHED and nothing is ordered. A Team without a paid plan (on a trial) cannot order, nor a Team with a payment outstanding (`403 MAILBOX_PURCHASE_TRIAL`, its message names the payment method), nor a Team whose subscription is billed in another currency than US dollars (400 INVALID_REQUEST); a subscription on a previous price orders as it is; the domain your company email runs on is refused; a domain already ordered by your Team and still waiting answers `409 MAILBOX_PURCHASE_PENDING`; a domain another Team holds or has a confirmed order for answers `409 DOMAIN_IN_USE`; when Curviate has no room for this many new Mailboxes, `409 MAILBOX_NO_ROOM` (the quote's `capacity`).
          */
         post: operations["postV1MailboxesPurchases"];
         delete?: never;
@@ -5724,10 +5724,10 @@ export interface components {
             /** @description Present on BUDGET_EXHAUSTED: the instant the refusal lifts, as an absolute instant rather than a duration, so it stays true however long you hold it. It is the window roll on a ceiling refusal and the next window open on an activity-window one. It is null in the two cases where no clock frees the account: the pending_invites gauge, whose backlog falls when invitations are accepted or withdrawn, and an InMail credit exhaustion (row inmail, hint.parameter inmail_credits), which LinkedIn regrants on a schedule this product cannot read. */
             reset_at?: string | null;
             /**
-             * @description Present on BUDGET_EXHAUSTED for row search only: which search budget refused. gap: the random pause between two search pages of one account (15 to 60 seconds on a free account), not a setting: retry after retry_after seconds. hour, day: search pages in the last 60 minutes or 24 hours; lines: search result lines in the last 24 hours; month: classic search pages in LinkedIn's month (from the 1st, 00:00 Pacific). hour, day and month are the account's own settings (hint.parameter search_pacing.pages_per_hour and so on, on PATCH /v1/{account_id}/safety-policy or update_safety_policy in MCP), from 1 to a maximum. active_hours: outside the account's active hours. commercial_use: LinkedIn showed this account its monthly search limit, so classic search stops until LinkedIn's month starts again; not a setting. retry_after (seconds) and reset_at (the instant) say when a retry can land. Nothing reached LinkedIn.
+             * @description Present on BUDGET_EXHAUSTED for row search only: which search budget refused. gap: the random pause between two search pages of one account (15 to 60 seconds on a free account), not a setting: retry after retry_after seconds. hour, day: search pages in the last 60 minutes or 24 hours; lines: search result lines in the last 24 hours; month: classic search pages in LinkedIn's month (from the 1st, 00:00 Pacific). hour, day and month are the account's own settings (hint.parameter search_pacing.pages_per_hour and so on, on PATCH /v1/{account_id}/safety-policy or update_safety_policy in MCP), from 1 to a maximum. active_hours: outside the account's active hours. commercial_use: LinkedIn showed this account its monthly search limit, so classic search stops until LinkedIn's month starts again; not a setting. warm_up: the account's warm-up factor is 0 for now, so no search page can be read; not a search setting. While an import from a LinkedIn source reads on the account, the import and plain searches each are sure of at least half of every hour's and day's search pages and each may use what the other leaves: a plain call refused hour or day for that, or gap for the slot the import's next page is due in, says so in hint.message. retry_after (seconds) and reset_at (the instant) say when a retry can land. Nothing reached LinkedIn.
              * @enum {string}
              */
-            budget?: "gap" | "hour" | "day" | "lines" | "month" | "active_hours" | "commercial_use";
+            budget?: "gap" | "hour" | "day" | "lines" | "month" | "active_hours" | "commercial_use" | "warm_up";
             /** @description Present on BUDGET_EXHAUSTED: the exact setting to change, as a field rather than as prose. Limits are always enforced: to send more, raise the limit. parameter is addressable on PATCH /v1/{account_id}/safety-policy (update_safety_policy in MCP), so an agent can decide between waiting until reset_at, escalating to a human, and raising the limit, without parsing the message. The one exception is inmail_credits: not a policy field, LinkedIn's own InMail balance. Wait for LinkedIn to regrant credits; a reply to an InMail refunds its credit. */
             hint?: {
                 /** @description The setting to change, for example profile_views.ceiling, active_hours (the account's or the Team's; the message names which), rows[posts].activity_window_end, profiles[basic].rows[posts].activity_window_start on the Team policy, or inmail_credits (LinkedIn's own balance, not a policy field). */
@@ -12588,7 +12588,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -12822,7 +12822,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -13024,7 +13024,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -13281,7 +13281,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -13550,7 +13550,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -13851,7 +13851,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -14001,7 +14001,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -14202,7 +14202,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -14347,7 +14347,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -30276,7 +30276,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -31651,7 +31651,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -32000,7 +32000,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -36869,7 +36869,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -37145,7 +37145,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -37550,7 +37550,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit), `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
+            /** @description RATE_LIMIT_ACCOUNT: too many requests, retry after the hinted delay. Or BUDGET_EXHAUSTED with `row: "search"`: this account's search pacing refused the call before it reached LinkedIn, nothing spent. The body names `budget` (`gap`: the random pause between two pages, not a setting; `hour`; `day`; `lines`; `month`: LinkedIn's month from the 1st at 00:00 Pacific; `active_hours`; `commercial_use`: LinkedIn's own monthly limit; `warm_up`: the account's warm-up factor is 0 for now). While an import reads on the account it and plain searches share the hour and the day half and half, each using what the other leaves; the message says when a refusal is the import's share. The body carries `retry_after` in seconds and `reset_at`; `hint.parameter` names the `search_pacing` setting that lifts it, or `none`. Wait `retry_after` and call again, or raise that setting. */
             429: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -48752,15 +48752,12 @@ export interface operations {
                         /** @description Whether your Team can place this order now. */
                         orderable: boolean;
                         /**
-                         * @description trial: available once your Team pays (a Team on a trial or without a paid plan, or with a payment past due); currency: your subscription is billed in another currency than Mailboxes from Curviate (US dollars): contact support to move it to the current price, then order; sales_paused: Mailboxes from Curviate cannot be ordered at the moment.
+                         * @description trial: available once your Team pays (a Team on a trial or without a paid plan); payment: your Team has a payment outstanding (past due or disputed): update the payment method in Billing, then order; currency: your subscription is billed in another currency than Mailboxes from Curviate (US dollars): contact support to move it to the current price, then order; sales_paused: Mailboxes from Curviate cannot be ordered at the moment; capacity: Curviate has no room for this many new Mailboxes at the moment and is adding more: order fewer, or order again later.
                          * @enum {string|null}
                          */
-                        not_orderable_reason: "trial" | "currency" | "sales_paused" | null;
-                        /**
-                         * @description payment: your subscription is past due, the charge waits until it is paid; subscription: no subscription to charge, the order waits uncharged.
-                         * @enum {string|null}
-                         */
-                        charge_waits_for: "payment" | "subscription" | null;
+                        not_orderable_reason: "trial" | "payment" | "currency" | "sales_paused" | "capacity" | null;
+                        /** @description Always null: a Team whose charge would wait (a payment outstanding, no subscription) cannot order, and `not_orderable_reason` says why. */
+                        charge_waits_for: null;
                     };
                 };
             };
@@ -48846,8 +48843,11 @@ export interface operations {
                              * @enum {string}
                              */
                             state: "awaiting_dns" | "provisioning" | "active" | "cancelled";
-                            /** @description Why a cancelled order ended; null otherwise. */
-                            reason: string | null;
+                            /**
+                             * @description Why a cancelled order ended; null otherwise. Nothing was charged unless `charged_at` is set (then it is given back in full). requested: cancelled by an Owner or an agent; expired: the records were not found within 14 days; payment_outstanding: the records were found, but the Team's payment stayed outstanding for the 14 days; held_by_curviate: the records were found, but Curviate could not create the Mailboxes within the 14 days; domain_taken: another order for this domain was confirmed first; subscription_ended; payment_failed: the charge was refused; spending_cap_reached; host_failed: the Mailboxes could not be created; currency: the subscription is billed in another currency. An order that ended can be placed again.
+                             * @enum {string|null}
+                             */
+                            reason: "requested" | "expired" | "subscription_ended" | "payment_failed" | "spending_cap_reached" | "host_failed" | "currency" | "payment_outstanding" | "held_by_curviate" | "domain_taken" | null;
                             mailboxes: {
                                 address?: string;
                                 display_name?: string;
@@ -48858,6 +48858,11 @@ export interface operations {
                             /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours, and `verify` is one TXT record that confirms this order is yours. */
                             records: Record<string, never>[];
                             advice: string | null;
+                            /**
+                             * @description While `awaiting_dns`, what the order waits for and what to do; null otherwise. records: add the required records at your domain's DNS host before `expires_at`; payment: the records are found and the charge waits for your Team's outstanding payment: update the payment method in Billing (app.curviate.com/settings/billing) and the order continues by itself; curviate: the records are found and the order waits on Curviate's side: nothing to do, it continues by itself; charge: the order is being charged: read it again in a few minutes. An order still waiting at `expires_at` ends, nothing charged.
+                             * @enum {string|null}
+                             */
+                            waiting_for: "records" | "payment" | "curviate" | "charge" | null;
                             /** @description The order's monthly equivalent, minor units: the monthly price of one Mailbox times the Mailboxes. Not what a yearly Team is charged: read `price`. */
                             amount_monthly: number;
                             /** @description What the order costs your Team, read now from the same price the charge uses. Amounts are minor units, before tax. */
@@ -48889,7 +48894,7 @@ export interface operations {
                             checked_at: string | null;
                             /**
                              * Format: date-time
-                             * @description An order still waiting for its records then is cancelled; nothing is charged.
+                             * @description An order still waiting then is cancelled, nothing charged: `expired` when its records were not found, else the reason that held its charge.
                              */
                             expires_at: string;
                             /** Format: date-time */
@@ -48983,8 +48988,11 @@ export interface operations {
                          * @enum {string}
                          */
                         state: "awaiting_dns" | "provisioning" | "active" | "cancelled";
-                        /** @description Why a cancelled order ended; null otherwise. */
-                        reason: string | null;
+                        /**
+                         * @description Why a cancelled order ended; null otherwise. Nothing was charged unless `charged_at` is set (then it is given back in full). requested: cancelled by an Owner or an agent; expired: the records were not found within 14 days; payment_outstanding: the records were found, but the Team's payment stayed outstanding for the 14 days; held_by_curviate: the records were found, but Curviate could not create the Mailboxes within the 14 days; domain_taken: another order for this domain was confirmed first; subscription_ended; payment_failed: the charge was refused; spending_cap_reached; host_failed: the Mailboxes could not be created; currency: the subscription is billed in another currency. An order that ended can be placed again.
+                         * @enum {string|null}
+                         */
+                        reason: "requested" | "expired" | "subscription_ended" | "payment_failed" | "spending_cap_reached" | "host_failed" | "currency" | "payment_outstanding" | "held_by_curviate" | "domain_taken" | null;
                         mailboxes: {
                             address?: string;
                             display_name?: string;
@@ -48995,6 +49003,11 @@ export interface operations {
                         /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours, and `verify` is one TXT record that confirms this order is yours. */
                         records: Record<string, never>[];
                         advice: string | null;
+                        /**
+                         * @description While `awaiting_dns`, what the order waits for and what to do; null otherwise. records: add the required records at your domain's DNS host before `expires_at`; payment: the records are found and the charge waits for your Team's outstanding payment: update the payment method in Billing (app.curviate.com/settings/billing) and the order continues by itself; curviate: the records are found and the order waits on Curviate's side: nothing to do, it continues by itself; charge: the order is being charged: read it again in a few minutes. An order still waiting at `expires_at` ends, nothing charged.
+                         * @enum {string|null}
+                         */
+                        waiting_for: "records" | "payment" | "curviate" | "charge" | null;
                         /** @description The order's monthly equivalent, minor units: the monthly price of one Mailbox times the Mailboxes. Not what a yearly Team is charged: read `price`. */
                         amount_monthly: number;
                         /** @description What the order costs your Team, read now from the same price the charge uses. Amounts are minor units, before tax. */
@@ -49026,7 +49039,7 @@ export interface operations {
                         checked_at: string | null;
                         /**
                          * Format: date-time
-                         * @description An order still waiting for its records then is cancelled; nothing is charged.
+                         * @description An order still waiting then is cancelled, nothing charged: `expired` when its records were not found, else the reason that held its charge.
                          */
                         expires_at: string;
                         /** Format: date-time */
@@ -49056,7 +49069,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE (not an Owner), MAILBOX_PURCHASE_TRIAL (a Team without a paid plan: on a trial, its trial ended, or a payment past due) or SPENDING_CAP_REACHED (an agent's order past the cap on Mailboxes from Curviate; carries cap_mailboxes and room_mailboxes). */
+            /** @description INSUFFICIENT_ROLE (not an Owner), MAILBOX_PURCHASE_TRIAL (a Team without a paid plan: on a trial or its trial ended; or a payment outstanding, its message naming the payment method) or SPENDING_CAP_REACHED (an agent's order past the cap on Mailboxes from Curviate; carries cap_mailboxes and room_mailboxes). */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -49074,7 +49087,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description MAILBOX_PURCHASE_PENDING, DOMAIN_IN_USE, MAILBOX_ALREADY_CONNECTED or MAILBOX_SALES_PAUSED. */
+            /** @description MAILBOX_PURCHASE_PENDING, DOMAIN_IN_USE, MAILBOX_ALREADY_CONNECTED, MAILBOX_SALES_PAUSED or MAILBOX_NO_ROOM. */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -49151,8 +49164,11 @@ export interface operations {
                          * @enum {string}
                          */
                         state: "awaiting_dns" | "provisioning" | "active" | "cancelled";
-                        /** @description Why a cancelled order ended; null otherwise. */
-                        reason: string | null;
+                        /**
+                         * @description Why a cancelled order ended; null otherwise. Nothing was charged unless `charged_at` is set (then it is given back in full). requested: cancelled by an Owner or an agent; expired: the records were not found within 14 days; payment_outstanding: the records were found, but the Team's payment stayed outstanding for the 14 days; held_by_curviate: the records were found, but Curviate could not create the Mailboxes within the 14 days; domain_taken: another order for this domain was confirmed first; subscription_ended; payment_failed: the charge was refused; spending_cap_reached; host_failed: the Mailboxes could not be created; currency: the subscription is billed in another currency. An order that ended can be placed again.
+                         * @enum {string|null}
+                         */
+                        reason: "requested" | "expired" | "subscription_ended" | "payment_failed" | "spending_cap_reached" | "host_failed" | "currency" | "payment_outstanding" | "held_by_curviate" | "domain_taken" | null;
                         mailboxes: {
                             address?: string;
                             display_name?: string;
@@ -49163,6 +49179,11 @@ export interface operations {
                         /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours, and `verify` is one TXT record that confirms this order is yours. */
                         records: Record<string, never>[];
                         advice: string | null;
+                        /**
+                         * @description While `awaiting_dns`, what the order waits for and what to do; null otherwise. records: add the required records at your domain's DNS host before `expires_at`; payment: the records are found and the charge waits for your Team's outstanding payment: update the payment method in Billing (app.curviate.com/settings/billing) and the order continues by itself; curviate: the records are found and the order waits on Curviate's side: nothing to do, it continues by itself; charge: the order is being charged: read it again in a few minutes. An order still waiting at `expires_at` ends, nothing charged.
+                         * @enum {string|null}
+                         */
+                        waiting_for: "records" | "payment" | "curviate" | "charge" | null;
                         /** @description The order's monthly equivalent, minor units: the monthly price of one Mailbox times the Mailboxes. Not what a yearly Team is charged: read `price`. */
                         amount_monthly: number;
                         /** @description What the order costs your Team, read now from the same price the charge uses. Amounts are minor units, before tax. */
@@ -49194,7 +49215,7 @@ export interface operations {
                         checked_at: string | null;
                         /**
                          * Format: date-time
-                         * @description An order still waiting for its records then is cancelled; nothing is charged.
+                         * @description An order still waiting then is cancelled, nothing charged: `expired` when its records were not found, else the reason that held its charge.
                          */
                         expires_at: string;
                         /** Format: date-time */
@@ -49274,8 +49295,11 @@ export interface operations {
                          * @enum {string}
                          */
                         state: "awaiting_dns" | "provisioning" | "active" | "cancelled";
-                        /** @description Why a cancelled order ended; null otherwise. */
-                        reason: string | null;
+                        /**
+                         * @description Why a cancelled order ended; null otherwise. Nothing was charged unless `charged_at` is set (then it is given back in full). requested: cancelled by an Owner or an agent; expired: the records were not found within 14 days; payment_outstanding: the records were found, but the Team's payment stayed outstanding for the 14 days; held_by_curviate: the records were found, but Curviate could not create the Mailboxes within the 14 days; domain_taken: another order for this domain was confirmed first; subscription_ended; payment_failed: the charge was refused; spending_cap_reached; host_failed: the Mailboxes could not be created; currency: the subscription is billed in another currency. An order that ended can be placed again.
+                         * @enum {string|null}
+                         */
+                        reason: "requested" | "expired" | "subscription_ended" | "payment_failed" | "spending_cap_reached" | "host_failed" | "currency" | "payment_outstanding" | "held_by_curviate" | "domain_taken" | null;
                         mailboxes: {
                             address?: string;
                             display_name?: string;
@@ -49286,6 +49310,11 @@ export interface operations {
                         /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours, and `verify` is one TXT record that confirms this order is yours. */
                         records: Record<string, never>[];
                         advice: string | null;
+                        /**
+                         * @description While `awaiting_dns`, what the order waits for and what to do; null otherwise. records: add the required records at your domain's DNS host before `expires_at`; payment: the records are found and the charge waits for your Team's outstanding payment: update the payment method in Billing (app.curviate.com/settings/billing) and the order continues by itself; curviate: the records are found and the order waits on Curviate's side: nothing to do, it continues by itself; charge: the order is being charged: read it again in a few minutes. An order still waiting at `expires_at` ends, nothing charged.
+                         * @enum {string|null}
+                         */
+                        waiting_for: "records" | "payment" | "curviate" | "charge" | null;
                         /** @description The order's monthly equivalent, minor units: the monthly price of one Mailbox times the Mailboxes. Not what a yearly Team is charged: read `price`. */
                         amount_monthly: number;
                         /** @description What the order costs your Team, read now from the same price the charge uses. Amounts are minor units, before tax. */
@@ -49317,7 +49346,7 @@ export interface operations {
                         checked_at: string | null;
                         /**
                          * Format: date-time
-                         * @description An order still waiting for its records then is cancelled; nothing is charged.
+                         * @description An order still waiting then is cancelled, nothing charged: `expired` when its records were not found, else the reason that held its charge.
                          */
                         expires_at: string;
                         /** Format: date-time */
@@ -49406,8 +49435,11 @@ export interface operations {
                          * @enum {string}
                          */
                         state: "awaiting_dns" | "provisioning" | "active" | "cancelled";
-                        /** @description Why a cancelled order ended; null otherwise. */
-                        reason: string | null;
+                        /**
+                         * @description Why a cancelled order ended; null otherwise. Nothing was charged unless `charged_at` is set (then it is given back in full). requested: cancelled by an Owner or an agent; expired: the records were not found within 14 days; payment_outstanding: the records were found, but the Team's payment stayed outstanding for the 14 days; held_by_curviate: the records were found, but Curviate could not create the Mailboxes within the 14 days; domain_taken: another order for this domain was confirmed first; subscription_ended; payment_failed: the charge was refused; spending_cap_reached; host_failed: the Mailboxes could not be created; currency: the subscription is billed in another currency. An order that ended can be placed again.
+                         * @enum {string|null}
+                         */
+                        reason: "requested" | "expired" | "subscription_ended" | "payment_failed" | "spending_cap_reached" | "host_failed" | "currency" | "payment_outstanding" | "held_by_curviate" | "domain_taken" | null;
                         mailboxes: {
                             address?: string;
                             display_name?: string;
@@ -49418,6 +49450,11 @@ export interface operations {
                         /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours, and `verify` is one TXT record that confirms this order is yours. */
                         records: Record<string, never>[];
                         advice: string | null;
+                        /**
+                         * @description While `awaiting_dns`, what the order waits for and what to do; null otherwise. records: add the required records at your domain's DNS host before `expires_at`; payment: the records are found and the charge waits for your Team's outstanding payment: update the payment method in Billing (app.curviate.com/settings/billing) and the order continues by itself; curviate: the records are found and the order waits on Curviate's side: nothing to do, it continues by itself; charge: the order is being charged: read it again in a few minutes. An order still waiting at `expires_at` ends, nothing charged.
+                         * @enum {string|null}
+                         */
+                        waiting_for: "records" | "payment" | "curviate" | "charge" | null;
                         /** @description The order's monthly equivalent, minor units: the monthly price of one Mailbox times the Mailboxes. Not what a yearly Team is charged: read `price`. */
                         amount_monthly: number;
                         /** @description What the order costs your Team, read now from the same price the charge uses. Amounts are minor units, before tax. */
@@ -49449,7 +49486,7 @@ export interface operations {
                         checked_at: string | null;
                         /**
                          * Format: date-time
-                         * @description An order still waiting for its records then is cancelled; nothing is charged.
+                         * @description An order still waiting then is cancelled, nothing charged: `expired` when its records were not found, else the reason that held its charge.
                          */
                         expires_at: string;
                         /** Format: date-time */
@@ -52352,6 +52389,7 @@ export interface operations {
                             total_rows: number;
                             counts: {
                                 created: number;
+                                /** @description Leads with at least one field filled by this import. */
                                 updated: number;
                                 unchanged: number;
                                 skipped: number;
@@ -52364,15 +52402,16 @@ export interface operations {
                             };
                             /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                             source?: Record<string, never> | null;
-                            /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
+                            /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first; or warm_up, the Account's warm-up factor is 0 for now). While an import reads, it and the Account's plain searches each are sure of at least half of the search pages of every hour and day, and each may use what the other leaves. A change to the Account's search limits, Active hours or activity level is looked at again at once: pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
                             waiting?: {
-                                kind?: string;
+                                /** @enum {string} */
+                                kind?: "active_hours" | "budget" | "pushback" | "search_limited" | "halt" | "account_unavailable" | "import_ahead";
                                 until?: string | null;
                                 /**
-                                 * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first) or LinkedIn's month.
+                                 * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first), LinkedIn's month, or warm_up (the Account's warm-up factor is 0: no search page can be read for now).
                                  * @enum {string}
                                  */
-                                budget?: "hour" | "day" | "lines" | "month";
+                                budget?: "hour" | "day" | "lines" | "month" | "warm_up";
                                 /** @description With kind import_ahead: the import just ahead of this one on its Account. */
                                 import_id?: string;
                             } | null;
@@ -52821,6 +52860,7 @@ export interface operations {
                         total_rows: number;
                         counts: {
                             created: number;
+                            /** @description Leads with at least one field filled by this import. */
                             updated: number;
                             unchanged: number;
                             skipped: number;
@@ -52833,15 +52873,16 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first; or warm_up, the Account's warm-up factor is 0 for now). While an import reads, it and the Account's plain searches each are sure of at least half of the search pages of every hour and day, and each may use what the other leaves. A change to the Account's search limits, Active hours or activity level is looked at again at once: pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
                         waiting?: {
-                            kind?: string;
+                            /** @enum {string} */
+                            kind?: "active_hours" | "budget" | "pushback" | "search_limited" | "halt" | "account_unavailable" | "import_ahead";
                             until?: string | null;
                             /**
-                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first) or LinkedIn's month.
+                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first), LinkedIn's month, or warm_up (the Account's warm-up factor is 0: no search page can be read for now).
                              * @enum {string}
                              */
-                            budget?: "hour" | "day" | "lines" | "month";
+                            budget?: "hour" | "day" | "lines" | "month" | "warm_up";
                             /** @description With kind import_ahead: the import just ahead of this one on its Account. */
                             import_id?: string;
                         } | null;
@@ -52942,6 +52983,7 @@ export interface operations {
                         total_rows: number;
                         counts: {
                             created: number;
+                            /** @description Leads with at least one field filled by this import. */
                             updated: number;
                             unchanged: number;
                             skipped: number;
@@ -52954,15 +52996,16 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first; or warm_up, the Account's warm-up factor is 0 for now). While an import reads, it and the Account's plain searches each are sure of at least half of the search pages of every hour and day, and each may use what the other leaves. A change to the Account's search limits, Active hours or activity level is looked at again at once: pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
                         waiting?: {
-                            kind?: string;
+                            /** @enum {string} */
+                            kind?: "active_hours" | "budget" | "pushback" | "search_limited" | "halt" | "account_unavailable" | "import_ahead";
                             until?: string | null;
                             /**
-                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first) or LinkedIn's month.
+                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first), LinkedIn's month, or warm_up (the Account's warm-up factor is 0: no search page can be read for now).
                              * @enum {string}
                              */
-                            budget?: "hour" | "day" | "lines" | "month";
+                            budget?: "hour" | "day" | "lines" | "month" | "warm_up";
                             /** @description With kind import_ahead: the import just ahead of this one on its Account. */
                             import_id?: string;
                         } | null;
@@ -53157,6 +53200,7 @@ export interface operations {
                         total_rows: number;
                         counts: {
                             created: number;
+                            /** @description Leads with at least one field filled by this import. */
                             updated: number;
                             unchanged: number;
                             skipped: number;
@@ -53169,15 +53213,16 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first; or warm_up, the Account's warm-up factor is 0 for now). While an import reads, it and the Account's plain searches each are sure of at least half of the search pages of every hour and day, and each may use what the other leaves. A change to the Account's search limits, Active hours or activity level is looked at again at once: pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
                         waiting?: {
-                            kind?: string;
+                            /** @enum {string} */
+                            kind?: "active_hours" | "budget" | "pushback" | "search_limited" | "halt" | "account_unavailable" | "import_ahead";
                             until?: string | null;
                             /**
-                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first) or LinkedIn's month.
+                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first), LinkedIn's month, or warm_up (the Account's warm-up factor is 0: no search page can be read for now).
                              * @enum {string}
                              */
-                            budget?: "hour" | "day" | "lines" | "month";
+                            budget?: "hour" | "day" | "lines" | "month" | "warm_up";
                             /** @description With kind import_ahead: the import just ahead of this one on its Account. */
                             import_id?: string;
                         } | null;
@@ -53336,6 +53381,7 @@ export interface operations {
                         total_rows: number;
                         counts: {
                             created: number;
+                            /** @description Leads with at least one field filled by this import. */
                             updated: number;
                             unchanged: number;
                             skipped: number;
@@ -53348,15 +53394,16 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first; or warm_up, the Account's warm-up factor is 0 for now). While an import reads, it and the Account's plain searches each are sure of at least half of the search pages of every hour and day, and each may use what the other leaves. A change to the Account's search limits, Active hours or activity level is looked at again at once: pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
                         waiting?: {
-                            kind?: string;
+                            /** @enum {string} */
+                            kind?: "active_hours" | "budget" | "pushback" | "search_limited" | "halt" | "account_unavailable" | "import_ahead";
                             until?: string | null;
                             /**
-                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first) or LinkedIn's month.
+                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first), LinkedIn's month, or warm_up (the Account's warm-up factor is 0: no search page can be read for now).
                              * @enum {string}
                              */
-                            budget?: "hour" | "day" | "lines" | "month";
+                            budget?: "hour" | "day" | "lines" | "month" | "warm_up";
                             /** @description With kind import_ahead: the import just ahead of this one on its Account. */
                             import_id?: string;
                         } | null;
@@ -53533,6 +53580,7 @@ export interface operations {
                         total_rows: number;
                         counts: {
                             created: number;
+                            /** @description Leads with at least one field filled by this import. */
                             updated: number;
                             unchanged: number;
                             skipped: number;
@@ -53545,15 +53593,16 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first; or warm_up, the Account's warm-up factor is 0 for now). While an import reads, it and the Account's plain searches each are sure of at least half of the search pages of every hour and day, and each may use what the other leaves. A change to the Account's search limits, Active hours or activity level is looked at again at once: pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
                         waiting?: {
-                            kind?: string;
+                            /** @enum {string} */
+                            kind?: "active_hours" | "budget" | "pushback" | "search_limited" | "halt" | "account_unavailable" | "import_ahead";
                             until?: string | null;
                             /**
-                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first) or LinkedIn's month.
+                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first), LinkedIn's month, or warm_up (the Account's warm-up factor is 0: no search page can be read for now).
                              * @enum {string}
                              */
-                            budget?: "hour" | "day" | "lines" | "month";
+                            budget?: "hour" | "day" | "lines" | "month" | "warm_up";
                             /** @description With kind import_ahead: the import just ahead of this one on its Account. */
                             import_id?: string;
                         } | null;
@@ -53730,6 +53779,7 @@ export interface operations {
                         total_rows: number;
                         counts: {
                             created: number;
+                            /** @description Leads with at least one field filled by this import. */
                             updated: number;
                             unchanged: number;
                             skipped: number;
@@ -53742,15 +53792,16 @@ export interface operations {
                         };
                         /** @description The LinkedIn source as sent, with max filled in; null on row and CSV imports. */
                         source?: Record<string, never> | null;
-                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first), pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
+                        /** @description Why no page is being read now: active_hours (outside the Account's Active hours), budget (one of the Account's search limits is reached, named by budget: its search pages in an hour, the last 24 hours or LinkedIn's month, or its result lines; or Campaign work went first; or warm_up, the Account's warm-up factor is 0 for now). While an import reads, it and the Account's plain searches each are sure of at least half of the search pages of every hour and day, and each may use what the other leaves. A change to the Account's search limits, Active hours or activity level is looked at again at once: pushback (LinkedIn slowed this search down), search_limited (LinkedIn shows this Account only a few search results for now; read again when that lifts, at the latest at until), halt (a safety pause), account_unavailable (the Account needs reconnecting; until null) or import_ahead (queued behind import_id, another import of the same Account; until is when this one's first page is expected), with until the next opening. Null while reading or between paced pages (next_page_at says when). */
                         waiting?: {
-                            kind?: string;
+                            /** @enum {string} */
+                            kind?: "active_hours" | "budget" | "pushback" | "search_limited" | "halt" | "account_unavailable" | "import_ahead";
                             until?: string | null;
                             /**
-                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first) or LinkedIn's month.
+                             * @description With kind budget: the search limit reached, search pages an hour, a day, result lines a day (or the day's Allowance, Campaign work first), LinkedIn's month, or warm_up (the Account's warm-up factor is 0: no search page can be read for now).
                              * @enum {string}
                              */
-                            budget?: "hour" | "day" | "lines" | "month";
+                            budget?: "hour" | "day" | "lines" | "month" | "warm_up";
                             /** @description With kind import_ahead: the import just ahead of this one on its Account. */
                             import_id?: string;
                         } | null;

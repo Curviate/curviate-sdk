@@ -7,6 +7,17 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [0.60.0] - 2026-11-21
+
+Additive. `fixtures/openapi.json` and the generated types are refreshed from the served document (recorded in `fixtures/PROVENANCE.json`).
+
+- **`MAILBOX_NO_ROOM`** (new error code, 409): Curviate has no room for this many new Mailboxes at the moment and is adding more. Nothing was ordered or charged. Order fewer, or order again later. Exported in `ErrorCode` / `ERROR_CODES`; decodes to itself, never retried.
+- **Mailbox quote**: `not_orderable_reason` gains `"payment"` (the Team has a payment outstanding: update the payment method in Billing, then order) and `"capacity"` (no room for this many new Mailboxes, as `MAILBOX_NO_ROOM`). **`charge_waits_for` is deprecated**: always null now (a Team whose charge would wait cannot order); marked `@deprecated` in `MailboxQuote`, removed in a later version.
+- **Mailbox order**: **`waiting_for`** (new, `"records" | "payment" | "curviate" | "charge" | null`): while `awaiting_dns`, what the order waits for. `records`: add the records before `expires_at`; `payment`: the records are found and the charge waits for the Team's outstanding payment (update the payment method in Billing; the order continues by itself); `curviate`: the records are found and the order waits on Curviate's side, nothing to do; `charge`: being charged, read it again in a few minutes. `reason` is now typed as served and gains `"payment_outstanding"`, `"held_by_curviate"` (a verified order whose charge stayed held for 14 days ends uncharged with the reason that held it) and `"domain_taken"` (another order for this domain was confirmed first).
+- `MAILBOX_PURCHASE_TRIAL` (403) has its own message for a Team with a payment outstanding (update the payment method in Billing). `DOMAIN_IN_USE` (409) also answers a domain another Team holds or has a confirmed order for.
+- **Search**: `SearchBudgetName` gains `"warm_up"` (the Account's warm-up holds its search at 0 pages for now; not a search setting). While an import from a LinkedIn source runs on an Account, it and the Account's plain searches each are sure of at least half of every hour's and day's search pages: a plain call refused `hour`, `day` or `gap` for that share says so in its message. It is not an error: retry after `retryAfterSeconds`.
+- **Lead import**: `waiting.kind` is typed as an enum; `waiting.budget` gains `"warm_up"`; `counts.updated` carries its served description.
+
 ## [0.59.0] - 2026-11-20
 
 Additive. `fixtures/openapi.json` and the generated types are refreshed from the served document (production `a1cf764ff`, recorded in `fixtures/PROVENANCE.json`). No method or error changes.
