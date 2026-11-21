@@ -32,16 +32,8 @@ export type MailboxPurchaseCreateBody = NonNullable<paths["/v1/mailboxes/purchas
 export type MailboxPurchase = paths["/v1/mailboxes/purchases/{id}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type MailboxPurchaseListParams = NonNullable<paths["/v1/mailboxes/purchases"]["get"]["parameters"]["query"]>;
 export type MailboxPurchaseListPage = paths["/v1/mailboxes/purchases"]["get"]["responses"]["200"]["content"]["application/json"];
-type MailboxQuoteServed = paths["/v1/mailboxes/purchases/quote"]["get"]["responses"]["200"]["content"]["application/json"];
-export type MailboxQuote = Omit<MailboxQuoteServed, "charge_waits_for"> & {
-  /**
-   * @deprecated Always null: a Team whose charge would wait (a payment
-   * outstanding, no subscription) cannot order, and `not_orderable_reason`
-   * says why. Read `not_orderable_reason`, and an order's `waiting_for`.
-   * Removed in a later version.
-   */
-  charge_waits_for: null;
-};
+/** `charge_waits_for` is deprecated in the served document (always null): read `not_orderable_reason`, and an order's `waiting_for`. */
+export type MailboxQuote = paths["/v1/mailboxes/purchases/quote"]["get"]["responses"]["200"]["content"]["application/json"];
 
 // ─── Resource class ───────────────────────────────────────────────────────────
 
@@ -208,7 +200,18 @@ export class MailboxPurchasesResource {
    * `spf`, `dkim`, `dmarc`, `verify`, `tracking`; `tracking` is not
    * required; the `mx` row also holds one CNAME that confirms the domain is
    * yours, `verify` one TXT record that confirms this order is yours) and
-   * which are found. Tolerate a row `check` you do not know. Another Team's id answers `404 MAILBOX_PURCHASE_NOT_FOUND`, as an
+   * which are found. A row's `found` is only what Curviate's last check saw
+   * in DNS, asked at your domain's own name servers; Curviate's side not
+   * being ready yet reads `waiting_for: "curviate"`, never a row not found.
+   * A row not found can carry `advice`: another MX record beside Curviate's,
+   * two SPF or two DMARC records, or that your domain's name servers did not
+   * answer the last check (not a failure: the next check asks again). Show
+   * it as served. Tolerate a row `check` you do not know.
+   * `previous_provider_until`, once set and still ahead: until about when
+   * some senders can keep delivering the domain's mail to its previous mail
+   * provider (other mail servers keep the old MX records for their TTL).
+   * Nothing is lost on Curviate's side; tell the person to check the old
+   * mailbox until then. Null when there is nothing to say. Another Team's id answers `404 MAILBOX_PURCHASE_NOT_FOUND`, as an
    * unknown one.
    * `GET /v1/mailboxes/purchases/{id}`
    *

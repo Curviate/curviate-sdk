@@ -48756,7 +48756,10 @@ export interface operations {
                          * @enum {string|null}
                          */
                         not_orderable_reason: "trial" | "payment" | "currency" | "sales_paused" | "capacity" | null;
-                        /** @description Always null: a Team whose charge would wait (a payment outstanding, no subscription) cannot order, and `not_orderable_reason` says why. */
+                        /**
+                         * @deprecated
+                         * @description Deprecated, always null: a Team whose charge would wait (a payment outstanding, no subscription) cannot order, and `not_orderable_reason` says why. Do not read it; an order's own wait is its `waiting_for`.
+                         */
                         charge_waits_for: null;
                     };
                 };
@@ -48901,6 +48904,11 @@ export interface operations {
                             charged_at: string | null;
                             /** @description True when the order ended while whether its charge was made could not be read (its charge was sent as the subscription ended). It is being checked; if it was made, it is given back in full. False otherwise. */
                             charge_unknown: boolean;
+                            /**
+                             * Format: date-time
+                             * @description Until about when some senders can still deliver the domain's mail to its previous mail provider: other mail servers keep the domain's old MX records for as long as their TTL allows. Set once the order's MX records are seen in place: that check's time plus the TTL the old MX records had when the order was placed. Nothing is lost on Curviate's side; until then, tell your user to check the old mailbox. Null when the domain had no other MX records, or the order's are not seen yet.
+                             */
+                            previous_provider_until: string | null;
                             /** Format: date-time */
                             created_at: string;
                         }[];
@@ -49046,6 +49054,11 @@ export interface operations {
                         charged_at: string | null;
                         /** @description True when the order ended while whether its charge was made could not be read (its charge was sent as the subscription ended). It is being checked; if it was made, it is given back in full. False otherwise. */
                         charge_unknown: boolean;
+                        /**
+                         * Format: date-time
+                         * @description Until about when some senders can still deliver the domain's mail to its previous mail provider: other mail servers keep the domain's old MX records for as long as their TTL allows. Set once the order's MX records are seen in place: that check's time plus the TTL the old MX records had when the order was placed. Nothing is lost on Curviate's side; until then, tell your user to check the old mailbox. Null when the domain had no other MX records, or the order's are not seen yet.
+                         */
+                        previous_provider_until: string | null;
                         /** Format: date-time */
                         created_at: string;
                     };
@@ -49222,6 +49235,11 @@ export interface operations {
                         charged_at: string | null;
                         /** @description True when the order ended while whether its charge was made could not be read (its charge was sent as the subscription ended). It is being checked; if it was made, it is given back in full. False otherwise. */
                         charge_unknown: boolean;
+                        /**
+                         * Format: date-time
+                         * @description Until about when some senders can still deliver the domain's mail to its previous mail provider: other mail servers keep the domain's old MX records for as long as their TTL allows. Set once the order's MX records are seen in place: that check's time plus the TTL the old MX records had when the order was placed. Nothing is lost on Curviate's side; until then, tell your user to check the old mailbox. Null when the domain had no other MX records, or the order's are not seen yet.
+                         */
+                        previous_provider_until: string | null;
                         /** Format: date-time */
                         created_at: string;
                     };
@@ -49353,6 +49371,11 @@ export interface operations {
                         charged_at: string | null;
                         /** @description True when the order ended while whether its charge was made could not be read (its charge was sent as the subscription ended). It is being checked; if it was made, it is given back in full. False otherwise. */
                         charge_unknown: boolean;
+                        /**
+                         * Format: date-time
+                         * @description Until about when some senders can still deliver the domain's mail to its previous mail provider: other mail servers keep the domain's old MX records for as long as their TTL allows. Set once the order's MX records are seen in place: that check's time plus the TTL the old MX records had when the order was placed. Nothing is lost on Curviate's side; until then, tell your user to check the old mailbox. Null when the domain had no other MX records, or the order's are not seen yet.
+                         */
+                        previous_provider_until: string | null;
                         /** Format: date-time */
                         created_at: string;
                     };
@@ -49493,6 +49516,11 @@ export interface operations {
                         charged_at: string | null;
                         /** @description True when the order ended while whether its charge was made could not be read (its charge was sent as the subscription ended). It is being checked; if it was made, it is given back in full. False otherwise. */
                         charge_unknown: boolean;
+                        /**
+                         * Format: date-time
+                         * @description Until about when some senders can still deliver the domain's mail to its previous mail provider: other mail servers keep the domain's old MX records for as long as their TTL allows. Set once the order's MX records are seen in place: that check's time plus the TTL the old MX records had when the order was placed. Nothing is lost on Curviate's side; until then, tell your user to check the old mailbox. Null when the domain had no other MX records, or the order's are not seen yet.
+                         */
+                        previous_provider_until: string | null;
                         /** Format: date-time */
                         created_at: string;
                     };
