@@ -1407,7 +1407,7 @@ export interface paths {
         };
         /**
          * List Unibox chats
-         * @description Lists the stored chats you may read on your team's accounts, newest first; no LinkedIn call, no limit. Without full-inbox sync an account shows only Campaign chats. A disconnected account's chats stay, read-only. Messages: GET /v1/{account_id}/chats/{chat_id}/messages.
+         * @description Lists the stored chats you may read on your team's accounts, newest first; no LinkedIn call, no limit. Without full-inbox sync an account shows only Campaign chats. A disconnected account's chats stay, read-only. Messages: GET /v1/{account_id}/chats/{chat_id}/messages. With account_ids omitted, the conversations of email-only Campaigns are listed too (account_id null): Owners and Managers see them all, a Member those of the Campaigns they created.
          */
         get: operations["getV1UniboxChats"];
         put?: never;
@@ -1567,7 +1567,7 @@ export interface paths {
         };
         /**
          * Retrieve a Unibox conversation
-         * @description Returns one conversation, one person on one account across LinkedIn and email, as the list serves it. From what Curviate has stored: no LinkedIn call, no mailbox read. Read its messages, both channels in one timeline, with GET /v1/unibox/conversations/{conversation_id}/messages.
+         * @description Returns one conversation, one person on one account across LinkedIn and email (or, for an email-only Campaign, one person's email with your team), as the list serves it. From what Curviate has stored: no LinkedIn call, no mailbox read. Read its messages, both channels in one timeline, with GET /v1/unibox/conversations/{conversation_id}/messages.
          */
         get: operations["getV1UniboxConversationsConversationId"];
         put?: never;
@@ -1613,7 +1613,7 @@ export interface paths {
         put?: never;
         /**
          * Send an email from a conversation
-         * @description Sends one plain-text email to the conversation's Lead, at once: a reply in one of its threads (thread_id), or a new thread (subject, and mailbox_id when more than one Mailbox can send). A reply goes from its thread's Mailbox with Re: and the thread's first subject, threaded under its last email. It goes to the Lead's one address; no signature, no opt-out line is added. It counts against the Mailbox's daily limit, as a Campaign email does, and ends the Lead's open Enrollments on this account as a reply would, by each Campaign's reply scope. Read first whether email is available, and from which Mailboxes, on GET /v1/unibox/conversations/{conversation_id} (email). Every refusal comes before anything reaches a Mailbox. Needs a subscription.
+         * @description Sends one plain-text email to the conversation's Lead, at once: a reply in one of its threads (thread_id), or a new thread (subject, and mailbox_id when more than one Mailbox can send). A reply goes from its thread's Mailbox with Re: and the thread's first subject, threaded under its last email. It goes to the Lead's one address; no signature, no opt-out line is added. It counts against the Mailbox's daily limit, as a Campaign email does, and ends the Lead's open Enrollments on this account as a reply would, by each Campaign's reply scope. In a conversation of an email-only Campaign (account_id null) it goes from its Campaign's shared Mailboxes: the Member who created the Campaign replies in its threads, an Owner or a Manager also starts a new thread; it ends the Lead's open Enrollments of those Campaigns as a reply would. Read first whether email is available, and from which Mailboxes, on GET /v1/unibox/conversations/{conversation_id} (email). Every refusal comes before anything reaches a Mailbox. Needs a subscription.
          */
         post: operations["postV1UniboxConversationsConversationIdEmails"];
         delete?: never;
@@ -3617,7 +3617,7 @@ export interface paths {
         put?: never;
         /**
          * Invite people to the team
-         * @description Invites up to 20 people by email, each with a role (member by default), and emails each a link valid for 7 days. All or nothing: if any row fails, nothing is created or sent, and the error names the row. The invitee accepts in the dashboard, signed in with the invited email. Owners invite any role, Managers invite Members.
+         * @description Invites up to 20 people by email, each with a role (member by default). Each invite is created and its email, with a link valid for 7 days, is sent when it can be; an invite whose email did not go out is sent again with resend. All or nothing: if any row fails, nothing is created or sent, and the error names the row. The invitee accepts in the dashboard, signed in with the invited email. Owners invite any role, Managers invite Members.
          */
         post: operations["postV1TeamsCurrentInvites"];
         delete?: never;
@@ -4057,7 +4057,7 @@ export interface paths {
         put?: never;
         /**
          * Create or update a lead
-         * @description Upserts the Lead for one person, keyed on LinkedIn identity: any spelling of the same profile URL updates the same Lead. An empty or null value never erases a stored one; tags and list_id/list_name only add. 201 when created, 200 otherwise, with outcome. Needs a subscription.
+         * @description Upserts the Lead for one person, keyed on LinkedIn identity: any spelling of the same profile URL updates the same Lead. Without linkedin_url, email is required and keys the Lead: any spelling of the same mailbox (letter case, a +tag, dots in a Gmail address) updates the same Lead among those without a LinkedIn URL. An empty or null value never erases a stored one; tags and list_id/list_name only add. 201 when created, 200 otherwise, with outcome. Needs a subscription.
          */
         post: operations["postV1Leads"];
         delete?: never;
@@ -4293,7 +4293,7 @@ export interface paths {
         head?: never;
         /**
          * Update a lead
-         * @description Partial update: an omitted field is left as is, null clears it (Curviate may fill it again from LinkedIn). In extra, null removes that key. linkedin_url cannot change. Needs a subscription.
+         * @description Partial update: an omitted field is left as is, null clears it and LinkedIn data never fills it again (sources reads cleared); sources: {<field>: null} lets LinkedIn fill it again. In extra, null removes that key. linkedin_url cannot change; a Lead saved by email address alone takes one here, and when another Lead already has that profile the two become one (that Lead, which this call returns). Such a Lead's email cannot be cleared. Needs a subscription.
          */
         patch: operations["patchV1LeadsId"];
         trace?: never;
@@ -4409,7 +4409,7 @@ export interface paths {
         put?: never;
         /**
          * Add a person to the do-not-contact list
-         * @description Adds one person by lead_id or linkedin_url, with an optional reason and a scope (everything by default; email_only stops email only and leaves LinkedIn untouched); a URL of someone who is not a Lead yet creates the Lead first, from stored data only. Or a whole company by company_linkedin_url (its LinkedIn URL with the numeric id, as a Lead's company_linkedin_url shows it): nobody who works there is enrolled, contacted or imported. 201 when added; a person or company already on the list answers 200 with its entry. Any team member may add. For many people, POST /v1/do-not-contact/import takes a file. Needs a subscription.
+         * @description Adds one person by lead_id, linkedin_url or email, with an optional reason and a scope (everything by default; email_only stops email only and leaves LinkedIn untouched); a URL of someone who is not a Lead yet creates the Lead first, from stored data only. By email: every Lead holding that mailbox, under any spelling (letter case, a +tag, dots in a Gmail address), is listed with the entry's scope: everything stops email and LinkedIn for each, email_only stops email only. No Lead is created. Or a whole company by company_linkedin_url (its LinkedIn URL with the numeric id, as a Lead's company_linkedin_url shows it): nobody who works there is enrolled, contacted or imported. 201 when added; a person or company already on the list answers 200 with its entry. Any team member may add. For many people, POST /v1/do-not-contact/import takes a file. Needs a subscription.
          */
         post: operations["postV1DoNotContact"];
         delete?: never;
@@ -4449,7 +4449,7 @@ export interface paths {
         put?: never;
         /**
          * Import a do-not-contact file
-         * @description Adds the people of a file to the do-not-contact list: rows of linkedin_url and an optional reason and scope (everything or email_only; another scope skips the row as invalid_scope), as JSON rows or CSV text, up to 10000 rows. Each row works as POST /v1/do-not-contact: a URL of someone who is not a Lead yet creates the Lead from stored data, and a person already on the list is reported unchanged (their entry and reason stay). The answer is the per-row report. A bad URL or reason skips its row and the others apply; a bad structure refuses the file. A do-not-contact export re-imports as it is. Any team member may import. Needs a subscription.
+         * @description Adds the people of a file to the do-not-contact list: rows of linkedin_url and an optional reason and scope (everything or email_only; another scope skips the row as invalid_scope), as JSON rows or CSV text, up to 10000 rows. Each row works as POST /v1/do-not-contact: a URL of someone who is not a Lead yet creates the Lead from stored data, and a person already on the list is reported unchanged (their entry and reason stay), or updated when the row asks for everything and their entry stopped email only (it is raised; a scope never goes down). The answer is the per-row report. A bad URL or reason skips its row and the others apply; a bad structure refuses the file. A do-not-contact export re-imports as it is. Any team member may import. Needs a subscription.
          */
         post: operations["postV1DoNotContactImport"];
         delete?: never;
@@ -21376,11 +21376,11 @@ export interface operations {
                              * @enum {string}
                              */
                             object: "unibox_chat";
-                            /** @description The account the chat belongs to. */
-                            account_id: string;
-                            /** @description That account's connection status. A chat stays listed while its account needs a reconnect. */
-                            account_status: string;
-                            /** @description The conversation: one person on one account, across LinkedIn and email. Stable for that pair. Read it with GET /v1/unibox/conversations/{conversation_id}. */
+                            /** @description The account the chat belongs to. Null on a conversation of an email-only Campaign, which is on no account. */
+                            account_id: string | null;
+                            /** @description That account's connection status. A chat stays listed while its account needs a reconnect. Null with no account. */
+                            account_status: string | null;
+                            /** @description The conversation: one person on one account, across LinkedIn and email; for an email-only Campaign, one person's email with your team. Stable for that pair. Read it with GET /v1/unibox/conversations/{conversation_id}. */
                             conversation_id: string;
                             /** @description The channels the conversation holds: linkedin, email, or both. Email is the email a Campaign sent this person from this account, and their replies. */
                             channels: ("linkedin" | "email")[];
@@ -21687,11 +21687,11 @@ export interface operations {
                          * @enum {string}
                          */
                         object: "unibox_chat";
-                        /** @description The account the chat belongs to. */
-                        account_id: string;
-                        /** @description That account's connection status. A chat stays listed while its account needs a reconnect. */
-                        account_status: string;
-                        /** @description The conversation: one person on one account, across LinkedIn and email. Stable for that pair. Read it with GET /v1/unibox/conversations/{conversation_id}. */
+                        /** @description The account the chat belongs to. Null on a conversation of an email-only Campaign, which is on no account. */
+                        account_id: string | null;
+                        /** @description That account's connection status. A chat stays listed while its account needs a reconnect. Null with no account. */
+                        account_status: string | null;
+                        /** @description The conversation: one person on one account, across LinkedIn and email; for an email-only Campaign, one person's email with your team. Stable for that pair. Read it with GET /v1/unibox/conversations/{conversation_id}. */
                         conversation_id: string;
                         /** @description The channels the conversation holds: linkedin, email, or both. Email is the email a Campaign sent this person from this account, and their replies. */
                         channels: ("linkedin" | "email")[];
@@ -22797,11 +22797,11 @@ export interface operations {
                          * @enum {string}
                          */
                         object: "unibox_chat";
-                        /** @description The account the chat belongs to. */
-                        account_id: string;
-                        /** @description That account's connection status. A chat stays listed while its account needs a reconnect. */
-                        account_status: string;
-                        /** @description The conversation: one person on one account, across LinkedIn and email. Stable for that pair. Read it with GET /v1/unibox/conversations/{conversation_id}. */
+                        /** @description The account the chat belongs to. Null on a conversation of an email-only Campaign, which is on no account. */
+                        account_id: string | null;
+                        /** @description That account's connection status. A chat stays listed while its account needs a reconnect. Null with no account. */
+                        account_status: string | null;
+                        /** @description The conversation: one person on one account, across LinkedIn and email; for an email-only Campaign, one person's email with your team. Stable for that pair. Read it with GET /v1/unibox/conversations/{conversation_id}. */
                         conversation_id: string;
                         /** @description The channels the conversation holds: linkedin, email, or both. Email is the email a Campaign sent this person from this account, and their replies. */
                         channels: ("linkedin" | "email")[];
@@ -23099,11 +23099,11 @@ export interface operations {
                          * @enum {string}
                          */
                         object: "unibox_chat";
-                        /** @description The account the chat belongs to. */
-                        account_id: string;
-                        /** @description That account's connection status. A chat stays listed while its account needs a reconnect. */
-                        account_status: string;
-                        /** @description The conversation: one person on one account, across LinkedIn and email. Stable for that pair. Read it with GET /v1/unibox/conversations/{conversation_id}. */
+                        /** @description The account the chat belongs to. Null on a conversation of an email-only Campaign, which is on no account. */
+                        account_id: string | null;
+                        /** @description That account's connection status. A chat stays listed while its account needs a reconnect. Null with no account. */
+                        account_status: string | null;
+                        /** @description The conversation: one person on one account, across LinkedIn and email; for an email-only Campaign, one person's email with your team. Stable for that pair. Read it with GET /v1/unibox/conversations/{conversation_id}. */
                         conversation_id: string;
                         /** @description The channels the conversation holds: linkedin, email, or both. Email is the email a Campaign sent this person from this account, and their replies. */
                         channels: ("linkedin" | "email")[];
@@ -23701,7 +23701,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description INSUFFICIENT_ROLE, ACCOUNT_NOT_SHARED: you can read this conversation but not send from its account. TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
+            /** @description INSUFFICIENT_ROLE, ACCOUNT_NOT_SHARED: you can read this conversation but not send from its account (in an email-only Campaign's conversation: a new thread, and you are not an Owner or a Manager). TIER_REQUIRED: the team has no subscription (Unibox needs a subscription). The error carries feature, required_tier and current_tier, plus upgrade_url for a team Owner. Not fixed by retrying. */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -48858,8 +48858,31 @@ export interface operations {
                                 /** @description Set once the Mailbox exists (`active`). */
                                 mailbox_id?: string | null;
                             }[];
-                            /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours, and `verify` is one TXT record that confirms this order is yours. */
-                            records: Record<string, never>[];
+                            /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours; the dkim row ends with one TXT record, Curviate's own signing key for your domain (about 410 characters: add it exactly as shown; a DNS host that splits it into several strings is fine); and `verify` is one TXT record that confirms this order is yours. */
+                            records: {
+                                /**
+                                 * @description Which record this row is.
+                                 * @enum {string}
+                                 */
+                                check: "mx" | "spf" | "dkim" | "dmarc" | "verify" | "tracking";
+                                /** @description False only for `tracking`. */
+                                required: boolean;
+                                /** @description The DNS records to add at your domain's DNS host for this row. */
+                                entries: {
+                                    /** @description The host name to add the record at. */
+                                    name: string;
+                                    /** @enum {string} */
+                                    type: "MX" | "TXT" | "CNAME";
+                                    /** @description The record's value, exactly as shown. */
+                                    value: string;
+                                    /** @description MX records only; absent on the others. */
+                                    priority?: number;
+                                }[];
+                                /** @description Whether this row's records were found at your domain's DNS host at the last check. */
+                                found: boolean;
+                                /** @description Present only when the row is not found for a reason you can fix (another MX record, two SPF or DMARC records, or servers that could not be reached); absent otherwise, never null. */
+                                advice?: string;
+                            }[];
                             advice: string | null;
                             /**
                              * @description While `awaiting_dns`, what the order waits for and what to do; null otherwise. records: add the required records at your domain's DNS host before `expires_at`; payment: the records are found and the charge waits for your Team's outstanding payment: update the payment method in Billing (app.curviate.com/settings/billing) and the order continues by itself; curviate: the records are found and the order waits on Curviate's side: nothing to do, it continues by itself; charge: the order is being charged: read it again in a few minutes. An order still waiting at `expires_at` ends, nothing charged.
@@ -49008,8 +49031,31 @@ export interface operations {
                             /** @description Set once the Mailbox exists (`active`). */
                             mailbox_id?: string | null;
                         }[];
-                        /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours, and `verify` is one TXT record that confirms this order is yours. */
-                        records: Record<string, never>[];
+                        /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours; the dkim row ends with one TXT record, Curviate's own signing key for your domain (about 410 characters: add it exactly as shown; a DNS host that splits it into several strings is fine); and `verify` is one TXT record that confirms this order is yours. */
+                        records: {
+                            /**
+                             * @description Which record this row is.
+                             * @enum {string}
+                             */
+                            check: "mx" | "spf" | "dkim" | "dmarc" | "verify" | "tracking";
+                            /** @description False only for `tracking`. */
+                            required: boolean;
+                            /** @description The DNS records to add at your domain's DNS host for this row. */
+                            entries: {
+                                /** @description The host name to add the record at. */
+                                name: string;
+                                /** @enum {string} */
+                                type: "MX" | "TXT" | "CNAME";
+                                /** @description The record's value, exactly as shown. */
+                                value: string;
+                                /** @description MX records only; absent on the others. */
+                                priority?: number;
+                            }[];
+                            /** @description Whether this row's records were found at your domain's DNS host at the last check. */
+                            found: boolean;
+                            /** @description Present only when the row is not found for a reason you can fix (another MX record, two SPF or DMARC records, or servers that could not be reached); absent otherwise, never null. */
+                            advice?: string;
+                        }[];
                         advice: string | null;
                         /**
                          * @description While `awaiting_dns`, what the order waits for and what to do; null otherwise. records: add the required records at your domain's DNS host before `expires_at`; payment: the records are found and the charge waits for your Team's outstanding payment: update the payment method in Billing (app.curviate.com/settings/billing) and the order continues by itself; curviate: the records are found and the order waits on Curviate's side: nothing to do, it continues by itself; charge: the order is being charged: read it again in a few minutes. An order still waiting at `expires_at` ends, nothing charged.
@@ -49189,8 +49235,31 @@ export interface operations {
                             /** @description Set once the Mailbox exists (`active`). */
                             mailbox_id?: string | null;
                         }[];
-                        /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours, and `verify` is one TXT record that confirms this order is yours. */
-                        records: Record<string, never>[];
+                        /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours; the dkim row ends with one TXT record, Curviate's own signing key for your domain (about 410 characters: add it exactly as shown; a DNS host that splits it into several strings is fine); and `verify` is one TXT record that confirms this order is yours. */
+                        records: {
+                            /**
+                             * @description Which record this row is.
+                             * @enum {string}
+                             */
+                            check: "mx" | "spf" | "dkim" | "dmarc" | "verify" | "tracking";
+                            /** @description False only for `tracking`. */
+                            required: boolean;
+                            /** @description The DNS records to add at your domain's DNS host for this row. */
+                            entries: {
+                                /** @description The host name to add the record at. */
+                                name: string;
+                                /** @enum {string} */
+                                type: "MX" | "TXT" | "CNAME";
+                                /** @description The record's value, exactly as shown. */
+                                value: string;
+                                /** @description MX records only; absent on the others. */
+                                priority?: number;
+                            }[];
+                            /** @description Whether this row's records were found at your domain's DNS host at the last check. */
+                            found: boolean;
+                            /** @description Present only when the row is not found for a reason you can fix (another MX record, two SPF or DMARC records, or servers that could not be reached); absent otherwise, never null. */
+                            advice?: string;
+                        }[];
                         advice: string | null;
                         /**
                          * @description While `awaiting_dns`, what the order waits for and what to do; null otherwise. records: add the required records at your domain's DNS host before `expires_at`; payment: the records are found and the charge waits for your Team's outstanding payment: update the payment method in Billing (app.curviate.com/settings/billing) and the order continues by itself; curviate: the records are found and the order waits on Curviate's side: nothing to do, it continues by itself; charge: the order is being charged: read it again in a few minutes. An order still waiting at `expires_at` ends, nothing charged.
@@ -49325,8 +49394,31 @@ export interface operations {
                             /** @description Set once the Mailbox exists (`active`). */
                             mailbox_id?: string | null;
                         }[];
-                        /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours, and `verify` is one TXT record that confirms this order is yours. */
-                        records: Record<string, never>[];
+                        /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours; the dkim row ends with one TXT record, Curviate's own signing key for your domain (about 410 characters: add it exactly as shown; a DNS host that splits it into several strings is fine); and `verify` is one TXT record that confirms this order is yours. */
+                        records: {
+                            /**
+                             * @description Which record this row is.
+                             * @enum {string}
+                             */
+                            check: "mx" | "spf" | "dkim" | "dmarc" | "verify" | "tracking";
+                            /** @description False only for `tracking`. */
+                            required: boolean;
+                            /** @description The DNS records to add at your domain's DNS host for this row. */
+                            entries: {
+                                /** @description The host name to add the record at. */
+                                name: string;
+                                /** @enum {string} */
+                                type: "MX" | "TXT" | "CNAME";
+                                /** @description The record's value, exactly as shown. */
+                                value: string;
+                                /** @description MX records only; absent on the others. */
+                                priority?: number;
+                            }[];
+                            /** @description Whether this row's records were found at your domain's DNS host at the last check. */
+                            found: boolean;
+                            /** @description Present only when the row is not found for a reason you can fix (another MX record, two SPF or DMARC records, or servers that could not be reached); absent otherwise, never null. */
+                            advice?: string;
+                        }[];
                         advice: string | null;
                         /**
                          * @description While `awaiting_dns`, what the order waits for and what to do; null otherwise. records: add the required records at your domain's DNS host before `expires_at`; payment: the records are found and the charge waits for your Team's outstanding payment: update the payment method in Billing (app.curviate.com/settings/billing) and the order continues by itself; curviate: the records are found and the order waits on Curviate's side: nothing to do, it continues by itself; charge: the order is being charged: read it again in a few minutes. An order still waiting at `expires_at` ends, nothing charged.
@@ -49470,8 +49562,31 @@ export interface operations {
                             /** @description Set once the Mailbox exists (`active`). */
                             mailbox_id?: string | null;
                         }[];
-                        /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours, and `verify` is one TXT record that confirms this order is yours. */
-                        records: Record<string, never>[];
+                        /** @description Six rows in order: mx, spf, dkim, dmarc, verify, tracking. Add each entry at your domain's DNS host exactly as shown; `tracking` is not required. The mx row also holds one CNAME that confirms the domain is yours; the dkim row ends with one TXT record, Curviate's own signing key for your domain (about 410 characters: add it exactly as shown; a DNS host that splits it into several strings is fine); and `verify` is one TXT record that confirms this order is yours. */
+                        records: {
+                            /**
+                             * @description Which record this row is.
+                             * @enum {string}
+                             */
+                            check: "mx" | "spf" | "dkim" | "dmarc" | "verify" | "tracking";
+                            /** @description False only for `tracking`. */
+                            required: boolean;
+                            /** @description The DNS records to add at your domain's DNS host for this row. */
+                            entries: {
+                                /** @description The host name to add the record at. */
+                                name: string;
+                                /** @enum {string} */
+                                type: "MX" | "TXT" | "CNAME";
+                                /** @description The record's value, exactly as shown. */
+                                value: string;
+                                /** @description MX records only; absent on the others. */
+                                priority?: number;
+                            }[];
+                            /** @description Whether this row's records were found at your domain's DNS host at the last check. */
+                            found: boolean;
+                            /** @description Present only when the row is not found for a reason you can fix (another MX record, two SPF or DMARC records, or servers that could not be reached); absent otherwise, never null. */
+                            advice?: string;
+                        }[];
                         advice: string | null;
                         /**
                          * @description While `awaiting_dns`, what the order waits for and what to do; null otherwise. records: add the required records at your domain's DNS host before `expires_at`; payment: the records are found and the charge waits for your Team's outstanding payment: update the payment method in Billing (app.curviate.com/settings/billing) and the order continues by itself; curviate: the records are found and the order waits on Curviate's side: nothing to do, it continues by itself; charge: the order is being charged: read it again in a few minutes. An order still waiting at `expires_at` ends, nothing charged.
@@ -51103,6 +51218,11 @@ export interface operations {
                             dmarc: "pass" | "fail" | "unknown";
                             /** @enum {string} */
                             tracking: "pass" | "fail" | "unknown";
+                            /**
+                             * @description Optional. The signing record (signing_record) is published. With it, Curviate signs the domain's email from Mailboxes from Curviate and Google Mailboxes connected with an app password, and those emails offer the mail app's one-click unsubscribe.
+                             * @enum {string}
+                             */
+                            signing: "pass" | "fail" | "unknown";
                         };
                         /** @description The CNAME record to add at your DNS host so the tracking check passes. */
                         tracking_record: {
@@ -51111,6 +51231,13 @@ export interface operations {
                             type: "CNAME";
                             value: string;
                         };
+                        /** @description The TXT record to add at your DNS host so the signing check passes: Curviate's own signing key for this domain and team, about 410 characters. Add the value exactly as shown and no other record at this name; a DNS host that splits it into several strings is fine. Null for a domain with no Mailbox from Curviate, no Google Mailbox connected with an app password and no Mailbox order. */
+                        signing_record: {
+                            name: string;
+                            /** @enum {string} */
+                            type: "TXT";
+                            value: string;
+                        } | null;
                         /** @description Blocklists named in bounce messages; empty until one is. */
                         blocklists: string[];
                         /** @description The DKIM selector whose key was found (`<selector>._domainkey.<domain>`), or read from a sent message; null while none is. */
@@ -51202,6 +51329,11 @@ export interface operations {
                             dmarc: "pass" | "fail" | "unknown";
                             /** @enum {string} */
                             tracking: "pass" | "fail" | "unknown";
+                            /**
+                             * @description Optional. The signing record (signing_record) is published. With it, Curviate signs the domain's email from Mailboxes from Curviate and Google Mailboxes connected with an app password, and those emails offer the mail app's one-click unsubscribe.
+                             * @enum {string}
+                             */
+                            signing: "pass" | "fail" | "unknown";
                         };
                         /** @description The CNAME record to add at your DNS host so the tracking check passes. */
                         tracking_record: {
@@ -51210,6 +51342,13 @@ export interface operations {
                             type: "CNAME";
                             value: string;
                         };
+                        /** @description The TXT record to add at your DNS host so the signing check passes: Curviate's own signing key for this domain and team, about 410 characters. Add the value exactly as shown and no other record at this name; a DNS host that splits it into several strings is fine. Null for a domain with no Mailbox from Curviate, no Google Mailbox connected with an app password and no Mailbox order. */
+                        signing_record: {
+                            name: string;
+                            /** @enum {string} */
+                            type: "TXT";
+                            value: string;
+                        } | null;
                         /** @description Blocklists named in bounce messages; empty until one is. */
                         blocklists: string[];
                         /** @description The DKIM selector whose key was found (`<selector>._domainkey.<domain>`), or read from a sent message; null while none is. */
@@ -51328,7 +51467,7 @@ export interface operations {
                             object: "lead";
                             /** @description Lead id (con_...). */
                             id: string;
-                            /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person. */
+                            /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person, and for a Lead saved by email address alone. */
                             linkedin_url: string | null;
                             /** @description The profile slug, when known. */
                             public_identifier: string | null;
@@ -51377,9 +51516,9 @@ export interface operations {
                             extra: {
                                 [key: string]: unknown;
                             };
-                            /** @description Per non-empty standard field: tenant (you supplied it) or linkedin (Curviate filled it). A tenant value is never overwritten by LinkedIn data. */
+                            /** @description Per non-empty standard field: tenant (you supplied it) or linkedin (Curviate filled it). A tenant value is never overwritten by LinkedIn data. A field you cleared with PATCH reads cleared: LinkedIn data never fills it; PATCH sources: {<field>: null} lets it fill again. */
                             sources: {
-                                [key: string]: "tenant" | "linkedin";
+                                [key: string]: "tenant" | "linkedin" | "cleared";
                             };
                             /** @description Tag names. */
                             tags: string[];
@@ -51475,8 +51614,8 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description The person's LinkedIn profile or Sales Navigator lead URL. Any spelling of one person resolves to one Lead. */
-                    linkedin_url: string;
+                    /** @description The person's LinkedIn profile or Sales Navigator lead URL. Any spelling of one person resolves to one Lead. Optional with email: a Lead without a LinkedIn URL is known by its email address. */
+                    linkedin_url?: string;
                     /** @description Full name, up to 200 characters. */
                     full_name?: string | null;
                     /** @description First name, up to 200 characters. */
@@ -51527,7 +51666,7 @@ export interface operations {
                         object: "lead";
                         /** @description Lead id (con_...). */
                         id: string;
-                        /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person. */
+                        /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person, and for a Lead saved by email address alone. */
                         linkedin_url: string | null;
                         /** @description The profile slug, when known. */
                         public_identifier: string | null;
@@ -51576,9 +51715,9 @@ export interface operations {
                         extra: {
                             [key: string]: unknown;
                         };
-                        /** @description Per non-empty standard field: tenant (you supplied it) or linkedin (Curviate filled it). A tenant value is never overwritten by LinkedIn data. */
+                        /** @description Per non-empty standard field: tenant (you supplied it) or linkedin (Curviate filled it). A tenant value is never overwritten by LinkedIn data. A field you cleared with PATCH reads cleared: LinkedIn data never fills it; PATCH sources: {<field>: null} lets it fill again. */
                         sources: {
-                            [key: string]: "tenant" | "linkedin";
+                            [key: string]: "tenant" | "linkedin" | "cleared";
                         };
                         /** @description Tag names. */
                         tags: string[];
@@ -51622,7 +51761,7 @@ export interface operations {
                         object: "lead";
                         /** @description Lead id (con_...). */
                         id: string;
-                        /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person. */
+                        /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person, and for a Lead saved by email address alone. */
                         linkedin_url: string | null;
                         /** @description The profile slug, when known. */
                         public_identifier: string | null;
@@ -51671,9 +51810,9 @@ export interface operations {
                         extra: {
                             [key: string]: unknown;
                         };
-                        /** @description Per non-empty standard field: tenant (you supplied it) or linkedin (Curviate filled it). A tenant value is never overwritten by LinkedIn data. */
+                        /** @description Per non-empty standard field: tenant (you supplied it) or linkedin (Curviate filled it). A tenant value is never overwritten by LinkedIn data. A field you cleared with PATCH reads cleared: LinkedIn data never fills it; PATCH sources: {<field>: null} lets it fill again. */
                         sources: {
-                            [key: string]: "tenant" | "linkedin";
+                            [key: string]: "tenant" | "linkedin" | "cleared";
                         };
                         /** @description Tag names. */
                         tags: string[];
@@ -51701,7 +51840,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid input: a URL that is not a LinkedIn profile or Sales Navigator lead (message starts linkedin_url:), a field over its length, extra over its caps, a bad Tag name. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description Invalid input: neither linkedin_url nor email, a URL that is not a LinkedIn profile or Sales Navigator lead (message starts linkedin_url:), an email that is not one bare address, an email alone that several Leads hold (send the linkedin_url too), a field over its length, extra over its caps, a bad Tag name. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -51832,7 +51971,7 @@ export interface operations {
                         object: "lead";
                         /** @description Lead id (con_...). */
                         id: string;
-                        /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person. */
+                        /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person, and for a Lead saved by email address alone. */
                         linkedin_url: string | null;
                         /** @description The profile slug, when known. */
                         public_identifier: string | null;
@@ -51881,9 +52020,9 @@ export interface operations {
                         extra: {
                             [key: string]: unknown;
                         };
-                        /** @description Per non-empty standard field: tenant (you supplied it) or linkedin (Curviate filled it). A tenant value is never overwritten by LinkedIn data. */
+                        /** @description Per non-empty standard field: tenant (you supplied it) or linkedin (Curviate filled it). A tenant value is never overwritten by LinkedIn data. A field you cleared with PATCH reads cleared: LinkedIn data never fills it; PATCH sources: {<field>: null} lets it fill again. */
                         sources: {
-                            [key: string]: "tenant" | "linkedin";
+                            [key: string]: "tenant" | "linkedin" | "cleared";
                         };
                         /** @description Tag names. */
                         tags: string[];
@@ -52274,7 +52413,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description What happened to each Lead. from_store: filled now from data Curviate already holds. queued: a live profile visit waits in the account's paced queue. skipped lists every other Lead with its reason (already_queued, queue_full, not_stored, not_found). A visit's result lands on the Lead's enrichment (done, or failed with failure_code profile_not_found, expired, account_unavailable, platform_error or tier_required). */
+            /** @description What happened to each Lead. from_store: filled now from data Curviate already holds. queued: a live profile visit waits in the account's paced queue. skipped lists every other Lead with its reason (already_queued, queue_full, not_stored, not_found, no_linkedin_url: a Lead known by its email address alone, never visited). A visit's result lands on the Lead's enrichment (done, or failed with failure_code profile_not_found, expired, account_unavailable, platform_error or tier_required). */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -52294,11 +52433,12 @@ export interface operations {
                             queue_full: number;
                             not_stored: number;
                             not_found: number;
+                            no_linkedin_url: number;
                         };
                         skipped: {
                             lead_id: string;
                             /** @enum {string} */
-                            reason: "already_queued" | "queue_full" | "not_stored" | "not_found";
+                            reason: "already_queued" | "queue_full" | "not_stored" | "not_found" | "no_linkedin_url";
                         }[];
                     };
                 };
@@ -52507,7 +52647,7 @@ export interface operations {
                                  * @description Why a row was skipped.
                                  * @enum {string|null}
                                  */
-                                reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
+                                reason: "missing_linkedin_url" | "missing_linkedin_url_or_email" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "email_on_several_leads" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
                                 /** @description The field a field_too_long row names. */
                                 field: string | null;
                                 /** @description An earlier row of this import for the same person. */
@@ -52566,7 +52706,7 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description The rows: objects with linkedin_url (required), the standard fields, extra and tags. Send rows or csv, not both. */
+                    /** @description The rows: objects with linkedin_url or email (at least one), the other standard fields, extra and tags. Send rows or csv, not both. */
                     rows?: {
                         [key: string]: unknown;
                     }[];
@@ -52978,7 +53118,7 @@ export interface operations {
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
+                            reason: "missing_linkedin_url" | "missing_linkedin_url_or_email" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "email_on_several_leads" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -53101,7 +53241,7 @@ export interface operations {
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
+                            reason: "missing_linkedin_url" | "missing_linkedin_url_or_email" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "email_on_several_leads" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -53318,7 +53458,7 @@ export interface operations {
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
+                            reason: "missing_linkedin_url" | "missing_linkedin_url_or_email" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "email_on_several_leads" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -53499,7 +53639,7 @@ export interface operations {
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
+                            reason: "missing_linkedin_url" | "missing_linkedin_url_or_email" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "email_on_several_leads" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -53698,7 +53838,7 @@ export interface operations {
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
+                            reason: "missing_linkedin_url" | "missing_linkedin_url_or_email" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "email_on_several_leads" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -53897,7 +54037,7 @@ export interface operations {
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
+                            reason: "missing_linkedin_url" | "missing_linkedin_url_or_email" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "email_on_several_leads" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -54011,7 +54151,7 @@ export interface operations {
                              * @description Why a row was skipped.
                              * @enum {string|null}
                              */
-                            reason: "missing_linkedin_url" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
+                            reason: "missing_linkedin_url" | "missing_linkedin_url_or_email" | "invalid_linkedin_url" | "invalid_tag" | "field_too_long" | "invalid_language" | "invalid_email" | "lead_too_large" | "too_many_tags" | "tag_limit_reached" | "invalid_list" | "list_limit_reached" | "malformed_row" | "lead_limit_reached" | "lead_deleted" | "email_on_several_leads" | "do_not_contact" | "profile_hidden" | "not_a_person" | "no_match" | null;
                             /** @description The field a field_too_long row names. */
                             field: string | null;
                             /** @description An earlier row of this import for the same person. */
@@ -54096,7 +54236,7 @@ export interface operations {
                         object: "lead";
                         /** @description Lead id (con_...). */
                         id: string;
-                        /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person. */
+                        /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person, and for a Lead saved by email address alone. */
                         linkedin_url: string | null;
                         /** @description The profile slug, when known. */
                         public_identifier: string | null;
@@ -54145,9 +54285,9 @@ export interface operations {
                         extra: {
                             [key: string]: unknown;
                         };
-                        /** @description Per non-empty standard field: tenant (you supplied it) or linkedin (Curviate filled it). A tenant value is never overwritten by LinkedIn data. */
+                        /** @description Per non-empty standard field: tenant (you supplied it) or linkedin (Curviate filled it). A tenant value is never overwritten by LinkedIn data. A field you cleared with PATCH reads cleared: LinkedIn data never fills it; PATCH sources: {<field>: null} lets it fill again. */
                         sources: {
-                            [key: string]: "tenant" | "linkedin";
+                            [key: string]: "tenant" | "linkedin" | "cleared";
                         };
                         /** @description Tag names. */
                         tags: string[];
@@ -54308,6 +54448,8 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
+                    /** @description Only for a Lead without a LinkedIn URL (known by its email address): gives it this profile. A Lead already saved for that profile absorbs it (its id then answers 404 with merged_into). */
+                    linkedin_url?: string;
                     /** @description Full name, up to 200 characters. */
                     full_name?: string | null;
                     /** @description First name, up to 200 characters. */
@@ -54332,6 +54474,19 @@ export interface operations {
                     extra?: {
                         [key: string]: unknown;
                     };
+                    /** @description A field you cleared reads `sources.<field>: "cleared"` and LinkedIn data never fills it. Send `{"<field>": null}` here to let LinkedIn fill it again; a field holding a value keeps its source. */
+                    sources?: {
+                        full_name?: null;
+                        first_name?: null;
+                        last_name?: null;
+                        headline?: null;
+                        job_title?: null;
+                        company?: null;
+                        email?: null;
+                        location?: null;
+                        about?: null;
+                        language?: null;
+                    };
                 };
             };
         };
@@ -54352,7 +54507,7 @@ export interface operations {
                         object: "lead";
                         /** @description Lead id (con_...). */
                         id: string;
-                        /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person. */
+                        /** @description `https://www.linkedin.com/in/<public_identifier>/` once the profile slug is known, else the URL path you supplied. Null when the only known path names a vanity URL now held by another person, and for a Lead saved by email address alone. */
                         linkedin_url: string | null;
                         /** @description The profile slug, when known. */
                         public_identifier: string | null;
@@ -54401,9 +54556,9 @@ export interface operations {
                         extra: {
                             [key: string]: unknown;
                         };
-                        /** @description Per non-empty standard field: tenant (you supplied it) or linkedin (Curviate filled it). A tenant value is never overwritten by LinkedIn data. */
+                        /** @description Per non-empty standard field: tenant (you supplied it) or linkedin (Curviate filled it). A tenant value is never overwritten by LinkedIn data. A field you cleared with PATCH reads cleared: LinkedIn data never fills it; PATCH sources: {<field>: null} lets it fill again. */
                         sources: {
-                            [key: string]: "tenant" | "linkedin";
+                            [key: string]: "tenant" | "linkedin" | "cleared";
                         };
                         /** @description Tag names. */
                         tags: string[];
@@ -54429,7 +54584,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Invalid input. "" is refused (use null to clear); linkedin_url cannot change (delete and create again). TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description Invalid input. "" is refused (use null to clear); linkedin_url cannot change once a Lead has one (delete and create again); a Lead known by its email address alone cannot clear it, nor take an address another such Lead holds. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -55413,6 +55568,8 @@ export interface operations {
                     linkedin_url?: string;
                     /** @description A company instead of a person: its LinkedIn URL with the numeric id (a Lead's company_linkedin_url). Nobody who works there is contacted or imported. */
                     company_linkedin_url?: string;
+                    /** @description An email address instead: every Lead holding that mailbox, under any spelling, is listed with this scope (everything stops email and LinkedIn for each). No Lead is created. The entry keeps no address in clear. */
+                    email?: string;
                     /**
                      * @description Why, from a fixed list: asked_to_stop, existing_customer, competitor, partner, employee, unsubscribed or other.
                      * @enum {string}
@@ -55427,7 +55584,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Already on the list: the existing entry, unchanged. */
+            /** @description Already on the list: the existing entry, raised to everything when this add asks for everything and the entry stopped email only; else unchanged. */
             200: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -55555,7 +55712,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Neither or both of lead_id and linkedin_url, a URL that is not a LinkedIn profile, or a reason or scope outside the list. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description Not exactly one of lead_id, linkedin_url, company_linkedin_url and email, a URL that is not a LinkedIn profile, an email that is not one bare address, or a reason or scope outside the list. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -55774,6 +55931,7 @@ export interface operations {
                         /** @description Rows by outcome. */
                         counts?: {
                             created?: number;
+                            updated?: number;
                             unchanged?: number;
                             skipped?: number;
                         };
@@ -55782,10 +55940,10 @@ export interface operations {
                             /** @description Data row number, from 1 (the header line does not count). */
                             row?: number;
                             /**
-                             * @description created: put on the list. unchanged: already on the list. skipped: see skip_reason.
+                             * @description created: put on the list. updated: already on the list for email only, raised to everything by this row. unchanged: already on the list, at this scope or a stronger one. skipped: see skip_reason.
                              * @enum {string}
                              */
-                            outcome?: "created" | "unchanged" | "skipped";
+                            outcome?: "created" | "updated" | "unchanged" | "skipped";
                             /** @description The person's entry (dnc_...), created or existing. */
                             entry_id?: string | null;
                             /** @description The person's Lead (con_...). */
@@ -58341,7 +58499,7 @@ export interface operations {
                     shared_mailbox_ids?: string[];
                     /** @description When actions may run. Merged key by key on update. */
                     schedule?: {
-                        /** @description Retired: days and hours are read in each sending account's own time zone. Accepted with warning W13 until 2027-01-25, never stored or returned. */
+                        /** @description An IANA time zone, like Europe/Berlin. Required to start a Campaign with no sending account (an email-only Sequence sent from shared Mailboxes): its days, hours and business-day waits are read in this zone. With sending accounts it is not read: days and hours are read in each sending account's own time zone. null clears it. */
                         timezone?: string | null;
                         /** @description Days actions may run on. Default: the days of the Team's Active hours (mon to fri unless the Team set others), taken when the Campaign is created and stored on it. */
                         days?: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
@@ -59087,7 +59245,7 @@ export interface operations {
                     shared_mailbox_ids?: string[];
                     /** @description When actions may run. Merged key by key on update. */
                     schedule?: {
-                        /** @description Retired: days and hours are read in each sending account's own time zone. Accepted with warning W13 until 2027-01-25, never stored or returned. */
+                        /** @description An IANA time zone, like Europe/Berlin. Required to start a Campaign with no sending account (an email-only Sequence sent from shared Mailboxes): its days, hours and business-day waits are read in this zone. With sending accounts it is not read: days and hours are read in each sending account's own time zone. null clears it. */
                         timezone?: string | null;
                         /** @description Days actions may run on. Default: the days of the Team's Active hours (mon to fri unless the Team set others), taken when the Campaign is created and stored on it. */
                         days?: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
@@ -61436,7 +61594,7 @@ export interface operations {
                 /** @description With done_step only: how that Step ended. The 200 response description defines each value. */
                 outcome?: "executed" | "skipped" | "failed" | "accepted" | "not_accepted" | "replied" | "no_reply" | "seen";
                 /** @description Catalogue reason codes: skip, finish or Step reasons (on done_step when given). Repeat the key, comma-separate or mix; empties ignored. */
-                reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "same_company" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "no_email_address" | "email_bounced" | "no_email" | "field_missing" | "attachment_missing" | "channel_replied" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "attachment_refused" | "outcome_unknown" | "tag_limit")[];
+                reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "same_company" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "no_email_address" | "email_bounced" | "no_email" | "field_missing" | "attachment_missing" | "channel_replied" | "same_mailbox" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "attachment_refused" | "outcome_unknown" | "tag_limit")[];
                 /** @description Only Enrollments whose variant on that variant's Step is this one. */
                 variant_id?: string;
                 /** @description Relationship to the account at the start: connected, not_connected, invite_pending, unknown. Repeat the key, comma-separate or mix; empties ignored. */
@@ -61733,7 +61891,7 @@ export interface operations {
                              * @description Why it was skipped or failed: a code of the reasons catalogue, https://docs.curviate.com/reference/campaign-reasons.
                              * @enum {string|null}
                              */
-                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "same_company" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "no_email_address" | "email_bounced" | "no_email" | "field_missing" | "attachment_missing" | "channel_replied" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "attachment_refused" | "outcome_unknown" | "tag_limit" | null;
+                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "same_company" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "no_email_address" | "email_bounced" | "no_email" | "field_missing" | "attachment_missing" | "channel_replied" | "same_mailbox" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "attachment_refused" | "outcome_unknown" | "tag_limit" | null;
                             /** @description The catalogue's one-line sentence for reason; null when reason is. */
                             reason_message: string | null;
                             /** @description The account that ran it; null for an entry no account ran (requeued). */
@@ -63128,7 +63286,7 @@ export interface operations {
                          */
                         outcome?: "executed" | "skipped" | "failed" | "accepted" | "not_accepted" | "replied" | "no_reply" | "seen";
                         /** @description Catalogue reason codes. */
-                        reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "same_company" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "no_email_address" | "email_bounced" | "no_email" | "field_missing" | "attachment_missing" | "channel_replied" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "attachment_refused" | "outcome_unknown" | "tag_limit")[];
+                        reason?: ("do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "same_company" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "no_email_address" | "email_bounced" | "no_email" | "field_missing" | "attachment_missing" | "channel_replied" | "same_mailbox" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "attachment_refused" | "outcome_unknown" | "tag_limit")[];
                         /** @description Only Enrollments whose variant on that variant's Step is this one. */
                         variant_id?: string;
                         /** @description Any of connected, not_connected, invite_pending, unknown. */
@@ -65849,7 +66007,7 @@ export interface operations {
                              * @description Why a step was skipped or failed, as a code of the reasons catalogue (https://docs.curviate.com/reference/campaign-reasons); null otherwise.
                              * @enum {string|null}
                              */
-                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "same_company" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "no_email_address" | "email_bounced" | "no_email" | "field_missing" | "attachment_missing" | "channel_replied" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "attachment_refused" | "outcome_unknown" | "tag_limit" | null;
+                            reason: "do_not_contact" | "in_exclusion_list" | "in_other_campaign" | "known_chat" | "pending_invite" | "filtered" | "profile_unavailable" | "same_company" | "no_connected_account" | "completed" | "stopped" | "removed" | "account_unavailable" | "account_removed" | "campaign_archived" | "campaign_ended" | "lead_deleted" | "lead_merged" | "replied" | "messaged_manually" | "engaged_elsewhere" | "moved" | "already_following" | "not_following" | "already_connected" | "invite_pending" | "already_invited" | "no_pending_invite" | "not_connected" | "inmail_unavailable" | "no_eligible_post" | "already_reacted" | "already_commented" | "missing_variable" | "no_endorsable_skill" | "text_too_long" | "already_attempted" | "no_email_address" | "email_bounced" | "no_email" | "field_missing" | "attachment_missing" | "channel_replied" | "same_mailbox" | "platform_rejected" | "recipient_unreachable" | "platform_error" | "attachment_refused" | "outcome_unknown" | "tag_limit" | null;
                             /** @description The catalogue's one-line plain-words sentence for reason; null when reason is. */
                             reason_message: string | null;
                             /** @description The person, read live; null once the Lead is deleted. */
@@ -66130,9 +66288,9 @@ export interface operations {
                             out_of_office: number;
                         };
                         opens: {
-                            /** @description Emails whose first open was a person's. */
+                            /** @description Emails a person opened. */
                             human: number;
-                            /** @description Emails first opened by a scanner or a security gateway (at delivery, or a known scanner network). */
+                            /** @description Emails opened only by a scanner, a security gateway or a mail app on its own (at delivery, or a known scanner network). */
                             machine: number;
                         };
                         bounces: {
@@ -66155,9 +66313,12 @@ export interface operations {
                                 /** @description By a reply asking to stop. */
                                 reply: number;
                             };
+                            /** @description Where one-click unsubscribe is on. A Mailbox not counted in live sends the unsubscribe link only. */
                             one_click: {
-                                /** @description True while one-click unsubscribe is not yet confirmed working; one_click then stays 0. */
-                                pending_test: boolean;
+                                /** @description Of mailboxes, those whose emails with the unsubscribe link also carry the mail app's one-click unsubscribe now: Curviate signs their mail and the domain's signing and tracking records are found. */
+                                live: number;
+                                /** @description Mailboxes in scope. */
+                                mailboxes: number;
                             };
                         };
                         /** @description Leads reached only because email exists. */

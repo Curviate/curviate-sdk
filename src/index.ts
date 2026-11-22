@@ -202,6 +202,7 @@ export type {
   PlacementTestListParams,
   PlacementTestListPage,
   MailboxPurchase,
+  MailboxPurchaseRecord,
   MailboxPurchaseCreateBody,
   MailboxPurchaseListParams,
   MailboxPurchaseListPage,

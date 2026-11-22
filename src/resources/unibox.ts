@@ -20,6 +20,15 @@
  * each chat carries its `conversation_id`, and `getConversation` and
  * `listConversationMessages` read it, both channels in one timeline.
  *
+ * The email of an email-only Campaign (no sending account) is a Team
+ * conversation: one person's email with your Team, on no account, so its
+ * `account_id` and `account_status` are `null` and its `chat_id` is `null`.
+ * It is listed only when `account_ids` is left out. Read, mark and reply to it
+ * by its `conversation_id` alone; a reply goes from its thread's shared
+ * Mailbox. Its Owners, Managers and the Campaign's creator see it; a new thread
+ * in it (no `thread_id`) is an Owner's or a Manager's (`INSUFFICIENT_ROLE` for
+ * a Member); anyone else gets `RESOURCE_NOT_FOUND`.
+ *
  * A send from the API (this SDK included) or the Unibox marks the chat read:
  * `unread` turns `false`, `marked_unread` clears, and a `chat.updated`
  * webhook reports it. A send from a Campaign leaves the read state as it is.

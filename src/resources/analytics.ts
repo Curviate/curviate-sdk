@@ -190,7 +190,13 @@ export class AnalyticsResource {
    * every email (`set_up`), some (`partial`) or none (`not_set_up`, `open`
    * is `null`). Each rate is still maturing while more than a third of its
    * emails were sent under 7 days ago (`maturing`): it may still rise. A
-   * bounce rate needs 50 emails sent to mean anything. Read-only.
+   * bounce rate needs 50 emails sent to mean anything.
+   * `opt_outs.one_click` is `{ live, mailboxes }`: of the Mailboxes in scope,
+   * how many send the mail app's one-click unsubscribe now (Curviate signs
+   * their mail and the domain's signing and tracking records are found); the
+   * others send the unsubscribe link only. It replaces `pending_test`. The
+   * email of an email-only Campaign (no account) counts for its creator, the
+   * Owners and the Managers. Read-only.
    * `GET /v1/analytics/email`
    *
    * @example

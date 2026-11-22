@@ -233,3 +233,37 @@ describe("do-not-contact file", () => {
     expect(posted).toEqual({ rows });
   });
 });
+
+describe("pass 19: email only", () => {
+  it("the calls from zero to an email-only Campaign go out as typed, one call each", async () => {
+    const calls: unknown[] = [];
+    server.use(
+      http.all(`${BASE}/v1/*`, async ({ request }) => {
+        const u = new URL(request.url);
+        const raw = request.method === "GET" ? "" : await request.text();
+        calls.push([request.method, u.pathname, raw ? JSON.parse(raw) : null]);
+        return HttpResponse.json({});
+      }),
+    );
+    await client.leads.upsert({ email: "ana@acme.example", first_name: "Ana", list_name: "Q4 email" });
+    await client.leads.update("con_1", { sources: { job_title: null } });
+    await client.doNotContact.add({ email: "bo@acme.example" });
+    await client.campaigns.create({ name: "Q4 email", lead_list_ids: ["cl_1"], shared_mailbox_ids: ["mbx_1"], schedule: { timezone: "Europe/Berlin" } });
+    await client.campaigns.start("mot_1", { skip_missing_email: true });
+    await client.unibox.markConversation("cnv_team_1", { read: true });
+    expect(calls).toEqual([
+      ["POST", "/v1/leads", { email: "ana@acme.example", first_name: "Ana", list_name: "Q4 email" }],
+      ["PATCH", "/v1/leads/con_1", { sources: { job_title: null } }],
+      ["POST", "/v1/do-not-contact", { email: "bo@acme.example" }],
+      ["POST", "/v1/campaigns", { name: "Q4 email", lead_list_ids: ["cl_1"], shared_mailbox_ids: ["mbx_1"], schedule: { timezone: "Europe/Berlin" } }],
+      ["POST", "/v1/campaigns/mot_1/start", { skip_missing_email: true }],
+      ["PATCH", "/v1/unibox/conversations/cnv_team_1", { read: true }],
+    ]);
+  });
+
+  it.each(["BILLING_NOT_AVAILABLE", "TEAM_MEMBERSHIP_LOCKED"])("%s reaches the caller as itself, not INTERNAL", async (code) => {
+    server.use(http.post(`${BASE}/v1/teams`, () => HttpResponse.json({ code, message: "x", user_fixable: false, retry_likely_to_succeed: false }, { status: 403 })));
+    const err = await client.teams.create({ name: "B" }).catch((e: unknown) => e);
+    expect(isCurviateError(err) && err.code).toBe(code);
+  });
+});

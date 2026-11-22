@@ -225,6 +225,11 @@ export const ERROR_CODES = [
   "BILLING_CHECKOUT_FAILED",
   "BILLING_PORTAL_UNAVAILABLE",
 
+  // `BILLING_NOT_AVAILABLE` (403): billing is not available for this Team, so
+  // checkout and the billing portal refuse it. Nothing was charged. Not
+  // transient: never retry it.
+  "BILLING_NOT_AVAILABLE",
+
   // Tenant standing. The workspace's billing state forbids the operation
   // (delinquent, disputed, linking switched off). The remedy is in billing,
   // and none of these clears on retry.
@@ -327,6 +332,10 @@ export const ERROR_CODES = [
   // - `INVITE_ALREADY_PENDING`: an invite to this email is already pending.
   // - `INVITE_NOT_PENDING`: re-send or revoke of an accepted or revoked invite.
   // - `INVITE_LIMIT_REACHED`: the team already has 50 pending invites.
+  // - `TEAM_MEMBERSHIP_LOCKED` (403, not 409): this Team's membership is
+  //   fixed: its members create or join no other Team (`teams.create`, an
+  //   invite's accept) and it adds no member (`teams.invites.create`). Never
+  //   retry it.
   "LAST_OWNER",
   "BILLING_OWNER_REQUIRED",
   "DEFAULT_TEAM_PROTECTED",
@@ -334,6 +343,7 @@ export const ERROR_CODES = [
   "INVITE_ALREADY_PENDING",
   "INVITE_NOT_PENDING",
   "INVITE_LIMIT_REACHED",
+  "TEAM_MEMBERSHIP_LOCKED",
 
   // Connect requests (`connectRequests`), all 409.
   //

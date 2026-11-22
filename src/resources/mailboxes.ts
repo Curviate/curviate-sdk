@@ -30,6 +30,8 @@ export type PlacementTestListParams = NonNullable<paths["/v1/mailboxes/{id}/plac
 export type PlacementTestListPage = paths["/v1/mailboxes/{id}/placement-tests"]["get"]["responses"]["200"]["content"]["application/json"];
 export type MailboxPurchaseCreateBody = NonNullable<paths["/v1/mailboxes/purchases"]["post"]["requestBody"]>["content"]["application/json"];
 export type MailboxPurchase = paths["/v1/mailboxes/purchases/{id}"]["get"]["responses"]["200"]["content"]["application/json"];
+/** One row of an order's `records`: `check`, `required`, `entries[]`, `found`, `advice?`. */
+export type MailboxPurchaseRecord = MailboxPurchase["records"][number];
 export type MailboxPurchaseListParams = NonNullable<paths["/v1/mailboxes/purchases"]["get"]["parameters"]["query"]>;
 export type MailboxPurchaseListPage = paths["/v1/mailboxes/purchases"]["get"]["responses"]["200"]["content"]["application/json"];
 /** `charge_waits_for` is deprecated in the served document (always null): read `not_orderable_reason`, and an order's `waiting_for`. */
@@ -199,14 +201,19 @@ export class MailboxPurchasesResource {
    * Its records: six rows to add at your domain exactly as shown (`mx`,
    * `spf`, `dkim`, `dmarc`, `verify`, `tracking`; `tracking` is not
    * required; the `mx` row also holds one CNAME that confirms the domain is
-   * yours, `verify` one TXT record that confirms this order is yours) and
-   * which are found. A row's `found` is only what Curviate's last check saw
+   * yours, the `dkim` row ends with one TXT record, Curviate's own signing key
+   * for your domain (about 410 characters, add it exactly as shown and no
+   * other record at that name), `verify` one TXT record that confirms this
+   * order is yours) and which are found. Each row is typed
+   * ({@link MailboxPurchaseRecord}): `check`, `required`, `entries[]`
+   * (`name`, `type` `MX` | `TXT` | `CNAME`, `value`, and `priority` on an MX
+   * record only), `found`, and `advice` when present. A row's `found` is only what Curviate's last check saw
    * in DNS, asked at your domain's own name servers; Curviate's side not
    * being ready yet reads `waiting_for: "curviate"`, never a row not found.
    * A row not found can carry `advice`: another MX record beside Curviate's,
    * two SPF or two DMARC records, or that your domain's name servers did not
    * answer the last check (not a failure: the next check asks again). Show
-   * it as served. Tolerate a row `check` you do not know.
+   * it as served.
    * `previous_provider_until`, once set and still ahead: until about when
    * some senders can keep delivering the domain's mail to its previous mail
    * provider (other mail servers keep the old MX records for their TTL).

@@ -237,9 +237,13 @@ export class TeamsResource {
 
   /**
    * Invite 1 to 20 people by email, each with a role (`member` by default).
-   * Each gets a link valid for 7 days. All or nothing: if any row is refused
-   * (`ALREADY_MEMBER`, `INVITE_ALREADY_PENDING`, `INVITE_LIMIT_REACHED`),
-   * nothing is created or sent and the error names the row. Owners and Managers
+   * Each invite is created and its email, with a link valid for 7 days, is
+   * sent when it can be: a `201` does not say the email went out; an invite
+   * whose email did not go out is sent again with `resendInvite`. All or
+   * nothing: if any row is refused (`ALREADY_MEMBER`, `INVITE_ALREADY_PENDING`,
+   * `INVITE_LIMIT_REACHED`), nothing is created or sent and the error names
+   * the row. A Team whose membership is fixed adds no member
+   * (`TEAM_MEMBERSHIP_LOCKED`). Owners and Managers
    * (a Manager invites Members only).
    * `POST /v1/teams/current/invites`
    *

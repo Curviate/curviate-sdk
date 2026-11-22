@@ -7,6 +7,22 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [0.62.0] - 2026-11-22
+
+Email only, and the Mailbox records typed. `fixtures/openapi.json` and the generated types are refreshed from the served document (recorded in `fixtures/PROVENANCE.json`). Pre-1.0 minor: two type changes below can break a build that assumed the old shape (**Breaking (type)**).
+
+- **A Lead by email address**: `leads.upsert` takes `email` without `linkedin_url` (`linkedin_url` is optional in `LeadUpsertBody`); the Lead is keyed on the mailbox, any spelling (letter case, a `+tag`, dots in a Gmail address). When several LinkedIn Leads hold the address the call is refused (`INVALID_REQUEST`) and nothing is written. `leads.update` takes `linkedin_url` for a Lead saved by email alone (merging into a Lead that already has that profile). A Lead's `linkedin_url` reads `null` for a Lead saved by email alone. Import rows: `email` without `linkedin_url` imports; skip reasons gain `missing_linkedin_url_or_email` and `email_on_several_leads`. `leads.enrich`: a Lead by email alone is skipped `no_linkedin_url` (`counts.no_linkedin_url`), never visited.
+- **A field the Team cleared stays cleared**: a Lead's `sources.<field>` gains `"cleared"`; `leads.update(id, { sources: { <field>: null } })` lets LinkedIn fill it again.
+- **Do-not-contact by email**: `doNotContact.add({ email })` lists every Lead of the Team at that mailbox, under any spelling, with the entry's scope; no Lead is created. A scope only goes up: an `everything` add raises an `email_only` entry. `doNotContact.import`: a row's `outcome` gains `"updated"` (raised to `everything`) and `counts.updated`.
+- **Campaigns with no sending account**: a Campaign with no `account_ids` runs an email-only Sequence from its `shared_mailbox_ids`, in `schedule.timezone` (an IANA zone; required to start such a Campaign; served for it). JSDoc no longer calls `schedule.timezone` retired. Start gaps `shared_mailbox_ids` and `schedule.timezone`; a step reason and skip reason `same_mailbox` (a second Lead at the same address gets each email step once). **Breaking (access)**: such a Campaign belongs to its creator: another Member's writes get `INSUFFICIENT_ROLE` and its reads `RESOURCE_NOT_FOUND`.
+- **Unibox**: **Breaking (type)**: `account_id` and `account_status` on a chat item and a conversation are `string | null`: `null` on a Team conversation (the email of an email-only Campaign), listed only without `account_ids`, read, marked and replied to by `conversation_id` alone.
+- **Webhooks**: every `campaign` event of an email-only Campaign carries `account_id`, `account_name` and `account_profile_url` `null`. `EnrollmentRepliedPayload` types `reply_text` (`string | null`), now set for an email reply too.
+- **Mailbox order records** are typed (`MailboxPurchaseRecord`, new export): `check`, `required`, `entries[]` (`name`, `type`, `value`, `priority?`), `found`, `advice?`. The `dkim` row ends with one TXT record, Curviate's own signing key for the domain.
+- **Domain checks**: `checks.signing` (optional; `pass`, `fail` or `unknown`) and `signing_record` (the TXT record to publish, or `null`). With it, Curviate signs the domain's email and those emails offer the mail app's one-click unsubscribe.
+- **Email analytics**: **Breaking (type)**: `opt_outs.one_click` is `{ live, mailboxes }` (how many Mailboxes in scope send one-click unsubscribe now); `pending_test` is gone.
+- **Errors**: `BILLING_NOT_AVAILABLE` (403, billing is not available for this Team; nothing charged) and `TEAM_MEMBERSHIP_LOCKED` (403, this Team's membership is fixed) are exported in `ErrorCode` / `ERROR_CODES` and decode to themselves (before: `INTERNAL`).
+- `teams.createInvites`: a `201` says the invites were created, not that each email went out (`resendInvite` sends it again).
+
 ## [0.61.0] - 2026-11-21
 
 Additive. `fixtures/openapi.json` and the generated types are refreshed from the served document (recorded in `fixtures/PROVENANCE.json`).

@@ -69,9 +69,9 @@ export class LeadImportsResource {
   constructor(private readonly ctx: RequestContext) {}
 
   /**
-   * Import Leads. Send exactly one of `rows` (objects with `linkedin_url`,
-   * the standard fields, `extra`, `tags`; an exported JSON file re-imports
-   * as is) or `csv` (the file as text; `delimiter` and a header `mapping`
+   * Import Leads. Send exactly one of `rows` (objects with `linkedin_url`
+   * or `email`, the standard fields, `extra`, `tags`; an exported JSON file
+   * re-imports as is) or `csv` (the file as text; `delimiter` and a header `mapping`
    * are optional). `list_id` or `list_name` adds every row's Lead to a
    * list, `tags`/`remove_tags` add or remove Tags on every row's Lead.
    * `apply_lists: true` also adds each row's Lead to the Lead lists named
@@ -97,7 +97,10 @@ export class LeadImportsResource {
    * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * A malformed request (an unknown key, a wrong type) is refused whole; a row
-   * with a bad value is skipped and named in the report. Not retry-safe: a
+   * with a bad value is skipped and named in the report. A row with neither
+   * `linkedin_url` nor `email` skips `missing_linkedin_url_or_email`; a row by
+   * email alone whose address several LinkedIn Leads hold skips
+   * `email_on_several_leads`. Not retry-safe: a
    * retry makes a second import, whose rows report `unchanged`.
    *
    * @example
@@ -275,6 +278,15 @@ export class LeadsResource {
    * Create a Lead, or update the one this `linkedin_url` already resolves
    * to. The result carries `outcome`: `created`, `updated` or `unchanged`.
    * An omitted, `null` or empty field never erases a stored value.
+   *
+   * Without `linkedin_url`, `email` is required and keys the Lead: any
+   * spelling of the same mailbox (letter case, a `+tag`, dots in a Gmail
+   * address) updates the same Lead among those without a LinkedIn URL, or the
+   * one LinkedIn Lead holding that address. A Lead by email is enough for an
+   * email-only Campaign; it is never enriched from LinkedIn. When several
+   * LinkedIn Leads hold the address it names no single Lead: `INVALID_REQUEST`
+   * (the import's `email_on_several_leads`), nothing written; send the
+   * person's `linkedin_url` too.
    * `tags` are added (a new name creates the Tag); `list_id` or `list_name`
    * adds it to a list (a new name creates the list).
    * `POST /v1/leads`
@@ -287,6 +299,10 @@ export class LeadsResource {
    *   job_title: "CTO",
    *   tags: ["warm"],
    * });
+   *
+   * @example
+   * // A Lead known by email address alone.
+   * await curviate.leads.upsert({ email: "ana@acme.example", first_name: "Ana" });
    */
   upsert(body: LeadUpsertBody): Promise<LeadUpsertResult> {
     return this.ctx.request<LeadUpsertResult>({
@@ -297,15 +313,25 @@ export class LeadsResource {
   }
 
   /**
-   * Change a Lead's fields. `null` clears a field (Curviate may fill it
-   * again from a profile read) and removes an `extra` key; `""` is refused.
-   * `linkedin_url` cannot change.
+   * Change a Lead's fields. `null` clears a field and removes an `extra`
+   * key; `""` is refused. A field cleared this way reads
+   * `sources.<field>: "cleared"` and LinkedIn data never fills it again;
+   * `sources: { <field>: null }` lifts that, so the next profile read may
+   * fill it. `linkedin_url` cannot change, except on a Lead known by email
+   * address alone: it takes one here, and when another Lead already has that
+   * profile the two become one (that Lead, which this call returns; the old id
+   * then answers 404 with `merged_into`). Such a Lead's `email` cannot be
+   * cleared.
    * `PATCH /v1/leads/{id}`
    *
    * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * @example
    * await curviate.leads.update("con_123", { company: "Acme", extra: { plan: "pro" } });
+   *
+   * @example
+   * // Let LinkedIn fill a field the Team cleared by hand.
+   * await curviate.leads.update("con_123", { sources: { job_title: null } });
    */
   update(leadId: string, body: LeadUpdateBody): Promise<LeadUpdateResult> {
     return this.ctx.request<LeadUpdateResult>({
@@ -387,6 +413,8 @@ export class LeadsResource {
    * visit is a real profile view the person may see. `mode`: `auto`
    * (default; stored data newer than `max_age` seconds, else a visit),
    * `refill`, `cache_only` (never a visit, no `account_id` needed) or `live`.
+   * A Lead known by email address alone is skipped `no_linkedin_url`, never
+   * visited.
    * `POST /v1/leads/enrich`
    *
    * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
