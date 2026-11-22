@@ -238,8 +238,9 @@ export class TeamsResource {
   /**
    * Invite 1 to 20 people by email, each with a role (`member` by default).
    * Each invite is created and its email, with a link valid for 7 days, is
-   * sent when it can be: a `201` does not say the email went out; an invite
-   * whose email did not go out is sent again with `resendInvite`. All or
+   * sent when it can be: a `201` does not say the email went out. Each invite
+   * says it: `email_sent` is `false` on one whose email did not go out (the
+   * invite exists and its link works; send it again with `resendInvite`). All or
    * nothing: if any row is refused (`ALREADY_MEMBER`, `INVITE_ALREADY_PENDING`,
    * `INVITE_LIMIT_REACHED`), nothing is created or sent and the error names
    * the row. A Team whose membership is fixed adds no member
@@ -248,7 +249,8 @@ export class TeamsResource {
    * `POST /v1/teams/current/invites`
    *
    * @example
-   * await curviate.teams.createInvites({ invites: [{ email: "ana@example.com" }] });
+   * const { items } = await curviate.teams.createInvites({ invites: [{ email: "ana@example.com" }] });
+   * const unsent = items.filter((i) => !i.email_sent); // invited, but the email did not go out
    */
   createInvites(body: TeamInviteCreateBody): Promise<TeamInviteCreateResult> {
     return this.ctx.request<TeamInviteCreateResult>({
@@ -275,6 +277,7 @@ export class TeamsResource {
 
   /**
    * Re-send a pending or expired invite; its link is valid for 7 more days.
+   * `email_sent` says whether this email went out.
    * An accepted or revoked one is refused with `INVITE_NOT_PENDING`. Owners,
    * and Managers for Member invites.
    * `POST /v1/teams/current/invites/{invite_id}/resend`

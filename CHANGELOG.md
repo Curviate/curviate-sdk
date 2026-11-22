@@ -7,6 +7,10 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [0.63.0] - 2026-11-22
+
+Additive. `teams.createInvites`, `listInvites`, `resendInvite` and `revokeInvite` return `email_sent` on each invite: `false` when the invite's email did not go out (the call still answers `201`; the invite exists, its link works, and `resendInvite` sends it again), `true` otherwise. `fixtures/openapi.json` and the generated types are refreshed from the served document (recorded in `fixtures/PROVENANCE.json`); the same refresh carries one served description sharpened by an earlier deploy (the campaign check's missing-variables text).
+
 ## [0.62.0] - 2026-11-22
 
 Email only, and the Mailbox records typed. `fixtures/openapi.json` and the generated types are refreshed from the served document (recorded in `fixtures/PROVENANCE.json`). Pre-1.0 minor: two type changes below can break a build that assumed the old shape (**Breaking (type)**).

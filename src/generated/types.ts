@@ -3617,7 +3617,7 @@ export interface paths {
         put?: never;
         /**
          * Invite people to the team
-         * @description Invites up to 20 people by email, each with a role (member by default). Each invite is created and its email, with a link valid for 7 days, is sent when it can be; an invite whose email did not go out is sent again with resend. All or nothing: if any row fails, nothing is created or sent, and the error names the row. The invitee accepts in the dashboard, signed in with the invited email. Owners invite any role, Managers invite Members.
+         * @description Invites up to 20 people by email, each with a role (member by default). Each invite is created and its email, with a link valid for 7 days, is sent when it can be. The answer stays 201 when an email fails: that invite carries email_sent: false, its link works, and resend sends it again. All or nothing: if any row fails, nothing is created or sent, and the error names the row. The invitee accepts in the dashboard, signed in with the invited email. Owners invite any role, Managers invite Members.
          */
         post: operations["postV1TeamsCurrentInvites"];
         delete?: never;
@@ -3637,7 +3637,7 @@ export interface paths {
         put?: never;
         /**
          * Re-send an invite
-         * @description Emails a pending or expired invite again with a new link; the previous link stops working and the 7 days start again. Owners, and Managers for Member invites.
+         * @description Emails a pending or expired invite again with a new link; the previous link stops working and the 7 days start again. email_sent says whether this email went out. Owners, and Managers for Member invites.
          */
         post: operations["postV1TeamsCurrentInvitesInviteIdResend"];
         delete?: never;
@@ -4841,7 +4841,7 @@ export interface paths {
         put?: never;
         /**
          * Start a campaign
-         * @description Starts a draft: active, or scheduled while schedule.start_at is in the future. Needs a Lead list, a sending account that is active with a seat and a Sequence; every gap comes back at once in errors[]. Nothing reaches LinkedIn before this call. With an email step it also needs a Lead check at the current sequence_revision (POST /v1/campaigns/{id}/check) and refuses while Leads have no email address, unless the body is {"skip_missing_email": true}. Needs a subscription.
+         * @description Starts a draft: active, or scheduled while schedule.start_at is in the future. Needs a Lead list, a sending account that is active with a seat and a Sequence; with no account_ids (an email-only Sequence sent from shared_mailbox_ids), a shared Mailbox that can send and schedule.timezone instead. Every gap comes back at once in errors[]. Nothing reaches LinkedIn before this call. With an email step it also needs a Lead check at the current sequence_revision (POST /v1/campaigns/{id}/check) and refuses while Leads have no email address, unless the body is {"skip_missing_email": true}. Needs a subscription.
          */
         post: operations["postV1CampaignsIdStart"];
         delete?: never;
@@ -47268,6 +47268,8 @@ export interface operations {
                             expires_at: string;
                             /** @description When the invite was created (UTC). */
                             created_at: string;
+                            /** @description False when the invite email did not go out; the invite and its link exist, so re-send it. True when the latest send went out. */
+                            email_sent: boolean;
                         }[];
                         /** @description Pass back as cursor for the next page; null on the last page. */
                         cursor: string | null;
@@ -47344,7 +47346,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The invites, each pending, and an email sent for each. The link is only in the email. */
+            /** @description The invites, each pending. An email is sent for each; email_sent is false on an invite whose email did not go out (the invite exists, re-send it). The link is only in the email. */
             201: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -47385,6 +47387,8 @@ export interface operations {
                             expires_at: string;
                             /** @description When the invite was created (UTC). */
                             created_at: string;
+                            /** @description False when the invite email did not go out; the invite and its link exist, so re-send it. True when the latest send went out. */
+                            email_sent: boolean;
                         }[];
                         /** @description Pass back as cursor for the next page; null on the last page. */
                         cursor: string | null;
@@ -47501,6 +47505,8 @@ export interface operations {
                         expires_at: string;
                         /** @description When the invite was created (UTC). */
                         created_at: string;
+                        /** @description False when the invite email did not go out; the invite and its link exist, so re-send it. True when the latest send went out. */
+                        email_sent: boolean;
                     };
                 };
             };
@@ -47614,6 +47620,8 @@ export interface operations {
                         expires_at: string;
                         /** @description When the invite was created (UTC). */
                         created_at: string;
+                        /** @description False when the invite email did not go out; the invite and its link exist, so re-send it. True when the latest send went out. */
+                        email_sent: boolean;
                     };
                 };
             };
@@ -58354,7 +58362,7 @@ export interface operations {
                                 email_bounced: number;
                                 /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                                 no_email: number;
-                                /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                                /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. lead.first_name is listed with its own fallback too (on_missing fallback): those Leads get the fallback text. */
                                 fields: {
                                     /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                     variable: string;
@@ -58696,7 +58704,7 @@ export interface operations {
                             email_bounced: number;
                             /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                             no_email: number;
-                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. lead.first_name is listed with its own fallback too (on_missing fallback): those Leads get the fallback text. */
                             fields: {
                                 /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                 variable: string;
@@ -59002,7 +59010,7 @@ export interface operations {
                             email_bounced: number;
                             /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                             no_email: number;
-                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. lead.first_name is listed with its own fallback too (on_missing fallback): those Leads get the fallback text. */
                             fields: {
                                 /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                 variable: string;
@@ -59444,7 +59452,7 @@ export interface operations {
                             email_bounced: number;
                             /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                             no_email: number;
-                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. lead.first_name is listed with its own fallback too (on_missing fallback): those Leads get the fallback text. */
                             fields: {
                                 /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                 variable: string;
@@ -59850,7 +59858,7 @@ export interface operations {
                             email_bounced: number;
                             /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                             no_email: number;
-                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. lead.first_name is listed with its own fallback too (on_missing fallback): those Leads get the fallback text. */
                             fields: {
                                 /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                 variable: string;
@@ -60148,7 +60156,7 @@ export interface operations {
                             email_bounced: number;
                             /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                             no_email: number;
-                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. lead.first_name is listed with its own fallback too (on_missing fallback): those Leads get the fallback text. */
                             fields: {
                                 /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                 variable: string;
@@ -60435,7 +60443,7 @@ export interface operations {
                             email_bounced: number;
                             /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                             no_email: number;
-                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. lead.first_name is listed with its own fallback too (on_missing fallback): those Leads get the fallback text. */
                             fields: {
                                 /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                 variable: string;
@@ -60733,7 +60741,7 @@ export interface operations {
                             email_bounced: number;
                             /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                             no_email: number;
-                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. lead.first_name is listed with its own fallback too (on_missing fallback): those Leads get the fallback text. */
                             fields: {
                                 /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                 variable: string;
@@ -60919,7 +60927,7 @@ export interface operations {
                         email_bounced: number;
                         /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                         no_email: number;
-                        /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                        /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. lead.first_name is listed with its own fallback too (on_missing fallback): those Leads get the fallback text. */
                         fields: {
                             /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                             variable: string;
