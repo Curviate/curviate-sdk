@@ -9,7 +9,7 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ## [0.63.0] - 2026-11-22
 
-Additive. `teams.createInvites`, `listInvites`, `resendInvite` and `revokeInvite` return `email_sent` on each invite: `false` when the invite's email did not go out (the call still answers `201`; the invite exists, its link works, and `resendInvite` sends it again), `true` otherwise. `fixtures/openapi.json` holds this one change (the invite schema, its examples and three descriptions) applied to the production 693ca688 document before the server change is deployed: refresh it from production (`gen:fixture`, `gen:types:fixture`) before publishing, which should be a no-op beyond provenance.
+Additive. `teams.createInvites`, `listInvites`, `resendInvite` and `revokeInvite` return `email_sent` on each invite: `false` when the invite's email did not go out (the call still answers `201`; the invite exists, its link works, and `resendInvite` sends it again), `true` otherwise. `fixtures/openapi.json` and the generated types are refreshed from the served document (recorded in `fixtures/PROVENANCE.json`); the same refresh carries one served description sharpened by an earlier deploy (the campaign check's missing-variables text).
 
 ## [0.62.0] - 2026-11-22
 

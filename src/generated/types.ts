@@ -4841,7 +4841,7 @@ export interface paths {
         put?: never;
         /**
          * Start a campaign
-         * @description Starts a draft: active, or scheduled while schedule.start_at is in the future. Needs a Lead list, a sending account that is active with a seat and a Sequence; every gap comes back at once in errors[]. Nothing reaches LinkedIn before this call. With an email step it also needs a Lead check at the current sequence_revision (POST /v1/campaigns/{id}/check) and refuses while Leads have no email address, unless the body is {"skip_missing_email": true}. Needs a subscription.
+         * @description Starts a draft: active, or scheduled while schedule.start_at is in the future. Needs a Lead list, a sending account that is active with a seat and a Sequence; with no account_ids (an email-only Sequence sent from shared_mailbox_ids), a shared Mailbox that can send and schedule.timezone instead. Every gap comes back at once in errors[]. Nothing reaches LinkedIn before this call. With an email step it also needs a Lead check at the current sequence_revision (POST /v1/campaigns/{id}/check) and refuses while Leads have no email address, unless the body is {"skip_missing_email": true}. Needs a subscription.
          */
         post: operations["postV1CampaignsIdStart"];
         delete?: never;
@@ -58362,7 +58362,7 @@ export interface operations {
                                 email_bounced: number;
                                 /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                                 no_email: number;
-                                /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                                /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. lead.first_name is listed with its own fallback too (on_missing fallback): those Leads get the fallback text. */
                                 fields: {
                                     /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                     variable: string;
@@ -58704,7 +58704,7 @@ export interface operations {
                             email_bounced: number;
                             /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                             no_email: number;
-                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. lead.first_name is listed with its own fallback too (on_missing fallback): those Leads get the fallback text. */
                             fields: {
                                 /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                 variable: string;
@@ -59010,7 +59010,7 @@ export interface operations {
                             email_bounced: number;
                             /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                             no_email: number;
-                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. lead.first_name is listed with its own fallback too (on_missing fallback): those Leads get the fallback text. */
                             fields: {
                                 /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                 variable: string;
@@ -59452,7 +59452,7 @@ export interface operations {
                             email_bounced: number;
                             /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                             no_email: number;
-                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. lead.first_name is listed with its own fallback too (on_missing fallback): those Leads get the fallback text. */
                             fields: {
                                 /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                 variable: string;
@@ -59858,7 +59858,7 @@ export interface operations {
                             email_bounced: number;
                             /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                             no_email: number;
-                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. lead.first_name is listed with its own fallback too (on_missing fallback): those Leads get the fallback text. */
                             fields: {
                                 /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                 variable: string;
@@ -60156,7 +60156,7 @@ export interface operations {
                             email_bounced: number;
                             /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                             no_email: number;
-                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. lead.first_name is listed with its own fallback too (on_missing fallback): those Leads get the fallback text. */
                             fields: {
                                 /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                 variable: string;
@@ -60443,7 +60443,7 @@ export interface operations {
                             email_bounced: number;
                             /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                             no_email: number;
-                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. lead.first_name is listed with its own fallback too (on_missing fallback): those Leads get the fallback text. */
                             fields: {
                                 /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                 variable: string;
@@ -60741,7 +60741,7 @@ export interface operations {
                             email_bounced: number;
                             /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                             no_email: number;
-                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                            /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. lead.first_name is listed with its own fallback too (on_missing fallback): those Leads get the fallback text. */
                             fields: {
                                 /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                                 variable: string;
@@ -60927,7 +60927,7 @@ export interface operations {
                         email_bounced: number;
                         /** @description Leads on the Do-not-contact list for email only (No email); their email steps skip no_email. */
                         no_email: number;
-                        /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. */
+                        /** @description Lead and company variables a message, InMail or email step uses without a fallback of its own, with how many Leads lack them. lead.first_name is listed with its own fallback too (on_missing fallback): those Leads get the fallback text. */
                         fields: {
                             /** @description Long form, as lead.first_name, lead.extra.opener, company.industry or company.extra.case_study. */
                             variable: string;
