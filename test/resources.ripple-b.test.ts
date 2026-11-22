@@ -3,7 +3,7 @@
 import { http, HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
 import { server } from "./msw/server.js";
-import { Curviate, isCurviateError } from "../src/index.js";
+import { Curviate, Sequence, isCurviateError, step } from "../src/index.js";
 import type { LeadImportCreateBody } from "../src/resources/leads.js";
 
 const BASE = "https://app.curviate.test";
@@ -231,5 +231,55 @@ describe("do-not-contact file", () => {
     const rows = [{ linkedin_url: "https://www.linkedin.com/in/ana/", reason: "asked_to_stop" as const }];
     expect((await client.doNotContact.import({ rows })).counts?.created).toBe(1);
     expect(posted).toEqual({ rows });
+  });
+});
+
+describe("pass 19: email only", () => {
+  it("the docs guide's four calls (Email only), as written there: one request each, typed", async () => {
+    const calls: unknown[] = [];
+    server.use(
+      http.all(`${BASE}/v1/*`, async ({ request }) => {
+        const u = new URL(request.url);
+        const raw = request.method === "GET" ? "" : await request.text();
+        calls.push([request.method, u.pathname, raw ? JSON.parse(raw) : null]);
+        if (u.pathname === "/v1/leads") return HttpResponse.json({ object: "lead", id: "con_1", list_ids: ["cl_1"], outcome: "created" }, { status: 201 });
+        return HttpResponse.json({ object: "campaign", id: "mot_1", status: "draft" });
+      }),
+    );
+    // ── the guide's SDK block, byte for byte below this line ──
+    const lead = await client.leads.upsert({ email: "ana@acme.example", first_name: "Ana", list_name: "Q4 email" });
+    const campaign = await client.campaigns.create({
+      name: "Q4 email",
+      lead_list_ids: lead.list_ids,
+      shared_mailbox_ids: ["mbx_123"],
+      schedule: { timezone: "Europe/Berlin" },
+      sequence: Sequence.create({ on_reply: "end" }).add(
+        step.do("email_1", "email.send", { with: { subject: "Quick question", text: "Hi {{first_name|there}}, ..." }, next: "end" }),
+      ),
+    });
+    await client.campaigns.check(campaign.id);
+    await client.campaigns.start(campaign.id);
+    // ── end of the guide's block ──
+    await client.leads.update("con_1", { sources: { job_title: null } });
+    await client.doNotContact.add({ email: "bo@acme.example" });
+    await client.unibox.markConversation("cnv_team_1", { read: true });
+    expect(calls).toEqual([
+      ["POST", "/v1/leads", { email: "ana@acme.example", first_name: "Ana", list_name: "Q4 email" }],
+      ["POST", "/v1/campaigns", {
+        name: "Q4 email", lead_list_ids: ["cl_1"], shared_mailbox_ids: ["mbx_123"], schedule: { timezone: "Europe/Berlin" },
+        sequence: { $schema: "https://docs.curviate.com/schemas/sequence/v1.json", on_reply: "end", steps: [{ id: "email_1", do: "email.send", with: { subject: "Quick question", text: "Hi {{first_name|there}}, ..." }, next: "end" }] },
+      }],
+      ["POST", "/v1/campaigns/mot_1/check", null],
+      ["POST", "/v1/campaigns/mot_1/start", null],
+      ["PATCH", "/v1/leads/con_1", { sources: { job_title: null } }],
+      ["POST", "/v1/do-not-contact", { email: "bo@acme.example" }],
+      ["PATCH", "/v1/unibox/conversations/cnv_team_1", { read: true }],
+    ]);
+  });
+
+  it.each(["BILLING_NOT_AVAILABLE", "TEAM_MEMBERSHIP_LOCKED"])("%s reaches the caller as itself, not INTERNAL", async (code) => {
+    server.use(http.post(`${BASE}/v1/teams`, () => HttpResponse.json({ code, message: "x", user_fixable: false, retry_likely_to_succeed: false }, { status: 403 })));
+    const err = await client.teams.create({ name: "B" }).catch((e: unknown) => e);
+    expect(isCurviateError(err) && err.code).toBe(code);
   });
 });

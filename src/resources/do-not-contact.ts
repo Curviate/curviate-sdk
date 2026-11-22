@@ -26,7 +26,7 @@ export type DoNotContactExportParams = NonNullable<paths["/v1/do-not-contact/exp
 /** One entry of a JSON export (`format: "json"`); NDJSON has one per line, CSV one per row. */
 export type DoNotContactExportRow = paths["/v1/do-not-contact/export"]["get"]["responses"]["200"]["content"]["application/json"][number];
 export type DoNotContactImportBody = NonNullable<paths["/v1/do-not-contact/import"]["post"]["requestBody"]>["content"]["application/json"];
-/** The per-row report: `counts`, and one `report` entry per row with `outcome` (`created` | `unchanged` | `skipped`) and, for a skip, `skip_reason`. */
+/** The per-row report: `counts`, and one `report` entry per row with `outcome` (`created` | `updated` | `unchanged` | `skipped`) and, for a skip, `skip_reason`. */
 export type DoNotContactImportResult = paths["/v1/do-not-contact/import"]["post"]["responses"]["200"]["content"]["application/json"];
 export type DoNotContactUpdateBody = NonNullable<paths["/v1/do-not-contact/{id}"]["patch"]["requestBody"]>["content"]["application/json"];
 
@@ -63,16 +63,23 @@ export class DoNotContactResource {
   }
 
   /**
-   * Add one person by `lead_id` or `linkedin_url` (someone who is not a
-   * Lead yet becomes one first, from stored data only), with an optional
-   * `reason` and `scope` (`everything`, the default, or `email_only`). A person already on the list resolves with their existing entry,
-   * unchanged. Any team member may add. For many people use {@link DoNotContactResource.import}. Needs a
+   * Add one person by `lead_id`, `linkedin_url` (someone who is not a
+   * Lead yet becomes one first, from stored data only) or `email`, with an
+   * optional `reason` and `scope` (`everything`, the default, or
+   * `email_only`). By `email`: every Lead holding that mailbox, under any
+   * spelling (letter case, a `+tag`, dots in a Gmail address), is listed with
+   * the entry's scope, and a Lead saved later at that mailbox is too; no Lead
+   * is created and the entry keeps no address in clear. A person already on
+   * the list resolves with their existing entry; a scope only goes up: an
+   * `everything` add raises an `email_only` entry, an `email_only` add never
+   * lowers an `everything` one. Any team member may add. For many people use {@link DoNotContactResource.import}. Needs a
    * subscription: a Team without one is refused with `TIER_REQUIRED`.
    * `POST /v1/do-not-contact`
    *
    * @example
    * const entry = await curviate.doNotContact.add({ linkedin_url: "https://www.linkedin.com/in/ana/", reason: "asked_to_stop" });
    * await curviate.doNotContact.add({ lead_id: "con_123", scope: "email_only" });
+   * await curviate.doNotContact.add({ email: "ana@acme.example" });
    */
   add(body: DoNotContactAddBody): Promise<DoNotContactEntry> {
     return this.ctx.request<DoNotContactEntry>({ method: "POST", path: "/v1/do-not-contact", body });
@@ -118,7 +125,9 @@ export class DoNotContactResource {
    * Put the people of a file on the list: up to 10,000 `rows` of
    * `{ linkedin_url, reason?, scope? }`, or a `csv` string with a header line (an
    * exported file works as it is). Each row works as {@link DoNotContactResource.add}:
-   * a person already listed is `unchanged`, their entry and reason stay. A bad
+   * a person already listed is `unchanged`, their entry and reason stay, or
+   * `updated` when the row asks for `everything` and their entry stopped email
+   * only (raised; a scope never goes down; `counts.updated`). A bad
    * URL, reason or scope skips its row (`skip_reason`) and the others apply; a bad
    * structure rejects the file. Resolves with the per-row report. Any team
    * member may import. Needs a subscription.

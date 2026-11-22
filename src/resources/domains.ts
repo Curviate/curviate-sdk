@@ -21,6 +21,14 @@ export class DomainsResource {
    * lookup, or a DKIM selector not known yet; never a failure), with the
    * `tracking_record` CNAME to add, any named `blocklists`, and
    * `dkim_selector` (the selector whose key was found, `null` while none is).
+   * `checks.signing` (optional, never a failure) is whether `signing_record`
+   * is published: the TXT record with Curviate's own signing key for this
+   * domain and Team (about 410 characters; add it exactly as shown and no
+   * other record at that name). With it, Curviate signs the domain's email
+   * from Mailboxes from Curviate and Google Mailboxes connected with an app
+   * password, and those emails offer the mail app's one-click unsubscribe.
+   * `signing_record` is `null` for a domain with none of those Mailboxes and
+   * no Mailbox order.
    * `GET /v1/domains/{domain}/checks`
    *
    * With `{ now: true }` it runs the checks now and returns the result: DNS

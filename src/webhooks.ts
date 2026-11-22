@@ -180,7 +180,9 @@ export interface PostPublishFailedPayload extends EventPayloadBase {
  * Lead record, `null` once deleted). No payload carries the text Curviate
  * sent.
  *
- * `enrollment.replied` carries `channel`: `linkedin` or `email`.
+ * `enrollment.replied` carries `channel` (`linkedin` or `email`) and
+ * `reply_text`, the text the Lead sent, for an email reply too (`null` when
+ * Curviate no longer holds it).
  * `enrollment.email_bounced` carries `lead_id`, `mailbox_id` and `status` (the
  * delivery report's `x.y.z`); `enrollment.out_of_office` carries `until` (the
  * stated end, or `null`); `enrollment.opted_out` carries `lead_id`, `scope`
@@ -195,8 +197,11 @@ export interface PostPublishFailedPayload extends EventPayloadBase {
  * `pause_reason: "tier_required"` until the Team subscribes again and you `resume` it.
  *
  * `account_id` is `null` on an event of no single account (`campaign.status_changed`,
- * and an `enrollment.skipped` with none assigned yet), which is why this does
- * not extend {@link EventPayloadBase}.
+ * and an `enrollment.skipped` with none assigned yet), and on every event of an
+ * email-only Campaign (no sending account, email from the Team's shared
+ * Mailboxes), where `account_name` and `account_profile_url` are `null` too and
+ * the event goes to webhooks on all accounts. That is why this does not extend
+ * {@link EventPayloadBase}.
  */
 export interface CampaignPayload {
   campaign_id: string;
@@ -206,9 +211,10 @@ export interface CampaignPayload {
   [key: string]: unknown;
 }
 
-/** `enrollment.replied`: the reply's channel is typed; the rest as {@link CampaignPayload}. */
+/** `enrollment.replied`: the reply's `channel` and `reply_text` are typed; the rest as {@link CampaignPayload}. */
 export interface EnrollmentRepliedPayload extends CampaignPayload {
   channel: "linkedin" | "email";
+  reply_text: string | null;
 }
 
 /** `enrollment.email_bounced`: an email of the Enrollment bounced; `status` is the delivery report's `x.y.z`. */

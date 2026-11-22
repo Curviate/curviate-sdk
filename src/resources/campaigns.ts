@@ -12,7 +12,15 @@
  *
  * Every team role reads. Writes need campaign-send on every sending account of
  * the Campaign (`INSUFFICIENT_ROLE`, `ACCOUNT_NOT_SHARED`); Enrollment writes
- * need operate on the Enrollment's account. There is no validate or dry-run
+ * need operate on the Enrollment's account.
+ *
+ * Email only: a Campaign with no sending account (`account_ids: []`) runs an
+ * email-only Sequence from its `shared_mailbox_ids`, in `schedule.timezone`;
+ * its Enrollments keep `account_id: null`. Such a Campaign belongs to its
+ * creator: its writes are the creator's, the Owners' and the Managers'
+ * (`INSUFFICIENT_ROLE` for another Member, whatever accounts the write would
+ * add), and another Member reads it as an unknown id (`RESOURCE_NOT_FOUND`)
+ * and does not see it listed. With an API key, the creator is the key's user. There is no validate or dry-run
  * option: check a Sequence offline with `validateSequence`, read what a Campaign
  * would do with `preview`.
  */
@@ -236,9 +244,13 @@ export class CampaignsResource {
    * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
    *
    * Days and hours in `schedule` are read in each sending account's own time
-   * zone. `schedule.timezone` and `settings.stop_on_engagement` are retired:
-   * accepted with warning W13 until 2027-01-25, never stored or returned
-   * (`stop_on_engagement: true` with an acting reply route is a 400).
+   * zone. With no sending account (`account_ids` empty or left out, an
+   * email-only Sequence from `shared_mailbox_ids`) they are read in
+   * `schedule.timezone` (an IANA zone, like `Europe/Berlin`), required to
+   * start; business-day waits count in it too. With sending accounts
+   * `schedule.timezone` is not read and not served. `settings.stop_on_engagement`
+   * is retired: accepted with warning W13 until 2027-01-25, never stored or
+   * returned (`stop_on_engagement: true` with an acting reply route is a 400).
    * `settings.acceptance_floor` defaults to `null` (off). With
    * `settings.accounts_per_lead` above 1 (Several mode) the settings gain
    * `on_reply_elsewhere` (`stop` or `continue`), `withdraw_on_reply_elsewhere`
@@ -266,6 +278,18 @@ export class CampaignsResource {
    *   lead_list_ids: ["cl_123"],
    *   account_ids: ["acc_123"],
    *   sequence: Sequence.create({ on_reply: "end" }).add(step.do("invite", "invite.send", { with: { note: null }, next: "end" })),
+   * });
+   *
+   * @example
+   * // Email only: no sending account, the Team's shared Mailboxes, one time zone.
+   * const emailOnly = await curviate.campaigns.create({
+   *   name: "Q4 email",
+   *   lead_list_ids: ["cl_123"],
+   *   shared_mailbox_ids: ["mbx_123"],
+   *   schedule: { timezone: "Europe/Berlin" },
+   *   sequence: Sequence.create({ on_reply: "end" }).add(
+   *     step.do("email_1", "email.send", { with: { subject: "Quick question", text: "Hi {{lead.first_name|there}}, ..." }, next: "end" }),
+   *   ),
    * });
    */
   async create<Q extends AnySequence = SequenceDocument | null>(body: CampaignCreateBody<Q>): Promise<Campaign> {
@@ -312,7 +336,8 @@ export class CampaignsResource {
    * `PATCH /v1/campaigns/{id}`
    *
    * Email: `shared_mailbox_ids` (Mailboxes shared in the Team, used once a
-   * sending account's own are at today's limit), `schedule.min_email_gap_minutes`
+   * sending account's own are at today's limit; with no sending account, the
+   * only Mailboxes the Campaign sends from), `schedule.min_email_gap_minutes`
    * (default 5; below 2 warns W20) and `settings.reply_scope` (`both`, the
    * default, or `own_channel`).
    *
@@ -350,7 +375,12 @@ export class CampaignsResource {
    * `sequence_revision`, and is refused while Leads have no email address
    * unless `{ skip_missing_email: true }`: those Leads are never enrolled
    * either way. `warnings[]` carries W21 for a sending account no Mailbox can
-   * send for.
+   * send for. With no sending account the gaps are `shared_mailbox_ids` (no
+   * shared Mailbox that can send) and `schedule.timezone` (none set), and the
+   * Team's plan is checked at start; a Campaign started that way cannot take
+   * sending accounts later (`CAMPAIGN_STATUS_CONFLICT`: create a new one).
+   * Within one Campaign a mailbox gets each email step once: a second Lead at
+   * the same address skips the step with reason `same_mailbox`.
    * `POST /v1/campaigns/{id}/start`
    *
    * Needs a subscription: a Team without one is refused with `TIER_REQUIRED`.
