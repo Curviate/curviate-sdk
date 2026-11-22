@@ -234,6 +234,24 @@ describe("do-not-contact file", () => {
   });
 });
 
+describe("pass 20: invite email_sent", () => {
+  it("createInvites and resendInvite type `email_sent` and pass it through, false included", async () => {
+    const inv = (email: string, email_sent: boolean) => ({
+      object: "team_invite", invite_id: `tinv_${email[0]}`, email, role: "member", status: "pending",
+      invited_by_user_id: "usr_1", expires_at: "2026-11-29T00:00:00.000Z", created_at: "2026-11-22T00:00:00.000Z", email_sent,
+    });
+    server.use(
+      http.post(`${BASE}/v1/teams/current/invites`, () => HttpResponse.json({ object: "team_invite_list", items: [inv("a@x.test", true), inv("b@x.test", false)], cursor: null }, { status: 201 })),
+      http.post(`${BASE}/v1/teams/current/invites/tinv_b/resend`, () => HttpResponse.json(inv("b@x.test", true))),
+    );
+    const { items } = await client.teams.createInvites({ invites: [{ email: "a@x.test" }, { email: "b@x.test" }] });
+    const sent: boolean[] = items.map((i) => i.email_sent); // a type error if the field is not served
+    expect(sent).toEqual([true, false]);
+    const again: boolean = (await client.teams.resendInvite("tinv_b")).email_sent;
+    expect(again).toBe(true);
+  });
+});
+
 describe("pass 19: email only", () => {
   it("the docs guide's four calls (Email only), as written there: one request each, typed", async () => {
     const calls: unknown[] = [];

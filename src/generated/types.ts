@@ -3617,7 +3617,7 @@ export interface paths {
         put?: never;
         /**
          * Invite people to the team
-         * @description Invites up to 20 people by email, each with a role (member by default). Each invite is created and its email, with a link valid for 7 days, is sent when it can be; an invite whose email did not go out is sent again with resend. All or nothing: if any row fails, nothing is created or sent, and the error names the row. The invitee accepts in the dashboard, signed in with the invited email. Owners invite any role, Managers invite Members.
+         * @description Invites up to 20 people by email, each with a role (member by default). Each invite is created and its email, with a link valid for 7 days, is sent when it can be. The answer stays 201 when an email fails: that invite carries email_sent: false, its link works, and resend sends it again. All or nothing: if any row fails, nothing is created or sent, and the error names the row. The invitee accepts in the dashboard, signed in with the invited email. Owners invite any role, Managers invite Members.
          */
         post: operations["postV1TeamsCurrentInvites"];
         delete?: never;
@@ -3637,7 +3637,7 @@ export interface paths {
         put?: never;
         /**
          * Re-send an invite
-         * @description Emails a pending or expired invite again with a new link; the previous link stops working and the 7 days start again. Owners, and Managers for Member invites.
+         * @description Emails a pending or expired invite again with a new link; the previous link stops working and the 7 days start again. email_sent says whether this email went out. Owners, and Managers for Member invites.
          */
         post: operations["postV1TeamsCurrentInvitesInviteIdResend"];
         delete?: never;
@@ -47268,6 +47268,8 @@ export interface operations {
                             expires_at: string;
                             /** @description When the invite was created (UTC). */
                             created_at: string;
+                            /** @description False when the invite email did not go out; the invite and its link exist, so re-send it. True when the latest send went out. */
+                            email_sent: boolean;
                         }[];
                         /** @description Pass back as cursor for the next page; null on the last page. */
                         cursor: string | null;
@@ -47344,7 +47346,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The invites, each pending, and an email sent for each. The link is only in the email. */
+            /** @description The invites, each pending. An email is sent for each; email_sent is false on an invite whose email did not go out (the invite exists, re-send it). The link is only in the email. */
             201: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -47385,6 +47387,8 @@ export interface operations {
                             expires_at: string;
                             /** @description When the invite was created (UTC). */
                             created_at: string;
+                            /** @description False when the invite email did not go out; the invite and its link exist, so re-send it. True when the latest send went out. */
+                            email_sent: boolean;
                         }[];
                         /** @description Pass back as cursor for the next page; null on the last page. */
                         cursor: string | null;
@@ -47501,6 +47505,8 @@ export interface operations {
                         expires_at: string;
                         /** @description When the invite was created (UTC). */
                         created_at: string;
+                        /** @description False when the invite email did not go out; the invite and its link exist, so re-send it. True when the latest send went out. */
+                        email_sent: boolean;
                     };
                 };
             };
@@ -47614,6 +47620,8 @@ export interface operations {
                         expires_at: string;
                         /** @description When the invite was created (UTC). */
                         created_at: string;
+                        /** @description False when the invite email did not go out; the invite and its link exist, so re-send it. True when the latest send went out. */
+                        email_sent: boolean;
                     };
                 };
             };
