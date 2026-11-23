@@ -7,6 +7,10 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
+## [0.64.0] - 2026-11-23
+
+Additive. Placement tests send one copy to each of Curviate's test inboxes at Google and Microsoft (no longer a fixed 12, 3 at each of four providers). A placement test (`mailboxes.placementTests.run`, `get`, and `list` items) carries `copies` (`PlacementTest.copies: number`), the number of copies it sends and counts against the Mailbox's daily cap. A provider the test sent no copy to has verdict `null`; the `INVALID_REQUEST` cap refusal names the test's number. JSDoc for `run` and `get` says so. `fixtures/openapi.json` and the generated types are refreshed from the served document (production 4b7db651, recorded in `fixtures/PROVENANCE.json`); the refresh carries the matching served descriptions (placement tests, weekly placement checks, the analytics `landing.tests` note).
+
 ## [0.63.0] - 2026-11-22
 
 Additive. `teams.createInvites`, `listInvites`, `resendInvite` and `revokeInvite` return `email_sent` on each invite: `false` when the invite's email did not go out (the call still answers `201`; the invite exists, its link works, and `resendInvite` sends it again), `true` otherwise. `fixtures/openapi.json` and the generated types are refreshed from the served document (recorded in `fixtures/PROVENANCE.json`); the same refresh carries one served description sharpened by an earlier deploy (the campaign check's missing-variables text).

@@ -3989,7 +3989,7 @@ export interface paths {
         put?: never;
         /**
          * Run a placement test
-         * @description Sends your exact subject and body from this Mailbox to 12 test inboxes, 3 at each provider (Google Workspace, Microsoft 365, Gmail, Outlook.com), and reads where each copy lands; results within an hour. Answers `202` with the running test; read it again for the verdicts. The 12 copies count against the Mailbox's daily cap, so the Mailbox needs room for 12 today. Each test draws one from the Team's allowance: 10 per paid seat a month, pooled across the Team, no daily limit; past it `429 PLACEMENT_TEST_ALLOWANCE_EXHAUSTED` and nothing is sent. Owners and Managers test any Mailbox; a Member only the ones they connected.
+         * @description Sends your exact subject and body from this Mailbox, one copy to each of Curviate's test inboxes at Google and Microsoft, and reads where each copy lands; results within an hour. Answers `202` with the running test; `copies` says how many it sends, and a verdict comes only for a provider it sent to. Read it again for the verdicts. The copies count against the Mailbox's daily cap, so the Mailbox needs room for them today. Each test draws one from the Team's allowance: 10 per paid seat a month, pooled across the Team, no daily limit; past it `429 PLACEMENT_TEST_ALLOWANCE_EXHAUSTED` and nothing is sent. Owners and Managers test any Mailbox; a Member only the ones they connected.
          */
         post: operations["postV1MailboxesIdPlacementTests"];
         delete?: never;
@@ -4007,7 +4007,7 @@ export interface paths {
         };
         /**
          * Get a placement test
-         * @description One placement test: `running` or `complete`, a verdict per provider (`inbox`, `partly_spam` or `spam`), with the Team's allowance. Another team's test answers the same `404 RESOURCE_NOT_FOUND` as an unknown id.
+         * @description One placement test: `running` or `complete`, its `copies`, a verdict per provider it sent to (`inbox`, `partly_spam` or `spam`; null for a provider it sent no copy to), with the Team's allowance. Another team's test answers the same `404 RESOURCE_NOT_FOUND` as an unknown id.
          */
         get: operations["getV1MailboxesIdPlacementTestsTestId"];
         put?: never;
@@ -4819,7 +4819,7 @@ export interface paths {
         };
         /**
          * List a campaign's weekly placement checks
-         * @description The Campaign's weekly placement checks, newest first: each calendar week its first email step, and each email step whose text changed that week, is sent from one of its Mailboxes in turn to Curviate's 6 business seed inboxes (3 Google Workspace, 3 Microsoft 365) and read like a placement test. Kept apart from warm-up readings and placement tests. Each check: week (its Monday), mailbox_id, step_id, status (running, complete, waiting, skipped), reason (no_mailbox, cap, seeds), and the google_workspace and microsoft_365 verdicts (inbox, partly_spam, spam) once complete. Its 6 copies count against the sending Mailbox's daily limit.
+         * @description The Campaign's weekly placement checks, newest first: each calendar week its first email step, and each email step whose text changed that week, is sent from one of its Mailboxes in turn one copy to each of Curviate's business test inboxes at Google and Microsoft, and read like a placement test. Kept apart from warm-up readings and placement tests. Each check: week (its Monday), mailbox_id, step_id, status (running, complete, waiting, skipped), reason (no_mailbox, cap, seeds), and the google_workspace and microsoft_365 verdicts (inbox, partly_spam, spam) once complete. Its copies, one per test inbox, count against the sending Mailbox's daily limit.
          */
         get: operations["getV1CampaignsIdPlacementChecks"];
         put?: never;
@@ -50845,28 +50845,30 @@ export interface operations {
                             mailbox_id?: string;
                             /** @enum {string} */
                             status?: "running" | "complete";
+                            /** @description How many copies the test sends: one to each of Curviate's test inboxes ready when it started. The number counted against the Mailbox's daily cap. */
+                            copies?: number;
                             /** Format: date-time */
                             created_at?: string;
                             /** Format: date-time */
                             completed_at?: string | null;
                             verdicts?: {
                                 /**
-                                 * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                                 * @description `inbox` (every copy at this provider in the inbox), `partly_spam`, `spam` (none in the inbox); null while running, and null for a provider the test sent no copy to.
                                  * @enum {string|null}
                                  */
                                 google_workspace: "inbox" | "partly_spam" | "spam" | null;
                                 /**
-                                 * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                                 * @description `inbox` (every copy at this provider in the inbox), `partly_spam`, `spam` (none in the inbox); null while running, and null for a provider the test sent no copy to.
                                  * @enum {string|null}
                                  */
                                 microsoft_365: "inbox" | "partly_spam" | "spam" | null;
                                 /**
-                                 * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                                 * @description `inbox` (every copy at this provider in the inbox), `partly_spam`, `spam` (none in the inbox); null while running, and null for a provider the test sent no copy to.
                                  * @enum {string|null}
                                  */
                                 gmail: "inbox" | "partly_spam" | "spam" | null;
                                 /**
-                                 * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                                 * @description `inbox` (every copy at this provider in the inbox), `partly_spam`, `spam` (none in the inbox); null while running, and null for a provider the test sent no copy to.
                                  * @enum {string|null}
                                  */
                                 outlook_com: "inbox" | "partly_spam" | "spam" | null;
@@ -50950,7 +50952,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description The test is running: 12 copies go out over the next minutes, and the results are complete within an hour. */
+            /** @description The test is running: its `copies` go out over the next minutes, and the results are complete within an hour. */
             202: {
                 headers: {
                     "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
@@ -50963,28 +50965,30 @@ export interface operations {
                         mailbox_id: string;
                         /** @enum {string} */
                         status: "running" | "complete";
+                        /** @description How many copies the test sends: one to each of Curviate's test inboxes ready when it started. The number counted against the Mailbox's daily cap. */
+                        copies: number;
                         /** Format: date-time */
                         created_at: string;
                         /** Format: date-time */
                         completed_at: string | null;
                         verdicts: {
                             /**
-                             * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                             * @description `inbox` (every copy at this provider in the inbox), `partly_spam`, `spam` (none in the inbox); null while running, and null for a provider the test sent no copy to.
                              * @enum {string|null}
                              */
                             google_workspace: "inbox" | "partly_spam" | "spam" | null;
                             /**
-                             * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                             * @description `inbox` (every copy at this provider in the inbox), `partly_spam`, `spam` (none in the inbox); null while running, and null for a provider the test sent no copy to.
                              * @enum {string|null}
                              */
                             microsoft_365: "inbox" | "partly_spam" | "spam" | null;
                             /**
-                             * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                             * @description `inbox` (every copy at this provider in the inbox), `partly_spam`, `spam` (none in the inbox); null while running, and null for a provider the test sent no copy to.
                              * @enum {string|null}
                              */
                             gmail: "inbox" | "partly_spam" | "spam" | null;
                             /**
-                             * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                             * @description `inbox` (every copy at this provider in the inbox), `partly_spam`, `spam` (none in the inbox); null while running, and null for a provider the test sent no copy to.
                              * @enum {string|null}
                              */
                             outlook_com: "inbox" | "partly_spam" | "spam" | null;
@@ -50999,7 +51003,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description INVALID_REQUEST: `subject` empty, above 998 characters or with a line break; `body` empty or above 10,000 characters; a NUL or malformed Unicode; an unknown field; or the Mailbox cannot send 12 more emails today (`mailbox_id`). Nothing was sent and nothing drawn from the allowance. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
+            /** @description INVALID_REQUEST: `subject` empty, above 998 characters or with a line break; `body` empty or above 10,000 characters; a NUL or malformed Unicode; an unknown field; or the Mailbox cannot send as many more emails today as the test has copies (`mailbox_id`; the message names the number). Nothing was sent and nothing drawn from the allowance. TEAM_REQUIRED: an All-Teams key sent no X-Curviate-Team header (on an account route: with an account id that is not one); GET /v1/teams lists your teams. */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -51065,7 +51069,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description PLACEMENT_TESTS_UNAVAILABLE: placement tests cannot run right now. Nothing was sent and nothing drawn from the allowance. */
+            /** @description PLACEMENT_TESTS_UNAVAILABLE: placement tests cannot run right now: Curviate's test inboxes at Google and at Microsoft are not both ready, or they took their load for today (then `retry_hint` names when to try again). Nothing was sent and nothing drawn from the allowance. */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -51108,28 +51112,30 @@ export interface operations {
                         mailbox_id: string;
                         /** @enum {string} */
                         status: "running" | "complete";
+                        /** @description How many copies the test sends: one to each of Curviate's test inboxes ready when it started. The number counted against the Mailbox's daily cap. */
+                        copies: number;
                         /** Format: date-time */
                         created_at: string;
                         /** Format: date-time */
                         completed_at: string | null;
                         verdicts: {
                             /**
-                             * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                             * @description `inbox` (every copy at this provider in the inbox), `partly_spam`, `spam` (none in the inbox); null while running, and null for a provider the test sent no copy to.
                              * @enum {string|null}
                              */
                             google_workspace: "inbox" | "partly_spam" | "spam" | null;
                             /**
-                             * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                             * @description `inbox` (every copy at this provider in the inbox), `partly_spam`, `spam` (none in the inbox); null while running, and null for a provider the test sent no copy to.
                              * @enum {string|null}
                              */
                             microsoft_365: "inbox" | "partly_spam" | "spam" | null;
                             /**
-                             * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                             * @description `inbox` (every copy at this provider in the inbox), `partly_spam`, `spam` (none in the inbox); null while running, and null for a provider the test sent no copy to.
                              * @enum {string|null}
                              */
                             gmail: "inbox" | "partly_spam" | "spam" | null;
                             /**
-                             * @description `inbox` (all 3 copies in the inbox), `partly_spam`, `spam` (none in the inbox); null while running.
+                             * @description `inbox` (every copy at this provider in the inbox), `partly_spam`, `spam` (none in the inbox); null while running, and null for a provider the test sent no copy to.
                              * @enum {string|null}
                              */
                             outlook_com: "inbox" | "partly_spam" | "spam" | null;
@@ -67487,7 +67493,7 @@ export interface operations {
                                  */
                                 reason: "no_test_inboxes" | null;
                             };
-                            /** @description The newest test you ran from a Mailbox in scope, the last 30 days. */
+                            /** @description The newest test you ran from a Mailbox in scope, the last 30 days. A provider that test sent no copy to reads gathering: no verdict. */
                             tests: {
                                 /**
                                  * @description inbox, partly_spam or spam; gathering while there is not enough to judge.

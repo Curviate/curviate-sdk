@@ -44,13 +44,14 @@ export class PlacementTestsResource {
   constructor(private readonly ctx: RequestContext) {}
 
   /**
-   * Run a placement test: your exact subject and body go from this Mailbox to
-   * 12 test inboxes, 3 at each of Google Workspace, Microsoft 365, Gmail and
-   * Outlook.com, and each copy's landing is read; results within an hour.
-   * Answers with the running test; read it again with `get` for the verdicts.
-   * The 12 copies count against the Mailbox's daily cap, so it needs room for
-   * 12 today. Each test draws one from the Team's allowance: 10 per paid seat
-   * a month, pooled across the Team (a trial has 0).
+   * Run a placement test: your exact subject and body go from this Mailbox,
+   * one copy to each of Curviate's test inboxes at Google and Microsoft, and
+   * each copy's landing is read; results within an hour. Answers with the
+   * running test and its `copies` (how many it sends); read it again with
+   * `get` for the verdicts, one per provider it sent to. The copies count
+   * against the Mailbox's daily cap, so it needs room for them today. Each
+   * test draws one from the Team's allowance: 10 per paid seat a month,
+   * pooled across the Team (a trial has 0).
    *
    * Refusals, none of which sends anything or draws from the allowance:
    * `PLACEMENT_TEST_ALLOWANCE_EXHAUSTED` (429: this month's allowance is used,
@@ -58,14 +59,14 @@ export class PlacementTestsResource {
    * `allowance.resets_at`, say when it resets. Never retried: waiting minutes
    * does not help), `PLACEMENT_TESTS_UNAVAILABLE`
    * (503: tests cannot run right now), `MAILBOX_STATE_CONFLICT` (the Mailbox
-   * cannot send now), `INVALID_REQUEST` (no room for 12 today, or a malformed
-   * subject or body). Owners and Managers test any Mailbox; a Member only the
+   * cannot send now), `INVALID_REQUEST` (no room today for the test's copies,
+   * the message names how many, or a malformed subject or body). Owners and Managers test any Mailbox; a Member only the
    * ones they connected.
    * `POST /v1/mailboxes/{id}/placement-tests`
    *
    * @example
    * const test = await curviate.mailboxes.placementTests.run("mbx_123", { subject: "Quick question", body: "Hi Anna, ..." });
-   * // test.status: "running"; test.allowance: { used: 1, total: 10, resets_at }
+   * // test.status: "running"; test.copies: 4; test.allowance: { used: 1, total: 10, resets_at }
    */
   run(mailboxId: string, body: PlacementTestRunBody): Promise<PlacementTest> {
     return this.ctx.request<PlacementTest>({ method: "POST", path: apiPath`/v1/mailboxes/${mailboxId}/placement-tests`, body });
@@ -84,8 +85,9 @@ export class PlacementTestsResource {
   }
 
   /**
-   * One placement test: `running` or `complete`, and a verdict per provider
-   * (`inbox`, `partly_spam` or `spam`; null while running).
+   * One placement test: `running` or `complete`, its `copies`, and a verdict
+   * per provider (`inbox`, `partly_spam` or `spam`; null while running, and
+   * null for a provider the test sent no copy to).
    * `GET /v1/mailboxes/{id}/placement-tests/{test_id}`
    *
    * @example
