@@ -7,9 +7,9 @@ Versioning: semantic. Minor for additive changes, patch for bug fixes; no stabil
 
 ---
 
-## [Unreleased]
+## [0.64.0] - 2026-11-23
 
-Placement tests send one copy to each of Curviate's test inboxes at Google and Microsoft (no longer a fixed 12, 3 at each of four providers). Additive: a placement test (`mailboxes.placementTests.run`, `get`, `list` items) carries `copies`, the number of copies it sends and counts against the Mailbox's daily cap; the type arrives with the fixture refresh from the served document after the server deploys. A provider the test sent no copy to has verdict `null`. JSDoc for `run` and `get` says so; the `INVALID_REQUEST` cap refusal names the test's number.
+Additive. Placement tests send one copy to each of Curviate's test inboxes at Google and Microsoft (no longer a fixed 12, 3 at each of four providers). A placement test (`mailboxes.placementTests.run`, `get`, and `list` items) carries `copies` (`PlacementTest.copies: number`), the number of copies it sends and counts against the Mailbox's daily cap. A provider the test sent no copy to has verdict `null`; the `INVALID_REQUEST` cap refusal names the test's number. JSDoc for `run` and `get` says so. `fixtures/openapi.json` and the generated types are refreshed from the served document (production 4b7db651, recorded in `fixtures/PROVENANCE.json`); the refresh carries the matching served descriptions (placement tests, weekly placement checks, the analytics `landing.tests` note).
 
 ## [0.63.0] - 2026-11-22
 
